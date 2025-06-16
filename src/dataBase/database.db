@@ -1,0 +1,19 @@
+-- Name of database
+CREATE DATABASE IF NOT EXISTS HotelManagement;
+
+-- Use the database
+USE HotelManagement;
+
+-- Create table usrers
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    email TEXT,
+);
+
+-- Insert sample user data
+INSERT INTO users (username, password, email) VALUES
+('superUsuario', 'admin123', 'danielaOrdazMedina.@gmail.com'),
+('Adminstrador', 'user123', 'BlancaOrdazMedina.@gmail.com'),
+('Usuario', 'user123', 'JuanOrdazMedina.@gmail.com');

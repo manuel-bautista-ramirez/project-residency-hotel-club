@@ -1,0 +1,59 @@
+{{!-- authMiddleware.hbs --}}
+<div class="fixed inset-0 flex justify-center items-center bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
+  <div class="max-w-sm w-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-md text-gray-900 dark:text-gray-100 p-8 rounded-3xl border border-white/30 dark:border-gray-700/40 shadow-2xl transform transition-transform hover:scale-105">
+    <!-- Icono de candado -->
+    <div class="flex justify-center mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-red-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 11c.828 0 1.5-.672 1.5-1.5S12.828 8 12 8s-1.5.672-1.5 1.5S11.172 11 12 11z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17 11V7a5 5 0 10-10 0v4H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2h-2z" />
+      </svg>
+    </div>
+    <!-- Título con gradiente en texto -->
+    <h1 class="text-center text-2xl font-extrabold mb-2">
+      <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-yellow-500">
+        Acceso no autorizado
+      </span>
+    </h1>
+    <p class="text-center mb-4 text-lg">
+      Por favor,
+      <a href="{{redirectUrl}}" class="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-200">
+        inicia sesión
+      </a>
+      para continuar.
+    </p>
+    <!-- Contador y barra de progreso -->
+    <div class="mb-4">
+      <div class="relative h-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div id="progress-bar" class="absolute left-0 top-0 h-3 bg-blue-500 dark:bg-blue-400 w-full transition-all"></div>
+      </div>
+      <p id="countdown-text" class="mt-2 text-center text-sm text-gray-700 dark:text-gray-300" aria-live="polite">
+        Serás redirigido automáticamente en <span id="countdown">5</span> segundos...
+      </p>
+  
+  </div>
+</div>
+
+<script>
+  const redirectUrl = "{{redirectUrl}}";
+  let secondsLeft = 5;
+  const countdownEl = document.getElementById('countdown');
+  const progressBarEl = document.getElementById('progress-bar');
+  function updateCountdown() {
+    if (secondsLeft <= 0) {
+      window.location.href = redirectUrl;
+      return;
+    }
+    if (countdownEl) countdownEl.textContent = secondsLeft;
+    if (progressBarEl) {
+      const percent = (secondsLeft / 5) * 100;
+      progressBarEl.style.width = percent + '%';
+    }
+    secondsLeft--;
+    setTimeout(updateCountdown, 1000);
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCountdown();
+  });
+</script>
