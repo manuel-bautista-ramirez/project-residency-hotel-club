@@ -22,7 +22,7 @@ router.get('/home', authMiddleware, (req, res) => {
   }
 
   res.render('home', {
-    title: 'Inicio',
+    title: 'Home',
     username,
     role, // Pasar el rol del usuario a la vista
   });
