@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import database from '../dataBase/conecctionDataBase.js'; // Importar la instancia de la base de datos
+import database from '../../../dataBase/conecctionDataBase.js'; // Importar la instancia de la base de datos
 
 // Función para agregar un nuevo usuario con contraseña cifrada
 export const addUser = async (username, password, role) => {
@@ -52,4 +52,4 @@ const seedUsers = async () => {
 
 
 // Ejecutar la función para agregar usuarios iniciales
-seedUsers();
+// seedUsers();

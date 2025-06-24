@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import session from 'express-session';
 import dotenv from 'dotenv';
 
-import homeRoutes from './src/routers/homeRoutes.js';
+import homeRoutes from './src/modules/login/routers/homeRoutes.js';
 
 // Configuración de variables para __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
@@ -23,9 +23,10 @@ app.engine('hbs', exphbs.engine({
   extname: '.hbs',
   defaultLayout: 'main',
   layoutsDir: './src/views/layouts/',
+  layoutsDir: "./src/modules/login/views/layouts/",
 }));
 app.set('view engine', 'hbs');
-app.set('views', './src/views/');
+app.set('views', ['./src/views/', './src/modules/login/views/']);
 
 // Registrar el helper "eq"
 Handlebars.registerHelper('eq', (a, b) => a === b);
@@ -39,7 +40,7 @@ app.use(express.json());
 
 // Configuración de sesiones
 app.use(session({
-  secret: 'mi_secreto_seguro',
+  secret: 'las_mujeres_me_dan_miedo',
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false },
