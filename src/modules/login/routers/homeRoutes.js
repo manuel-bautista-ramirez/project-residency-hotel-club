@@ -1,9 +1,8 @@
 import express from 'express';
-import {roleMiddleware} from '../middlewares/authMiddleware.js';
 
+import {roleMiddleware, authMiddleware} from '../middlewares/accessDenied.js';
 
 // Importación de middlewares y controladores
-import {authMiddleware} from '../middlewares/authMiddleware.js';
 import { loginUser } from '../controllers/authControllerUsers.js';
 
 const router = express.Router();

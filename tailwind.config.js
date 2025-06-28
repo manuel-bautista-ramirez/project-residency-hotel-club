@@ -1,8 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/views/**/*.hbs", // Procesar todas las vistas Handlebars
-    "./index.js"              // Procesar el archivo principal si es necesario
+    "./src/views/**/*.hbs",                  // Las vistas generales
+    "./src/modules/**/views/**/*.hbs",       // ✅ TODAS las vistas dentro de módulos
+    "./index.js"
   ],
   theme: {
     extend: {},

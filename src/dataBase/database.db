@@ -1,49 +1,67 @@
 -- Nombre de la base de datos
 CREATE DATABASE IF NOT EXISTS hotel_club;
 
+-- Si la base de datos ya existe, no se creará de nuevo
+-- Esto es útil para evitar errores al intentar crear una base de datos que ya existe
+
 -- Usar la base de datos
 USE hotel_club;
 
 -- Tabla de usuarios del hotel para la admistracion de hotel y club.
-CREATE TABLE users_hotel (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(50) NOT NULL UNIQUE, -- Nombre de usuario único
-  password VARCHAR(255) NOT NULL,       -- Contraseña cifrada
-  role ENUM('SuperUsuario', 'Administrador', 'UsuarioNormal') NOT NULL -- Rol del usuario
-);
+CREATE TABLE
+  users_hotel (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE, -- Nombre de usuario único
+    password VARCHAR(255) NOT NULL, -- Contraseña cifrada
+    role ENUM ('SuperUsuario', 'Administrador', 'UsuarioNormal') NOT NULL -- Rol del usuario
+  );
 
 
--- Estas consutlas  solo son ejemplos nececitasmos verificar...
--- si asi se van manejar el sistmas en los requistios...
+-- Tabla para almacenar tokens de recuperación de contraseña
+CREATE TABLE
+  password_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL, -- ID del usuario que solicita la recuperación
+    token VARCHAR(255) NOT NULL UNIQUE, -- Token único para la recuperación
+    expires_at DATETIME NOT NULL, -- Fecha y hora de expiración del token
+    FOREIGN KEY (user_id) REFERENCES users_hotel (id) ON DELETE CASCADE
+  );
+
+-- Las siguientes tablas aun no estan creadas, solo  son de suposciones...
+-- si asi se van manejar en la administracion sistema en los requistios...
+--- Si no hay que modificar las tablas....
 
 -- Tabla de clientes (usuarios que son clientes)
-CREATE TABLE user_cliente (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL, -- ID del usuario que es cliente
-  first_name VARCHAR(50) NOT NULL, -- Nombre del cliente
-  last_name VARCHAR(50) NOT NULL, -- Apellido del cliente
-  email VARCHAR(100) NOT NULL UNIQUE, -- Correo electrónico único
-  phone VARCHAR(15), -- Teléfono del cliente
-  FOREIGN KEY (user_id) REFERENCES users_hotel(id) ON DELETE CASCADE
-);
+CREATE TABLE
+  user_cliente (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL, -- ID del usuario que es cliente
+    first_name VARCHAR(50) NOT NULL, -- Nombre del cliente
+    last_name VARCHAR(50) NOT NULL, -- Apellido del cliente
+    email VARCHAR(100) NOT NULL UNIQUE, -- Correo electrónico único
+    phone VARCHAR(15), -- Teléfono del cliente
+    FOREIGN KEY (user_id) REFERENCES users_hotel (id) ON DELETE CASCADE
+  );
 
 -- Tabla de habitaciones
-CREATE TABLE rooms (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  room_number VARCHAR(10) NOT NULL UNIQUE, -- Número de habitación único
-  type ENUM('Individual', 'Doble', 'Suite') NOT NULL, -- Tipo de habitación
-  price DECIMAL(10, 2) NOT NULL, -- Precio por noche
-  status ENUM('Disponible', 'Ocupada', 'Reservada') NOT NULL DEFAULT 'Disponible' -- Estado de la habitación
-);
+CREATE TABLE
+  rooms (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    room_number VARCHAR(10) NOT NULL UNIQUE, -- Número de habitación único
+    type ENUM ('Individual', 'Doble', 'Suite') NOT NULL, -- Tipo de habitación
+    price DECIMAL(10, 2) NOT NULL, -- Precio por noche
+    status ENUM ('Disponible', 'Ocupada', 'Reservada') NOT NULL DEFAULT 'Disponible' -- Estado de la habitación
+  );
 
 -- Tabla de reservas
-CREATE TABLE reservations (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_cliente_id INT NOT NULL, -- ID del cliente que realiza la reserva
-  room_id INT NOT NULL, -- ID de la habitación reservada
-  start_date DATE NOT NULL, -- Fecha de inicio de la reserva
-  end_date DATE NOT NULL, -- Fecha de fin de la reserva
-  status ENUM('Pendiente', 'Confirmada', 'Cancelada') NOT NULL DEFAULT 'Pendiente', -- Estado de la reserva
-  FOREIGN KEY (user_cliente_id) REFERENCES user_cliente(id) ON DELETE CASCADE,
-  FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
-);
+CREATE TABLE
+  reservations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_cliente_id INT NOT NULL, -- ID del cliente que realiza la reserva
+    room_id INT NOT NULL, -- ID de la habitación reservada
+    start_date DATE NOT NULL, -- Fecha de inicio de la reserva
+    end_date DATE NOT NULL, -- Fecha de fin de la reserva
+    status ENUM ('Pendiente', 'Confirmada', 'Cancelada') NOT NULL DEFAULT 'Pendiente', -- Estado de la reserva
+    FOREIGN KEY (user_cliente_id) REFERENCES user_cliente (id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
+  );

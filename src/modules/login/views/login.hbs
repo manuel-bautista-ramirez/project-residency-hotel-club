@@ -1,4 +1,3 @@
-<link href="/styles.css" rel="stylesheet">
 
 <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4 sm:px-6 lg:px-8">
   <form action="/login" method="POST" class="w-full max-w-sm sm:max-w-md bg-white p-6 sm:p-8 rounded-lg shadow-md">
@@ -22,6 +21,13 @@
         <p class="text-red-500 text-center text-sm sm:text-base">{{error}}</p>
       </div>
     {{/if}}
+
+    <!-- Enlace para recuperación de contraseña -->
+    <div class="flex justify-center mt-4">
+      <a href="/password-reset/request" class="text-blue-500 hover:underline text-sm sm:text-base">
+        ¿Olvidaste tu contraseña?
+      </a>
+    </div>
   </form>
 
   <script type="module" src="/js/validationClient.js"></script>
