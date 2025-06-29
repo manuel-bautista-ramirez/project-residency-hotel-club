@@ -41,6 +41,7 @@ La base de datos esta en el script de database.db
 
 # Instrucciones para correr los dos servicios al mismo tiempo
 - Para correr el servidor y el compilador de TailwindCSS al mismo tiempo, abrir 2 terminales y ejecutar los siguientes comandos en cada uno:
+
 Terminal 1:
 ```bash
     npm run dev
