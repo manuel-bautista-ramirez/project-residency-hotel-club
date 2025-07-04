@@ -1,4 +1,4 @@
-# project_residency_hotel_club
+# project-residency_hotel_club
 
 Crear la base de datos... En tu gestor de base de datos MySQL, puedes usar el siguiente script SQL para crear la base de datos y las tablas necesarias:
 
