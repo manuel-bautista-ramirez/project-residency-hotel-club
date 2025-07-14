@@ -65,3 +65,49 @@ CREATE TABLE
     FOREIGN KEY (user_cliente_id) REFERENCES user_cliente (id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
   );
+
+
+
+-- CREACIÓN DE TABLAS PARA Módulo de administración de membresías
+
+-- Tabla de socios (persona principal de la membresía)
+CREATE TABLE socios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    telefono VARCHAR(20),
+    fecha_registro DATE DEFAULT (CURRENT_DATE)
+);
+
+-- Tabla de membresías
+CREATE TABLE membresias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    socio_id INT NOT NULL,
+    tipo ENUM('individual', 'familiar') NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_vencimiento DATE NOT NULL,
+    estatus ENUM('activa', 'bloqueada') DEFAULT 'activa',
+    tipo_pago VARCHAR(50),
+    FOREIGN KEY (socio_id) REFERENCES socios(id) ON DELETE CASCADE
+);
+
+-- Tabla de familiares (solo si la membresía es familiar)
+CREATE TABLE familiares (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    membresia_id INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    identificador VARCHAR(50) UNIQUE, -- puede ser CURP, ID, etc.
+    FOREIGN KEY (membresia_id) REFERENCES membresias(id) ON DELETE CASCADE
+);
+
+-- Tabla de pagos (registro de cada transacción)
+CREATE TABLE pagos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    membresia_id INT NOT NULL,
+    fecha_pago DATE NOT NULL,
+    monto DECIMAL(10,2),
+    metodo_pago VARCHAR(50),
+    FOREIGN KEY (membresia_id) REFERENCES membresias(id) ON DELETE CASCADE
+);
+
+--TERMINA Módulo de Membresías
