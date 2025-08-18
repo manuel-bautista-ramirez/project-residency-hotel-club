@@ -68,46 +68,114 @@ CREATE TABLE
 
 
 
--- CREACIÓN DE TABLAS PARA Módulo de administración de membresías
-
--- Tabla de socios (persona principal de la membresía)
-CREATE TABLE socios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(100),
+-- ===========================
+-- TABLA CLIENTES
+-- ===========================
+CREATE TABLE clientes (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_completo VARCHAR(150) NOT NULL,
     telefono VARCHAR(20),
-    fecha_registro DATE DEFAULT (CURRENT_DATE)
+    correo VARCHAR(100),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla de membresías
+-- ===========================
+-- TABLA MEMBRESIAS (CATÁLOGO)
+-- ===========================
 CREATE TABLE membresias (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    socio_id INT NOT NULL,
-    tipo ENUM('individual', 'familiar') NOT NULL,
+    id_membresia INT AUTO_INCREMENT PRIMARY KEY,
+    tipo ENUM('Individual Gym','Individual Alberca','Individual General','Familiar') NOT NULL,
+    precio_base DECIMAL(10,2) NOT NULL,
+    descripcion TEXT
+);
+
+-- ===========================
+-- TABLA MEMBRESIAS ACTIVAS
+-- ===========================
+CREATE TABLE membresias_activas (
+    id_activa INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_membresia INT NOT NULL,
     fecha_inicio DATE NOT NULL,
-    fecha_vencimiento DATE NOT NULL,
-    estatus ENUM('activa', 'bloqueada') DEFAULT 'activa',
-    tipo_pago VARCHAR(50),
-    FOREIGN KEY (socio_id) REFERENCES socios(id) ON DELETE CASCADE
+    fecha_fin DATE NOT NULL,
+    precio_final DECIMAL(10,2) NOT NULL,
+    qr_code VARCHAR(255) UNIQUE,
+    estado ENUM('Activa','Vencida','Cancelada') DEFAULT 'Activa',
+    CONSTRAINT fk_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
+    CONSTRAINT fk_membresia FOREIGN KEY (id_membresia) REFERENCES membresias(id_membresia)
 );
 
--- Tabla de familiares (solo si la membresía es familiar)
+-- ===========================
+-- TABLA FAMILIARES (SOLO PARA MEMBRESÍAS FAMILIARES)
+-- ===========================
 CREATE TABLE familiares (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    membresia_id INT NOT NULL,
-    nombre VARCHAR(100) NOT NULL,
-    identificador VARCHAR(50) UNIQUE, -- puede ser CURP, ID, etc.
-    FOREIGN KEY (membresia_id) REFERENCES membresias(id) ON DELETE CASCADE
+    id_familiar INT AUTO_INCREMENT PRIMARY KEY,
+    id_activa INT NOT NULL,
+    id_cliente INT NOT NULL,
+    relacion VARCHAR(50),
+    CONSTRAINT fk_familia_activa FOREIGN KEY (id_activa) REFERENCES membresias_activas(id_activa),
+    CONSTRAINT fk_familia_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
 );
 
--- Tabla de pagos (registro de cada transacción)
+-- ===========================
+-- TABLA PAGOS
+-- ===========================
 CREATE TABLE pagos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    membresia_id INT NOT NULL,
-    fecha_pago DATE NOT NULL,
-    monto DECIMAL(10,2),
-    metodo_pago VARCHAR(50),
-    FOREIGN KEY (membresia_id) REFERENCES membresias(id) ON DELETE CASCADE
+    id_pago INT AUTO_INCREMENT PRIMARY KEY,
+    id_activa INT NOT NULL,
+    metodo_pago ENUM('Efectivo','Tarjeta','Transferencia') NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    comprobante_url VARCHAR(255),
+    CONSTRAINT fk_pago_activa FOREIGN KEY (id_activa) REFERENCES membresias_activas(id_activa)
 );
 
---TERMINA Módulo de Membresías
+-- ===========================
+-- REGLAS DE NEGOCIO EN BD
+-- ===========================
+
+-- 1. Eliminar triggers si existen
+DROP TRIGGER IF EXISTS hotel_club.trg_max_familiares;
+DROP TRIGGER IF EXISTS hotel_club.trg_unica_membresia;
+
+-- 2. Trigger para limitar integrantes familiares
+DELIMITER $$
+CREATE TRIGGER trg_max_familiares
+BEFORE INSERT ON familiares
+FOR EACH ROW
+BEGIN
+    DECLARE total INT;
+    SELECT COUNT(*) INTO total FROM familiares WHERE id_activa = NEW.id_activa;
+    IF total >= 4 THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Una membresía familiar no puede tener más de 4 integrantes';
+    END IF;
+END$$
+DELIMITER ;
+
+-- 3. Trigger para evitar más de una membresía activa
+DELIMITER $$
+CREATE TRIGGER trg_unica_membresia
+BEFORE INSERT ON membresias_activas
+FOR EACH ROW
+BEGIN
+    IF NEW.estado = 'Activa' THEN
+        IF EXISTS (
+            SELECT 1 FROM membresias_activas
+            WHERE id_cliente = NEW.id_cliente AND estado = 'Activa'
+        ) THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'El cliente ya tiene una membresía activa';
+        END IF;
+    END IF;
+END$$
+DELIMITER ;
+
+-- 3. Marcar automáticamente como Vencida al expirar
+--    (Este tipo de regla se implementa mejor con un JOB/SCHEDULED EVENT en MySQL)
+CREATE EVENT IF NOT EXISTS evt_actualiza_membresias
+ON SCHEDULE EVERY 1 DAY
+DO
+    UPDATE membresias_activas
+    SET estado = 'Vencida'
+    WHERE fecha_fin < CURDATE() AND estado = 'Activa';

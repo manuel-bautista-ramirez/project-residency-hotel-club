@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
+    "watch": "npm run build-styles",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,6 +26,6 @@
     "autoprefixer": "^10.4.21",
     "nodemon": "^3.1.10",
     "postcss": "^8.5.4",
-    "tailwindcss": "^3.3.2"
+    "tailwindcss": "^3.4.17"
   }
 }
