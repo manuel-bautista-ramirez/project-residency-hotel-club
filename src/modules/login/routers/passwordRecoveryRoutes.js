@@ -3,18 +3,16 @@ import { sendPasswordResetLink, resetPassword } from '../controllers/passwordRec
 
 const router = express.Router();
 
-// Ruta para mostrar el formulario de solicitud de recuperación
-router.get('/request', (req, res) => {
-  res.render('requestPassword');
-});
+// Solicitar enlace de recuperación
+router
+  .route('/request')
+  .get((req, res) => res.render('requestPassword')) // Mostrar formulario
+  .post(sendPasswordResetLink);                     // Enviar enlace
 
-// Ruta para procesar la solicitud de recuperación
-router.post('/request', sendPasswordResetLink);
-
-// Ruta para mostrar el formulario de restablecimiento de contraseña
-router.get('/reset/:token', (req, res) => res.render('resetPassword', { token: req.params.token }));
-
-// Ruta para procesar el restablecimiento de contraseña
-router.post('/reset/:token', resetPassword);
+// Restablecer contraseña
+router
+  .route('/reset/:token')
+  .get((req, res) => res.render('resetPassword', { token: req.params.token })) // Mostrar formulario
+  .post(resetPassword);                                                         // Procesar reset
 
 export default router;

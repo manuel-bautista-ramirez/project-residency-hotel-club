@@ -5,13 +5,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
 import {app} from './src/config/app.js'
-
 import homeRoutes from './src/modules/login/routers/homeRoutes.js'
 import passwordRecoveryRoutes from './src/modules/login/routers/passwordRecoveryRoutes.js';
 
 // Configuración de variables para __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
-
 const __dirname = path.dirname(__filename);
 
 // Registrar el helper "eq"
@@ -30,10 +28,10 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false },
-}));
+}))
 
-// Importar rutas
-app.use('/password-reset', passwordRecoveryRoutes);
+
+app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña
 app.use(homeRoutes);
 
 // Iniciar el servidor

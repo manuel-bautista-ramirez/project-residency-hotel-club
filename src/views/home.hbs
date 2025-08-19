@@ -19,7 +19,7 @@
         <!-- Enlaces en desktop (ocultos en móvil) -->
         <nav>
           <ul class="hidden sm:flex space-x-6">
-            {{#if (eq role "SuperUsuario")}}
+            {{#if (eq role "Administrador")}}
               <li><a href="/admin" class="hover:text-blue-300 transition">Panel
                   de Administración</a></li>
             {{/if}}
@@ -93,7 +93,7 @@
         </button>
       </div>
       <ul class="flex flex-col px-4 py-6 space-y-4">
-        {{#if (eq role "SuperUsuario")}}
+        {{#if (eq role "Administrador")}}
           <li><a
               href="/admin"
               class="block hover:text-blue-300 transition"
@@ -140,17 +140,13 @@
       <!-- Mensajes por rol -->
       <section class="text-center mb-8">
         <ul class="space-y-2">
-          {{#if (eq role "SuperUsuario")}}
-            <li><p class="text-sm text-gray-600">Como SuperUsuario, tienes
+          {{#if (eq role "Administrador")}}
+            <li><p class="text-sm text-gray-600">Como Administrador, tienes
                 acceso completo al sistema.</p></li>
           {{/if}}
-          {{#if (eq role "Recepcionista")}}
+          {{#if (eq role "Usuario")}}
             <li><p class="text-sm text-gray-600">Como Recepcionista, puedes
                 gestionar reservas y atender a los clientes.</p></li>
-          {{/if}}
-          {{#if (eq role "Cliente")}}
-            <li><p class="text-sm text-gray-600">Como Cliente, puedes explorar
-                nuestras habitaciones y servicios.</p></li>
           {{/if}}
         </ul>
       </section>
