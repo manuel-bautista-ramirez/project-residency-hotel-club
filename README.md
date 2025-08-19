@@ -13,7 +13,7 @@ Crear la base de datos... En tu gestor de base de datos MySQL, puedes usar el si
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE, -- Nombre de usuario único
     password VARCHAR(255) NOT NULL, -- Contraseña cifrada
-    role ENUM ('SuperUsuario', 'Administrador', 'UsuarioNormal') NOT NULL -- Rol del usuario
+    role ENUM ('Administrador', 'Usuario') NOT NULL -- Rol del usuario
   );
 
   CREATE TABLE
