@@ -8,16 +8,26 @@ CREATE DATABASE IF NOT EXISTS hotel_club;
 USE hotel_club;
 
 -- Tabla de usuarios del hotel para la admistracion de hotel y club.
-CREATE TABLE
-  users_hotel (
+CREATE TABLE users_hotel (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE, -- Nombre de usuario único
-    password VARCHAR(255) NOT NULL, -- Contraseña cifrada
-    role ENUM ('SuperUsuario', 'Administrador', 'UsuarioNormal') NOT NULL -- Rol del usuario
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM ('Administrador', 'Usuario') NOT NULL
   );
 
 
+
+
 -- Tabla para almacenar tokens de recuperación de contraseña
+  CREATE TABLE
+  password_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users_hotel (id) ON DELETE CASCADE
+  );
+
 CREATE TABLE
   password_resets (
     id INT AUTO_INCREMENT PRIMARY KEY,

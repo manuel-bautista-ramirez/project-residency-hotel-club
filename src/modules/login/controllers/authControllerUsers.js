@@ -1,6 +1,9 @@
-import { findUserByUsername, verifyPassword } from '../models/userModel.js';
-import { validateEmptyFields, validateUsername, validatePassword } from '../middlewares/validation/textBox.js';
-
+import { findUserByUsername, verifyPassword } from "../models/userModel.js";
+import {
+  validateEmptyFields,
+  validateUsername,
+  validatePassword,
+} from "../middlewares/validation/textBox.js";
 
 export const loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -8,8 +11,8 @@ export const loginUser = async (req, res) => {
   // Validar campos vacíos
   const emptyFieldsValidation = validateEmptyFields([username, password]);
   if (!emptyFieldsValidation.status) {
-    return res.status(400).render('login', {
-      title: 'Inicio',
+    return res.status(400).render("login", {
+      title: "Inicio",
       error: emptyFieldsValidation.message,
     });
   }
@@ -17,8 +20,8 @@ export const loginUser = async (req, res) => {
   // Validar nombre de usuario
   const usernameValidation = validateUsername(username);
   if (!usernameValidation.status) {
-    return res.status(400).render('login', {
-      title: 'Inicio',
+    return res.status(400).render("login", {
+      title: "Inicio",
       error: usernameValidation.message,
     });
   }
@@ -26,8 +29,8 @@ export const loginUser = async (req, res) => {
   // Validar contraseña
   const passwordValidation = validatePassword(password);
   if (!passwordValidation.status) {
-    return res.status(400).render('login', {
-      title: 'Inicio',
+    return res.status(400).render("login", {
+      title: "Inicio",
       error: passwordValidation.message,
     });
   }
@@ -36,9 +39,9 @@ export const loginUser = async (req, res) => {
   const user = await findUserByUsername(username);
 
   if (!user) {
-    return res.status(401).render('login', {
-      title: 'Inicio',
-      error: 'Usuario no encontrado.',
+    return res.status(401).render("login", {
+      title: "Inicio",
+      error: "Usuario no encontrado.",
     });
   }
 
@@ -50,13 +53,15 @@ export const loginUser = async (req, res) => {
       username: user.username,
       role: user.role,
     };
-    console.log(`El usuario (${user.username}) con el rol correspondiente:(${user.role}) ha iniciado sesión correctamente.`);
-    res.redirect('/home'); // Redirigir al panel de inicio
+    console.log(
+      `El usuario (${user.username}) con el rol correspondiente:(${user.role}) ha iniciado sesión correctamente.`
+    );
+    res.redirect("/home"); // Redirigir al panel de inicio
   } else {
     // Credenciales incorrectas
-    res.status(401).render('login', {
-      title: 'Inicio',
-      error: 'Credenciales incorrectas.',
+    res.status(401).render("login", {
+      title: "Inicio",
+      error: "Credenciales incorrectas.",
     });
   }
 };

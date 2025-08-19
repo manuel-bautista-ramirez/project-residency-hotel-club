@@ -25,7 +25,6 @@ router.get('/logout', (req, res) =>
       : res.redirect('/')
   )
 );
-
 // Admin panel
 router.get('/admin', roleMiddleware('SuperUsuario'), (req, res) =>
   res.render('admin', { title: 'Panel de Administración' })

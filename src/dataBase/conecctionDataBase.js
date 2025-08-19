@@ -1,47 +1,52 @@
-// Importación de las librerías necesarias
-import mysql from "mysql2/promise"; // Importa las funciones necesarias de mysql2 para manejar la base de datos de forma asíncrona.
-import dotenv from "dotenv"; // Importa dotenv para cargar variables de entorno desde un archivo .env.
+import mysql2 from "mysql2/promise";
+import {config} from "../config/configuration.js";
 
-
-dotenv.config(); // Carga las variables de entorno desde el archivo .env al iniciar la aplicación.
-
-// Crear un pool de conexiones
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",        // Host de la base de datos
-  user: process.env.DB_USER || "",           // Usuario para conectar a la base de datos
-  password: process.env.DB_PASSWORD || "", // Contraseña para conectar a la base de datos
-  database: process.env.DB_NAME || "",   // Nombre de la base de datos
-  waitForConnections: true,                        // Esperar conexiones disponibles
-  connectionLimit: 10,                             // Límite de conexiones simultáneas
-  queueLimit: 0,                                   // Límite de solicitudes en cola
+// Crear el pool de conexiones
+export const pool = mysql2.createPool({
+  host: config.mysql.host,
+  user: config.mysql.user,
+  password: config.mysql.password,
+  database: config.mysql.database,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-// Clase para manejar consultas usando el pool
-class Database {
-  // Método para ejecutar una consulta SQL
-  async query(sql, params = []) {
-    let connection = null; // Variable para almacenar la conexión temporal
-    try {
-      // Establecer la conexión desde el pool
-      connection = await pool.getConnection();
-      console.log("✅ Database connection established"); // Mensaje indicando que la conexión fue establecida
+// Función para probar la conexión con la base de datos.
+async function connectDB() {
+  try {
+    const connection = await pool.getConnection();
+    console.log("Connected to Db");
 
-      // Ejecutar la consulta
-      const [results] = await connection.execute(sql, params);
-      return results; // Retornar los resultados de la consulta
-    } catch (error) {
-      console.error("❌ Error en la consulta a la base de datos:", error);
-      throw error; // Lanzar el error para manejarlo en el modelo o controlador
-    } finally {
-      // Liberar la conexión de vuelta al pool
-      if (connection) {
-        connection.release();
-        console.log("🔌 Database connection released"); // Mensaje indicando que la conexión fue liberada
-      }
+    // Probar si la base de datos existe
+    await connection.query('USE ??', config.mysql.database || ' ');
+    console.log(`Using database: ${config.mysql.database}`);
+
+    connection.release(); // Liberar la conexión una vez que se haya probado
+  } catch (error) {
+    if (error.code === 'ER_BAD_DB_ERROR') {
+      console.error("Database does not exist:", error.message);
+    } else if (error.code === 'ER_NO_DB_ERROR') {
+      console.error("No database selected:", error.message);
+    } else {
+      console.error("Error connecting to Db:", error);
     }
+    setTimeout(connectDB, 2000); // Reintentar la conexión en caso de error
   }
+
+  // Manejo de errores en caso de que la conexión se pierda
+  pool.on("error", (error) => {
+    console.error("DB error:", error);
+    if (error.code === "PROTOCOL_CONNECTION_LOST") {
+      console.log("Reconnecting to the database...");
+      connectDB(); // Reintentar la conexión en caso de pérdida de conexión
+    } else {
+      throw error; // Lanza otros errores si son distintos
+    }
+  });
 }
 
-// Exportar la instancia de la clase Database
-const database = new Database();
-export default database;
+// Llamar a la función para iniciar la conexión
+connectDB();
+
+
