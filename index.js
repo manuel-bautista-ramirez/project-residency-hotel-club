@@ -8,6 +8,8 @@ import {app} from './src/config/app.js'
 import homeRoutes from './src/modules/login/routers/homeRoutes.js'
 import passwordRecoveryRoutes from './src/modules/login/routers/passwordRecoveryRoutes.js';
 
+import {routerRoom} from './src/modules/rooms/routes/RouteRooms.js';
+
 // Configuración de variables para __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,6 +35,7 @@ app.use(session({
 
 app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña
 app.use(homeRoutes);
+app.use(routerRoom)
 
 // Iniciar el servidor
 app.listen(app.get('port'),() => {

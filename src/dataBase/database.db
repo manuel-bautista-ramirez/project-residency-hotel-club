@@ -2,13 +2,11 @@
 CREATE DATABASE IF NOT EXISTS hotel_club;
 
 -- Si la base de datos ya existe, no se creará de nuevo
--- Esto es útil para evitar errores al intentar crear una base de datos que ya existe
-
--- Usar la base de datos
 USE hotel_club;
+-- Usar la base de datos
 
--- Tabla de usuarios del hotel para la admistracion de hotel y club.
-CREATE TABLE
+-- MODULE LOGIN
+CREATE TABLE -- Tabla de usuarios del hotel para la admistracion de hotel y club.
   users_hotel (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE, -- Nombre de usuario único
@@ -16,9 +14,7 @@ CREATE TABLE
     role ENUM ('Administrador', 'Usuario') NOT NULL -- Rol del usuario
   );
 
-
--- Tabla para almacenar tokens de recuperación de contraseña
-CREATE TABLE
+CREATE TABLE -- Tabla para almacenar tokens de recuperación de contraseña
   password_resets (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL, -- ID del usuario que solicita la recuperación
@@ -27,131 +23,185 @@ CREATE TABLE
     FOREIGN KEY (user_id) REFERENCES users_hotel (id) ON DELETE CASCADE
   );
 
--- Las siguientes tablas aun no estan creadas, solo  son de suposciones...
--- si asi se van manejar en la administracion sistema en los requistios...
---- Si no hay que modificar las tablas....
+-- =====================================================
+-- MÓDULO DE HABITACIONES
+-- =====================================================
 
--- Tabla de clientes (usuarios que son clientes)
+-- 1) Tabla de Habitaciones
 CREATE TABLE
-  user_cliente (
+  habitaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL, -- ID del usuario que es cliente
-    first_name VARCHAR(50) NOT NULL, -- Nombre del cliente
-    last_name VARCHAR(50) NOT NULL, -- Apellido del cliente
-    email VARCHAR(100) NOT NULL UNIQUE, -- Correo electrónico único
-    phone VARCHAR(15), -- Teléfono del cliente
-    FOREIGN KEY (user_id) REFERENCES users_hotel (id) ON DELETE CASCADE
+    numero VARCHAR(10) NOT NULL UNIQUE,
+    tipo ENUM ('sencilla', 'suite') NOT NULL,
+    estado ENUM ('disponible', 'ocupado', 'limpieza') DEFAULT 'disponible'
   );
 
--- Tabla de habitaciones
+-- Insertar habitaciones fijas
+INSERT INTO
+  habitaciones (numero, tipo)
+VALUES
+  ('101', 'sencilla'),
+  ('102', 'sencilla'),
+  ('103', 'sencilla'),
+  ('104', 'sencilla'),
+  ('106', 'sencilla'),
+  ('107', 'sencilla'),
+  ('108', 'sencilla'),
+  ('109', 'sencilla'),
+  ('105', 'suite'),
+  ('110', 'suite');
+
+-- 2) Tabla de Precios
+-- Precio definido por mes y tipo de habitación
 CREATE TABLE
-  rooms (
+  precios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    room_number VARCHAR(10) NOT NULL UNIQUE, -- Número de habitación único
-    type ENUM ('Individual', 'Doble', 'Suite') NOT NULL, -- Tipo de habitación
-    price DECIMAL(10, 2) NOT NULL, -- Precio por noche
-    status ENUM ('Disponible', 'Ocupada', 'Reservada') NOT NULL DEFAULT 'Disponible' -- Estado de la habitación
+    tipo_habitacion ENUM ('sencilla', 'suite') NOT NULL,
+    mes INT NOT NULL CHECK (mes BETWEEN 1 AND 12), -- Enero=1 ... Diciembre=12
+    monto DECIMAL(10, 2) NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (tipo_habitacion, mes) -- un precio por tipo de habitación y mes
   );
 
--- Tabla de reservas
+-- 3) Tabla de Reservaciones
+-- Se guarda el precio al momento de la reserva
 CREATE TABLE
-  reservations (
+  reservaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_cliente_id INT NOT NULL, -- ID del cliente que realiza la reserva
-    room_id INT NOT NULL, -- ID de la habitación reservada
-    start_date DATE NOT NULL, -- Fecha de inicio de la reserva
-    end_date DATE NOT NULL, -- Fecha de fin de la reserva
-    status ENUM ('Pendiente', 'Confirmada', 'Cancelada') NOT NULL DEFAULT 'Pendiente', -- Estado de la reserva
-    FOREIGN KEY (user_cliente_id) REFERENCES user_cliente (id) ON DELETE CASCADE,
-    FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
+    habitacion_id INT NOT NULL,
+    usuario_id INT NOT NULL,
+    nombre_cliente VARCHAR(100) NOT NULL,
+    fecha_reserva DATE NOT NULL, -- día en que se hizo la reserva
+    fecha_ingreso DATE NOT NULL, -- día que ocupará
+    fecha_salida DATE NOT NULL,
+    monto DECIMAL(10, 2) NOT NULL, -- precio guardado al reservar
+    monto_letras VARCHAR(255) NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
+    FOREIGN KEY (usuario_id) REFERENCES users_hotel (id)
   );
 
+-- 4) Tabla de Rentas
+-- Registro de ocupación real de habitaciones
+CREATE TABLE
+  rentas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    habitacion_id INT NOT NULL,
+    usuario_id INT NOT NULL,
+    nombre_cliente VARCHAR(100) NOT NULL,
+    fecha_ingreso DATE NOT NULL,
+    fecha_salida DATE NOT NULL,
+    tipo_pago ENUM ('tarjeta', 'transferencia', 'efectivo') NOT NULL,
+    monto DECIMAL(10, 2) NOT NULL,
+    monto_letras VARCHAR(255) NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
+    FOREIGN KEY (usuario_id) REFERENCES users_hotel (id)
+  );
+
+-- =====================================================
+-- EJEMPLO DE CONSULTA PARA EL CALENDARIO
+-- Mostrar habitaciones ocupadas en los próximos días
+-- =====================================================
+SELECT
+  h.numero,
+  h.tipo,
+  r.fecha_ingreso,
+  r.fecha_salida,
+  r.nombre_cliente
+FROM
+  reservaciones r
+  INNER JOIN habitaciones h ON r.habitacion_id = h.id
+WHERE
+  r.fecha_salida >= CURDATE ()
+ORDER BY
+  r.fecha_ingreso;
 
 
---MODULE-DANI
-
-
--- Tabla de tipos de membresía (elimina ENUM)
-CREATE TABLE tipos_membresia (
+-- =====================================================
+-- MÓDULO DE MEMBRESÍAS
+-- =====================================================
+CREATE TABLE -- Tabla de tipos de membresía (elimina ENUM)
+  tipos_membresia (
     id_tipo_membresia SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion TEXT,
     max_integrantes INTEGER DEFAULT 1 CHECK (max_integrantes >= 1)
-);
+  );
 
--- Tabla de clientes (sin cambios, ya está en 3NF)
-CREATE TABLE clientes (
+CREATE TABLE -- Tabla de clientes (sin cambios, ya está en 3NF)
+  clientes (
     id_cliente SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(150) NOT NULL,
     telefono VARCHAR(20),
     correo VARCHAR(100),
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+  );
 
--- Tabla de relaciones familiares (nueva)
-CREATE TABLE relaciones_familiares (
+CREATE TABLE -- Tabla de relaciones familiares (nueva)
+  relaciones_familiares (
     id_relacion SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion TEXT
-);
+  );
 
--- Tabla de membresías (precios base históricos)
-CREATE TABLE membresias (
+CREATE TABLE -- Tabla de membresías (precios base históricos)
+  membresias (
     id_membresia SERIAL PRIMARY KEY,
-    id_tipo_membresia INTEGER NOT NULL REFERENCES tipos_membresia(id_tipo_membresia),
-    precio_base DECIMAL(10,2) NOT NULL CHECK (precio_base > 0),
+    id_tipo_membresia INTEGER NOT NULL REFERENCES tipos_membresia (id_tipo_membresia),
+    precio_base DECIMAL(10, 2) NOT NULL CHECK (precio_base > 0),
     vigencia_dias INTEGER NOT NULL CHECK (vigencia_dias > 0),
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activa BOOLEAN DEFAULT TRUE
-);
+  );
 
--- Tabla de membresías activas
-CREATE TABLE membresias_activas (
+CREATE TABLE -- Tabla de membresías activas
+  membresias_activas (
     id_activa SERIAL PRIMARY KEY,
-    id_cliente INTEGER NOT NULL REFERENCES clientes(id_cliente),
-    id_membresia INTEGER NOT NULL REFERENCES membresias(id_membresia),
+    id_cliente INTEGER NOT NULL REFERENCES clientes (id_cliente),
+    id_membresia INTEGER NOT NULL REFERENCES membresias (id_membresia),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
-    precio_final DECIMAL(10,2) NOT NULL CHECK (precio_final > 0),
+    precio_final DECIMAL(10, 2) NOT NULL CHECK (precio_final > 0),
     qr_code VARCHAR(255) UNIQUE,
     estado VARCHAR(20) DEFAULT 'Activa' CHECK (estado IN ('Activa', 'Vencida', 'Cancelada')),
     CHECK (fecha_fin > fecha_inicio)
-);
+  );
 
--- Tabla de integrantes (reemplaza familiares)
-CREATE TABLE integrantes_membresia (
+CREATE TABLE -- Tabla de integrantes (reemplaza familiares)
+  integrantes_membresia (
     id_integrante SERIAL PRIMARY KEY,
-    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
-    id_cliente INTEGER NOT NULL REFERENCES clientes(id_cliente),
-    id_relacion INTEGER REFERENCES relaciones_familiares(id_relacion),
+    id_activa INTEGER NOT NULL REFERENCES membresias_activas (id_activa),
+    id_cliente INTEGER NOT NULL REFERENCES clientes (id_cliente),
+    id_relacion INTEGER REFERENCES relaciones_familiares (id_relacion),
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(id_activa, id_cliente)
-);
+    UNIQUE (id_activa, id_cliente)
+  );
 
--- Tabla de métodos de pago (elimina ENUM)
-CREATE TABLE metodos_pago (
+CREATE TABLE -- Tabla de métodos de pago (elimina ENUM)
+  metodos_pago (
     id_metodo_pago SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion TEXT
-);
+  );
 
--- Tabla de pagos
-CREATE TABLE pagos (
+CREATE TABLE -- Tabla de pagos
+  pagos (
     id_pago SERIAL PRIMARY KEY,
-    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
-    id_metodo_pago INTEGER NOT NULL REFERENCES metodos_pago(id_metodo_pago),
-    monto DECIMAL(10,2) NOT NULL CHECK (monto > 0),
+    id_activa INTEGER NOT NULL REFERENCES membresias_activas (id_activa),
+    id_metodo_pago INTEGER NOT NULL REFERENCES metodos_pago (id_metodo_pago),
+    monto DECIMAL(10, 2) NOT NULL CHECK (monto > 0),
     fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     comprobante_url VARCHAR(255),
     referencia_pago VARCHAR(100)
-);
+  );
 
--- Tabla de estados de membresía (para auditoría)
-CREATE TABLE historial_estados_membresia (
+CREATE TABLE -- Tabla de estados de membresía (para auditoría)
+  historial_estados_membresia (
     id_historial SERIAL PRIMARY KEY,
-    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
+    id_activa INTEGER NOT NULL REFERENCES membresias_activas (id_activa),
     estado_anterior VARCHAR(20),
     estado_nuevo VARCHAR(20) NOT NULL,
     fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     motivo_cambio TEXT
-);
+  );
