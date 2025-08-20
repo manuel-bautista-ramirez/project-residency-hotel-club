@@ -26,7 +26,7 @@ router.get('/logout', (req, res) =>
   )
 );
 // Admin panel
-router.get('/admin', roleMiddleware('Administradoe'), (req, res) =>
+router.get('/admin', roleMiddleware('Administrador'), (req, res) =>
   res.render('admin', { title: 'Panel de Administración' })
 );
 
