@@ -68,114 +68,90 @@ CREATE TABLE
 
 
 
--- ===========================
--- TABLA CLIENTES
--- ===========================
+--MODULE-DANI
+
+
+-- Tabla de tipos de membresía (elimina ENUM)
+CREATE TABLE tipos_membresia (
+    id_tipo_membresia SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT,
+    max_integrantes INTEGER DEFAULT 1 CHECK (max_integrantes >= 1)
+);
+
+-- Tabla de clientes (sin cambios, ya está en 3NF)
 CREATE TABLE clientes (
-    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(150) NOT NULL,
     telefono VARCHAR(20),
     correo VARCHAR(100),
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ===========================
--- TABLA MEMBRESIAS (CATÁLOGO)
--- ===========================
-CREATE TABLE membresias (
-    id_membresia INT AUTO_INCREMENT PRIMARY KEY,
-    tipo ENUM('Individual Gym','Individual Alberca','Individual General','Familiar') NOT NULL,
-    precio_base DECIMAL(10,2) NOT NULL,
+-- Tabla de relaciones familiares (nueva)
+CREATE TABLE relaciones_familiares (
+    id_relacion SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion TEXT
 );
 
--- ===========================
--- TABLA MEMBRESIAS ACTIVAS
--- ===========================
+-- Tabla de membresías (precios base históricos)
+CREATE TABLE membresias (
+    id_membresia SERIAL PRIMARY KEY,
+    id_tipo_membresia INTEGER NOT NULL REFERENCES tipos_membresia(id_tipo_membresia),
+    precio_base DECIMAL(10,2) NOT NULL CHECK (precio_base > 0),
+    vigencia_dias INTEGER NOT NULL CHECK (vigencia_dias > 0),
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activa BOOLEAN DEFAULT TRUE
+);
+
+-- Tabla de membresías activas
 CREATE TABLE membresias_activas (
-    id_activa INT AUTO_INCREMENT PRIMARY KEY,
-    id_cliente INT NOT NULL,
-    id_membresia INT NOT NULL,
+    id_activa SERIAL PRIMARY KEY,
+    id_cliente INTEGER NOT NULL REFERENCES clientes(id_cliente),
+    id_membresia INTEGER NOT NULL REFERENCES membresias(id_membresia),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
-    precio_final DECIMAL(10,2) NOT NULL,
+    precio_final DECIMAL(10,2) NOT NULL CHECK (precio_final > 0),
     qr_code VARCHAR(255) UNIQUE,
-    estado ENUM('Activa','Vencida','Cancelada') DEFAULT 'Activa',
-    CONSTRAINT fk_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente),
-    CONSTRAINT fk_membresia FOREIGN KEY (id_membresia) REFERENCES membresias(id_membresia)
+    estado VARCHAR(20) DEFAULT 'Activa' CHECK (estado IN ('Activa', 'Vencida', 'Cancelada')),
+    CHECK (fecha_fin > fecha_inicio)
 );
 
--- ===========================
--- TABLA FAMILIARES (SOLO PARA MEMBRESÍAS FAMILIARES)
--- ===========================
-CREATE TABLE familiares (
-    id_familiar INT AUTO_INCREMENT PRIMARY KEY,
-    id_activa INT NOT NULL,
-    id_cliente INT NOT NULL,
-    relacion VARCHAR(50),
-    CONSTRAINT fk_familia_activa FOREIGN KEY (id_activa) REFERENCES membresias_activas(id_activa),
-    CONSTRAINT fk_familia_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+-- Tabla de integrantes (reemplaza familiares)
+CREATE TABLE integrantes_membresia (
+    id_integrante SERIAL PRIMARY KEY,
+    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
+    id_cliente INTEGER NOT NULL REFERENCES clientes(id_cliente),
+    id_relacion INTEGER REFERENCES relaciones_familiares(id_relacion),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(id_activa, id_cliente)
 );
 
--- ===========================
--- TABLA PAGOS
--- ===========================
+-- Tabla de métodos de pago (elimina ENUM)
+CREATE TABLE metodos_pago (
+    id_metodo_pago SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT
+);
+
+-- Tabla de pagos
 CREATE TABLE pagos (
-    id_pago INT AUTO_INCREMENT PRIMARY KEY,
-    id_activa INT NOT NULL,
-    metodo_pago ENUM('Efectivo','Tarjeta','Transferencia') NOT NULL,
-    monto DECIMAL(10,2) NOT NULL,
+    id_pago SERIAL PRIMARY KEY,
+    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
+    id_metodo_pago INTEGER NOT NULL REFERENCES metodos_pago(id_metodo_pago),
+    monto DECIMAL(10,2) NOT NULL CHECK (monto > 0),
     fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     comprobante_url VARCHAR(255),
-    CONSTRAINT fk_pago_activa FOREIGN KEY (id_activa) REFERENCES membresias_activas(id_activa)
+    referencia_pago VARCHAR(100)
 );
 
--- ===========================
--- REGLAS DE NEGOCIO EN BD
--- ===========================
-
--- 1. Eliminar triggers si existen
-DROP TRIGGER IF EXISTS hotel_club.trg_max_familiares;
-DROP TRIGGER IF EXISTS hotel_club.trg_unica_membresia;
-
--- 2. Trigger para limitar integrantes familiares
-DELIMITER $$
-CREATE TRIGGER trg_max_familiares
-BEFORE INSERT ON familiares
-FOR EACH ROW
-BEGIN
-    DECLARE total INT;
-    SELECT COUNT(*) INTO total FROM familiares WHERE id_activa = NEW.id_activa;
-    IF total >= 4 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Una membresía familiar no puede tener más de 4 integrantes';
-    END IF;
-END$$
-DELIMITER ;
-
--- 3. Trigger para evitar más de una membresía activa
-DELIMITER $$
-CREATE TRIGGER trg_unica_membresia
-BEFORE INSERT ON membresias_activas
-FOR EACH ROW
-BEGIN
-    IF NEW.estado = 'Activa' THEN
-        IF EXISTS (
-            SELECT 1 FROM membresias_activas
-            WHERE id_cliente = NEW.id_cliente AND estado = 'Activa'
-        ) THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'El cliente ya tiene una membresía activa';
-        END IF;
-    END IF;
-END$$
-DELIMITER ;
-
--- 3. Marcar automáticamente como Vencida al expirar
---    (Este tipo de regla se implementa mejor con un JOB/SCHEDULED EVENT en MySQL)
-CREATE EVENT IF NOT EXISTS evt_actualiza_membresias
-ON SCHEDULE EVERY 1 DAY
-DO
-    UPDATE membresias_activas
-    SET estado = 'Vencida'
-    WHERE fecha_fin < CURDATE() AND estado = 'Activa';
+-- Tabla de estados de membresía (para auditoría)
+CREATE TABLE historial_estados_membresia (
+    id_historial SERIAL PRIMARY KEY,
+    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
+    estado_anterior VARCHAR(20),
+    estado_nuevo VARCHAR(20) NOT NULL,
+    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    motivo_cambio TEXT
+);
