@@ -1,20 +1,27 @@
 import express from 'express';
-import {getHabitaciones, setEstadoHabitacion} from '../controllers/roomsController.js';
+import {
+  renderHabitacionesView,
+  renderPreciosView,
+  renderReservacionesView,
+  renderRentasView,
+  renderMembershipsView
+} from '../controllers/roomsController.js';
+import { authMiddleware, roleMiddleware } from '../../login/middlewares/accessDenied.js';
 
 const routerRoom = express.Router();
 
-// Mostrar habitaciones
-routerRoom.get('/', (req, res) => {
-  const habitaciones = controller.getHabitaciones();
-  res.render('habitaciones', { habitaciones });
-});
+// Middleware general para todas las rutas de rooms
+routerRoom.use(authMiddleware);
+routerRoom.use(roleMiddleware('Administrador'));
 
-// Cambiar estado de habitación
-routerRoom.post('/estado/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const { estado } = req.body;
-  controller.setEstadoHabitacion(id, estado);
-  res.redirect('/habitaciones');
-});
+// Rutas del módulo rooms
+routerRoom.get('/rooms', renderHabitacionesView);
+routerRoom.get('/precios', renderPreciosView);
+routerRoom.get('/reservaciones', renderReservacionesView);
+routerRoom.get('/rentas', renderRentasView);
+routerRoom.get('/memberships', renderMembershipsView);
+
+// 404 handler para rooms
+routerRoom.use((req, res) => res.status(404).render('error404', { title: 'Página no encontrada' }));
 
 export { routerRoom };

@@ -34,8 +34,9 @@ app.use(session({
 
 
 app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña
+
 app.use(homeRoutes);
-app.use(routerRoom)
+app.use(routerRoom);
 
 // Iniciar el servidor
 app.listen(app.get('port'),() => {

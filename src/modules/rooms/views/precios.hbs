@@ -1,0 +1,20 @@
+{{!-- filepath: /home/manuel_ramirez/Desktop/dev-project-pubicidad-cristian/Restaurante-Cristinan-Faro/project-residency-hotel-club/src/modules/rooms/views/precios.hbs --}}
+<h2>Precios por Mes y Tipo de Habitación</h2>
+<table border="1">
+  <thead>
+    <tr>
+      <th>Mes</th>
+      <th>Tipo de Habitación</th>
+      <th>Monto</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each precios}}
+      <tr>
+        <td>{{mes}}</td>
+        <td>{{tipo_habitacion}}</td>
+        <td>${{monto}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

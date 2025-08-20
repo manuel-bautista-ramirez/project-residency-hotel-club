@@ -1,0 +1,48 @@
+<div class="rooms-interface max-w-7xl mx-auto p-6">
+  <!-- Header -->
+  <header class="mb-6 text-center">
+    <h1 class="text-3xl font-bold text-blue-800 drop-shadow-md">Habitaciones</h1>
+  </header>
+
+  <!-- Lista de habitaciones (cards) -->
+  <section class="rooms-list grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
+    {{#if rooms.length}}
+      {{#each rooms}}
+        <div class="room bg-white shadow-md rounded-lg p-4 hover:shadow-xl transition">
+          <h2 class="text-xl font-semibold text-blue-700 mb-2">{{name}}</h2>
+          <p class="text-gray-600 mb-1">{{description}}</p>
+          <p class="text-gray-600 mb-1">Capacidad: <span class="font-medium">{{capacity}}</span></p>
+          <p class="text-gray-600 font-medium">Precio: ${{price}}</p>
+        </div>
+      {{/each}}
+    {{else}}
+      <p class="text-center text-gray-500">No hay habitaciones disponibles.</p>
+    {{/if}}
+  </section>
+
+  <!-- Tabla de habitaciones -->
+  <section class="overflow-x-auto">
+    <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+      <thead class="bg-blue-800 text-white">
+        <tr>
+          <th class="py-2 px-4 text-left">Número</th>
+          <th class="py-2 px-4 text-left">Tipo</th>
+          <th class="py-2 px-4 text-left">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each habitaciones}}
+          <tr class="border-b hover:bg-gray-100 transition"
+              style="background:
+                {{#if (eq estado 'disponible')}}#ccffcc{{/if}}
+                {{#if (eq estado 'ocupado')}}#ffcccc{{/if}}
+                {{#if (eq estado 'limpieza')}}#ffe5b4{{/if}}">
+            <td class="py-2 px-4">{{numero}}</td>
+            <td class="py-2 px-4">{{tipo}}</td>
+            <td class="py-2 px-4 font-semibold">{{estado}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </section>
+</div>

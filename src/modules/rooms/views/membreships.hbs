@@ -1,0 +1,20 @@
+{{!-- filepath: /home/manuel_ramirez/Desktop/dev-project-pubicidad-cristian/Restaurante-Cristinan-Faro/project-residency-hotel-club/src/modules/rooms/views/memberships.hbs --}}
+<h2>Membresías Disponibles</h2>
+<table border="1">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Precio</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each memberships}}
+      <tr>
+        <td>{{id}}</td>
+        <td>{{name}}</td>
+        <td>${{price}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

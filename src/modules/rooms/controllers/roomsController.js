@@ -96,6 +96,35 @@ export async function showPreciosTemporadaAlta() {
     });
 }
 
+// Renderizar vista de habitaciones
+export async function renderHabitacionesView(req, res) {
+  const habitaciones = await Room.find();
+  res.render('habitaciones', { habitaciones });
+}
+
+// Renderizar vista de precios
+export async function renderPreciosView(req, res) {
+  const precios = await Room.precios();
+  res.render('precios', { precios });
+}
+
+// Renderizar vista de reservaciones
+export async function renderReservacionesView(req, res) {
+  const reservaciones = await Room.reservaciones();
+  res.render('reservaciones', { reservaciones });
+}
+
+// Renderizar vista de rentas
+export async function renderRentasView(req, res) {
+  const rentas = await Room.rentas();
+  res.render('rentas', { rentas });
+}
+
+// Renderizar vista de membresías
+export function renderMembershipsView(req, res) {
+  res.render('memberships', { memberships });
+}
+
 // Ejecutar funciones desde la terminal
 const action = process.argv[2];
 switch (action) {

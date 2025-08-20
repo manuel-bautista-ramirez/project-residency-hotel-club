@@ -1,0 +1,28 @@
+{{!-- filepath: /home/manuel_ramirez/Desktop/dev-project-pubicidad-cristian/Restaurante-Cristinan-Faro/project-residency-hotel-club/src/modules/rooms/views/reservaciones.hbs --}}
+<h2>Reservaciones</h2>
+<table border="1">
+  <thead>
+    <tr>
+      <th>Cliente</th>
+      <th>Habitación</th>
+      <th>Fecha Reserva</th>
+      <th>Fecha Ingreso</th>
+      <th>Fecha Salida</th>
+      <th>Monto</th>
+      <th>Monto en Letras</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each reservaciones}}
+      <tr>
+        <td>{{nombre_cliente}}</td>
+        <td>{{habitacion_id}}</td>
+        <td>{{fecha_reserva}}</td>
+        <td>{{fecha_ingreso}}</td>
+        <td>{{fecha_salida}}</td>
+        <td>${{monto}}</td>
+        <td>{{monto_letras}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
