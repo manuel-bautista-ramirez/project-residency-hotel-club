@@ -1,7 +1,7 @@
 import express from 'express';
-import exphbs from 'express-handlebars';
 import path from 'path';
-import { config } from '../config/configuration.js';
+import exphbs, { engine } from 'express-handlebars';
+import {config } from '../config/configuration.js';
 import { hbsHelpers } from '../helpers/hbsHelpers.js';
 
 export const app = express();
@@ -9,19 +9,23 @@ export const app = express();
 // Configuración de Handlebars
 app.engine('hbs', exphbs.engine({
   extname: '.hbs',
-  defaultLayout: 'main', // layout principal
-  layoutsDir: path.join('./src/views/layouts'), // layouts globales
+  defaultLayout: 'main',
+  layoutsDir: "./src/modules/login/views/",
+  layoutsDir: path.join('./src/views/layouts/'),
   helpers: hbsHelpers
 }));
 
 app.set('view engine', 'hbs');
+app.set('views', ['./src/modules/login/views/','./src/views/']);
 
-// Múltiples carpetas de vistas: global + módulos
-app.set('views', [
-  path.join('./src/views'),            // vistas globales
-  path.join('./src/modules/login/views'),
-  path.join('./src/modules/rooms/views')
-]);
+app.engine("Handlebars", engine({
+  helpers: {
+    eq: function(a,b){
+      return a===b;
+    }
+      }
+    }
+  ));
 
   app.set("port", config.app.port);
   app.set("database",config.mysql.database);
