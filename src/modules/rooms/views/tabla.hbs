@@ -1,0 +1,32 @@
+<h2>Habitaciones (Tabla)</h2>
+<table border="1" style="width:100%; border-collapse:collapse;">
+  <thead>
+    <tr style="background:#1976d2; color:white;">
+      <th>Número</th>
+      <th>Tipo</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each habitaciones}}
+      <tr style="
+        {{#if (eq estado 'disponible')}}background:#f3f3f3;{{/if}}
+        {{#if (eq estado 'ocupado')}}background:#ffcccc;{{/if}}
+        {{#if (eq estado 'limpieza')}}background:#ffe5b4;{{/if}}
+      ">
+        <td>{{numero}}</td>
+        <td>{{tipo}}</td>
+        <td>{{estado}}</td>
+        <td>
+          {{#if (eq estado 'ocupado')}}
+            <button onclick="desocupar('{{numero}}')">Desocupar</button>
+          {{/if}}
+          {{#if (eq estado 'limpieza')}}
+            <button onclick="confirmarLimpieza('{{numero}}')">Confirmar Limpieza</button>
+          {{/if}}
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

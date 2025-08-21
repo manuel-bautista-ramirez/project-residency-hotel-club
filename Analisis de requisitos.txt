@@ -68,70 +68,42 @@ Tipo de Habitciòn
 -Sencilla $1000
 -Suite   $1500
 
-Temporada Alta los precios aumentan, para esto, el usuario deberà definir el costo de las habitaciones, ya que el dueño, suele poner los precios y cambiarlos año con año, por lo cual no podemos aumentar un precio y colocarlo fijo.
-El administrador, va a poder modificar los precios de las habitaciones, en cualquier temporada.
+Temporada Alta: los precios aumentan, para esto, el usuario deberá definir el costo de las habitaciones, ya que el dueño suele poner los precios y cambiarlos año con año, por lo cual no podemos aumentar un precio y colocarlo fijo.
+El administrador podrá modificar los precios de las habitaciones en cualquier temporada.
+
 (Monto)
--Cantidad en nùmero
+-Cantidad en número
 -Cantidad escrita en letra
-Tipo de Pago
+
+Tipo de Pago:
 Tarjeta, Transferencia, Efectivo.
-Habitaciones
-4 habitaciones Sencillas 101, 102, 103, 104, 106, 107, 108, 109
-2 Suite 105, 110.
-(Restricciones con mensajes Emergentes Ocupado, desocupado).
+
+Habitaciones:
+4 habitaciones Sencillas: 101, 102, 103, 104, 106, 107, 108, 109
+2 Suite: 105, 110.
+
+Restricciones con mensajes emergentes: Ocupado, desocupado.
+
 Horarios:
 Entrada 12:00 pm
-Salida 12:00 pm màximo
-Botòn, por si la habitaciòn se desocupò antes.
-Al colocar habitaciòn disponible, se colocarà en botòn naranja, hasta que personal de limpieza confirme la limpieza, podrà colocar que la habitaciòn està disponible y limpia, para rentarse, si no, no se permitirà la renta de la habitacioàn, hasta que se confirme la limpieza(Mensaje de confirmaciòn).
-Reservaciones, en las reservaciones los puntos principales que se tomaràn en cuenta, son los mismos de los datos generales que se toman al rentar la habitaciòn, a excepciòn de que se agregaràn datos extras, como fecha en la que se reservò, y fecha en la que se ocuparà la habitaciòn, los datos que quitaremos, seràn los datos de Tipo de Pago y Monto total, esto se activarà solamente, tmbièn va a existir una secciòn de reservas, cuando se llegue el dìa de la reserva y el recepcionista seleccione la reserva y seleccione el botòn de rentar, se abrirà un formulario nuevo, en donde cargarà la informaciòn registrada en la reserva y se habilitarà la secciòn de Tipo de Pago y monto.
+Salida 12:00 pm máximo
+Botón por si la habitación se desocupó antes.
 
-Si el recepcionista quiere hacer una reserva, para el mes de Noviembre, Diciembre y Enero, el precio serà el que el administrador determinò para esa temporada, para lo que el precio se definirà por mes, por parte del administrador, no general.
+Al colocar habitación disponible, se colocará en botón naranja, hasta que personal de limpieza confirme la limpieza. Podrá colocar que la habitación está disponible y limpia para rentarse, si no, no se permitirá la renta de la habitación hasta que se confirme la limpieza (mensaje de confirmación).
 
-Estados, Disponible gris , Ocupado rojo, Limpieza naranja
+Reservaciones:
+En las reservaciones los puntos principales que se tomarán en cuenta son los mismos de los datos generales que se toman al rentar la habitación, a excepción de que se agregarán datos extras, como fecha en la que se reservó y fecha en la que se ocupará la habitación. Los datos que se quitarán serán los de Tipo de Pago y Monto total, esto se activará solamente. También va a existir una sección de reservas. Cuando llegue el día de la reserva y el recepcionista seleccione la reserva y seleccione el botón de rentar, se abrirá un formulario nuevo, en donde cargará la información registrada en la reserva y se habilitará la sección de Tipo de Pago y monto.
 
-Calendario: Se mostraràn los estados tambièn de las habitaciones.
-Calendario con fechas, para mostrar las habitaciones ejemplo moodle, si se puede colocar los colores dependiendo del estado, està mejor.
+Si el recepcionista quiere hacer una reserva para el mes de Noviembre, Diciembre y Enero, el precio será el que el administrador determinó para esa temporada, por lo que el precio se definirá por mes, por parte del administrador, no general.
 
-Se envìa el recibo de reserva y renta por WHATSAPP y correo, con datos de nombre, precio, dia de entrada y salida, monto y tipo de pago
+Estados:
+Disponible (gris), Ocupado (rojo), Limpieza (naranja)
 
-Reporte de habitaciones diario, semanal, quincenal y mensual. Solo lo verà el administrador.
-El receppcionista no puede esditar reservar, eliminar habitaciones, o editarlas, solo lo tiene permitido el administrador.
-Desarrollo del Mòdulo de Habitaciones
-Datos Generales:
+Calendario:
+Se mostrarán los estados también de las habitaciones.
+Calendario con fechas, para mostrar las habitaciones (ejemplo moodle). Si se puede colocar los colores dependiendo del estado, está mejor.
 
-Nombre Completo
-Fecha de Ingreso, Fecha de Salida
-Tipo de Habitciòn
--Sencilla $1000
--Suite   $1500
+Se envía el recibo de reserva y renta por WHATSAPP y correo, con datos de nombre, precio, día de entrada y salida, monto y tipo de pago.
 
-Temporada Alta los precios aumentan, para esto, el usuario deberà definir el costo de las habitaciones, ya que el dueño, suele poner los precios y cambiarlos año con año, por lo cual no podemos aumentar un precio y colocarlo fijo.
-El administrador, va a poder modificar los precios de las habitaciones, en cualquier temporada.
-(Monto)
--Cantidad en nùmero
--Cantidad escrita en letra
-Tipo de Pago
-Tarjeta, Transferencia, Efectivo.
-Habitaciones
-4 habitaciones Sencillas 101, 102, 103, 104, 106, 107, 108, 109
-2 Suite 105, 110.
-(Restricciones con mensajes Emergentes Ocupado, desocupado).
-Horarios:
-Entrada 12:00 pm
-Salida 12:00 pm màximo
-Botòn, por si la habitaciòn se desocupò antes.
-Al colocar habitaciòn disponible, se colocarà en botòn naranja, hasta que personal de limpieza confirme la limpieza, podrà colocar que la habitaciòn està disponible y limpia, para rentarse, si no, no se permitirà la renta de la habitacioàn, hasta que se confirme la limpieza(Mensaje de confirmaciòn).
-Reservaciones, en las reservaciones los puntos principales que se tomaràn en cuenta, son los mismos de los datos generales que se toman al rentar la habitaciòn, a excepciòn de que se agregaràn datos extras, como fecha en la que se reservò, y fecha en la que se ocuparà la habitaciòn, los datos que quitaremos, seràn los datos de Tipo de Pago y Monto total, esto se activarà solamente, tmbièn va a existir una secciòn de reservas, cuando se llegue el dìa de la reserva y el recepcionista seleccione la reserva y seleccione el botòn de rentar, se abrirà un formulario nuevo, en donde cargarà la informaciòn registrada en la reserva y se habilitarà la secciòn de Tipo de Pago y monto.
-
-Si el recepcionista quiere hacer una reserva, para el mes de Noviembre, Diciembre y Enero, el precio serà el que el administrador determinò para esa temporada, para lo que el precio se definirà por mes, por parte del administrador, no general.
-
-Estados, Disponible gris , Ocupado rojo, Limpieza naranja
-
-Calendario: Se mostraràn los estados tambièn de las habitaciones.
-Calendario con fechas, para mostrar las habitaciones ejemplo moodle, si se puede colocar los colores dependiendo del estado, està mejor.
-
-Se envìa el recibo de reserva y renta por WHATSAPP y correo, con datos de nombre, precio, dia de entrada y salida, monto y tipo de pago
-
-Reporte de habitaciones diario, semanal, quincenal y mensual. Solo lo verà el administrador.
-El receppcionista no puede esditar reservar, eliminar habitaciones, o editarlas, solo lo tiene permitido el administrador.
+Reporte de habitaciones diario, semanal, quincenal y mensual. Solo lo verá el administrador.
+El recepcionista no puede editar, reservar, eliminar habitaciones o editarlas, solo lo tiene permitido el administrador.

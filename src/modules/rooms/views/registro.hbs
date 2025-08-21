@@ -1,0 +1,57 @@
+<h2>Registrar Renta de Habitación</h2>
+<form method="POST" action="/rooms/rentar">
+  <div>
+    <label>Nombre Completo</label>
+    <input type="text" name="nombre" required>
+  </div>
+  <div>
+    <label>Fecha de Ingreso</label>
+    <input type="date" name="fecha_ingreso" required>
+  </div>
+  <div>
+    <label>Fecha de Salida</label>
+    <input type="date" name="fecha_salida" required>
+  </div>
+  <div>
+    <label>Tipo de Habitación</label>
+    <select name="tipo" required>
+      <option value="">Seleccione</option>
+      <option value="Sencilla">Sencilla</option>
+      <option value="Suite">Suite</option>
+    </select>
+  </div>
+  <div>
+    <label>Monto (número)</label>
+    <input type="number" name="monto" required>
+  </div>
+  <div>
+    <label>Monto (letra)</label>
+    <input type="text" name="monto_letras" required>
+  </div>
+  <div>
+    <label>Tipo de Pago</label>
+    <select name="pago" required>
+      <option value="">Seleccione</option>
+      <option value="Tarjeta">Tarjeta</option>
+      <option value="Transferencia">Transferencia</option>
+      <option value="Efectivo">Efectivo</option>
+    </select>
+  </div>
+  <div>
+    <label>Habitación</label>
+    <select name="habitacion_id" required>
+      <option value="">Seleccione</option>
+      <option value="101">101</option>
+      <option value="102">102</option>
+      <option value="103">103</option>
+      <option value="104">104</option>
+      <option value="106">106</option>
+      <option value="107">107</option>
+      <option value="108">108</option>
+      <option value="109">109</option>
+      <option value="105">105 (Suite)</option>
+      <option value="110">110 (Suite)</option>
+    </select>
+  </div>
+  <button type="submit">Registrar</button>
+</form>

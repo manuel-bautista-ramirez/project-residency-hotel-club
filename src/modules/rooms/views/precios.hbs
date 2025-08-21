@@ -1,20 +1,29 @@
 {{!-- filepath: /home/manuel_ramirez/Desktop/dev-project-pubicidad-cristian/Restaurante-Cristinan-Faro/project-residency-hotel-club/src/modules/rooms/views/precios.hbs --}}
-<h2>Precios por Mes y Tipo de Habitación</h2>
-<table border="1">
-  <thead>
-    <tr>
-      <th>Mes</th>
-      <th>Tipo de Habitación</th>
-      <th>Monto</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each precios}}
-      <tr>
-        <td>{{mes}}</td>
-        <td>{{tipo_habitacion}}</td>
-        <td>${{monto}}</td>
-      </tr>
-    {{/each}}
-  </tbody>
-</table>
+<div class="max-w-3xl mx-auto p-6">
+  <h2 class="text-2xl font-bold text-blue-800 mb-6 text-center">Precios de Habitaciones</h2>
+  {{#if precios.length}}
+    <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+      <thead class="bg-blue-800 text-white">
+        <tr>
+          <th class="py-2 px-4 text-left">Tipo de Habitación</th>
+          <th class="py-2 px-4 text-left">Mes</th>
+          <th class="py-2 px-4 text-left">Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each precios}}
+          <tr class="border-b hover:bg-gray-100 transition">
+            <td class="py-2 px-4 font-semibold
+              {{#if (eq tipo_habitacion 'suite')}}text-purple-700{{else}}text-blue-700{{/if}}">
+              {{tipo_habitacion}}
+            </td>
+            <td class="py-2 px-4">{{mes}}</td>
+            <td class="py-2 px-4 font-bold">${{monto}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <p class="text-center text-gray-500 mt-8">No hay precios registrados.</p>
+  {{/if}}
+</div>

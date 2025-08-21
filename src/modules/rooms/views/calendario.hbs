@@ -1,0 +1,20 @@
+<h2>Calendario de Habitaciones</h2>
+<div class="calendar-grid">
+  {{#each habitaciones}}
+    <div class="calendar-card"
+      style="background:
+        {{#if (eq estado 'disponible')}}#e0e0e0;{{/if}}
+        {{#if (eq estado 'ocupado')}}#ffb3b3;{{/if}}
+        {{#if (eq estado 'limpieza')}}#ffe0b2;{{/if}}">
+      <div><b>Hab. {{numero}}</b></div>
+      <div>{{tipo}}</div>
+      <div>{{estado}}</div>
+      <div class="text-xs">Entrada: {{fecha_ingreso}}<br>Salida: {{fecha_salida}}</div>
+    </div>
+  {{/each}}
+</div>
+<div>
+  <span style="display:inline-block;width:16px;height:16px;background:#e0e0e0;"></span> Disponible
+  <span style="display:inline-block;width:16px;height:16px;background:#ffb3b3;margin-left:10px;"></span> Ocupado
+  <span style="display:inline-block;width:16px;height:16px;background:#ffe0b2;margin-left:10px;"></span> Limpieza
+</div>

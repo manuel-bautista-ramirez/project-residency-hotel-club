@@ -1,28 +1,33 @@
 {{!-- filepath: /home/manuel_ramirez/Desktop/dev-project-pubicidad-cristian/Restaurante-Cristinan-Faro/project-residency-hotel-club/src/modules/rooms/views/rentas.hbs --}}
-<h2>Rentas</h2>
-<table border="1">
-  <thead>
-    <tr>
-      <th>Cliente</th>
-      <th>Habitación</th>
-      <th>Fecha Ingreso</th>
-      <th>Fecha Salida</th>
-      <th>Tipo de Pago</th>
-      <th>Monto</th>
-      <th>Monto en Letras</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each rentas}}
+<div class="max-w-4xl mx-auto p-6">
+  <h2 class="text-2xl font-bold text-blue-800 mb-6 text-center">Rentas</h2>
+  <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+    <thead class="bg-blue-800 text-white">
       <tr>
-        <td>{{nombre_cliente}}</td>
-        <td>{{habitacion_id}}</td>
-        <td>{{fecha_ingreso}}</td>
-        <td>{{fecha_salida}}</td>
-        <td>{{tipo_pago}}</td>
-        <td>${{monto}}</td>
-        <td>{{monto_letras}}</td>
+        <th class="py-2 px-4 text-left">Cliente</th>
+        <th class="py-2 px-4 text-left">Habitación</th>
+        <th class="py-2 px-4 text-left">Fecha Ingreso</th>
+        <th class="py-2 px-4 text-left">Fecha Salida</th>
+        <th class="py-2 px-4 text-left">Tipo de Pago</th>
+        <th class="py-2 px-4 text-left">Monto</th>
+        <th class="py-2 px-4 text-left">Monto en Letras</th>
       </tr>
-    {{/each}}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {{#each rentas}}
+        <tr class="border-b hover:bg-gray-100 transition">
+          <td class="py-2 px-4">{{nombre_cliente}}</td>
+          <td class="py-2 px-4">{{habitacion_id}}</td>
+          <td class="py-2 px-4">{{fecha_ingreso}}</td>
+          <td class="py-2 px-4">{{fecha_salida}}</td>
+          <td class="py-2 px-4">{{tipo_pago}}</td>
+          <td class="py-2 px-4 font-bold">${{monto}}</td>
+          <td class="py-2 px-4">{{monto_letras}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{^rentas}}
+    <p class="text-center text-gray-500 mt-8">No hay rentas registradas.</p>
+  {{/rentas}}
+</div>
