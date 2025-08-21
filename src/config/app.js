@@ -2,6 +2,8 @@ import express from 'express';
 import path from 'path';
 import exphbs, { engine } from 'express-handlebars';
 import {config } from '../config/configuration.js';
+import exphbs, { engine } from 'express-handlebars';
+import {config } from '../config/configuration.js';
 import { hbsHelpers } from '../helpers/hbsHelpers.js';
 
 export const app = express();
@@ -19,6 +21,10 @@ app.engine('hbs', exphbs.engine({
   helpers: {
     eq: (a, b) => a === b
   }
+  defaultLayout: 'main',
+  layoutsDir: "./src/modules/login/views/",
+  layoutsDir: path.join('./src/views/layouts/'),
+  helpers: hbsHelpers
 }));
 
 app.set('view engine', 'hbs');
@@ -26,6 +32,16 @@ app.set('views', ['./src/modules/login/views/','./src/views/','./src/modules/mem
 
 app.engine("Handlebars", engine({
   helpers: hbsHelpers
+    }
+  ));
+app.set('views', ['./src/modules/login/views/','./src/views/']);
+
+app.engine("Handlebars", engine({
+  helpers: {
+    eq: function(a,b){
+      return a===b;
+    }
+      }
     }
   ));
 

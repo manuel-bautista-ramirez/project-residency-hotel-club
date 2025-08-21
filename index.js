@@ -1,6 +1,7 @@
 // Importación de dependencias
 import express from 'express';
 import Handlebars from 'handlebars';
+import Handlebars from 'handlebars';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
@@ -9,7 +10,6 @@ import homeRoutes from './src/modules/login/routers/homeRoutes.js'
 import passwordRecoveryRoutes from './src/modules/login/routers/passwordRecoveryRoutes.js';
 import {routerMember} from './src/modules/membership/routes/membershipRoutes.js';
 import {routerRoom} from './src/modules/rooms/routes/RouteRooms.js';
-
 // Configuración de variables para __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,8 +32,10 @@ app.use(session({
 
 app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña
 app.use('/memberships', routerMember); // Prefijo único para membresías
+app.use('/rooms', routerRoom); // Prefijo único para habitaciones
 
 app.use(homeRoutes);
+app.use(routerMember);
 app.use(routerMember);
 app.use(routerRoom);
 app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña

@@ -6,6 +6,8 @@ const router = express.Router();
 
 // Login page - ruta específica
 router.get('/login', (req, res) => res.render('login', { title: 'Inicio' }));
+// Login page - ruta específica
+router.get('/login', (req, res) => res.render('login', { title: 'Inicio' }));
 
 // Handle login
 router.post('/login', loginUser);
@@ -18,9 +20,18 @@ router.get('/', (req, res) => {
   res.redirect('/login');
 });
 
+// Ruta raíz - redirige según autenticación
+router.get('/', (req, res) => {
+  if (req.session.user) {
+    return res.redirect('/home');
+  }
+  res.redirect('/login');
+});
+
 // Protected home page
 router.get('/home', authMiddleware, (req, res) => {
   const user = req.session.user;
+  if (!user?.username || !user?.role) return res.redirect('/login');
   if (!user?.username || !user?.role) return res.redirect('/login');
   res.render('home', { title: 'Home', ...user });
 });
@@ -48,5 +59,7 @@ router.get('/admin', roleMiddleware('Administrador'), (req, res) => {
 //   res.status(404).render('error404', { title: 'Página no encontrada' });
 // });
 
+// 404 handler para este módulo
+router.use((req, res) => res.status(404).render('error404', { title: 'Página no encontrada' }));
 
 export default router;
