@@ -26,54 +26,69 @@
             </h1>
             <p class="text-gray-600 max-w-2xl mx-auto">Gestiona las membresías de tu organización de forma eficiente y segura</p>
         </div>
-    </header>
-    
-    <nav>
-        <ul class="nav-links">
-            <li><a href="#" class="active">Inicio</a></li>
-            <li><a href="#">Membresías</a></li>
-            <li><a href="#">Clientes</a></li>
-            <li><a href="#">Pagos</a></li>
-            <li><a href="#">Reportes</a></li>
-            <li><a href="#">Configuración</a></li>
-        </ul>
-    </nav>
-    
-    <div class="container">
-        <h1 class="page-title">
-            <i>📊</i> Panel de Control de Membresías
-        </h1>
-        
-        <div class="dashboard">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Membresías Activas</h3>
-                    <div class="card-icon bg-primary">
-                        <i>👥</i>
+
+        {{!-- Si es administrador --}}
+        {{#if isAdmin}}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Crear nueva membresía -->
+            <a href="/memberships/createMembership" class="block group">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    <div class="p-5 flex items-start">
+                        <div class="bg-blue-100 p-3 rounded-lg mr-4 flex-shrink-0">
+                            <i class="fas fa-plus-circle text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800 mb-1">Crear Membresía</h2>
+                            <p class="text-gray-600 text-sm">Registra una nueva membresía en el sistema.</p>
+                        </div>
+                    </div>
+                    <div class="bg-blue-500 h-2 w-0 group-hover:w-full transition-all duration-300"></div>
+                </div>
+            </a>
+
+            <!-- Ver lista de membresías -->
+            <a href="/memberships/listMembership" class="block group">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    <div class="p-5 flex items-start">
+                        <div class="bg-green-100 p-3 rounded-lg mr-4 flex-shrink-0">
+                            <i class="fas fa-list text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800 mb-1">Ver Membresías</h2>
+                            <p class="text-gray-600 text-sm">Consulta la lista completa de miembros activos.</p>
+                        </div>
                     </div>
                     <div class="bg-green-500 h-2 w-0 group-hover:w-full transition-all duration-300"></div>
                 </div>
-                <div class="card-value">142</div>
-                <p class="card-description">+12 desde la última semana</p>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Ingresos Mensuales</h3>
-                    <div class="card-icon bg-success">
-                        <i>💰</i>
+            </a>
+
+            <!-- Editar membresía -->
+            <a href="/memberships/editMembership" class="block group">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    <div class="p-5 flex items-start">
+                        <div class="bg-yellow-100 p-3 rounded-lg mr-4 flex-shrink-0">
+                            <i class="fas fa-edit text-yellow-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800 mb-1">Editar Membresía</h2>
+                            <p class="text-gray-600 text-sm">Modifica los datos de las membresías existentes.</p>
+                        </div>
                     </div>
                     <div class="bg-yellow-500 h-2 w-0 group-hover:w-full transition-all duration-300"></div>
                 </div>
-                <div class="card-value">$8,450</div>
-                <p class="card-description">+5.2% desde el mes pasado</p>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Renovaciones Pendientes</h3>
-                    <div class="card-icon bg-warning">
-                        <i>⏰</i>
+            </a>
+
+            <!-- Eliminar membresía -->
+            <a href="/memberships/deleteMembership" class="block group">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    <div class="p-5 flex items-start">
+                        <div class="bg-red-100 p-3 rounded-lg mr-4 flex-shrink-0">
+                            <i class="fas fa-trash-alt text-red-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800 mb-1">Eliminar Membresía</h2>
+                            <p class="text-gray-600 text-sm">Elimina membresías de la base de datos.</p>
+                        </div>
                     </div>
                     <div class="bg-red-500 h-2 w-0 group-hover:w-full transition-all duration-300"></div>
                 </div>
@@ -95,82 +110,46 @@
                 </div>
             </a>
         </div>
-        
-        <div class="membership-table">
-            <div class="table-header">
-                <h2 class="section-title">Tipos de Membresía</h2>
-                <button class="btn btn-primary">+ Nueva Membresía</button>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Precio</th>
-                        <th>Duración</th>
-                        <th>Clientes</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Membresía Premium</td>
-                        <td>$99/mes</td>
-                        <td>1 mes</td>
-                        <td>68</td>
-                        <td><span class="status status-active">Activa</span></td>
-                        <td class="actions">
-                            <div class="btn-icon btn-edit">✏️</div>
-                            <div class="btn-icon btn-delete">🗑️</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Membresía Básica</td>
-                        <td>$49/mes</td>
-                        <td>1 mes</td>
-                        <td>42</td>
-                        <td><span class="status status-active">Activa</span></td>
-                        <td class="actions">
-                            <div class="btn-icon btn-edit">✏️</div>
-                            <div class="btn-icon btn-delete">🗑️</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Plan Anual Gold</td>
-                        <td>$899/año</td>
-                        <td>12 meses</td>
-                        <td>25</td>
-                        <td><span class="status status-active">Activa</span></td>
-                        <td class="actions">
-                            <div class="btn-icon btn-edit">✏️</div>
-                            <div class="btn-icon btn-delete">🗑️</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Plan Familiar</td>
-                        <td>$149/mes</td>
-                        <td>1 mes</td>
-                        <td>17</td>
-                        <td><span class="status status-inactive">Inactiva</span></td>
-                        <td class="actions">
-                            <div class="btn-icon btn-edit">✏️</div>
-                            <div class="btn-icon btn-delete">🗑️</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Plan Estudiantil</td>
-                        <td>$29/mes</td>
-                        <td>1 mes</td>
-                        <td>34</td>
-                        <td><span class="status status-pending">Pendiente</span></td>
-                        <td class="actions">
-                            <div class="btn-icon btn-edit">✏️</div>
-                            <div class="btn-icon btn-delete">🗑️</div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        {{else}}
+        {{!-- Si es recepcionista --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mx-auto">
+            <!-- Crear nueva membresía -->
+            <a href="/memberships/createMembership" class="block group">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    <div class="p-5 flex items-start">
+                        <div class="bg-blue-100 p-3 rounded-lg mr-4 flex-shrink-0">
+                            <i class="fas fa-plus-circle text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800 mb-1">Crear Membresía</h2>
+                            <p class="text-gray-600 text-sm">Registra una nueva membresía en el sistema.</p>
+                        </div>
+                    </div>
+                    <div class="bg-blue-500 h-2 w-0 group-hover:w-full transition-all duration-300"></div>
+                </div>
+            </a>
+
+            <!-- Ver lista de membresías -->
+            <a href="/memberships/listMembership" class="block group">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    <div class="p-5 flex items-start">
+                        <div class="bg-green-100 p-3 rounded-lg mr-4 flex-shrink-0">
+                            <i class="fas fa-list text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800 mb-1">Ver Membresías</h2>
+                            <p class="text-gray-600 text-sm">Consulta la lista completa de miembros activos.</p>
+                        </div>
+                    </div>
+                    <div class="bg-green-500 h-2 w-0 group-hover:w-full transition-all duration-300"></div>
+                </div>
+            </a>
+        </div>
+        {{/if}}
+
+        <!-- Footer -->
+        <div class="text-center mt-12 pt-6 border-t border-gray-200">
+            <p class="text-sm text-gray-500">Sistema de Gestión de Membresías v1.0</p>
         </div>
     </div>
 

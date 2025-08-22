@@ -49,8 +49,7 @@ const MembershipModel = {
     `);
     return rows[0].precio;
   }
-  
-  
+ 
 
 };
 
@@ -59,7 +58,6 @@ const MembershipModel = {
 
 
 
-
-
 export  { MembershipModel };
+
 
