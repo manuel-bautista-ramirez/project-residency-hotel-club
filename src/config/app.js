@@ -6,6 +6,10 @@ import { hbsHelpers } from '../helpers/hbsHelpers.js';
 
 export const app = express();
 
+//Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 // Configuración de Handlebars
 app.engine('hbs', exphbs.engine({
   extname: '.hbs',
