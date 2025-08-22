@@ -21,10 +21,6 @@ app.engine('hbs', exphbs.engine({
   helpers: {
     eq: (a, b) => a === b
   }
-  defaultLayout: 'main',
-  layoutsDir: "./src/modules/login/views/",
-  layoutsDir: path.join('./src/views/layouts/'),
-  helpers: hbsHelpers
 }));
 
 app.set('view engine', 'hbs');
