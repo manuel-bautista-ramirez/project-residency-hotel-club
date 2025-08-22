@@ -9,10 +9,12 @@ export const app = express();
 // Configuración de Handlebars
 app.engine('hbs', exphbs.engine({
   extname: '.hbs',
-  defaultLayout: 'main',
-  layoutsDir: "./src/modules/login/views/",
-  layoutsDir: path.join('./src/views/layouts/'),
-  helpers: hbsHelpers
+  defaultLayout: 'main', // layout principal
+  partialsDir: path.join('./src/views/partials'), // partials globales
+  layoutsDir: path.join('./src/views/layouts'), // layouts globales
+  helpers: {
+    eq: (a, b) => a === b
+  }
 }));
 
 app.set('view engine', 'hbs');
