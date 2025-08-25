@@ -1,7 +1,8 @@
 import express from 'express';
 import exphbs from 'express-handlebars';
-import { config } from '../config/configuration.js';
 import path from 'path';
+import { config } from '../config/configuration.js';
+import { hbsHelpers } from '../helpers/hbsHelpers.js';
 
 export const app = express();
 
@@ -10,9 +11,7 @@ app.engine('hbs', exphbs.engine({
   extname: '.hbs',
   defaultLayout: 'main', // layout principal
   layoutsDir: path.join('./src/views/layouts'), // layouts globales
-  helpers: {
-    eq: (a, b) => a === b
-  }
+  helpers: hbsHelpers
 }));
 
 app.set('view engine', 'hbs');

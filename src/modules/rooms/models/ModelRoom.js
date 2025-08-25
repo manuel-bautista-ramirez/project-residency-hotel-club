@@ -62,7 +62,12 @@ const Room = {
   find: async () => habitaciones,
   precios: async () => precios,
   reservaciones: async () => reservaciones,
-  rentas: async () => rentas
+  rentas: async () => rentas,
+  setEstado: async (id, nuevoEstado) => {
+    const hab = habitaciones.find(h => h.id === id);
+    if (hab) hab.estado = nuevoEstado;
+    return hab;
+  }
 };
 
 export default Room;

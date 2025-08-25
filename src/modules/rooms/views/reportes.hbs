@@ -1,10 +1,19 @@
-<h2>Reportes de Habitaciones</h2>
-<div>
-  <button>Diario</button>
-  <button>Semanal</button>
-  <button>Quincenal</button>
-  <button>Mensual</button>
+<h2 class="text-2xl font-bold text-blue-800 mb-6 text-center">Reportes de Habitaciones</h2>
+<div class="flex gap-2 mb-4 justify-center">
+  <button onclick="cargarReporte('diario')" class="bg-blue-700 text-white px-4 py-2 rounded">Diario</button>
+  <button onclick="cargarReporte('semanal')" class="bg-blue-700 text-white px-4 py-2 rounded">Semanal</button>
+  <button onclick="cargarReporte('quincenal')" class="bg-blue-700 text-white px-4 py-2 rounded">Quincenal</button>
+  <button onclick="cargarReporte('mensual')" class="bg-blue-700 text-white px-4 py-2 rounded">Mensual</button>
 </div>
-<div class="reporte-placeholder">
+<div id="reporte" class="bg-gray-100 p-4 rounded shadow text-gray-700 text-sm">
   [Aquí se mostrarán los reportes generados]
 </div>
+<script>
+  async function cargarReporte(tipo) {
+    const res = await fetch('/api/reportes/habitaciones');
+    const data = await res.json();
+    document.getElementById('reporte').innerText =
+      'Total habitaciones: ' + data.total + '\n' +
+      data.habitaciones.map(h => `Hab. ${h.numero} - ${h.tipo} - ${h.estado}`).join('\n');
+  }
+</script>

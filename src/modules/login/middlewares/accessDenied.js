@@ -15,22 +15,26 @@ export const authMiddleware = (req, res, next) => {
   const isAuthenticated = req.session?.user; // Verifica si hay un usuario en la sesión
   if (isAuthenticated) {
     console.log(`Usuario autenticado: ${req.session.user.username}`);
+    req.user = req.session.user;
     next(); // Continúa con el controlador si está autenticado
   } else {
+    console.log(`Usuario autenticado. Redirigiendo al login...`)
     res.status(401).render('authMiddleware', {
       title: 'Acceso Restringido',
       redirectUrl: '/', // Ruta a la que se redirigirá después de 5 segundos
+
     });
-    // console.log('Usuario no autenticado. Redirigiendo al login.');
-    // res.redirect('/'); // Redirige al login si no está autenticado
+    console.log('Usuario no autenticado. Redirigiendo al login.');
+    res.redirect('/'); // Redirige al login si no está autenticado
   }
 };
 
 export const roleMiddleware = (requiredRole) => (req, res, next) => {
   const { role } = req.session.user || {};
-  if (role !== requiredRole) {
-    return res.status(403).render('error403', { title: 'Acceso denegado' });
+  if (!role == requiredRole) {
+    console.log("hola2")
+    return res.status(401).render('authMiddleware', { title: 'Acceso denegado' });
   }
+  console.log("Uusario Autenticado")
   next();
 };
-

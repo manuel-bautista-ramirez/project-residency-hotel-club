@@ -1,32 +1,53 @@
-<div class="rooms-interface max-w-7xl mx-auto p-6">
+<div class="max-w-7xl mx-auto p-6">
   <!-- Header -->
   <header class="mb-6 text-center">
     <h1 class="text-3xl font-bold text-blue-800 drop-shadow-md">Habitaciones</h1>
     <div class="mt-4 flex justify-center gap-4">
       <button id="cardsTab" class="py-2 px-4 bg-blue-600 text-white rounded shadow" onclick="showSection('cards')">Tarjetas</button>
       <button id="tableTab" class="py-2 px-4 bg-gray-300 text-gray-800 rounded shadow" onclick="showSection('table')">Tabla</button>
+      {{#if (eq user.rol 'Administrador')}}
+        <a href="/precios" class="py-2 px-4 bg-green-600 text-white rounded shadow">Modificar Precios</a>
+        <a href="/reportes" class="py-2 px-4 bg-purple-600 text-white rounded shadow">Reportes</a>
+      {{/if}}
     </div>
   </header>
 
   <!-- Sección de Tarjetas -->
-  <section id="cardsSection" class="rooms-list grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
+  <section id="cardsSection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
     {{#if habitaciones.length}}
       {{#each habitaciones}}
-        <div class="room bg-white shadow-md rounded-lg p-6 hover:shadow-xl transition border-2"
-          style="border-color:
-            {{#if (eq estado 'disponible')}}#bdbdbd{{/if}}
-            {{#if (eq estado 'ocupado')}}#ff4d4d{{/if}}
-            {{#if (eq estado 'limpieza')}}#ffa500{{/if}};">
+        <div class="bg-white shadow-md rounded-lg p-6 border-2
+          {{#if (eq estado 'disponible')}}border-gray-400{{/if}}
+          {{#if (eq estado 'ocupado')}}border-red-400{{/if}}
+          {{#if (eq estado 'limpieza')}}border-yellow-400{{/if}}">
           <h2 class="text-xl font-semibold text-blue-700 mb-2">Habitación {{numero}}</h2>
-          <p class="text-gray-600 mb-1">Tipo: <span class="font-medium">{{tipo}}</span></p>
-          <p class="text-gray-600 mb-1">Estado:
+          <p class="text-gray-600 mb-1">Tipo: <span class="font-medium capitalize">{{tipo}}</span></p>
+          <p class="mb-1">
+            Estado:
             <span class="font-bold
               {{#if (eq estado 'disponible')}}text-gray-700{{/if}}
               {{#if (eq estado 'ocupado')}}text-red-700{{/if}}
-              {{#if (eq estado 'limpieza')}}text-orange-700{{/if}}">
+              {{#if (eq estado 'limpieza')}}text-yellow-700{{/if}}">
               {{estado}}
             </span>
           </p>
+          <div class="mt-2 flex gap-2">
+            {{#if (or (eq ../user.rol 'Administrador') (eq ../user.rol 'Recepcionista'))}}
+              {{#if (eq estado 'ocupado')}}
+                <button class="bg-orange-500 text-white px-2 py-1 rounded"
+                  onclick="cambiarEstado({{id}}, 'limpieza', '¿Desocupar habitación {{numero}}?')">Desocupar</button>
+              {{/if}}
+              {{#if (eq estado 'limpieza')}}
+                <button class="bg-green-600 text-white px-2 py-1 rounded"
+                  onclick="cambiarEstado({{id}}, 'disponible', '¿Confirmar limpieza de habitación {{numero}}?')">Confirmar Limpieza</button>
+              {{/if}}
+            {{/if}}
+            {{#if (eq ../user.rol 'Administrador')}}
+              <a href="/rooms/editar/{{id}}" class="bg-yellow-500 text-white px-2 py-1 rounded">Editar</a>
+              <a href="/rooms/eliminar/{{id}}" class="bg-red-700 text-white px-2 py-1 rounded" onclick="return confirm('¿Eliminar habitación {{numero}}?')">Eliminar</a>
+              <a href="/rooms/reservar/{{id}}" class="bg-blue-700 text-white px-2 py-1 rounded">Reservar</a>
+            {{/if}}
+          </div>
         </div>
       {{/each}}
     {{else}}
@@ -42,6 +63,7 @@
           <th class="py-2 px-4 text-left">Número</th>
           <th class="py-2 px-4 text-left">Tipo</th>
           <th class="py-2 px-4 text-left">Estado</th>
+          <th class="py-2 px-4 text-left">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -52,8 +74,25 @@
                 {{#if (eq estado 'ocupado')}}#ffcccc{{/if}}
                 {{#if (eq estado 'limpieza')}}#ffe5b4{{/if}};">
             <td class="py-2 px-4 font-semibold">{{numero}}</td>
-            <td class="py-2 px-4">{{tipo}}</td>
+            <td class="py-2 px-4 capitalize">{{tipo}}</td>
             <td class="py-2 px-4 font-semibold">{{estado}}</td>
+            <td class="py-2 px-4 flex gap-2">
+              {{#if (or (eq ../user.rol 'Administrador') (eq ../user.rol 'Recepcionista'))}}
+                {{#if (eq estado 'ocupado')}}
+                  <button class="bg-orange-500 text-white px-2 py-1 rounded"
+                    onclick="cambiarEstado({{id}}, 'limpieza', '¿Desocupar habitación {{numero}}?')">Desocupar</button>
+                {{/if}}
+                {{#if (eq estado 'limpieza')}}
+                  <button class="bg-green-600 text-white px-2 py-1 rounded"
+                    onclick="cambiarEstado({{id}}, 'disponible', '¿Confirmar limpieza de habitación {{numero}}?')">Confirmar Limpieza</button>
+                {{/if}}
+              {{/if}}
+              {{#if (eq ../user.rol 'Administrador')}}
+                <a href="/rooms/editar/{{id}}" class="bg-yellow-500 text-white px-2 py-1 rounded">Editar</a>
+                <a href="/rooms/eliminar/{{id}}" class="bg-red-700 text-white px-2 py-1 rounded" onclick="return confirm('¿Eliminar habitación {{numero}}?')">Eliminar</a>
+                <a href="/rooms/reservar/{{id}}" class="bg-blue-700 text-white px-2 py-1 rounded">Reservar</a>
+              {{/if}}
+            </td>
           </tr>
         {{/each}}
       </tbody>
@@ -82,6 +121,26 @@
       tableTab.classList.replace("text-gray-800", "text-white");
       cardsTab.classList.replace("bg-blue-600", "bg-gray-300");
       cardsTab.classList.replace("text-white", "text-gray-800");
+    }
+  }
+
+  async function cambiarEstado(id, nuevoEstado, mensaje) {
+    if (!confirm(mensaje)) return;
+    try {
+      const res = await fetch(`/api/rooms/${id}/estado`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: nuevoEstado })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Estado actualizado correctamente');
+        location.reload();
+      } else {
+        alert('Error: ' + (data.message || 'No se pudo actualizar el estado'));
+      }
+    } catch (err) {
+      alert('Error de conexión');
     }
   }
 </script>
