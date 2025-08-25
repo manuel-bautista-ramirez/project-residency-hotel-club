@@ -32,9 +32,8 @@ export const authMiddleware = (req, res, next) => {
 export const roleMiddleware = (requiredRole) => (req, res, next) => {
   const { role } = req.session.user || {};
   if (!role == requiredRole) {
-    console.log("hola2")
+
     return res.status(401).render('authMiddleware', { title: 'Acceso denegado' });
   }
-  console.log("Uusario Autenticado")
   next();
 };

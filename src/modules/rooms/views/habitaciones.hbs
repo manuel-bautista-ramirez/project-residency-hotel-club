@@ -5,6 +5,7 @@
     <div class="mt-4 flex justify-center gap-4">
       <button id="cardsTab" class="py-2 px-4 bg-blue-600 text-white rounded shadow" onclick="showSection('cards')">Tarjetas</button>
       <button id="tableTab" class="py-2 px-4 bg-gray-300 text-gray-800 rounded shadow" onclick="showSection('table')">Tabla</button>
+      <button id="reservasTab" class="py-2 px-4 bg-gray-300 text-gray-800 rounded shadow" onclick="showSection('reservas')">Reservaciones</button>
       {{#if (eq user.rol 'Administrador')}}
         <a href="/precios" class="py-2 px-4 bg-green-600 text-white rounded shadow">Modificar Precios</a>
         <a href="/reportes" class="py-2 px-4 bg-purple-600 text-white rounded shadow">Reportes</a>
@@ -32,7 +33,7 @@
             </span>
           </p>
           <div class="mt-2 flex gap-2">
-            {{#if (or (eq ../user.rol 'Administrador') (eq ../user.rol 'Recepcionista'))}}
+            {{#if (or (eq ../user.rol 'Administrador') (eq ../user.rol 'usuario'))}}
               {{#if (eq estado 'ocupado')}}
                 <button class="bg-orange-500 text-white px-2 py-1 rounded"
                   onclick="cambiarEstado({{id}}, 'limpieza', '¿Desocupar habitación {{numero}}?')">Desocupar</button>
@@ -60,7 +61,7 @@
     <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
       <thead class="bg-blue-800 text-white">
         <tr>
-          <th class="py-2 px-4 text-left">Número</th>
+          <th class="py-2 px-4 text-left">Números</th>
           <th class="py-2 px-4 text-left">Tipo</th>
           <th class="py-2 px-4 text-left">Estado</th>
           <th class="py-2 px-4 text-left">Acciones</th>
@@ -77,7 +78,7 @@
             <td class="py-2 px-4 capitalize">{{tipo}}</td>
             <td class="py-2 px-4 font-semibold">{{estado}}</td>
             <td class="py-2 px-4 flex gap-2">
-              {{#if (or (eq ../user.rol 'Administrador') (eq ../user.rol 'Recepcionista'))}}
+              {{#if (or (eq ../user.rol 'Administrador') (eq ../user.rol 'usuario'))}}
                 {{#if (eq estado 'ocupado')}}
                   <button class="bg-orange-500 text-white px-2 py-1 rounded"
                     onclick="cambiarEstado({{id}}, 'limpieza', '¿Desocupar habitación {{numero}}?')">Desocupar</button>
@@ -98,32 +99,105 @@
       </tbody>
     </table>
   </section>
+
+  <!-- Sección de Reservaciones -->
+  <section id="reservasSection" class="hidden">
+    <h2 class="text-2xl font-semibold text-blue-700 mb-4">Reservaciones</h2>
+
+    <!-- Formulario de Reservación -->
+    <form id="formReservacion" class="mb-6 max-w-md">
+      <div class="mb-3">
+        <label for="nombre_cliente" class="block text-gray-700 font-medium">Nombre del Cliente</label>
+        <input type="text" id="nombre_cliente" class="w-full border rounded p-2" required>
+      </div>
+      <div class="mb-3">
+        <label for="habitacion_id" class="block text-gray-700 font-medium">Habitación</label>
+        <select id="habitacion_id" class="w-full border rounded p-2" required>
+          {{#each habitaciones}}
+            <option value="{{id}}" {{#if (eq estado 'ocupado')}}disabled{{/if}}>Habitación {{numero}} - {{tipo}} ({{estado}})</option>
+          {{/each}}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="fecha_ingreso" class="block text-gray-700 font-medium">Fecha de Ingreso</label>
+        <input type="date" id="fecha_ingreso" class="w-full border rounded p-2" required>
+      </div>
+      <div class="mb-3">
+        <label for="fecha_salida" class="block text-gray-700 font-medium">Fecha de Salida</label>
+        <input type="date" id="fecha_salida" class="w-full border rounded p-2" required>
+      </div>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Crear Reservación</button>
+    </form>
+
+    <!-- Tabla de Reservaciones -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+        <thead class="bg-blue-800 text-white">
+          <tr>
+            <th class="py-2 px-4 text-left">Cliente</th>
+            <th class="py-2 px-4 text-left">Habitación</th>
+            <th class="py-2 px-4 text-left">Ingreso</th>
+            <th class="py-2 px-4 text-left">Salida</th>
+            <th class="py-2 px-4 text-left">Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each reservaciones}}
+            <tr class="border-b hover:bg-gray-100 transition">
+              <td class="py-2 px-4">{{nombre_cliente}}</td>
+           <td class="py-2 px-4">Habitación {{lookup ../habitacionesMap habitacion_id}}</td>
+
+              <td class="py-2 px-4">{{fecha_ingreso}}</td>
+              <td class="py-2 px-4">{{fecha_salida}}</td>
+              <td class="py-2 px-4">{{monto_letras}}</td>
+            </tr>
+          {{/each}}
+          {{#unless reservaciones.length}}
+            <tr><td colspan="5" class="text-center py-4 text-gray-500">No hay reservaciones</td></tr>
+          {{/unless}}
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>
 
 <script>
+  // Cambiar sección visible
   function showSection(section) {
     const cardsSection = document.getElementById("cardsSection");
     const tableSection = document.getElementById("tableSection");
+    const reservasSection = document.getElementById("reservasSection");
     const cardsTab = document.getElementById("cardsTab");
     const tableTab = document.getElementById("tableTab");
+    const reservasTab = document.getElementById("reservasTab");
+
+    cardsSection.classList.add("hidden");
+    tableSection.classList.add("hidden");
+    reservasSection.classList.add("hidden");
+
+    cardsTab.classList.replace("bg-blue-600","bg-gray-300");
+    cardsTab.classList.replace("text-white","text-gray-800");
+    tableTab.classList.replace("bg-blue-600","bg-gray-300");
+    tableTab.classList.replace("text-white","text-gray-800");
+    reservasTab.classList.replace("bg-blue-600","bg-gray-300");
+    reservasTab.classList.replace("text-white","text-gray-800");
 
     if(section === "cards") {
       cardsSection.classList.remove("hidden");
-      tableSection.classList.add("hidden");
-      cardsTab.classList.replace("bg-gray-300", "bg-blue-600");
-      cardsTab.classList.replace("text-gray-800", "text-white");
-      tableTab.classList.replace("bg-blue-600", "bg-gray-300");
-      tableTab.classList.replace("text-white", "text-gray-800");
-    } else {
+      cardsTab.classList.replace("bg-gray-300","bg-blue-600");
+      cardsTab.classList.replace("text-gray-800","text-white");
+    } else if(section === "table") {
       tableSection.classList.remove("hidden");
-      cardsSection.classList.add("hidden");
-      tableTab.classList.replace("bg-gray-300", "bg-blue-600");
-      tableTab.classList.replace("text-gray-800", "text-white");
-      cardsTab.classList.replace("bg-blue-600", "bg-gray-300");
-      cardsTab.classList.replace("text-white", "text-gray-800");
+      tableTab.classList.replace("bg-gray-300","bg-blue-600");
+      tableTab.classList.replace("text-gray-800","text-white");
+    } else if(section === "reservas") {
+      reservasSection.classList.remove("hidden");
+      reservasTab.classList.replace("bg-gray-300","bg-blue-600");
+      reservasTab.classList.replace("text-gray-800","text-white");
     }
   }
 
+  // Cambiar estado de habitación
   async function cambiarEstado(id, nuevoEstado, mensaje) {
     if (!confirm(mensaje)) return;
     try {
@@ -143,4 +217,30 @@
       alert('Error de conexión');
     }
   }
+
+  // Crear reservación
+  document.getElementById("formReservacion").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nombre_cliente = document.getElementById("nombre_cliente").value;
+    const habitacion_id = parseInt(document.getElementById("habitacion_id").value);
+    const fecha_ingreso = document.getElementById("fecha_ingreso").value;
+    const fecha_salida = document.getElementById("fecha_salida").value;
+
+    try {
+      const res = await fetch("/api/rooms/reservar", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ nombre_cliente, habitacion_id, fecha_ingreso, fecha_salida })
+});
+      const data = await res.json();
+      if(data) {
+        alert("Reservación creada correctamente");
+        location.reload();
+      } else {
+        alert("Error al crear la reservación");
+      }
+    } catch (err) {
+      alert("Error de conexión");
+    }
+  });
 </script>

@@ -1,80 +1,70 @@
+// routerRoom.js
 import express from "express";
+import { authMiddleware, roleMiddleware } from '../../login/middlewares/accessDenied.js';
 import {
   renderHabitacionesView,
-  renderPreciosView,
-  renderReservacionesView,
-  renderRentasView,
-  renderMembershipsView,
   getHabitaciones,
-  getPrecios,
-  getReservaciones,
-  getRentas,
   setEstadoHabitacion,
+  crearReservacion,
+  crearRenta
 } from "../controllers/roomsController.js";
-
 
 const routerRoom = express.Router();
 
-// Middleware general para todas las rutas de rooms
-// routerRoom.use(authMiddleware);
+// Aplicar authMiddleware para todas las rutas del módulo
+routerRoom.use(authMiddleware);
 
-// // Vistas
-// routerRoom.get("/rooms", renderHabitacionesView);
-
-// Protected home page
+// Vista principal de habitaciones
 routerRoom.get("/rooms", renderHabitacionesView);
-routerRoom.get("/precios", renderPreciosView);
-routerRoom.get("/reservaciones", renderReservacionesView);
-routerRoom.get("/rentas", renderRentasView);
-routerRoom.get("/memberships", renderMembershipsView);
 
-// API JSON
+// API para obtener habitaciones
 routerRoom.get("/api/rooms", async (req, res) => {
-  res.json(await getHabitaciones());
-});
-routerRoom.get("/api/precios", async (req, res) => {
-  res.json(await getPrecios());
-});
-routerRoom.get("/api/reservaciones", async (req, res) => {
-  res.json(await getReservaciones());
-});
-routerRoom.get("/api/rentas", async (req, res) => {
-  res.json(await getRentas());
+  const habitaciones = await getHabitaciones();
+  res.json(habitaciones);
 });
 
-// Cambiar estado de habitación
-routerRoom.post("/api/rooms/:id/estado", async (req, res) => {
+// Cambiar estado de habitación (solo superadmin)
+routerRoom.post("/api/rooms/:id/estado", roleMiddleware("superadmin"), async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
   const hab = await setEstadoHabitacion(Number(id), estado);
-  if (hab) {
-    res.json({ success: true, habitacion: hab });
-  } else {
-    res.status(404).json({ success: false, message: "Habitación no encontrada" });
+  if (hab) res.json({ success: true, habitacion: hab });
+  else res.status(404).json({ success: false, message: "Habitación no encontrada" });
+});
+
+// Crear reservación
+routerRoom.post("/api/rooms/reservar", async (req, res) => {
+  try {
+    // Obtener usuario logeado de la sesión
+    const usuario_id = req.session.user?.id;
+    if (!usuario_id) {
+      return res.status(401).json({ success: false, message: "Usuario no logeado" });
+    }
+
+    // Llamar al controlador pasando el usuario_id desde sesión
+    const { habitacion_id, nombre_cliente, fecha_ingreso, fecha_salida } = req.body;
+    const nuevaReserva = await crearReservacion({
+      habitacion_id: Number(habitacion_id),
+      usuario_id: Number(usuario_id),
+      nombre_cliente,
+      fecha_ingreso,
+      fecha_salida
+    });
+
+    if (nuevaReserva) res.status(201).json({ success: true, reservacion: nuevaReserva });
+    else res.status(400).json({ success: false, message: "No se pudo crear la reservación (habitacion ocupada o inválida)" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Error del servidor" });
   }
 });
 
-// Crear reservación (simulado)
-routerRoom.post("/api/reservaciones", (req, res) => {
-  res
-    .status(201)
-    .json({ success: true, message: "Reservación creada (simulado)" });
+// Crear renta
+routerRoom.post("/api/rentas", async (req, res) => {
+  const user_id = req.session.user.id;
+  const renta = await crearRenta({ ...req.body, usuario_id: user_id });
+  if (renta) res.status(201).json({ success: true, renta });
+  else res.status(400).json({ success: false, message: "No se pudo crear la renta" });
 });
-
-// Crear renta (simulado)
-routerRoom.post("/api/rentas", (req, res) => {
-  res.status(201).json({ success: true, message: "Renta creada (simulado)" });
-});
-
-// Reporte habitaciones (simulado)
-routerRoom.get("/api/reportes/habitaciones", async (req, res) => {
-  const habitaciones = await getHabitaciones();
-  res.json({ total: habitaciones.length, habitaciones });
-});
-
-// 404 handler para rooms
-routerRoom.use((req, res) =>
-  res.status(404).render("error403", { title: "Página no encontrada" })
-);
 
 export { routerRoom };
