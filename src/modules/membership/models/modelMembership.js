@@ -49,9 +49,12 @@ const MembershipModel = {
     `);
     return rows[0].precio;
   }
- 
+  
+  
 
 };
+
+
 
 
 

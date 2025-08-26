@@ -22,14 +22,10 @@ app.engine('hbs', exphbs.engine({
 }));
 
 app.set('view engine', 'hbs');
-app.set('views', ['./src/modules/login/views/','./src/views/']);
+app.set('views', ['./src/modules/login/views/','./src/views/','./src/modules/membership/views/']);
 
 app.engine("Handlebars", engine({
-  helpers: {
-    eq: function(a,b){
-      return a===b;
-    }
-      }
+  helpers: hbsHelpers
     }
   ));
 

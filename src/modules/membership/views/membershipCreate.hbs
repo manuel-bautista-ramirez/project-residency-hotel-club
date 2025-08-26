@@ -6,45 +6,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Nueva Membresía</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .form-section {
-            transition: all 0.3s ease;
-        }
-
-        .membership-type-card {
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .membership-type-card.selected {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-        }
-
-        .family-member-card {
-            border-left: 4px solid #3b82f6;
-        }
-    </style>
+   
 </head>
 
-<body class="bg-gray-50 min-h-screen">
-    <!-- Navbar (partial) -->
-    {{> navbar}}
-
-    <div class="container mx-auto px-4 py-8 max-w-4xl mt-20">
+<body class="bg-gray-100">
+    {{!-- Modal --}}
+    
+    {{>navbar}}
+    <div class="container mx-auto px-4 py-8 max-w-4xl mt-10">
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
             <!-- Header -->
             <div class="bg-blue-600 text-white px-6 py-4">
                 <h1 class="text-2xl font-bold"><i class="fas fa-plus-circle mr-2"></i>Crear Nueva Membresía</h1>
-                <p class="text-blue-100">Complete la información requerida para registrar una nueva membresía</p>
+                <p class="text-blue-100" id="stepDescription">Complete la información del cliente</p>
             </div>
 
-            <form action="/memberships/createClient" method="POST" class="p-6">
+            <!-- Formulario de creación de cliente (Paso 1) -->
+            <form id="clientForm" class="p-6" action="/createClient" method="post">
+                <!-- Datos del cliente -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Datos Personales del Cliente</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
+                            <input type="text" name="name" id="clientName"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
+                            <input type="tel" name="phone" id="clientPhone"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico *</label>
+                            <input type="email" name="email" id="clientEmail"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción Paso 1 -->
+                <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
+                    <a href="/memberships"
+                        class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</a>
+                    <button type="button" id="nextToMembership" onclick="showConfirmationModal('Confirmar acción', '¿Estás seguro de que deseas realizar esta acción?', function() {
+                        document.getElementById('membershipForm').submit();
+                    })"
+                        class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Siguiente</button>
+                </div>
+            </form>
+
+            <!-- Formulario de creación de membresía (Paso 2) -->
+            <form id="membershipForm" action="/memberships/createClient" method="POST" class="p-6 hidden">
+                <!-- Información del cliente (solo lectura) -->
+                <div class="mb-6 bg-blue-50 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-2">Cliente</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                            <p id="displayClientName" class="text-gray-900 font-medium"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <p id="displayClientPhone" class="text-gray-900 font-medium"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <p id="displayClientEmail" class="text-gray-900 font-medium"></p>
+                        </div>
+                    </div>
+                    <input type="hidden" name="clientId" id="clientId">
+                </div>
+
                 <!-- Tipo de Membresía -->
                 <div class="mb-8">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Tipo de Membresía</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="membership-type-card p-4 border-2 border-gray-200 rounded-lg"
+                        <div class="membership-type-card p-4 border-2 border-gray-200 rounded-lg cursor-pointer"
                             onclick="selectMembershipType('individual')">
                             <div class="flex items-center mb-2">
                                 <div
@@ -56,7 +97,7 @@
                             <p class="text-sm text-gray-600">Para una sola persona. Acceso según el tipo seleccionado.
                             </p>
                         </div>
-                        <div class="membership-type-card p-4 border-2 border-gray-200 rounded-lg"
+                        <div class="membership-type-card p-4 border-2 border-gray-200 rounded-lg cursor-pointer"
                             onclick="selectMembershipType('familiar')">
                             <div class="flex items-center mb-2">
                                 <div
@@ -76,45 +117,20 @@
                 <div id="individualForm" class="form-section hidden">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Información de Membresía Individual</h2>
 
-                    <!-- Datos del cliente -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-700 mb-3">Datos Personales</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
-                                <input type="text" name="name"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                    required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
-                                <input type="tel" name="phone"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                    required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico *</label>
-                                <input type="email" name="email"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                    required>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Fechas -->
                     <div class="mb-6">
                         <h3 class="text-lg font-medium text-gray-700 mb-3">Período de la Membresía</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio *</label>
-                                <input type="date" name="startDate" id="startDate" value="{{startDate}}"
+                                <input type="date" name="startDate" id="startDate"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                     required>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de finalización
                                     *</label>
-                                <input type="date" name="endDate" id="endDate" value="{{endDate}}"
+                                <input type="date" name="endDate" id="endDate"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                     required>
                             </div>
@@ -131,11 +147,9 @@
                                     required>
                                     <option value="">Seleccione un tipo de membresía</option>
                                     {{#each tiposMembresia}}
-                                    <option value="{{id_tipo_membresia}}" data-precio="{{precio}}">
-                                        {{nombre}} - ${{precio}}
-                                    </option>
+                                    <option value="{{this.id_tipo_membresia}}">{{this.nombre}} <span>--</span> ${{this.precio}}</option>
                                     {{/each}}
-
+                                    
                                 </select>
                                 <div
                                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -144,35 +158,11 @@
                             </div>
                         </div>
                     </div>
-
-                    <input type="hidden" name="id_tipo_membresia" id="id_tipo_membresia" required>
                 </div>
 
                 <!-- Membresía Familiar -->
                 <div id="familyForm" class="form-section hidden">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Información de Membresía Familiar</h2>
-
-                    <!-- Datos del titular -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-700 mb-3">Datos del Titular</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
-                                <input type="text" name="familyPrimaryName"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
-                                <input type="tel" name="familyPrimaryPhone"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico *</label>
-                                <input type="email" name="familyPrimaryEmail"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Fechas -->
                     <div class="mb-6">
@@ -208,14 +198,15 @@
                     </div>
                 </div>
 
-                <!-- Sección de pago - Visible cuando se selecciona Individual o Familiar -->
+                <!-- Sección de pago -->
                 <div id="paymentSection" class="mb-6 hidden">
                     <h3 class="text-lg font-medium text-gray-700 mb-3">Información de Pago</h3>
                     <div class="grid grid-cols-1 gap-4">
-                        <div id="priceSection" class="mb-6 hidden"><label
-                                class="block text-sm font-medium text-gray-700 mb-1">Precio *</label>
+                        <div id="priceSection" class="mb-6 hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Precio *</label>
+                            {{!-- Dependiendo de membresia elegida --}}
                             <span id="priceDisplay"
-                                class="text-lg font-semibold bg-gray-200 rounded-lg flex items-center justify-center max-w-32">${{precioFamiliar}}</span>
+                                class="text-lg font-semibold bg-gray-200 rounded-lg flex items-center justify-center max-w-32">$ {{precioFamiliar}}</span>
                         </div>
 
                         <div>
@@ -232,10 +223,12 @@
                     </div>
                 </div>
 
-                <!-- Botones de acción -->
-                <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
-                    <a href="/memberships"
-                        class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancelar</a>
+                <!-- Botones de acción Paso 2 -->
+                <div class="flex justify-between space-x-4 mt-8 pt-6 border-t border-gray-200">
+                    <button type="button" id="backToClient"
+                        class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Volver
+                    </button>
                     <button type="submit"
                         class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Crear
                         Membresía</button>
@@ -243,138 +236,9 @@
             </form>
         </div>
     </div>
-
-    <!-- Footer (partial) -->
-
-
-    <script>
-        // Script de depuración
-        document.addEventListener('DOMContentLoaded', function () {
-
-
-            // Verificar si los elementos existen
-
-
-            // Establecer fechas por defecto
-            const today = new Date();
-            const endDate = new Date();
-            endDate.setDate(today.getDate() + 30);
-
-            // Formatear fechas
-            const formatDate = (date) => date.toISOString().split('T')[0];
-            const todayStr = formatDate(today);
-            const endDateStr = formatDate(endDate);
-
-
-            // Establecer fechas en los campos
-            const startInput = document.getElementById('startDate');
-            const endInput = document.getElementById('endDate');
-            const familyStartInput = document.getElementById('familyStartDate');
-            const familyEndInput = document.getElementById('familyEndDate');
-
-            if (startInput) startInput.value = todayStr;
-            if (endInput) endInput.value = endDateStr;
-            if (familyStartInput) familyStartInput.value = todayStr;
-            if (familyEndInput) familyEndInput.value = endDateStr;
-        });
-
-        // Selección de tipo de membresía
-        function selectMembershipType(type) {
-            document.querySelectorAll('.membership-type-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-
-            // Actualizar la tarjeta seleccionada
-            const selectedCard = event.currentTarget;
-            selectedCard.classList.add('selected');
-
-            // Actualizar el valor del input oculto
-            document.getElementById('membershipType').value = type;
-
-            // Mostrar el formulario correspondiente
-            if (type === 'individual') {
-                document.getElementById('individualForm').classList.remove('hidden');
-                document.getElementById('familyForm').classList.add('hidden');
-                // Ocultar la sección de precio para membresía individual
-                document.getElementById('priceSection').classList.add('hidden');
-                // Mostrar sección de pago
-                document.getElementById('paymentSection').classList.remove('hidden');
-            } else if (type === 'familiar') {
-                document.getElementById('familyForm').classList.remove('hidden');
-                document.getElementById('individualForm').classList.add('hidden');
-                // Mostrar sección de pago
-                document.getElementById('paymentSection').classList.remove('hidden');
-                document.getElementById('priceSection').classList.remove('hidden');
-            } else {
-                // Ocultar todo si no hay selección
-                document.getElementById('individualForm').classList.add('hidden');
-                document.getElementById('familyForm').classList.add('hidden');
-                document.getElementById('paymentSection').classList.add('hidden');
-                document.getElementById('priceSection').classList.add('hidden');
-            }
-        }
-
-        // Cálculo de precio para membresía individual
-        document.querySelectorAll('input[name="membershipOption"]').forEach(radio => {
-            radio.addEventListener('change', function () {
-                let price = 0;
-                if (this.value === 'gym' || this.value === 'pool') {
-                    price = 400;
-                } else if (this.value === 'general') {
-                    price = 600;
-                }
-                document.getElementById('priceDisplay').textContent = price.toFixed(2);
-                document.getElementById('price').value = price;
-            });
-        });
-
-        // Gestión de miembros familiares
-        let memberCount = 0;
-        document.getElementById('addFamilyMember').addEventListener('click', function () {
-            if (memberCount >= 4) {
-                alert('Solo se pueden agregar hasta 4 miembros adicionales.');
-                return;
-            }
-
-            memberCount++;
-            const memberHtml = `
-                <div class="family-member-card bg-gray-50 p-4 rounded-lg mb-3">
-                    <h4 class="font-medium text-gray-700 mb-2">Miembro #${memberCount}</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Nombre completo</label>
-                            <input type="text" name="familyMemberName${memberCount}" class="w-full px-3 py-1 border border-gray-300 rounded">
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Teléfono</label>
-                            <input type="tel" name="familyMemberPhone${memberCount}" class="w-full px-3 py-1 border border-gray-300 rounded">
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('familyMembersContainer').insertAdjacentHTML('beforeend', memberHtml);
-
-            if (memberCount >= 4) {
-                document.getElementById('addFamilyMember').classList.add('hidden');
-            }
-        });
-
-        // Validación del formulario antes de enviar
-        document.querySelector('form').addEventListener('submit', function (e) {
-            const membershipType = document.getElementById('membershipType').value;
-            if (!membershipType) {
-                e.preventDefault();
-                alert('Por favor, seleccione un tipo de membresía.');
-                return;
-            }
-
-
-
-
-            // Aquí puedes agregar más validaciones según sea necesario
-        });
-    </script>
+    {{> modals/modalConfirmation }}
 </body>
+<script src="/js/createMember/createMember.js"></script>
+<script src="/js/createMember/modal.js"></script>
 
 </html>
