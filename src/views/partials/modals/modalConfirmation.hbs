@@ -1,0 +1,32 @@
+<!-- Modal de Confirmación -->
+<div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-xl font-semibold text-gray-800" id="modalTitle">Confirmar acción</h3>
+    </div>
+    
+    <!-- Body -->
+    <div class="px-6 py-4">
+      <p class="text-gray-600" id="modalMessage">¿Estás seguro de que deseas realizar esta acción?</p>
+    </div>
+    
+    <!-- Footer -->
+    <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+      <button 
+        type="button" 
+        id="modalCancelBtn"
+        class="px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+      >
+        Cancelar
+      </button>
+      <button 
+        type="button" 
+        id="modalConfirmBtn"
+        class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+      >
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
