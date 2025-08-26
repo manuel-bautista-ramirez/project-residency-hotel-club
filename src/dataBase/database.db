@@ -166,87 +166,93 @@ ORDER BY
 -- =====================================================
 -- MÓDULO DE MEMBRESÍAS
 -- =====================================================
-CREATE TABLE -- Tabla de tipos de membresía (elimina ENUM)
-  tipos_membresia (
+-- Tabla de tipos de membresía (elimina ENUM)
+CREATE TABLE tipos_membresia (
     id_tipo_membresia SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion TEXT,
-    max_integrantes INTEGER DEFAULT 1 CHECK (max_integrantes >= 1)
-  );
+    max_integrantes INTEGER DEFAULT 1 CHECK (max_integrantes >= 1),
+    precio DECIMAL(10,2) NOT NULL
+);
 
-CREATE TABLE -- Tabla de clientes (sin cambios, ya está en 3NF)
-  clientes (
+
+
+-- Tabla de clientes (sin cambios, ya está en 3NF)
+CREATE TABLE clientes (
     id_cliente SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(150) NOT NULL,
     telefono VARCHAR(20),
     correo VARCHAR(100),
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  );
+);
 
-CREATE TABLE -- Tabla de relaciones familiares (nueva)
-  relaciones_familiares (
+-- Tabla de relaciones familiares (nueva)
+CREATE TABLE relaciones_familiares (
     id_relacion SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion TEXT
-  );
+);
 
-CREATE TABLE -- Tabla de membresías (precios base históricos)
-  membresias (
+-- Tabla de membresías (precios base históricos)
+CREATE TABLE membresias (
     id_membresia SERIAL PRIMARY KEY,
-    id_tipo_membresia INTEGER NOT NULL REFERENCES tipos_membresia (id_tipo_membresia),
-    precio_base DECIMAL(10, 2) NOT NULL CHECK (precio_base > 0),
-    vigencia_dias INTEGER NOT NULL CHECK (vigencia_dias > 0),
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    activa BOOLEAN DEFAULT TRUE
-  );
-
-CREATE TABLE -- Tabla de membresías activas
-  membresias_activas (
-    id_activa SERIAL PRIMARY KEY,
-    id_cliente INTEGER NOT NULL REFERENCES clientes (id_cliente),
-    id_membresia INTEGER NOT NULL REFERENCES membresias (id_membresia),
+    id_cliente INT NOT NULL REFERENCES clientes(id_cliente),
+    id_tipo_membresia INT NOT NULL REFERENCES tipos_membresia(id_tipo_membresia),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
-    precio_final DECIMAL(10, 2) NOT NULL CHECK (precio_final > 0),
+    fecha_creacion TIMESTAMP DEFAULT NOW()
+);
+
+
+
+-- Tabla de membresías activas
+CREATE TABLE membresias_activas (
+    id_activa SERIAL PRIMARY KEY,
+    id_cliente INTEGER NOT NULL REFERENCES clientes(id_cliente),
+    id_membresia INTEGER NOT NULL REFERENCES membresias(id_membresia),
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    precio_final DECIMAL(10,2) NOT NULL CHECK (precio_final > 0),
     qr_code VARCHAR(255) UNIQUE,
     estado VARCHAR(20) DEFAULT 'Activa' CHECK (estado IN ('Activa', 'Vencida', 'Cancelada')),
     CHECK (fecha_fin > fecha_inicio)
-  );
+);
 
-CREATE TABLE -- Tabla de integrantes (reemplaza familiares)
-  integrantes_membresia (
+-- Tabla de integrantes (reemplaza familiares)
+CREATE TABLE integrantes_membresia (
     id_integrante SERIAL PRIMARY KEY,
-    id_activa INTEGER NOT NULL REFERENCES membresias_activas (id_activa),
-    id_cliente INTEGER NOT NULL REFERENCES clientes (id_cliente),
-    id_relacion INTEGER REFERENCES relaciones_familiares (id_relacion),
+    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
+    id_cliente INTEGER NOT NULL REFERENCES clientes(id_cliente),
+    id_relacion INTEGER REFERENCES relaciones_familiares(id_relacion),
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (id_activa, id_cliente)
-  );
+    UNIQUE(id_activa, id_cliente)
+);
 
-CREATE TABLE -- Tabla de métodos de pago (elimina ENUM)
-  metodos_pago (
+-- Tabla de métodos de pago (elimina ENUM)
+CREATE TABLE metodos_pago (
     id_metodo_pago SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion TEXT
-  );
+);
 
-CREATE TABLE -- Tabla de pagos
-  pagos (
+-- Tabla de pagos
+CREATE TABLE pagos (
     id_pago SERIAL PRIMARY KEY,
-    id_activa INTEGER NOT NULL REFERENCES membresias_activas (id_activa),
-    id_metodo_pago INTEGER NOT NULL REFERENCES metodos_pago (id_metodo_pago),
-    monto DECIMAL(10, 2) NOT NULL CHECK (monto > 0),
+    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
+    id_metodo_pago INTEGER NOT NULL REFERENCES metodos_pago(id_metodo_pago),
+    monto DECIMAL(10,2) NOT NULL CHECK (monto > 0),
     fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     comprobante_url VARCHAR(255),
     referencia_pago VARCHAR(100)
-  );
+);
 
-CREATE TABLE -- Tabla de estados de membresía (para auditoría)
-  historial_estados_membresia (
+-- Tabla de estados de membresía (para auditoría)
+CREATE TABLE historial_estados_membresia (
     id_historial SERIAL PRIMARY KEY,
-    id_activa INTEGER NOT NULL REFERENCES membresias_activas (id_activa),
+    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
     estado_anterior VARCHAR(20),
     estado_nuevo VARCHAR(20) NOT NULL,
     fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     motivo_cambio TEXT
+); TEXT
   );
