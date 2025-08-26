@@ -1,8 +1,7 @@
 import express from 'express';
 import { renderMembershipHome, renderMembershipList} from '../controllers/membershipController.js';
 import { authMiddleware, roleMiddleware } from '../../login/middlewares/accessDenied.js';
-import { MembershipController } from '../controllers/membershipController.js';
-
+import { MembershipController } from '../controllers/createMemberController.js';
 
 const routerMember = express.Router();
 

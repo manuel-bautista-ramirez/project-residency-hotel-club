@@ -30,16 +30,6 @@ app.engine("Handlebars", engine({
   helpers: hbsHelpers
     }
   ));
-app.set('views', ['./src/modules/login/views/','./src/views/']);
-
-app.engine("Handlebars", engine({
-  helpers: {
-    eq: function(a,b){
-      return a===b;
-    }
-      }
-    }
-  ));
 
   app.set("port", config.app.port);
   app.set("database",config.mysql.database);
