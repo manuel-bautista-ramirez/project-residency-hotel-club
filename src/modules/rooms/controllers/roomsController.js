@@ -34,12 +34,10 @@ export const renderPreciosView = async (req, res) => {
 
 export const renderReservacionesView = async (req, res) => {
   try {
-    const reservaciones = await Room.reservaciones();
-    const habitaciones = await Room.find();
-    res.render("reservaciones", { title: "Reservaciones", reservaciones, habitaciones });
+    res.render("reportes", { title: "reportes"});
   } catch (err) {
-    console.error("Error al renderizar reservaciones:", err);
-    return res.status(500).send("Error al cargar las reservaciones");
+    console.error("Error al renderizar reportes de rentas:", err);
+    return res.status(500).send("Error al cargar los reportes de rentas");
   }
 };
 

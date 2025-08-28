@@ -27,11 +27,7 @@ routerRoom.use(authMiddleware);
 // ----- VISTAS PRINCIPALES -----
 routerRoom.get("/rooms", renderHabitacionesView);
 
-routerRoom.get(
-  "rooms/precios",
-  roleMiddleware("Administrador"),
-  renderPreciosView
-);
+routerRoom.get("/rooms/precios", renderPreciosView);
 routerRoom.get("/rooms/reportes", renderReservacionesView);
 
 // ----- FORMULARIOS INDIVIDUALES -----
@@ -71,12 +67,10 @@ routerRoom.post("/api/rooms/reservar", async (req, res) => {
     req.body;
 
   if (!habitacion_id || !nombre_cliente || !fecha_ingreso || !fecha_salida) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "Faltan datos para crear la reservación",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "Faltan datos para crear la reservación",
+    });
   }
 
   const nuevaReserva = await crearReservacion({
@@ -88,13 +82,10 @@ routerRoom.post("/api/rooms/reservar", async (req, res) => {
   });
   if (nuevaReserva)
     return res.status(201).json({ success: true, reservacion: nuevaReserva });
-  return res
-    .status(400)
-    .json({
-      success: false,
-      message:
-        "No se pudo crear la reservación (habitacion ocupada o inválida)",
-    });
+  return res.status(400).json({
+    success: false,
+    message: "No se pudo crear la reservación (habitacion ocupada o inválida)",
+  });
 });
 
 // Crear renta
@@ -136,12 +127,10 @@ routerRoom.post("/api/rentas", async (req, res) => {
   });
   if (rentaCreada)
     return res.status(201).json({ success: true, renta: rentaCreada });
-  return res
-    .status(400)
-    .json({
-      success: false,
-      message: "No se pudo crear la renta (habitacion ocupada o inválida)",
-    });
+  return res.status(400).json({
+    success: false,
+    message: "No se pudo crear la renta (habitacion ocupada o inválida)",
+  });
 });
 
 // Editar renta

@@ -68,7 +68,7 @@ let rentas = [
   {
     id: 1,
     habitacion_id: 104,
-    usuario_id: 1,
+    usuario_id: "Manuel",
     nombre_cliente: "Luis Gomez",
     correo_cliente: "example@gmail.com",
     telefono_cliente: "4531246364",
