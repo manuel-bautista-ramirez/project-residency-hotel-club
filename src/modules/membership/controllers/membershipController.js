@@ -1,4 +1,4 @@
-// Controlador para la vista principal
+// Controlador para renderizar la vista principal
 export const renderMembershipHome = (req, res) => {
     const userRole = req.session.user?.role || 'Recepcionista';
     const isAdmin = userRole === 'Administrador'; 
@@ -12,7 +12,7 @@ export const renderMembershipHome = (req, res) => {
     });
   };
   
-  // Controlador para listar membresías
+  // Controlador para renderizar la vista de listar membresías
   export const renderMembershipList = (req, res) => {
     const userRole = req.session.user?.role || 'Recepcionista';
     const isAdmin = userRole === 'Administrador'; 
@@ -30,30 +30,25 @@ export const renderMembershipHome = (req, res) => {
     });
   };
 
-  //Controlador para crear membresía
-  export const renderMembershipCreate = (req, res) => {
-    const userRole = req.session.user?.role || 'Recepcionista';
-    const isAdmin = userRole === 'Administrador'; 
-    const userRole = req.session.user?.role || 'Recepcionista';
-    const isAdmin = userRole === 'Administrador'; 
-    res.render('membershipCreate', {
-      title: 'Crear Membresía',
-      isAdmin,
-      userRole,
-      tiposMembresia,
-      precioFamiliar
-    });
-  };
-
- 
-
-
- 
-
-  
-  
-  
-  
-
-
-
+  //Controlador para renderizar la vista de crear membresía
+  export const renderMembershipCreate = async (req, res) => {
+    try {
+        const userRole = req.session.user?.role || 'Recepcionista';
+        const isAdmin = userRole === 'Administrador';
+        
+        // Obtener los datos necesarios
+        const tiposMembresia = await MembershipModel.getTiposMembresia();
+        const precioFamiliar = await MembershipModel.getPrecioFamiliar();
+        
+        res.render('membershipCreate', {
+            title: 'Crear Membresía',
+            isAdmin,
+            userRole,
+            tiposMembresia,
+            precioFamiliar
+        });
+    } catch (error) {
+        console.error('Error al cargar la página de creación de membresía:', error);
+        res.status(500).send('Error al cargar la página');
+    }
+};

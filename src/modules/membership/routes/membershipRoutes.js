@@ -1,5 +1,5 @@
 import express from 'express';
-import { renderMembershipHome, renderMembershipList} from '../controllers/membershipController.js';
+import { renderMembershipCreate, renderMembershipHome, renderMembershipList} from '../controllers/membershipController.js';
 import { authMiddleware, roleMiddleware } from '../../login/middlewares/accessDenied.js';
 import { MembershipController } from '../controllers/createMemberController.js';
 
@@ -12,10 +12,13 @@ routerMember.use(authMiddleware);
 // Rutas accesibles a TODOS los roles autenticados
 // Rutas accesibles a TODOS los roles autenticados
 routerMember.get('/', renderMembershipHome);
+routerMember.get('/createMembership', MembershipController.renderTiposMembresia);
 routerMember.get('/listMembership', renderMembershipList);
 
-// Ruta para crear membresía que carga los tipos de membresía
-routerMember.get('/createMembership', MembershipController.renderCreate);
+
+
+routerMember.get("/tipos_membresia/:id", MembershipController.getTipoMembresiaById);
+
 
 
 
