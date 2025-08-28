@@ -8,5 +8,6 @@ export const hbsHelpers = {
     args.pop();
     return args.every(Boolean);
   },
-  not: (a) => !a
+  not: (a) => !a,
+  //json: (context) => JSON.stringify(context)
 };

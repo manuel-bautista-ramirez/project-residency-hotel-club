@@ -63,6 +63,35 @@ CREATE TABLE
     UNIQUE (tipo_habitacion, mes) -- un precio por tipo de habitación y mes
   );
 
+INSERT INTO
+  precios (tipo_habitacion, mes, monto)
+VALUES
+  ('sencilla', 1, 100.00), -- Enero
+  ('sencilla', 2, 100.00), -- Febrero
+  ('sencilla', 3, 120.00), -- Marzo
+  ('sencilla', 4, 120.00), -- Abril
+  ('sencilla', 5, 150.00), -- Mayo
+  ('sencilla', 6, 150.00), -- Junio
+  ('sencilla', 7, 200.00), -- Julio
+  ('sencilla', 8, 200.00), -- Agosto
+  ('sencilla', 9, 150.00), -- Septiembre
+  ('sencilla', 10, 150.00), -- Octubre
+  ('sencilla', 11, 120.00), -- Noviembre
+  ('sencilla', 12, 120.00), -- Diciembre
+  ('suite', 1, 200.00), -- Enero
+  ('suite', 2, 200.00), -- Febrero
+  ('suite', 3, 250.00), -- Marzo
+  ('suite', 4, 250.00), -- Abril
+  ('suite', 5, 300.00), -- Mayo
+  ('suite', 6, 300.00), -- Junio
+  ('suite', 7, 400.00), -- Julio
+  ('suite', 8, 400.00), -- Agosto
+  ('suite', 9, 300.00), -- Septiembre
+  ('suite', 10, 300.00), -- Octubre
+  ('suite', 11, 250.00), -- Noviembre
+  ('suite', 12, 250.00); -- Diciembre
+
+
 -- 3) Tabla de Reservaciones
 -- Se guarda el precio al momento de la reserva
 CREATE TABLE
@@ -74,12 +103,21 @@ CREATE TABLE
     fecha_reserva DATE NOT NULL, -- día en que se hizo la reserva
     fecha_ingreso DATE NOT NULL, -- día que ocupará
     fecha_salida DATE NOT NULL,
+    correo_cliente VARCHAR(100),
+    telefono_cliente VARCHAR(20),
     monto DECIMAL(10, 2) NOT NULL, -- precio guardado al reservar
     monto_letras VARCHAR(255) NOT NULL,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
     FOREIGN KEY (usuario_id) REFERENCES users_hotel (id)
   );
+
+  INSERT INTO reservaciones (habitacion_id, usuario_id, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida, correo_cliente, telefono_cliente, monto, monto_letras)
+VALUES
+  (1, 1, 'Juan Perez', '2024-06-01', '2024-06-10', '2024-06-15', ,'example@gmail.com','4453235434' 600.00, 'Seiscientos pesos'),
+  (2, 1, 'Maria Lopez', '2024-06-02', '2024-06-12', '2024-06-14',,'example1@gmail.com','4453235454' 300.00, 'Trescientos pesos'),
+  (3, 2, 'Carlos Sanchez', '2024-06-03', '2024-06-20', '2024-06-25', 750.00, 'Setecientos cincuenta pesos');
+
 
 -- 4) Tabla de Rentas
 -- Registro de ocupación real de habitaciones
@@ -89,6 +127,8 @@ CREATE TABLE
     habitacion_id INT NOT NULL,
     usuario_id INT NOT NULL,
     nombre_cliente VARCHAR(100) NOT NULL,
+    correo_cliente VARCHAR(100),
+    telefono_cliente VARCHAR(20),
     fecha_ingreso DATE NOT NULL,
     fecha_salida DATE NOT NULL,
     tipo_pago ENUM ('tarjeta', 'transferencia', 'efectivo') NOT NULL,
@@ -98,6 +138,11 @@ CREATE TABLE
     FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
     FOREIGN KEY (usuario_id) REFERENCES users_hotel (id)
   );
+
+  INSERT INTO rentas (habitacion_id, usuario_id,nombre_cliente,telefono_cliente, nombre_cliente, fecha_ingreso, fecha_salida, tipo_pago, monto, monto_letras)
+VALUES
+  (1, 1, 'Luis Gomez', '555-1234', 'Luis Gomez','example@gail.com','4531246364',   '2024-06-05', '2024-06-10', 'efectivo', 500.00, 'Quinientos pesos'),
+  (2, 2, 'Ana Torres', '555-5678', 'Ana Torres', 'example2@gail.com','4431246364',  '2024-06-08', '2024-06-12', 'tarjeta', 400.00, 'Cuatrocientos pesos');
 
 -- =====================================================
 -- EJEMPLO DE CONSULTA PARA EL CALENDARIO

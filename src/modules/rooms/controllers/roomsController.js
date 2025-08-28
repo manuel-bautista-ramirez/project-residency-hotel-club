@@ -1,111 +1,143 @@
 // roomsController.js
-import Room from "../models/ModelRoom.js"; // Modelo simulado
+import Room from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
+/*** --- VISTAS PRINCIPALES --- ***/
 
-// --- VISTAS ---
-
-// Renderizar vista de habitaciones
 export const renderHabitacionesView = async (req, res) => {
-  const habitaciones = await Room.find();
-  res.render("habitaciones", { title: "Habitaciones", habitaciones });
-};
-export const getRooms = async (req, res) => {
-  const habitaciones = await Room.find();
-  const reservaciones = await Room.reservaciones();
+  try {
+    const habitaciones = await Room.find();
+    const user = req.session.user || { role: "Invitado" };
 
-  // Crear un mapa de id -> numero
-  const habitacionesMap = {};
-  habitaciones.forEach(h => {
-    habitacionesMap[h.id] = h.numero;
-  });
-
-  res.render('rooms', {
-    user: req.session.user,
-    habitaciones,
-    reservaciones,
-    habitacionesMap
-  });
-};
-
-// Renderizar vista de precios
-export const renderPreciosView = async (req, res) => {
-  const precios = await Room.precios();
-  res.render("precios", { title: "Precios de Habitaciones", precios });
-};
-
-// Renderizar vista de reservaciones
-export const renderReservacionesView = async (req, res) => {
-  const reservaciones = await Room.reservaciones();
-  const habitaciones = await Room.find();
-  res.render("reservaciones", { title: "Reservaciones", reservaciones, habitaciones });
-};
-
-// Renderizar vista de rentas
-export const renderRentasView = async (req, res) => {
-  const rentas = await Room.rentas();
-  const habitaciones = await Room.find();
-  res.render("rentas", { title: "Rentas", rentas, habitaciones });
-};
-
-// --- API / LÓGICA ---
-
-// Obtener todas las habitaciones
-export const getHabitaciones = async () => {
-  return await Room.find();
-};
-
-// Obtener precios
-export const getPrecios = async () => {
-  return await Room.precios();
-};
-
-// Obtener reservaciones
-export const getReservaciones = async () => {
-  return await Room.reservaciones();
-};
-
-// Obtener rentas
-export const getRentas = async () => {
-  return await Room.rentas();
-};
-
-// Cambiar estado de habitación
-export const setEstadoHabitacion = async (id, estado) => {
-  return await Room.setEstado(id, estado);
-};
-
-// Crear reservación
-export const crearReservacion = async ({ habitacion_id, usuario_id, nombre_cliente, fecha_ingreso, fecha_salida }) => {
-  return await Room.crearReservacion({
-    habitacion_id,
-    usuario_id,
-    nombre_cliente,
-    fecha_ingreso,
-    fecha_salida
-  });
-};
-
-// Crear renta
-export const crearRenta = async (req, res) => {
-  const { habitacion_id, usuario_id, nombre_cliente, fecha_ingreso, fecha_salida, tipo_pago } = req.body;
-
-  const nuevaRenta = await Room.crearRenta({
-    habitacion_id: Number(habitacion_id),
-    usuario_id: Number(usuario_id),
-    nombre_cliente,
-    fecha_ingreso,
-    fecha_salida,
-    tipo_pago
-  });
-
-  if (nuevaRenta) {
-    res.status(201).json({ success: true, renta: nuevaRenta });
-  } else {
-    res.status(400).json({ success: false, message: "No se pudo crear la renta (habitacion ocupada o inválida)" });
+    res.render("habitaciones", {
+      title: "Habitaciones",
+      habitaciones,
+      user: {
+        ...user,
+        rol: user.role
+      }
+    });
+  } catch (err) {
+    console.error("Error al renderizar habitaciones:", err);
+    return res.status(500).send("Error al cargar las habitaciones");
   }
 };
 
-// Obtener precio vigente por tipo y mes
-export const obtenerPrecio = async (tipo, mes) => {
-  return await Room.obtenerPrecio(tipo, mes);
+export const renderPreciosView = async (req, res) => {
+  try {
+    const precios = await Room.precios();
+    res.render("precios", { title: "Precios de Habitaciones", precios });
+  } catch (err) {
+    console.error("Error al renderizar precios:", err);
+    return res.status(500).send("Error al cargar los precios");
+  }
 };
+
+export const renderReservacionesView = async (req, res) => {
+  try {
+    const reservaciones = await Room.reservaciones();
+    const habitaciones = await Room.find();
+    res.render("reservaciones", { title: "Reservaciones", reservaciones, habitaciones });
+  } catch (err) {
+    console.error("Error al renderizar reservaciones:", err);
+    return res.status(500).send("Error al cargar las reservaciones");
+  }
+};
+
+export const renderRentasView = async (req, res) => {
+  try {
+    const rentas = await Room.rentas();
+    const habitaciones = await Room.find();
+    res.render("rentas", { title: "Rentas", rentas, habitaciones });
+  } catch (err) {
+    console.error("Error al renderizar rentas:", err);
+    return res.status(500).send("Error al cargar las rentas");
+  }
+};
+
+/*** --- FORMULARIOS INDIVIDUALES --- ***/
+
+export const renderFormReservar = async (req, res) => {
+  try {
+    const habitacion_id = Number(req.params.id);
+    if (Number.isNaN(habitacion_id)) return res.status(400).send("ID de habitación inválido");
+
+    const habitaciones = await Room.find();
+    const habitacion = habitaciones.find(h => Number(h.id) === habitacion_id);
+    if (!habitacion) return res.status(404).send("Habitación no encontrada");
+
+    return res.render("reservar", {
+      title: "Reservar habitación",
+      habitacion,
+      habitaciones,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error("Error en renderFormReservar:", err);
+    return res.status(500).send("Error al cargar el formulario de reservación");
+  }
+};
+
+export const renderFormRentar = async (req, res) => {
+  try {
+    const habitacion_id = Number(req.params.id);
+    if (Number.isNaN(habitacion_id)) return res.status(400).send("ID de habitación inválido");
+
+    const habitaciones = await Room.find();
+    const habitacion = habitaciones.find(h => Number(h.id) === habitacion_id);
+    if (!habitacion) return res.status(404).send("Habitación no encontrada");
+
+    return res.render("rentar", {
+      title: "Rentar habitación",
+      habitacion,
+      habitaciones,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error("Error en renderFormRentar:", err);
+    return res.status(500).send("Error al cargar el formulario de renta");
+  }
+};
+
+export const renderFormEditarRenta = async (req, res) => {
+  try {
+    const rentaId = Number(req.params.id);
+    if (Number.isNaN(rentaId)) return res.status(400).send("ID de renta inválido");
+
+    const renta = await Room.findRentaById(rentaId);
+    if (!renta) return res.status(404).send("Renta no encontrada");
+
+    const habitaciones = await Room.find();
+
+    return res.render("editarRenta", {
+      title: "Editar Renta",
+      renta,
+      habitaciones,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error("Error en renderFormEditarRenta:", err);
+    return res.status(500).send("Error al cargar el formulario de edición de renta");
+  }
+};
+
+/*** --- API / LÓGICA --- ***/
+
+export const getHabitaciones = async () => await Room.find();
+export const getPrecios = async () => await Room.precios();
+export const getReservaciones = async () => await Room.reservaciones();
+export const getRentas = async () => await Room.rentas();
+export const setEstadoHabitacion = async (id, estado) => await Room.setEstado(Number(id), estado);
+
+export const crearReservacion = async ({ habitacion_id, usuario_id, nombre_cliente, correo_cliente, telefono_cliente, fecha_ingreso, fecha_salida, monto }) => {
+  return await Room.crearReservacion({ habitacion_id, usuario_id, nombre_cliente, correo_cliente, telefono_cliente, fecha_ingreso, fecha_salida, monto });
+};
+
+export const crearRenta = async ({ habitacion_id, usuario_id, nombre_cliente, correo_cliente, telefono_cliente, fecha_ingreso, fecha_salida, tipo_pago, monto }) => {
+  return await Room.crearRenta({ habitacion_id, usuario_id, nombre_cliente, correo_cliente, telefono_cliente, fecha_ingreso, fecha_salida, tipo_pago, monto });
+};
+
+export const obtenerPrecio = async (tipo, mes) => await Room.obtenerPrecio(tipo, mes);
+
+export const getRentaById = async (id) => await Room.findRentaById(Number(id));
+export const updateRenta = async (data) => await Room.updateRenta(Number(data.id), data);
+export const deleteRenta = async (id) => await Room.deleteRenta(Number(id));

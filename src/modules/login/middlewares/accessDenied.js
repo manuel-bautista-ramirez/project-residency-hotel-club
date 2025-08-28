@@ -4,12 +4,6 @@
  * Este middleware verifica si existe un usuario en la sesión actual. Si el usuario
  * está autenticado, permite continuar con el siguiente controlador. De lo contrario,
  * responde con un estado 401 y renderiza una vista de acceso restringido.
- *
- * @param {Object} req - Objeto de solicitud HTTP (Request).
- * @param {Object} req.session - Sesión actual del usuario.
- * @param {Object} req.session.user - Información del usuario autenticado en la sesión.
- * @param {Object} res - Objeto de respuesta HTTP (Response).
- * @param {Function} next - Función para pasar el control al siguiente middleware o controlador.
  */
 export const authMiddleware = (req, res, next) => {
   const isAuthenticated = req.session?.user; // Verifica si hay un usuario en la sesión
@@ -18,22 +12,27 @@ export const authMiddleware = (req, res, next) => {
     req.user = req.session.user;
     next(); // Continúa con el controlador si está autenticado
   } else {
-    console.log(`Usuario autenticado. Redirigiendo al login...`)
+    console.log('Usuario no autenticado. Redirigiendo al login.');
     res.status(401).render('authMiddleware', {
       title: 'Acceso Restringido',
       redirectUrl: '/', // Ruta a la que se redirigirá después de 5 segundos
-
     });
-    console.log('Usuario no autenticado. Redirigiendo al login.');
-    res.redirect('/'); // Redirige al login si no está autenticado
   }
 };
 
+/**
+ * Middleware para verificar roles de usuario.
+ *
+ * @param {string} requiredRole - Rol requerido para acceder a la ruta ("Usuario" o "Administrador").
+ */
 export const roleMiddleware = (requiredRole) => (req, res, next) => {
   const { role } = req.session.user || {};
-  if (!role == requiredRole) {
 
-    return res.status(401).render('authMiddleware', { title: 'Acceso denegado' });
+  // Compara el rol del usuario con el rol requerido
+  if (role !== requiredRole) {
+    console.log(`Acceso denegado para usuario con rol: ${role}`);
+    return res.status(403).render('authMiddleware', { title: 'Acceso denegado' });
   }
+
   next();
 };
