@@ -27,11 +27,9 @@ app.use(session({
   cookie: { secure: false },
 }))
 
-
-app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña
-
 app.use(homeRoutes);
 app.use(routerRoom);
+app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña
 
 // Iniciar el servidor
 app.listen(app.get('port'),() => {

@@ -12,10 +12,10 @@ export const authMiddleware = (req, res, next) => {
     req.user = req.session.user;
     next(); // Continúa con el controlador si está autenticado
   } else {
-    console.log('Usuario no autenticado. Redirigiendo al login.');
-    res.status(401).render('authMiddleware', {
-      title: 'Acceso Restringido',
-      redirectUrl: '/', // Ruta a la que se redirigirá después de 5 segundos
+    console.log("Usuario no autenticado. Redirigiendo al login.");
+    res.status(401).render("authMiddleware", {
+      title: "Acceso Restringido",
+      redirectUrl: "/", // Ruta a la que se redirigirá después de 5 segundos
     });
   }
 };
@@ -26,13 +26,22 @@ export const authMiddleware = (req, res, next) => {
  * @param {string} requiredRole - Rol requerido para acceder a la ruta ("Usuario" o "Administrador").
  */
 export const roleMiddleware = (requiredRole) => (req, res, next) => {
-  const { role } = req.session.user || {};
-
-  // Compara el rol del usuario con el rol requerido
-  if (role !== requiredRole) {
-    console.log(`Acceso denegado para usuario con rol: ${role}`);
-    return res.status(403).render('authMiddleware', { title: 'Acceso denegado' });
+  // Si no hay usuario en sesión → no está autenticado
+  if (!req.session.user) {
+    console.log("Usuario no autenticado. Redirigiendo al login.");
+    return res.redirect("/"); // 👈 aquí redirige en vez de mostrar otra vista que cause loop
   }
 
+  const { role } = req.session.user;
+
+  // Si el rol no coincide
+  if (role !== requiredRole) {
+    console.log(`Acceso denegado para usuario con rol: ${role}`);
+    return res
+      .status(403)
+      .render("authMiddleware", { title: "Acceso denegado" });
+  }
+
+  // Si pasa todo, sigue a la ruta
   next();
 };

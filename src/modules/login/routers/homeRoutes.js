@@ -26,12 +26,19 @@ router.get('/logout', (req, res) =>
   )
 );
 
-// Admin panel
-router.get('/admin', roleMiddleware('Administrador'), (req, res) =>
-  res.render('admin', { title: 'Panel de Administración' })
-);
+// Admin panel de prueba (HTML directo)
+router.get('/admin', roleMiddleware('Administrador'), (req, res) => {
+  res.send('<h1>Panel de Administración</h1>');
+});
 
-// // 404 handler para este módulo
-// router.use((req, res) => res.status(404).render('error403', { title: 'Página no encontrada' }));
+
+// error 404  handler en cualquier modulo
+
+
+ // error 404 handler en cualquier módulo
+// router.use((req, res) => {
+//   res.status(404).render('error404', { title: 'Página no encontrada' });
+// });
+
 
 export default router;

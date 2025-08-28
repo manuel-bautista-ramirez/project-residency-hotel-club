@@ -35,7 +35,7 @@ const precios = [
 let reservaciones = [
   {
     id: 1,
-    habitacion_id: 1,
+    habitacion_id: 101,
     usuario_id: 1,
     nombre_cliente: "Juan Perez",
     correo_cliente: "example@gmail.com",
@@ -49,7 +49,7 @@ let reservaciones = [
   },
   {
     id: 2,
-    habitacion_id: 2,
+    habitacion_id: 102,
     usuario_id: 1,
     nombre_cliente: "Maria Lopez",
     correo_cliente: "example1@gmail.com",
@@ -67,7 +67,7 @@ let reservaciones = [
 let rentas = [
   {
     id: 1,
-    habitacion_id: 1,
+    habitacion_id: 104,
     usuario_id: 1,
     nombre_cliente: "Luis Gomez",
     correo_cliente: "example@gmail.com",
@@ -81,7 +81,7 @@ let rentas = [
   },
   {
     id: 2,
-    habitacion_id: 2,
+    habitacion_id: 106,
     usuario_id: 2,
     nombre_cliente: "Ana Torres",
     correo_cliente: "example2@gmail.com",

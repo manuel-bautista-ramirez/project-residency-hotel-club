@@ -6,7 +6,7 @@ import Room from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 export const renderHabitacionesView = async (req, res) => {
   try {
     const habitaciones = await Room.find();
-    const user = req.session.user || { role: "Invitado" };
+    const user = req.session.user || { role: "Usuario" };
 
     res.render("habitaciones", {
       title: "Habitaciones",
