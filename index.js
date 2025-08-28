@@ -1,7 +1,5 @@
 // Importación de dependencias
 import express from 'express';
-import Handlebars from 'handlebars';
-import Handlebars from 'handlebars';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
@@ -36,7 +34,6 @@ app.use('/memberships', routerMember); // Prefijo único para membresías
 app.use('/rooms', routerRoom); // Prefijo único para habitaciones
 
 app.use(homeRoutes);
-app.use(routerMember);
 app.use(routerMember);
 app.use(routerRoom);
 app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña

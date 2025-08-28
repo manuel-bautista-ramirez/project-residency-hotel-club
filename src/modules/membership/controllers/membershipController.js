@@ -2,7 +2,7 @@
 export const renderMembershipHome = (req, res) => {
     const userRole = req.session.user?.role || 'Recepcionista';
     const isAdmin = userRole === 'Administrador'; 
-    const isAdmin = userRole === 'Administrador'; 
+
   
     res.render('membershipHome', {
       title: 'Área de Membresías',
@@ -15,15 +15,9 @@ export const renderMembershipHome = (req, res) => {
   // Controlador para renderizar la vista de listar membresías
   export const renderMembershipList = (req, res) => {
     const userRole = req.session.user?.role || 'Recepcionista';
-    const isAdmin = userRole === 'Administrador'; 
-
-    const userRole = req.session.user?.role || 'Recepcionista';
-    const isAdmin = userRole === 'Administrador'; 
+    const isAdmin = userRole === 'Administrador';  
 
     res.render('membershipList', {
-      title: 'Lista de Membresías',
-      isAdmin,
-      userRole
       title: 'Lista de Membresías',
       isAdmin,
       userRole
