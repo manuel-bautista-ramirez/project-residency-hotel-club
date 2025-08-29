@@ -1,5 +1,5 @@
-// ModelRoom.js
-// Modelo simulado de habitaciones, precios, reservaciones y rentas
+// src/modules/rooms/models/ModelRoom.js
+import { pool } from '../../../dataBase/conecctionDataBase.js'; // tu conexión MySQL
 
 /** Helpers **/
 const nextId = (arr) => (!arr.length ? 1 : Math.max(...arr.map(x => Number(x.id))) + 1);
@@ -28,7 +28,6 @@ const precios = [
   { id: 2, tipo_habitacion: "suite", mes: 1, monto: 200 },
   { id: 3, tipo_habitacion: "sencilla", mes: 11, monto: 120 },
   { id: 4, tipo_habitacion: "suite", mes: 11, monto: 250 },
-  // ... puedes agregar todos los meses como en tu DB
 ];
 
 // 3) Reservaciones simuladas
@@ -95,8 +94,9 @@ let rentas = [
   },
 ];
 
-/** Modelo **/
+/** Modelo Room **/
 const Room = {
+  // --- Arrays simulados ---
   find: async () => habitaciones,
   precios: async () => precios,
   reservaciones: async () => reservaciones,
@@ -108,95 +108,78 @@ const Room = {
     return hab || null;
   },
 
-  crearReservacion: async ({
-    habitacion_id,
-    usuario_id,
-    nombre_cliente,
-    correo_cliente,
-    telefono_cliente,
-    fecha_ingreso,
-    fecha_salida,
-    monto,
-  }) => {
-    const hab = habitaciones.find((h) => Number(h.id) === Number(habitacion_id));
+  crearReservacion: async (data) => {
+    const hab = habitaciones.find((h) => Number(h.id) === Number(data.habitacion_id));
     if (!hab || hab.estado === "ocupado") return null;
 
     const nuevaReserva = {
       id: nextId(reservaciones),
-      habitacion_id: Number(habitacion_id),
-      usuario_id: Number(usuario_id),
-      nombre_cliente,
-      correo_cliente,
-      telefono_cliente,
+      habitacion_id: Number(data.habitacion_id),
+      usuario_id: Number(data.usuario_id),
+      nombre_cliente: data.nombre_cliente,
+      correo_cliente: data.correo_cliente,
+      telefono: data.telefono_cliente,
       fecha_reserva: new Date().toISOString().split("T")[0],
-      fecha_ingreso,
-      fecha_salida,
-      monto: monto ?? 0,
-      monto_letras: numeroALetras(monto ?? 0),
+      fecha_ingreso: data.fecha_ingreso,
+      fecha_salida: data.fecha_salida,
+      monto: data.monto ?? 0,
+      monto_letras: numeroALetras(data.monto ?? 0),
       fecha_registro: new Date().toISOString(),
     };
     reservaciones.push(nuevaReserva);
     return nuevaReserva;
   },
 
-  crearRenta: async ({
-    habitacion_id,
-    usuario_id,
-    nombre_cliente,
-    correo_cliente,
-    telefono_cliente,
-    fecha_ingreso,
-    fecha_salida,
-    tipo_pago,
-    monto,
-  }) => {
-    const hab = habitaciones.find((h) => Number(h.id) === Number(habitacion_id));
+  crearRenta: async (data) => {
+    const hab = habitaciones.find((h) => Number(h.id) === Number(data.habitacion_id));
     if (!hab || hab.estado === "ocupado") return null;
 
     const nuevaRenta = {
       id: nextId(rentas),
-      habitacion_id: Number(habitacion_id),
-      usuario_id: Number(usuario_id),
-      nombre_cliente,
-      correo_cliente,
-      telefono_cliente,
-      fecha_ingreso,
-      fecha_salida,
-      tipo_pago,
-      monto: monto ?? 0,
-      monto_letras: numeroALetras(monto ?? 0),
+      habitacion_id: Number(data.habitacion_id),
+      usuario_id: data.usuario_id,
+      nombre_cliente: data.nombre_cliente,
+      correo_cliente: data.correo_cliente,
+      telefono: data.telefono_cliente,
+      fecha_ingreso: data.fecha_ingreso,
+      fecha_salida: data.fecha_salida,
+      tipo_pago: data.tipo_pago,
+      monto: data.monto ?? 0,
+      monto_letras: numeroALetras(data.monto ?? 0),
       fecha_registro: new Date().toISOString(),
     };
-
     rentas.push(nuevaRenta);
     hab.estado = "ocupado";
     return nuevaRenta;
   },
 
-  findRentaById: async (id) => rentas.find((r) => Number(r.id) === Number(id)) || null,
-  updateRenta: async (id, data) => {
-    const idx = rentas.findIndex((r) => Number(r.id) === Number(id));
-    if (idx === -1) return null;
-    rentas[idx] = { ...rentas[idx], ...data };
-    return rentas[idx];
-  },
-  deleteRenta: async (id) => {
-    const idx = rentas.findIndex((r) => Number(r.id) === Number(id));
-    if (idx === -1) return false;
-    const hab = habitaciones.find((h) => h.id === rentas[idx].habitacion_id);
-    if (hab) hab.estado = "disponible";
-    rentas.splice(idx, 1);
-    return true;
-  },
-
-  saveRentas: async (newRentas) => {
-    rentas = Array.isArray(newRentas) ? newRentas : rentas;
-    return rentas;
-  },
-  saveReservaciones: async (newReservas) => {
-    reservaciones = Array.isArray(newReservas) ? newReservas : reservaciones;
-    return reservaciones;
-  },
+  // --- Base de datos ---
+  getEventosCalendario: async () => {
+    try {
+      const query = `
+        SELECT r.id, r.nombre_cliente, m.correo_cliente, m.telefono_cliente, r.fecha_ingreso, r.fecha_salida, 'renta' AS tipo
+        FROM rentas r
+        INNER JOIN medios_mensajes m ON r.id_medio_mensaje = m.id_medio_mensaje
+        UNION ALL
+        SELECT res.id, res.nombre_cliente, m.correo_cliente, m.telefono_cliente, res.fecha_ingreso, res.fecha_salida, 'reserva' AS tipo
+        FROM reservaciones res
+        INNER JOIN medios_mensajes m ON res.id_medio_mensaje = m.id_medio_mensaje
+      `;
+      const [rows] = await pool.execute(query);
+      return rows.map(evento => ({
+        id: evento.id,
+        title: evento.nombre_cliente,
+        start: evento.fecha_ingreso,
+        end: evento.fecha_salida ? new Date(new Date(evento.fecha_salida).getTime() + 24*60*60*1000).toISOString().split('T')[0] : evento.fecha_salida,
+        tipo: evento.tipo,
+        correo: evento.correo_cliente,
+        telefono: evento.telefono_cliente
+      }));
+    } catch (err) {
+      console.error("Error getEventosCalendario:", err);
+      return [];
+    }
+  }
 };
 
-export default Room;
+export { Room };

@@ -1,5 +1,5 @@
 // roomsController.js
-import Room from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+import {Room } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 /*** --- VISTAS PRINCIPALES --- ***/
 
@@ -115,6 +115,21 @@ export const renderFormEditarRenta = async (req, res) => {
   } catch (err) {
     console.error("Error en renderFormEditarRenta:", err);
     return res.status(500).send("Error al cargar el formulario de edición de renta");
+  }
+};
+
+
+export const renderCalendario = (req, res) => {
+  res.render('calendario', { title: 'Calendario de Habitaciones' });
+};
+
+export const fetchEventos = async (req, res) => {
+  try {
+    const eventos = await Room.getEventosCalendario();
+    res.json(eventos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener los eventos' });
   }
 };
 

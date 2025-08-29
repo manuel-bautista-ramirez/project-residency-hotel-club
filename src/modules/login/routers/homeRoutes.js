@@ -35,7 +35,7 @@ router.get('/admin', roleMiddleware('Administrador'), (req, res) => {
 // error 404  handler en cualquier modulo
 
 
- // error 404 handler en cualquier módulo
+ // error 404 handler
 // router.use((req, res) => {
 //   res.status(404).render('error404', { title: 'Página no encontrada' });
 // });

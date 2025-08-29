@@ -16,7 +16,6 @@
     <table class="min-w-full bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
       <thead class="bg-blue-800 text-white text-sm uppercase">
         <tr>
-          <th class="py-3 px-4 text-left">ID</th>
           <th class="py-3 px-4 text-left">Número</th>
           <th class="py-3 px-4 text-left">Tipo</th>
           <th class="py-3 px-4 text-left">Estado</th>
@@ -27,18 +26,17 @@
       <tbody class="text-gray-700 divide-y divide-gray-200">
         {{#each habitaciones}}
         <tr class="hover:bg-gray-50 transition">
-          <td class="py-3 px-4 font-semibold">{{this.id}}</td>
           <td class="py-3 px-4 capitalize">{{this.numero}}</td>
           <td class="py-3 px-4 capitalize">{{this.tipo}}</td>
           <td class="py-3 px-4 font-semibold">
             {{#if (eq this.estado 'disponible')}}
-              <span class="px-2 py-0.5 rounded-md bg-gray-200 text-gray-800 text-sm">Disponible</span>
+              <span class="px-2 py-0.5 rounded-md bg-gray-200 text-gray-800 text-sm"><button  type="button">Disponible</button></span>
             {{/if}}
             {{#if (eq this.estado 'ocupado')}}
-              <span class="px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-sm">Ocupado</span>
+              <span class="px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-sm"><button type="button">Ocupado</button></span>
             {{/if}}
             {{#if (eq this.estado 'limpieza')}}
-              <span class="px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 text-sm">Limpieza</span>
+              <span class="px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 text-sm"><button type="button">Limpieza</button></span>
             {{/if}}
           </td>
 

@@ -17,6 +17,8 @@ import {
   crearRenta,
   updateRenta,
   deleteRenta,
+  renderCalendario,
+  fetchEventos
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -34,6 +36,9 @@ routerRoom.get("/rooms/reportes", renderReservacionesView);
 routerRoom.get("/rooms/reservar/:id", renderFormReservar);
 routerRoom.get("/rooms/rentar/:id", renderFormRentar);
 routerRoom.get("/rooms/editar/:id", renderFormEditarRenta);
+
+routerRoom.get("/rooms/calendario", renderCalendario)
+routerRoom.get('/rooms/calendario', fetchEventos);
 
 // ----- API -----
 
@@ -87,6 +92,7 @@ routerRoom.post("/api/rooms/reservar", async (req, res) => {
     message: "No se pudo crear la reservación (habitacion ocupada o inválida)",
   });
 });
+
 
 // Crear renta
 routerRoom.post("/api/rentas", async (req, res) => {
@@ -156,7 +162,7 @@ routerRoom.post("/api/rentas/:id/editar", async (req, res) => {
 });
 
 // Eliminar renta
-routerRoom.post("/api/rentas/:id/eliminar", async (req, res) => {
+routerRoom.put("/api/rentas/:id/eliminar", async (req, res) => {
   const usuario_id = req.session.user?.id;
   if (!usuario_id) return res.status(401).send("Usuario no logeado");
 
@@ -165,5 +171,7 @@ routerRoom.post("/api/rentas/:id/eliminar", async (req, res) => {
   if (eliminado) return res.redirect("/rentas");
   return res.status(404).send("Renta no encontrada o no se pudo eliminar");
 });
+
+
 
 export { routerRoom };
