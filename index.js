@@ -6,6 +6,7 @@ import session from 'express-session';
 import {app} from './src/config/app.js'
 import homeRoutes from './src/modules/login/routers/homeRoutes.js'
 import passwordRecoveryRoutes from './src/modules/login/routers/passwordRecoveryRoutes.js';
+import {routerMember} from './src/modules/membership/routes/membershipRoutes.js';
 import {routerRoom} from './src/modules/rooms/routes/RouteRooms.js';
 
 // Configuración de variables para __dirname en módulos ES
@@ -27,7 +28,13 @@ app.use(session({
   cookie: { secure: false },
 }))
 
+
+app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña
+app.use('/memberships', routerMember); // Prefijo único para membresías
+app.use('/rooms', routerRoom); // Prefijo único para habitaciones
+
 app.use(homeRoutes);
+app.use(routerMember);
 app.use(routerRoom);
 app.use('/password-reset', passwordRecoveryRoutes); // Prefijo único para recuperación de contraseña
 

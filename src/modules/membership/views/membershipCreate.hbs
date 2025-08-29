@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Membresía</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50">
+    {{>navbar}}
+
+    <div class="container mx-auto px-4 py-8 mt-16 max-w-4xl">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
+                <h1 class="text-2xl font-bold">Crear Membresía</h1>
+                <p class="opacity-90">Complete la información del cliente y los detalles de la membresía</p>
+            </div>
+
+            <!-- Formulario de cliente -->
+            <div class="p-6 space-y-4">
+                <form id="form-cliente" class="space-y-4">
+                    <h2 class="text-lg font-semibold text-gray-700 flex items-center">
+                        <i class="fas fa-user-circle mr-2 text-blue-500"></i>
+                        Datos del Cliente
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
+                            <input type="text" name="name" placeholder="Ingrese el nombre completo" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <input type="text" name="phone" placeholder="Ingrese el teléfono"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                            <input type="email" name="email" placeholder="Ingrese el correo electrónico"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 items-end">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ID Cliente generado</label>
+                            <input id="id_cliente" name="id_cliente"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                        </div>
+                        <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-save mr-2"></i>Registrar cliente
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-6">
+
+                <form id="form-membership" action="{{apiBase}}/createMembership" method="POST" class="space-y-4">
+                    <input type="hidden" name="id_cliente" id="id_cliente_hidden">
+
+                    <h2 class="text-lg font-semibold text-gray-700 flex items-center">
+                        <i class="fas fa-id-card mr-2 text-blue-500"></i>
+                        Datos de la Membresía
+                    </h2>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de membresía</label>
+                        <select id="tipo_membresia" name="id_tipo_membresia"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            {{#each tiposMembresia}}
+                            <option value="{{this.id_tipo_membresia}}">{{this.nombre}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha inicio</label>
+                            <input type="date" name="fecha_inicio" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha fin</label>
+                            <input type="date" name="fecha_fin" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Precio final</label>
+                            <div class="relative">
+                                <input type="number" step="0.01" name="precio_final" id="precio"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                    readonly>
+                                <p class="text-sm text-gray-500 mt-1"><span id="precio-texto"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{#if isAdmin}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descuento (opcional)</label>
+                        <input type="number" id="descuento"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                            min="0" max="100" placeholder="%">
+                    </div>
+                    {{/if}}
+
+                    <section id="section-integrantes" class="hidden space-y-4 pt-4 border-t">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-700">
+                                <i class="fas fa-users mr-2 text-blue-500"></i>
+                                Integrantes
+                            </h3>
+                            <button type="button" id="add-integrante"
+                                class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition flex items-center">
+                                <i class="fas fa-plus-circle mr-2"></i>Agregar integrante
+                            </button>
+                        </div>
+                        <div id="integrantes-lista" class="space-y-4"></div>
+                    </section>
+
+                    <div class="pt-4">
+                        <button type="submit"
+                            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i> Crear Membresía
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const tipoMembresiaSelect = document.getElementById("tipo_membresia");
+            const sectionIntegrantes = document.getElementById("section-integrantes");
+            const addIntegranteBtn = document.getElementById("add-integrante");
+            const integrantesLista = document.getElementById("integrantes-lista");
+            const precioInput = document.getElementById("precio");
+            const precioTexto = document.getElementById("precio-texto");
+            const formCliente = document.getElementById("form-cliente");
+            const idClienteInput = document.getElementById("id_cliente");
+            const idClienteHidden = document.getElementById("id_cliente_hidden");
+            const formMembership = document.getElementById("form-membership");
+            const descuentoInput = document.getElementById("descuento");
+            let integranteCount = 0;          // empieza en 0
+            let currentTipo = null;           // guarda el tipo seleccionado
+
+            // 1) Registrar cliente por AJAX y mostrar id en input readonly
+            formCliente.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const fd = new FormData(formCliente);
+
+                try {
+                    const resp = await fetch(`${apiBase}/createClient`, {
+                        method: "POST",
+                        headers: { "Accept": "application/json" },
+                        body: new URLSearchParams(fd) // para x-www-form-urlencoded
+                    });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const data = await resp.json();          // { id_cliente: 123 }
+                    if (!data.id_cliente) throw new Error("Respuesta inválida al crear cliente");
+                    idClienteInput.value = data.id_cliente;  // visible
+                    idClienteHidden.value = data.id_cliente; // hidden para el segundo form
+                    alert("Cliente registrado con éxito");
+                } catch (err) {
+                    console.error(err);
+                    alert("Error al registrar cliente");
+                }
+            });
+
+            // 2) Al cambiar el tipo, carga precio y muestra/oculta familiares
+            const checkTipoMembresia = async () => {
+                const selected = tipoMembresiaSelect.value;
+                if (!selected) return;
+
+                try {
+                    const resp = await fetch(`${apiBase}/tipos_membresia/${selected}`, { headers: { "Accept": "application/json" } });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const data = await resp.json(); // { id_tipo_membresia, nombre, precio, max_integrantes }
+                    currentTipo = data;
+
+                    // Precio
+                    let precioFinal = Number(data.precio);
+                    // Si hay descuento visible (sólo admin), aplícalo
+                    if (descuentoInput) {
+                        const pct = Number(descuentoInput.value || 0);
+                        if (pct > 0) {
+                            precioFinal = +(precioFinal * (1 - pct / 100)).toFixed(2);
+                        }
+                    }
+                    precioInput.value = precioFinal;
+                    precioTexto.innerText = formatoMoneda(precioFinal);
+
+                    // Integrantes
+                    if (data.max_integrantes > 1) {
+                        sectionIntegrantes.classList.remove("hidden");
+                    } else {
+                        sectionIntegrantes.classList.add("hidden");
+                        integrantesLista.innerHTML = "";
+                        integranteCount = 0;
+                    }
+                } catch (error) {
+                    console.error("Error al obtener info de membresía:", error);
+                }
+            };
+
+            tipoMembresiaSelect.addEventListener("change", checkTipoMembresia);
+
+            // Si hay campo descuento (admin), recalcule al cambiar
+            if (descuentoInput) {
+                descuentoInput.addEventListener("input", () => {
+                    if (!currentTipo) return;
+                    let precio = Number(currentTipo.precio);
+                    const pct = Number(descuentoInput.value || 0);
+                    if (pct > 0) precio = +(precio * (1 - pct / 100)).toFixed(2);
+                    precioInput.value = precio;
+                    precioTexto.innerText = formatoMoneda(precio);
+                });
+            }
+
+            // 3) Agregar integrantes dinámicos (respetando max_integrantes)
+            if (addIntegranteBtn) {
+                addIntegranteBtn.addEventListener("click", () => {
+                    if (!currentTipo) return alert("Selecciona primero el tipo de membresía");
+                    const max = Number(currentTipo.max_integrantes || 1);
+                    if (integranteCount >= (max - 1)) { // -1 porque el titular ya cuenta
+                        return alert(`Máximo ${max - 1} integrantes además del titular.`);
+                    }
+
+                    const container = document.createElement("div");
+                    container.className = "flex flex-col md:flex-row gap-3 p-3 bg-gray-50 rounded-lg integrante-item";
+                    container.innerHTML = `
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+          <input type="text" name="integrantes[${integranteCount}][nombre]" required
+                 class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Parentesco</label>
+          <input type="text" name="integrantes[${integranteCount}][parentesco]" required
+                 class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div class="flex items-end">
+          <button type="button" class="text-red-600 remove-integrante">Eliminar</button>
+        </div>
+      `;
+                    integrantesLista.appendChild(container);
+                    integranteCount++;
+
+                    container.querySelector(".remove-integrante").addEventListener("click", () => {
+                        container.remove();
+                        integranteCount--;
+                    });
+                });
+            }
+
+            // 4) Formateo MXN
+            function formatoMoneda(num) {
+                return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(num);
+            }
+
+            // Cargar info del primer tipo al abrir (si hay opciones)
+            if (tipoMembresiaSelect.value) {
+                checkTipoMembresia();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

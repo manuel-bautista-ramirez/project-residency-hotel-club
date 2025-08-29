@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Membresías</title>
+    <!-- Tailwind CSS ya instalado via CLI -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .status-badge {
+            padding: 0.35rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+        .status-badge i {
+            margin-right: 0.25rem;
+        }
+        .table-row {
+            transition: all 0.2s ease;
+        }
+        .table-row:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navbar (partial) -->
+    {{> navbar}}
+
+    <div class="container mx-auto px-4 py-8 max-w-7xl mt-20">
+        <!-- Header con botones de acción -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
+            <div class="mb-4 md:mb-0">
+                <h1 class="text-3xl font-bold text-gray-800">
+                    <i class="fas fa-list-alt text-blue-500 mr-2"></i>Lista de Membresías
+                </h1>
+                <p class="text-gray-600 mt-1">Gestión y visualización de todas las membresías registradas</p>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+                <a href="/memberships" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i>Regresar
+                </a>
+                <a href="/memberships/create" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+                    <i class="fas fa-plus-circle mr-2"></i>Crear Membresía
+                </a>
+                {{#if isAdmin}}
+                <a href="/memberships/reports" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 flex items-center">
+                    <i class="fas fa-chart-bar mr-2"></i>Reportes
+                </a>
+                {{/if}}
+            </div>
+        </div>
+
+        <!-- Filtros y búsqueda -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Filtrar por</label>
+                    <select id="filterBy" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">Todas las membresías</option>
+                        <option value="active">Activas</option>
+                        <option value="expiring">Por vencer</option>
+                        <option value="expired">Vencidas</option>
+                        <option value="individual">Individuales</option>
+                        <option value="family">Familiares</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Ordenar por</label>
+                    <select id="sortBy" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="expiry">Próximas a vencer</option>
+                        <option value="recent">Más recientes</option>
+                        <option value="name">Nombre</option>
+                        <option value="type">Tipo de membresía</option>
+                    </select>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Buscar</label>
+                    <div class="relative">
+                        <input type="text" placeholder="Buscar por nombre, teléfono o email..." 
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pl-10">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas de validación -->
+        {{#if success}}
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded fade-in" role="alert">
+            <p>{{success}}</p>
+        </div>
+        {{/if}}
+
+        <!-- Tarjeta de resumen -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-blue-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Membresías</p>
+                        <h3 class="text-2xl font-bold text-gray-800">125</h3>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i class="fas fa-id-card-alt text-blue-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-green-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm">Membresías Activas</p>
+                        <h3 class="text-2xl font-bold text-gray-800">98</h3>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-yellow-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm">Por Vencer (7 días)</p>
+                        <h3 class="text-2xl font-bold text-gray-800">12</h3>
+                    </div>
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-red-500">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm">Vencidas</p>
+                        <h3 class="text-2xl font-bold text-gray-800">15</h3>
+                    </div>
+                    <div class="bg-red-100 p-3 rounded-lg">
+                        <i class="fas fa-times-circle text-red-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de membresías -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miembro</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pago</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
+                            {{#if isAdmin}}
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            {{/if}}
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {{#each memberships}}
+                        <tr class="table-row bg-white hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <span class="text-blue-600 font-semibold">{{firstLetter this.fullName}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{this.fullName}}</div>
+                                        <div class="text-sm text-gray-500">{{this.phone}}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    {{#if this.isFamily}}
+                                    <span class="status-badge bg-green-100 text-green-800">
+                                        <i class="fas fa-users"></i>Familiar
+                                    </span>
+                                    {{else}}
+                                    <span class="status-badge bg-blue-100 text-blue-800">
+                                        <i class="fas fa-user"></i>Individual
+                                    </span>
+                                    {{/if}}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{formatDate this.startDate}}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{formatDate this.endDate}}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{#if this.isActive}}
+                                    {{#if this.daysUntilExpiry}}
+                                        {{#gt this.daysUntilExpiry 20}}
+                                        <span class="status-badge bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle"></i>Activa (>20 días)
+                                        </span>
+                                        {{else}}
+                                            {{#gte this.daysUntilExpiry 10}}
+                                            <span class="status-badge bg-green-100 text-green-800">
+                                                <i class="fas fa-check-circle"></i>Activa ({{this.daysUntilExpiry}} días)
+                                            </span>
+                                            {{else}}
+                                                {{#gte this.daysUntilExpiry 1}}
+                                                <span class="status-badge bg-yellow-100 text-yellow-800">
+                                                    <i class="fas fa-exclamation-triangle"></i>Por vencer ({{this.daysUntilExpiry}} días)
+                                                </span>
+                                                {{else}}
+                                                <span class="status-badge bg-red-100 text-red-800">
+                                                    <i class="fas fa-times-circle"></i>Vencida
+                                                </span>
+                                                {{/gte}}
+                                            {{/gte}}
+                                        {{/gt}}
+                                    {{else}}
+                                    <span class="status-badge bg-gray-100 text-gray-800">
+                                        <i class="fas fa-ban"></i>Inactiva
+                                    </span>
+                                    {{/if}}
+                                {{else}}
+                                <span class="status-badge bg-gray-100 text-gray-800">
+                                    <i class="fas fa-ban"></i>Inactiva
+                                </span>
+                                {{/if}}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{#eq this.paymentType 'cash'}}
+                                <span class="status-badge bg-gray-100 text-gray-800">
+                                    <i class="fas fa-money-bill-wave"></i>Efectivo
+                                </span>
+                                {{/eq}}
+                                {{#eq this.paymentType 'card'}}
+                                <span class="status-badge bg-blue-100 text-blue-800">
+                                    <i class="fas fa-credit-card"></i>Tarjeta
+                                </span>
+                                {{/eq}}
+                                {{#eq this.paymentType 'transfer'}}
+                                <span class="status-badge bg-purple-100 text-purple-800">
+                                    <i class="fas fa-exchange-alt"></i>Transferencia
+                                </span>
+                                {{/eq}}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${{this.amount}}
+                            </td>
+                            {{#if ../isAdmin}}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="/memberships/edit/{{this.id}}" class="text-blue-600 hover:text-blue-900 mr-3">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="/memberships/delete/{{this.id}}" class="text-red-600 hover:text-red-900" onclick="return confirm('¿Estás seguro de eliminar esta membresía?')">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </a>
+                            </td>
+                            {{/if}}
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginación -->
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Mostrando
+                            <span class="font-medium">1</span>
+                            a
+                            <span class="font-medium">10</span>
+                            de
+                            <span class="font-medium">125</span>
+                            resultados
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Anterior</span>
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600 hover:bg-blue-100">1</a>
+                            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">2</a>
+                            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">3</a>
+                            <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Siguiente</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer (partial) -->
+    
+
+    <script>
+        // Funcionalidad para filtros y ordenamiento
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterSelect = document.getElementById('filterBy');
+            const sortSelect = document.getElementById('sortBy');
+            
+            // Simular filtrado y ordenamiento (en una aplicación real, esto se haría en el servidor)
+            filterSelect.addEventListener('change', function() {
+                // Aquí iría la lógica para filtrar los resultados
+                console.log('Filtrar por:', this.value);
+            });
+            
+            sortSelect.addEventListener('change', function() {
+                // Aquí iría la lógica para ordenar los resultados
+                console.log('Ordenar por:', this.value);
+            });
+            
+            // Búsqueda en tiempo real
+            const searchInput = document.querySelector('input[type="text"]');
+            searchInput.addEventListener('keyup', function() {
+                // Aquí iría la lógica para buscar en tiempo real
+                console.log('Buscar:', this.value);
+            });
+        });
+    </script>
+</body>
+</html>
