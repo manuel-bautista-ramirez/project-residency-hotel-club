@@ -1,15 +1,7 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Membresías</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+{{>navbar}}
 
 <body class="bg-gray-100 min-h-screen p-6">
-    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden mt-20">
         <div class="p-6 border-b">
             <h1 class="text-2xl font-bold text-gray-800">Crear Cliente</h1>
             <form id="form-cliente" action="/memberships/createClient" method="POST" class="mt-4 space-y-4">

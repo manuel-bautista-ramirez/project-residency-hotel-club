@@ -72,7 +72,7 @@ const MembershipController = {
         await MembershipModel.addFamilyMembers(id_activa, integrantesData);
       }
 
-      res.redirect("/membership/listMembership");
+      res.redirect("/memberships/membershipList");
     } catch (err) {
       console.error(err);
       res.status(500).send("Error al crear la membresía");
