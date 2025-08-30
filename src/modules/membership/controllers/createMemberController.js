@@ -1,34 +1,51 @@
 import { MembershipModel } from "../models/modelMembership.js";
 
-export const MembershipController = {
+const MembershipController = {
+  // Crear cliente principal
   async createClient(req, res) {
     try {
-      const { name, phone, email } = req.body;
-      const id_cliente = await MembershipModel.createClient({
-        name,
-        phone,
-        email,
+      const { nombre_completo, correo, telefono } = req.body;
+      console.log('Datos recibidos en createClient:', { nombre_completo, correo, telefono });
+      
+      const result = await MembershipModel.createClient({
+        nombre_completo,
+        correo,
+        telefono,
       });
-      // Devuelve un objeto, no solo el número
+      
+      console.log('Resultado de createClient:', result);
+      
+      // Asegurarse de que el ID se devuelve correctamente
+      const id_cliente = result.id_cliente || result.insertId;
+      
+      if (!id_cliente) {
+        throw new Error('No se pudo obtener el ID del cliente');
+      }
+      
       res.json({ id_cliente });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Error al crear el cliente" });
+    } catch (err) {
+      console.error('Error en createClient:', err);
+      res.status(500).json({ 
+        error: "Error al crear el cliente",
+        details: err.message 
+      });
     }
   },
 
+  // Crear membresía (familiar o individual)
   async createMembership(req, res) {
     try {
       const {
         id_cliente,
         id_tipo_membresia,
-        integrantes, // puede venir como array/objeto
         fecha_inicio,
         fecha_fin,
         precio_final,
+        integrantes, // array de nombres de integrantes
       } = req.body;
+      
 
-      // 1) Crear contrato
+      // 1️⃣ Crear contrato en membresias
       const id_membresia = await MembershipModel.createMembershipContract({
         id_cliente,
         id_tipo_membresia,
@@ -36,23 +53,25 @@ export const MembershipController = {
         fecha_fin,
       });
 
-      // 2) (Opcional) Registrar integrantes si los hay
-      if (integrantes) {
-        // Normaliza a array
-        const list = Array.isArray(integrantes)
-          ? integrantes
-          : Object.values(integrantes); // por si vienen como integrantes[0], integrantes[1], ...
-        if (list.length > 0) {
-          await MembershipModel.addFamilyMembers(id_membresia, list);
-        }
+      // 2️⃣ Activar membresía
+      const id_activa = await MembershipModel.activateMembership({
+        id_cliente,
+        id_membresia,
+        fecha_inicio,
+        fecha_fin,
+        precio_final,
+      });
+      
+
+      // 3️⃣ Registrar integrantes (si es familiar)
+      if (integrantes && integrantes.length > 0) {
+        const integrantesData = integrantes.map((nombre) => ({
+          nombre_completo: nombre,
+          id_relacion: null, // opcional, se puede mapear si usas relaciones
+        }));
+        await MembershipModel.addFamilyMembers(id_activa, integrantesData);
       }
 
-      // 3) (Opcional) Activar (si tu flujo activa de inmediato)
-      // const id_activa = await MembershipModel.activateMembership({
-      //   id_cliente, id_membresia, fecha_inicio, fecha_fin, precio_final
-      // });
-
-      // Redirige a tu lista correcta
       res.redirect("/membership/listMembership");
     } catch (err) {
       console.error(err);
@@ -95,3 +114,5 @@ export const MembershipController = {
     }
   },
 };
+
+export { MembershipController };

@@ -1,12 +1,19 @@
-import express from 'express';
-import { renderMembershipCreate, renderMembershipHome, renderMembershipList} from '../controllers/membershipController.js';
-import { authMiddleware, roleMiddleware } from '../../login/middlewares/accessDenied.js';
-import { MembershipController } from '../controllers/createMemberController.js';
+import express from "express";
+import {
+  renderMembershipHome,
+ 
+  renderMembershipCreate
+} from "../controllers/membershipController.js";
+import {
+  authMiddleware,
+} from "../../login/middlewares/accessDenied.js";
+import { MembershipController } from "../controllers/createMemberController.js";
+import { listMembershipController } from "../controllers/listMemberController.js";
 
 const routerMember = express.Router();
 
-
 // Primero autenticación (todos deben estar logueados)
+
 routerMember.use(authMiddleware);
 
 
@@ -15,15 +22,27 @@ routerMember.get('/memberships', renderMembershipHome);
 routerMember.get('/createMembership', MembershipController.renderTiposMembresia);
 routerMember.get('/listMembership', renderMembershipList);
 
+routerMember.get("/", renderMembershipHome);
+routerMember.get("/createMembership", renderMembershipCreate);
+routerMember.get("/listMembership", listMembershipController.renderMembershipList.bind(listMembershipController));
+
+routerMember.post("/createClient", MembershipController.createClient.bind(MembershipController));
+routerMember.post("/createMembership", MembershipController.createMembership.bind(MembershipController));
+
+routerMember.get("/tipos_membresia/:id", (req, res) => {
+  if (MembershipController.getTipoMembresiaById) {
+    return MembershipController.getTipoMembresiaById(req, res);
+  }
+  res.status(501).json({ error: "Not implemented" });
+});
 
 
-routerMember.get("/tipos_membresia/:id", MembershipController.getTipoMembresiaById);
 
 
 
 
-//post
-routerMember.post("/createClient", MembershipController.createClient);
-routerMember.post("/createMembership", MembershipController.createMembership);
+// Rutas API para AJAX
+routerMember.get("/api/memberships", listMembershipController.getMembresiasAPI.bind(listMembershipController));
+routerMember.get("/api/statistics", listMembershipController.getEstadisticasAPI.bind(listMembershipController));
 
 export { routerMember };
