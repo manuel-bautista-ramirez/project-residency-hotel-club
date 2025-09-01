@@ -14,6 +14,7 @@ users_hotel (
   role ENUM ('Administrador', 'Usuario') NOT NULL -- Rol del usuario
 );
 
+
 CREATE TABLE IF NOT EXISTS   -- Tabla para almacenar tokens de recuperación de contraseña
 password_resets (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -100,8 +101,6 @@ VALUES ('correo@ejemplo.com', '4451234567');
 
 INSERT INTO medios_mensajes (correo_cliente, telefono_cliente)
 VALUES ('cliente_renta@ejemplo.com', '4469876543');
-
-SET @ultimo_medio = LAST_INSERT_ID();
 
 
 

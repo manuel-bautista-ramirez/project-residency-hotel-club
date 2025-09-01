@@ -3,23 +3,22 @@
 
     <!-- Header -->
     <header class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-yellow-700">Editar Renta #{{renta.id}}</h1>
-      <a href="/rentas" class="text-sm text-gray-600 hover:underline">← Volver a rentas</a>
+      <h1 class="text-2xl font-bold text-yellow-700">Editar reservación #{{reservacion.id}}</h1>
+      <a href="/rooms" class="text-sm text-gray-600 hover:underline">← Volver a reservaciones</a>
     </header>
 
-    <!-- Info Renta -->
+    <!-- Info Reservación -->
     <section class="mb-6 bg-gray-100 rounded p-4 text-sm text-gray-800 space-y-1">
-      <p><strong>Habitación:</strong> {{renta.habitacion_id}}</p>
-      <p><strong>Creada por:</strong> {{renta.usuario_id}}</p>
+      <p><strong>Habitación actual:</strong> {{reservacion.habitacion_numero}} - {{reservacion.habitacion_tipo}}</p>
     </section>
 
     <!-- Formulario -->
-    <form action="/api/rentas/{{renta.id}}/editar" method="POST" class="space-y-4">
+    <form action="/api/reservaciones/{{reservacion.id}}/editar" method="POST" class="space-y-4">
 
       <!-- Cliente -->
       <div>
         <label for="nombre_cliente" class="block text-sm font-medium text-gray-700">Nombre del cliente</label>
-        <input id="nombre_cliente" name="nombre_cliente" value="{{renta.nombre_cliente}}" required
+        <input id="nombre_cliente" name="nombre_cliente" value="{{reservacion.nombre_cliente}}" required
                class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
       </div>
 
@@ -27,12 +26,12 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label for="fecha_ingreso" class="block text-sm font-medium text-gray-700">Fecha de ingreso</label>
-          <input id="fecha_ingreso" name="fecha_ingreso" type="date" value="{{renta.fecha_ingreso}}" required
+          <input id="fecha_ingreso" name="fecha_ingreso" type="date" value="{{reservacion.fecha_ingreso}}" required
                  class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
         </div>
         <div>
           <label for="fecha_salida" class="block text-sm font-medium text-gray-700">Fecha de salida</label>
-          <input id="fecha_salida" name="fecha_salida" type="date" value="{{renta.fecha_salida}}" required
+          <input id="fecha_salida" name="fecha_salida" type="date" value="{{reservacion.fecha_salida}}" required
                  class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
         </div>
       </div>
@@ -40,41 +39,34 @@
       <!-- Monto -->
       <div>
         <label for="monto" class="block text-sm font-medium text-gray-700">Monto</label>
-        <input id="monto" name="monto" type="number" value="{{renta.monto}}" min="0" step="0.01" required
+        <input id="monto" name="monto" type="number" value="{{reservacion.monto}}" min="0" step="0.01" required
                class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
       </div>
 
-      <!-- Tipo de Pago -->
+      <!-- Habitaciones -->
       <div>
-        <label for="tipo_pago" class="block text-sm font-medium text-gray-700">Tipo de pago</label>
-        <select id="tipo_pago" name="tipo_pago" required
+        <label for="habitacion_id" class="block text-sm font-medium text-gray-700">Habitación</label>
+        <select id="habitacion_id" name="habitacion_id" required
                 class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-          <option value="Tarjeta" {{#if (eq renta.tipo_pago "Tarjeta")}}selected{{/if}}>Tarjeta</option>
-          <option value="Transferencia" {{#if (eq renta.tipo_pago "Transferencia")}}selected{{/if}}>Transferencia</option>
-          <option value="Efectivo" {{#if (eq renta.tipo_pago "Efectivo")}}selected{{/if}}>Efectivo</option>
+          {{#each habitaciones}}
+            <option value="{{this.id}}" {{#if (eq this.id ../reservacion.habitacion_id)}}selected{{/if}}>
+              {{this.numero}} - {{this.tipo}}
+            </option>
+          {{/each}}
         </select>
       </div>
 
       <!-- Botones -->
       <div class="flex flex-col sm:flex-row sm:justify-between gap-4 pt-4">
-        <a href="/rentas"
+        <a href="/reservaciones"
            class="inline-block px-4 py-2 border border-gray-400 text-gray-700 rounded hover:bg-gray-50 transition-colors">
           Cancelar
         </a>
 
-        <div class="flex gap-2 flex-wrap">
-          <button type="submit"
-                  class="inline-block px-5 py-2 bg-yellow-600 text-white rounded shadow hover:bg-yellow-700 transition-colors">
-            Guardar cambios
-          </button>
-
-          <form action="/api/rentas/{{renta.id}}/eliminar" method="POST" onsubmit="return confirm('¿Eliminar renta #{{renta.id}}?')">
-            <button type="submit"
-                    class="inline-block px-5 py-2 bg-red-600 text-white rounded shadow hover:bg-red-700 transition-colors">
-              Eliminar
-            </button>
-          </form>
-        </div>
+        <button type="submit"
+                class="inline-block px-5 py-2 bg-yellow-600 text-white rounded shadow hover:bg-yellow-700 transition-colors">
+          Guardar cambios
+        </button>
       </div>
 
     </form>

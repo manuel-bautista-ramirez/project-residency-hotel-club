@@ -1,185 +1,162 @@
 // src/modules/rooms/models/ModelRoom.js
-import { pool } from '../../../dataBase/conecctionDataBase.js'; // tu conexión MySQL
+import { pool } from "../../../dataBase/conecctionDataBase.js"; // tu conexión MySQL
 
-/** Helpers **/
-const nextId = (arr) => (!arr.length ? 1 : Math.max(...arr.map(x => Number(x.id))) + 1);
-const numeroALetras = (num) =>
-  new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(num);
+export const getHabitaciones = async () => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM habitaciones");
+    return rows; // devolvemos directamente las filas
+  } catch (err) {
+    console.error("Error getHabitaciones:", err);
+    return [];
+  }
+};
+// get all reservationes created
+export const getReservationes = async () => {
+  const [rows] = await pool.query("SELECT * FROM ")
 
-/** Datos simulados **/
+};
 
-// 1) Habitaciones
-const habitaciones = [
-  { id: 1, numero: "101", tipo: "sencilla", estado: "disponible" },
-  { id: 2, numero: "102", tipo: "sencilla", estado: "ocupado" },
-  { id: 3, numero: "103", tipo: "sencilla", estado: "limpieza" },
-  { id: 4, numero: "104", tipo: "sencilla", estado: "disponible" },
-  { id: 5, numero: "106", tipo: "sencilla", estado: "disponible" },
-  { id: 6, numero: "107", tipo: "sencilla", estado: "disponible" },
-  { id: 7, numero: "108", tipo: "sencilla", estado: "disponible" },
-  { id: 8, numero: "109", tipo: "sencilla", estado: "disponible" },
-  { id: 9, numero: "105", tipo: "suite", estado: "ocupado" },
-  { id: 10, numero: "110", tipo: "suite", estado: "disponible" },
-];
-
-// 2) Precios
-const precios = [
-  { id: 1, tipo_habitacion: "sencilla", mes: 1, monto: 100 },
-  { id: 2, tipo_habitacion: "suite", mes: 1, monto: 200 },
-  { id: 3, tipo_habitacion: "sencilla", mes: 11, monto: 120 },
-  { id: 4, tipo_habitacion: "suite", mes: 11, monto: 250 },
-];
-
-// 3) Reservaciones simuladas
-let reservaciones = [
-  {
-    id: 1,
-    habitacion_id: 101,
-    usuario_id: 1,
-    nombre_cliente: "Juan Perez",
-    correo_cliente: "example@gmail.com",
-    telefono_cliente: "4453235434",
-    fecha_reserva: "2024-06-01",
-    fecha_ingreso: "2024-06-10",
-    fecha_salida: "2024-06-15",
-    monto: 600,
-    monto_letras: numeroALetras(600),
-    fecha_registro: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    habitacion_id: 102,
-    usuario_id: 1,
-    nombre_cliente: "Maria Lopez",
-    correo_cliente: "example1@gmail.com",
-    telefono_cliente: "4453235454",
-    fecha_reserva: "2024-06-02",
-    fecha_ingreso: "2024-06-12",
-    fecha_salida: "2024-06-14",
-    monto: 300,
-    monto_letras: numeroALetras(300),
-    fecha_registro: new Date().toISOString(),
-  },
-];
-
-// 4) Rentas simuladas
-let rentas = [
-  {
-    id: 1,
-    habitacion_id: 104,
-    usuario_id: "Manuel",
-    nombre_cliente: "Luis Gomez",
-    correo_cliente: "example@gmail.com",
-    telefono_cliente: "4531246364",
-    fecha_ingreso: "2024-06-05",
-    fecha_salida: "2024-06-10",
-    tipo_pago: "efectivo",
-    monto: 500,
-    monto_letras: numeroALetras(500),
-    fecha_registro: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    habitacion_id: 106,
-    usuario_id: 2,
-    nombre_cliente: "Ana Torres",
-    correo_cliente: "example2@gmail.com",
-    telefono_cliente: "4431246364",
-    fecha_ingreso: "2024-06-08",
-    fecha_salida: "2024-06-12",
-    tipo_pago: "tarjeta",
-    monto: 400,
-    monto_letras: numeroALetras(400),
-    fecha_registro: new Date().toISOString(),
-  },
-];
-
-/** Modelo Room **/
-const Room = {
-  // --- Arrays simulados ---
-  find: async () => habitaciones,
-  precios: async () => precios,
-  reservaciones: async () => reservaciones,
-  rentas: async () => rentas,
-
-  setEstado: async (id, nuevoEstado) => {
-    const hab = habitaciones.find((h) => Number(h.id) === Number(id));
-    if (hab) hab.estado = nuevoEstado;
-    return hab || null;
-  },
-
-  crearReservacion: async (data) => {
-    const hab = habitaciones.find((h) => Number(h.id) === Number(data.habitacion_id));
-    if (!hab || hab.estado === "ocupado") return null;
-
-    const nuevaReserva = {
-      id: nextId(reservaciones),
-      habitacion_id: Number(data.habitacion_id),
-      usuario_id: Number(data.usuario_id),
-      nombre_cliente: data.nombre_cliente,
-      correo_cliente: data.correo_cliente,
-      telefono: data.telefono_cliente,
-      fecha_reserva: new Date().toISOString().split("T")[0],
-      fecha_ingreso: data.fecha_ingreso,
-      fecha_salida: data.fecha_salida,
-      monto: data.monto ?? 0,
-      monto_letras: numeroALetras(data.monto ?? 0),
-      fecha_registro: new Date().toISOString(),
-    };
-    reservaciones.push(nuevaReserva);
-    return nuevaReserva;
-  },
-
-  crearRenta: async (data) => {
-    const hab = habitaciones.find((h) => Number(h.id) === Number(data.habitacion_id));
-    if (!hab || hab.estado === "ocupado") return null;
-
-    const nuevaRenta = {
-      id: nextId(rentas),
-      habitacion_id: Number(data.habitacion_id),
-      usuario_id: data.usuario_id,
-      nombre_cliente: data.nombre_cliente,
-      correo_cliente: data.correo_cliente,
-      telefono: data.telefono_cliente,
-      fecha_ingreso: data.fecha_ingreso,
-      fecha_salida: data.fecha_salida,
-      tipo_pago: data.tipo_pago,
-      monto: data.monto ?? 0,
-      monto_letras: numeroALetras(data.monto ?? 0),
-      fecha_registro: new Date().toISOString(),
-    };
-    rentas.push(nuevaRenta);
-    hab.estado = "ocupado";
-    return nuevaRenta;
-  },
-
-  // --- Base de datos ---
-  getEventosCalendario: async () => {
-    try {
-      const query = `
-        SELECT r.id, r.nombre_cliente, m.correo_cliente, m.telefono_cliente, r.fecha_ingreso, r.fecha_salida, 'renta' AS tipo
-        FROM rentas r
-        INNER JOIN medios_mensajes m ON r.id_medio_mensaje = m.id_medio_mensaje
-        UNION ALL
-        SELECT res.id, res.nombre_cliente, m.correo_cliente, m.telefono_cliente, res.fecha_ingreso, res.fecha_salida, 'reserva' AS tipo
-        FROM reservaciones res
-        INNER JOIN medios_mensajes m ON res.id_medio_mensaje = m.id_medio_mensaje
-      `;
-      const [rows] = await pool.execute(query);
-      return rows.map(evento => ({
-        id: evento.id,
-        title: evento.nombre_cliente,
-        start: evento.fecha_ingreso,
-        end: evento.fecha_salida ? new Date(new Date(evento.fecha_salida).getTime() + 24*60*60*1000).toISOString().split('T')[0] : evento.fecha_salida,
-        tipo: evento.tipo,
-        correo: evento.correo_cliente,
-        telefono: evento.telefono_cliente
-      }));
-    } catch (err) {
-      console.error("Error getEventosCalendario:", err);
-      return [];
-    }
+// Editar one  Reservation by Id
+export const findReservacionById = async (id) => {
+  try {
+    const query = `
+    SELECT res.id, res.nombre_cliente, res.fecha_reserva, res.fecha_ingreso, res.fecha_salida,
+          res.monto, res.monto_letras,
+          h.id AS habitacion_id, h.numero AS habitacion_numero, h.tipo AS habitacion_tipo,
+          m.correo_cliente, m.telefono_cliente
+    FROM reservaciones res
+    JOIN habitaciones h ON res.habitacion_id = h.id
+    JOIN medios_mensajes m ON res.id_medio_mensaje = m.id_medio_mensaje
+    WHERE res.id = ?
+  `;
+    const [rows] = await pool.query(query, [id]);
+    return rows.length > 0 ? rows[0] : null;
+  } catch (err) {
+    console.error("Error findReservacionById:", err);
+    return null;
   }
 };
 
-export { Room };
+
+
+/**
+ * Crear una nueva renta
+ */
+
+// Función auxiliar para convertir número a letras (puedes usar la que ya tengas)
+const nextId = (arr) =>
+  !arr.length ? 1 : Math.max(...arr.map((x) => Number(x.id))) + 1;
+const numeroALetras = (num) =>
+  new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(
+    num
+  );
+
+export const crearRenta = async (req, res) => {
+  try {
+    const {
+      habitacion_id,
+      nombre_cliente,
+      correo,
+      telefono,
+      fecha_ingreso,
+      fecha_salida,
+      tipo_pago,
+    } = req.body;
+
+    const usuario_id = req.session.user.id; // usuario que crea la renta
+
+    // 1️⃣ Insertar el medio de contacto
+    const [medioResult] = await pool.query(
+      `INSERT INTO medios_mensajes (correo_cliente, telefono_cliente)
+       VALUES (?, ?)`,
+      [correo, telefono]
+    );
+    const id_medio_mensaje = medioResult.insertId;
+
+    // 2️⃣ Obtener tipo de habitación para calcular monto
+    const [habitacionRows] = await pool.query(
+      `SELECT tipo FROM habitaciones WHERE id = ?`,
+      [habitacion_id]
+    );
+    if (habitacionRows.length === 0) {
+      return res.status(404).send("Habitación no encontrada");
+    }
+    const tipo_habitacion = habitacionRows[0].tipo;
+
+    // 3️⃣ Calcular el monto según la tabla de precios y el mes de ingreso
+    const mes = new Date(fecha_ingreso).getMonth() + 1; // getMonth() devuelve 0-11
+    const [precioRows] = await pool.query(
+      `SELECT monto FROM precios WHERE tipo_habitacion = ? AND mes = ?`,
+      [tipo_habitacion, mes]
+    );
+
+    if (precioRows.length === 0) {
+      return res
+        .status(400)
+        .send("No hay precio configurado para esta habitación y mes");
+    }
+
+    const monto = precioRows[0].monto;
+    const monto_letras = numeroALetras(monto); // convierte número a letras
+
+    // 4️⃣ Insertar la renta
+    const [rentaResult] = await pool.query(
+      `INSERT INTO reservaciones
+       (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva,
+        fecha_ingreso, fecha_salida, monto, monto_letras, tipo_pago)
+       VALUES (?, ?, ?, ?, CURDATE(), ?, ?, ?, ?, ?)`,
+      [
+        habitacion_id,
+        usuario_id,
+        id_medio_mensaje,
+        nombre_cliente,
+        fecha_ingreso,
+        fecha_salida,
+        monto,
+        monto_letras,
+        tipo_pago,
+      ]
+    );
+
+    // 5️⃣ Redirigir al detalle de la renta
+    return res.redirect(`/rentas/${rentaResult.insertId}/detalle`);
+  } catch (err) {
+    console.error("Error en crearRenta:", err);
+    return res.status(500).send("Error al crear la renta");
+  }
+};
+
+/** Helpers **/
+// const nextId = (arr) => (!arr.length ? 1 : Math.max(...arr.map(x => Number(x.id))) + 1);
+// const numeroALetras = (num) =>
+//   new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(num);
+
+// /** Datos simulados **/
+
+// --- Base de datos ---
+//  export const getEventosCalendario = async () => {
+//   try {
+//     const query = `
+//       SELECT r.id, r.nombre_cliente, m.correo_cliente, m.telefono_cliente, r.fecha_ingreso, r.fecha_salida, 'renta' AS tipo
+//       FROM rentas r
+//       INNER JOIN medios_mensajes m ON r.id_medio_mensaje = m.id_medio_mensaje
+//       UNION ALL
+//       SELECT res.id, res.nombre_cliente, m.correo_cliente, m.telefono_cliente, res.fecha_ingreso, res.fecha_salida, 'reserva' AS tipo
+//       FROM reservaciones res
+//       INNER JOIN medios_mensajes m ON res.id_medio_mensaje = m.id_medio_mensaje
+//     `;
+//     const [rows] = await pool.execute(query);
+//     return rows.map(evento => ({
+//       id: evento.id,
+//       title: evento.nombre_cliente,
+//       start: evento.fecha_ingreso,
+//       end: evento.fecha_salida ? new Date(new Date(evento.fecha_salida).getTime() + 24*60*60*1000).toISOString().split('T')[0] : evento.fecha_salida,
+//       tipo: evento.tipo,
+//       correo: evento.correo_cliente,
+//       telefono: evento.telefono_cliente
+//     }));
+//   } catch (err) {
+//     console.error("Error getEventosCalendario:", err);
+//     return [];
+//   }
+// }

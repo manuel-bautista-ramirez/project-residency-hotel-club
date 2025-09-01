@@ -1,9 +1,8 @@
 // Controlador para renderizar la vista principal
 export const renderMembershipHome = (req, res) => {
     const userRole = req.session.user?.role || 'Recepcionista';
-    const isAdmin = userRole === 'Administrador'; 
+    const isAdmin = userRole === 'Administrador';
 
-  
     res.render('membershipHome', {
       title: 'Área de Membresías',
       isAdmin,
@@ -11,11 +10,11 @@ export const renderMembershipHome = (req, res) => {
       userRole,
     });
   };
-  
+
   // Controlador para renderizar la vista de listar membresías
   export const renderMembershipList = (req, res) => {
     const userRole = req.session.user?.role || 'Recepcionista';
-    const isAdmin = userRole === 'Administrador';  
+    const isAdmin = userRole === 'Administrador';
 
     res.render('membershipList', {
       title: 'Lista de Membresías',
@@ -29,11 +28,11 @@ export const renderMembershipHome = (req, res) => {
     try {
         const userRole = req.session.user?.role || 'Recepcionista';
         const isAdmin = userRole === 'Administrador';
-        
+
         // Obtener los datos necesarios
         const tiposMembresia = await MembershipModel.getTiposMembresia();
         const precioFamiliar = await MembershipModel.getPrecioFamiliar();
-        
+
         res.render('membershipCreate', {
             title: 'Crear Membresía',
             isAdmin,

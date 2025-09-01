@@ -157,12 +157,12 @@
         // Script para manejar el efecto de hover consistente
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.group');
-            
+
             cards.forEach(card => {
                 card.addEventListener('mouseenter', function() {
                     this.querySelector('.h-2').classList.add('w-full');
                 });
-                
+
                 card.addEventListener('mouseleave', function() {
                     this.querySelector('.h-2').classList.remove('w-full');
                 });
@@ -171,5 +171,3 @@
     </script>
 </body>
 </html>
-
-

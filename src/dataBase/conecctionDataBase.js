@@ -16,7 +16,12 @@ export const pool = mysql2.createPool({
 async function connectDB() {
   try {
     const connection = await pool.getConnection();
-    console.log("Connected to Db");
+    if (connection){
+      console.log("Connected to Db: YES", );
+    }else{
+      console.log("Connected to DB: NOT")
+    }
+
 
     // Probar si la base de datos existe
     await connection.query('USE ??', config.mysql.database || ' ');
@@ -48,5 +53,3 @@ async function connectDB() {
 
 // Llamar a la función para iniciar la conexión
 connectDB();
-
-

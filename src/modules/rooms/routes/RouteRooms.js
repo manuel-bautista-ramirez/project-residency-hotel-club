@@ -4,21 +4,16 @@ import {
   authMiddleware,
   roleMiddleware,
 } from "../../login/middlewares/accessDenied.js";
+
 import {
   renderHabitacionesView,
+  renderFormEditarReservacion,
   renderPreciosView,
+  renderRentasView,
   renderReservacionesView,
-  renderFormReservar,
   renderFormRentar,
-  renderFormEditarRenta,
-  getHabitaciones,
-  setEstadoHabitacion,
-  crearReservacion,
-  crearRenta,
-  updateRenta,
-  deleteRenta,
-  renderCalendario,
-  fetchEventos
+  renderFormReservar,
+  renderAllRervationes
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -28,22 +23,23 @@ routerRoom.use(authMiddleware);
 
 // ----- VISTAS PRINCIPALES -----
 routerRoom.get("/rooms", renderHabitacionesView);
+routerRoom.get("rooms/resevaciones",renderAllRervationes)
 
 routerRoom.get("/rooms/precios", renderPreciosView);
 routerRoom.get("/rooms/reportes", renderReservacionesView);
 
 // ----- FORMULARIOS INDIVIDUALES -----
 routerRoom.get("/rooms/reservar/:id", renderFormReservar);
-routerRoom.get("/rooms/rentar/:id", renderFormRentar);
-routerRoom.get("/rooms/editar/:id", renderFormEditarRenta);
+routerRoom.get("/rooms/rentar/:id", renderFormRentar );
+routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
 
-routerRoom.get("/rooms/calendario", renderCalendario)
-routerRoom.get('/rooms/calendario', fetchEventos);
+// routerRoom.get("/rooms/calendario", renderCalendario)
+// routerRoom.get('/rooms/calendario', fetchEventos);
 
 // ----- API -----
 
 // Obtener habitaciones
-routerRoom.get("/api/rooms", getHabitaciones);
+// routerRoom.get("/api/rooms", getHabitaciones);
 
 // Cambiar estado de habitación (solo Administrador)
 routerRoom.post(
@@ -92,7 +88,6 @@ routerRoom.post("/api/rooms/reservar", async (req, res) => {
     message: "No se pudo crear la reservación (habitacion ocupada o inválida)",
   });
 });
-
 
 // Crear renta
 routerRoom.post("/api/rentas", async (req, res) => {
@@ -172,6 +167,12 @@ routerRoom.put("/api/rentas/:id/eliminar", async (req, res) => {
   return res.status(404).send("Renta no encontrada o no se pudo eliminar");
 });
 
+// error 404  handler en cualquier modulo
 
+
+//  error 404 handler
+routerRoom.use((req, res) => {
+  res.status(404).render('error404', { title: 'Página no encontrada' });
+});
 
 export { routerRoom };

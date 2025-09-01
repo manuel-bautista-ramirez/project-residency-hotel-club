@@ -50,14 +50,14 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
         <label for="monto" class="block text-sm font-medium text-gray-700">Monto</label>
-        <input id="monto" name="monto" type="number" min="0" step="0.01" required
-               class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2
+        <input id="monto" name="monto" type="number" value="{{monto}}" readonly
+               class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2
                       focus:outline-none focus:ring-2 focus:ring-green-500"
                placeholder="0.00" />
       </div>
       <div>
         <label for="monto_letras" class="block text-sm font-medium text-gray-700">Monto en letras</label>
-        <input id="monto_letras" name="monto_letras" type="text" readonly
+        <input id="monto_letras" name="monto_letras" type="text" value="{{monto_letras}}" readonly
                class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2" />
       </div>
     </div>

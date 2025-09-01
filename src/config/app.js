@@ -23,10 +23,14 @@ app.engine('.hbs', engine({
 }));
 
 app.set('view engine', '.hbs');
+
 app.set('views', [
-  './src/modules/login/views/',
-  './src/views/',
-  './src/modules/membership/views/'
+  path.join('./src/views/'),
+  path.join('./src/modules/membership/views/'),
+  path.join( './src/modules/rooms/views/'),
+  path.join( './src/modules/login/views/'),
+  // add more view directories as needed
+
 ]);
 
 app.set('port', config.app.port);

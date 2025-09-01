@@ -5,13 +5,13 @@ import { MembershipController } from '../controllers/createMemberController.js';
 
 const routerMember = express.Router();
 
-// Primero autenticación (todos deben estar logueados)
+
 // Primero autenticación (todos deben estar logueados)
 routerMember.use(authMiddleware);
 
+
 // Rutas accesibles a TODOS los roles autenticados
-// Rutas accesibles a TODOS los roles autenticados
-routerMember.get('/', renderMembershipHome);
+routerMember.get('/memberships', renderMembershipHome);
 routerMember.get('/createMembership', MembershipController.renderTiposMembresia);
 routerMember.get('/listMembership', renderMembershipList);
 

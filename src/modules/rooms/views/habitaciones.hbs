@@ -1,4 +1,6 @@
 <div class="max-w-7xl mx-auto p-6">
+  {{>navbar}}
+
   <!-- Header -->
   <header class="mb-6 text-center">
     <h1 class="text-3xl font-extrabold text-blue-900 tracking-tight">Habitaciones</h1>
@@ -57,7 +59,7 @@
             {{#if (eq ../user.role "Administrador")}}
               <a href="/rooms/editar/{{this.id}}"
                  class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded-lg shadow-sm transition">
-                 Editar
+                 Editar reservación
               </a>
               <a href="/rooms/eliminar/{{this.id}}"
                  class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg shadow-sm transition"

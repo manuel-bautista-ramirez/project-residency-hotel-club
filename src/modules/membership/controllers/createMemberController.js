@@ -64,7 +64,7 @@ export const MembershipController = {
     try {
       const { id } = req.params;
       const tipo = await MembershipModel.getTipoMembresiaById(id);
-      if (!tipo)
+      if (!tipo)// Primero autenticación (todos deben estar logueados)
         return res.status(404).json({ error: "Membresía no encontrada" });
       res.json(tipo);
     } catch (err) {
@@ -73,7 +73,7 @@ export const MembershipController = {
     }
   },
 
-  async renderTiposMembresia(req, res) {
+   async renderTiposMembresia(req, res) {
     try {
       const userRole = req.session.user?.role || "Recepcionista";
       const isAdmin = userRole === "Administrador";
@@ -87,7 +87,7 @@ export const MembershipController = {
         userRole,
         tiposMembresia,
         precioFamiliar,
-        apiBase: "/memberships", 
+        apiBase: "/memberships",
       });
     } catch (error) {
       console.error("Error al cargar tipos de membresía:", error);

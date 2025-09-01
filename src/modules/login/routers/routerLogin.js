@@ -1,24 +1,26 @@
 import express from 'express';
 import { roleMiddleware, authMiddleware } from '../middlewares/accessDenied.js';
-import { loginUser } from '../controllers/authControllerUsers.js';
+import { loginUser, sendPasswordResetLink, resetPassword } from '../controllers/authControllerUsers.js';
+
 
 const router = express.Router();
 
-// Login page - ruta específica
-router.get('/login', (req, res) => res.render('login', { title: 'Inicio' }));
+router
+  .route('/password-reset/request')
+  .get((req, res) => res.render('requestPassword')) // Mostrar formulario
+  .post(sendPasswordResetLink);                     // Enviar enlace
+
+// Restablecer contraseña
+router
+  .route('/password-reset/reset/:token')
+  .get((req, res) => res.render('resetPassword', { token: req.params.token })) // Mostrar formulario
+  .post(resetPassword);
+
 // Login page - ruta específica
 router.get('/login', (req, res) => res.render('login', { title: 'Inicio' }));
 
 // Handle login
 router.post('/login', loginUser);
-
-// Ruta raíz - redirige según autenticación
-router.get('/', (req, res) => {
-  if (req.session.user) {
-    return res.redirect('/home');
-  }
-  res.redirect('/login');
-});
 
 // Ruta raíz - redirige según autenticación
 router.get('/', (req, res) => {
@@ -50,16 +52,5 @@ router.get('/admin', roleMiddleware('Administrador'), (req, res) => {
   res.send('<h1>Panel de Administración</h1>');
 });
 
-
-// error 404  handler en cualquier modulo
-
-
- // error 404 handler
-// router.use((req, res) => {
-//   res.status(404).render('error404', { title: 'Página no encontrada' });
-// });
-
-// 404 handler para este módulo
-router.use((req, res) => res.status(404).render('error404', { title: 'Página no encontrada' }));
 
 export default router;
