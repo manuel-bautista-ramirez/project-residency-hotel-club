@@ -97,6 +97,13 @@ const MembershipModel = {
     const [rows] = await pool.query(`SELECT * FROM membresias_activas`);
     return rows;
   },
+  async getClienteById(id_cliente) {
+    const [rows] = await pool.query(
+      `SELECT id_cliente, nombre_completo, correo FROM clientes WHERE id_cliente = ?`,
+      [id_cliente]
+    );
+    return rows[0] || null;
+  },
 };
 
 export { MembershipModel };

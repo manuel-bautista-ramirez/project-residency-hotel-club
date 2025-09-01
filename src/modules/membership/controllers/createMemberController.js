@@ -1,34 +1,27 @@
 import { MembershipModel } from "../models/modelMembership.js";
+import { generarQR } from "../utils/qrGenerator.js";
+import { sendEmail } from "../utils/nodeMailer.js";
 
 const MembershipController = {
-  // Crear cliente principal
+  // Crear cliente principal (queda igual)
   async createClient(req, res) {
     try {
       const { nombre_completo, correo, telefono } = req.body;
-      console.log('Datos recibidos en createClient:', { nombre_completo, correo, telefono });
-      
       const result = await MembershipModel.createClient({
         nombre_completo,
         correo,
         telefono,
       });
-      
-      console.log('Resultado de createClient:', result);
-      
-      // Asegurarse de que el ID se devuelve correctamente
       const id_cliente = result.id_cliente || result.insertId;
-      
-      if (!id_cliente) {
-        throw new Error('No se pudo obtener el ID del cliente');
-      }
-      
+
+      if (!id_cliente) throw new Error("No se pudo obtener el ID del cliente");
+
       res.json({ id_cliente });
     } catch (err) {
-      console.error('Error en createClient:', err);
-      res.status(500).json({ 
-        error: "Error al crear el cliente",
-        details: err.message 
-      });
+      console.error("Error en createClient:", err);
+      res
+        .status(500)
+        .json({ error: "Error al crear el cliente", details: err.message });
     }
   },
 
@@ -41,9 +34,8 @@ const MembershipController = {
         fecha_inicio,
         fecha_fin,
         precio_final,
-        integrantes, // array de nombres de integrantes
+        integrantes,
       } = req.body;
-      
 
       // 1️⃣ Crear contrato en membresias
       const id_membresia = await MembershipModel.createMembershipContract({
@@ -61,20 +53,38 @@ const MembershipController = {
         fecha_fin,
         precio_final,
       });
-      
 
       // 3️⃣ Registrar integrantes (si es familiar)
       if (integrantes && integrantes.length > 0) {
         const integrantesData = integrantes.map((nombre) => ({
           nombre_completo: nombre,
-          id_relacion: null, // opcional, se puede mapear si usas relaciones
+          id_relacion: null,
         }));
         await MembershipModel.addFamilyMembers(id_activa, integrantesData);
       }
 
+      // 🔹 4️⃣ Obtener datos del cliente para el correo
+      const cliente = await MembershipModel.getClienteById(id_cliente);
+
+      if (cliente && cliente.correo) {
+        // 🔹 5️⃣ Generar QR con nombre + fecha fin
+        const dataQR = `Cliente: ${cliente.nombre_completo}\nExpira: ${fecha_fin}\nMembresía ID: ${id_membresia}`;
+        const qrDataUrl = await generarQR(dataQR);
+
+        // 🔹 6️⃣ Enviar correo con QR
+        await sendEmail(
+          {
+            to: cliente.correo,
+            subject: "Tu Membresía y Código QR",
+            text: "Tu membresía ha sido activada.",
+            qrPath: qrDataUrl,
+          }
+        );
+      }
+
       res.redirect("/memberships/membershipList");
     } catch (err) {
-      console.error(err);
+      console.error("Error en createMembership:", err);
       res.status(500).send("Error al crear la membresía");
     }
   },
