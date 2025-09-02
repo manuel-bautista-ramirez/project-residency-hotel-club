@@ -12,18 +12,18 @@ routerMember.use(authMiddleware);
 
 // Rutas accesibles a TODOS los roles autenticados
 routerMember.get('/memberships', renderMembershipHome);
-routerMember.get('/createMembership', MembershipController.renderTiposMembresia);
-routerMember.get('/listMembership', renderMembershipList);
+routerMember.get('/memberships/createMembership', MembershipController.renderTiposMembresia);
+routerMember.get('/memberships/listMembership', renderMembershipList);
 
 
 
-routerMember.get("/tipos_membresia/:id", MembershipController.getTipoMembresiaById);
+routerMember.get("/memberships/tipos_membresia/:id", MembershipController.getTipoMembresiaById);
 
 
 
 
 //post
-routerMember.post("/createClient", MembershipController.createClient);
-routerMember.post("/createMembership", MembershipController.createMembership);
+routerMember.post("/memberships/createClient", MembershipController.createClient);
+routerMember.post("/memberships/createMembership", MembershipController.createMembership);
 
 export { routerMember };
