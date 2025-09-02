@@ -1,26 +1,44 @@
 // controllers/createMemberController.js
 import { MembershipModel } from "../models/modelMembership.js";
+<<<<<<< HEAD
 import { generarQRArchivo } from "../utils/qrGenerator.js";
 import { sendEmail } from "../utils/nodeMailer.js";
+=======
+>>>>>>> parent of 889367e (Generator QR)
 
 const MembershipController = {
   // Crear cliente principal
   async createClient(req, res) {
     try {
       const { nombre_completo, correo, telefono } = req.body;
+      console.log('Datos recibidos en createClient:', { nombre_completo, correo, telefono });
+      
       const result = await MembershipModel.createClient({
         nombre_completo,
         correo,
         telefono,
       });
+      
+      console.log('Resultado de createClient:', result);
+      
+      // Asegurarse de que el ID se devuelve correctamente
       const id_cliente = result.id_cliente || result.insertId;
+<<<<<<< HEAD
       if (!id_cliente) throw new Error("No se pudo obtener el ID del cliente");
+=======
+      
+      if (!id_cliente) {
+        throw new Error('No se pudo obtener el ID del cliente');
+      }
+      
+>>>>>>> parent of 889367e (Generator QR)
       res.json({ id_cliente });
     } catch (err) {
-      console.error("Error en createClient:", err);
-      res
-        .status(500)
-        .json({ error: "Error al crear el cliente", details: err.message });
+      console.error('Error en createClient:', err);
+      res.status(500).json({ 
+        error: "Error al crear el cliente",
+        details: err.message 
+      });
     }
   },
 
@@ -33,8 +51,13 @@ const MembershipController = {
         fecha_inicio,
         fecha_fin,
         precio_final,
+<<<<<<< HEAD
         integrantes, // array de nombres (strings) o de objetos { nombre_completo, id_relacion? }
+=======
+        integrantes, // array de nombres de integrantes
+>>>>>>> parent of 889367e (Generator QR)
       } = req.body;
+      
 
       // 1️⃣ Crear contrato en membresias
       const id_membresia = await MembershipModel.createMembershipContract({
@@ -52,9 +75,11 @@ const MembershipController = {
         fecha_fin,
         precio_final,
       });
+      
 
       // 3️⃣ Registrar integrantes (si es familiar)
       if (integrantes && integrantes.length > 0) {
+<<<<<<< HEAD
         const integrantesData = integrantes.map((item) =>
           typeof item === "string"
             ? { nombre_completo: item, id_relacion: null }
@@ -106,9 +131,18 @@ const MembershipController = {
       }
 
       // 8️⃣ Continuar con tu flujo
+=======
+        const integrantesData = integrantes.map((nombre) => ({
+          nombre_completo: nombre,
+          id_relacion: null, // opcional, se puede mapear si usas relaciones
+        }));
+        await MembershipModel.addFamilyMembers(id_activa, integrantesData);
+      }
+
+>>>>>>> parent of 889367e (Generator QR)
       res.redirect("/memberships/membershipList");
     } catch (err) {
-      console.error("Error en createMembership:", err);
+      console.error(err);
       res.status(500).send("Error al crear la membresía");
     }
   },

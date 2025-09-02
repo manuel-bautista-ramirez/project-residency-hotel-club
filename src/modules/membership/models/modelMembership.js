@@ -90,6 +90,7 @@ const MembershipModel = {
     const [rows] = await pool.query(`SELECT * FROM membresias_activas`);
     return rows;
   },
+<<<<<<< HEAD
 
   // 🔽 NUEVOS MÉTODOS
   async getClienteById(id_cliente) {
@@ -112,6 +113,8 @@ const MembershipModel = {
     );
     return rows; // [{nombre_completo, relacion}, ...]
   },
+=======
+>>>>>>> parent of 889367e (Generator QR)
 };
 
 export { MembershipModel };
