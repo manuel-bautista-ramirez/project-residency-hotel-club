@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import QRCode from "qrcode";
 import fs from "fs";
 import path from "path";
@@ -26,3 +27,5 @@ export async function generarQRArchivo(payload, filename = "qr.png") {
 }
 
 
+=======
+>>>>>>> parent of 889367e (Generator QR)
