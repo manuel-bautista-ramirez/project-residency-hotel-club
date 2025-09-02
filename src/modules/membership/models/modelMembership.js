@@ -1,33 +1,26 @@
+// models/modelMembership.js
 import { pool } from "../../../dataBase/conecctionDataBase.js";
 
 const MembershipModel = {
   async createClient({ nombre_completo, telefono, correo }) {
     try {
-      console.log("Creando cliente con datos:", {
-        nombre_completo,
-        telefono,
-        correo,
-      });
       const [result] = await pool.query(
         `INSERT INTO clientes (nombre_completo, telefono, correo)
          VALUES (?, ?, ?)`,
         [nombre_completo, telefono, correo]
       );
 
-      console.log("Resultado de la consulta SQL:", result);
-
-      // Asegurarse de devolver el ID correctamente
       if (!result || (result.affectedRows === 0 && !result.insertId)) {
         throw new Error("No se pudo crear el cliente en la base de datos");
       }
 
       return {
         id_cliente: result.insertId,
-        insertId: result.insertId, // Mantener compatibilidad
+        insertId: result.insertId,
       };
     } catch (error) {
       console.error("Error en createClient del modelo:", error);
-      throw error; // Re-lanzar el error para manejarlo en el controlador
+      throw error;
     }
   },
 
@@ -57,19 +50,19 @@ const MembershipModel = {
        VALUES (?, ?, ?, ?, ?)`,
       [id_cliente, id_membresia, fecha_inicio, fecha_fin, precio_final]
     );
-    return result.insertId;
+    return result.insertId; // id_activa
   },
 
   async addFamilyMembers(id_activa, integrantes) {
     for (let integrante of integrantes) {
-      // Primero se crea el cliente del integrante
+      // crear cliente para integrante
       const [result] = await pool.query(
         `INSERT INTO clientes (nombre_completo) VALUES (?)`,
         [integrante.nombre_completo]
       );
       const id_cliente_integrante = result.insertId;
 
-      // Luego se registra como integrante de la membresía activa
+      // registrar relación en integrantes_membresia
       await pool.query(
         `INSERT INTO integrantes_membresia (id_activa, id_cliente, id_relacion)
          VALUES (?, ?, ?)`,
@@ -92,18 +85,34 @@ const MembershipModel = {
     );
     return rows[0] || null;
   },
-  //Obtener todas las membresias activas
+
   async getMembresiasActivas() {
     const [rows] = await pool.query(`SELECT * FROM membresias_activas`);
     return rows;
   },
+
+  // 🔽 NUEVOS MÉTODOS
   async getClienteById(id_cliente) {
     const [rows] = await pool.query(
-      `SELECT id_cliente, nombre_completo, correo FROM clientes WHERE id_cliente = ?`,
+      `SELECT id_cliente, nombre_completo, correo, telefono
+       FROM clientes WHERE id_cliente = ?`,
       [id_cliente]
     );
     return rows[0] || null;
   },
+
+  async getIntegrantesByActiva(id_activa) {
+    const [rows] = await pool.query(
+      `SELECT c.nombre_completo,
+              im.id_relacion AS relacion
+       FROM integrantes_membresia im
+       JOIN clientes c ON c.id_cliente = im.id_cliente
+       WHERE im.id_activa = ?`,
+      [id_activa]
+    );
+    return rows; // [{nombre_completo, relacion}, ...]
+  },
 };
 
 export { MembershipModel };
+

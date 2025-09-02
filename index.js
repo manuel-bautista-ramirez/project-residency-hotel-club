@@ -32,7 +32,10 @@ app.use(
 // Iniciar el servidor
 app.listen(app.get("port"), () => {
   app.use(routerLogin);
-  app.use(routerMember);
+  app.use("/memberships", routerMember);
   app.use(routerRoom);
-  console.log(`Servidor corriendo en el puerto: http://localhost:${app.get("port")}`);
+
+  console.log(
+    `Servidor corriendo en el puerto: http://localhost:${app.get("port")}`
+  );
 });

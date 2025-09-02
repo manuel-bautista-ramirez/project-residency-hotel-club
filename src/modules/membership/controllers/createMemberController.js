@@ -1,9 +1,10 @@
+// controllers/createMemberController.js
 import { MembershipModel } from "../models/modelMembership.js";
-import { generarQR } from "../utils/qrGenerator.js";
+import { generarQRArchivo } from "../utils/qrGenerator.js";
 import { sendEmail } from "../utils/nodeMailer.js";
 
 const MembershipController = {
-  // Crear cliente principal (queda igual)
+  // Crear cliente principal
   async createClient(req, res) {
     try {
       const { nombre_completo, correo, telefono } = req.body;
@@ -13,9 +14,7 @@ const MembershipController = {
         telefono,
       });
       const id_cliente = result.id_cliente || result.insertId;
-
       if (!id_cliente) throw new Error("No se pudo obtener el ID del cliente");
-
       res.json({ id_cliente });
     } catch (err) {
       console.error("Error en createClient:", err);
@@ -34,7 +33,7 @@ const MembershipController = {
         fecha_inicio,
         fecha_fin,
         precio_final,
-        integrantes,
+        integrantes, // array de nombres (strings) o de objetos { nombre_completo, id_relacion? }
       } = req.body;
 
       // 1️⃣ Crear contrato en membresias
@@ -56,32 +55,57 @@ const MembershipController = {
 
       // 3️⃣ Registrar integrantes (si es familiar)
       if (integrantes && integrantes.length > 0) {
-        const integrantesData = integrantes.map((nombre) => ({
-          nombre_completo: nombre,
-          id_relacion: null,
-        }));
+        const integrantesData = integrantes.map((item) =>
+          typeof item === "string"
+            ? { nombre_completo: item, id_relacion: null }
+            : {
+                nombre_completo: item.nombre_completo || item.nombre || "",
+                id_relacion: item.id_relacion || null,
+              }
+        );
         await MembershipModel.addFamilyMembers(id_activa, integrantesData);
       }
 
-      // 🔹 4️⃣ Obtener datos del cliente para el correo
+      // 4️⃣ Obtener datos para el correo/QR
       const cliente = await MembershipModel.getClienteById(id_cliente);
+      const tipo = await MembershipModel.getTipoMembresiaById(id_tipo_membresia);
+      const integrantesDB = await MembershipModel.getIntegrantesByActiva(id_activa);
 
-      if (cliente && cliente.correo) {
-        // 🔹 5️⃣ Generar QR con nombre + fecha fin
-        const dataQR = `Cliente: ${cliente.nombre_completo}\nExpira: ${fecha_fin}\nMembresía ID: ${id_membresia}`;
-        const qrDataUrl = await generarQR(dataQR);
+      // 5️⃣ Armar payload del QR (titular + fechas + tipo + integrantes si hay)
+      const payloadQR = {
+        titular: { nombre: cliente?.nombre_completo || "N/D" },
+        tipo_membresia: tipo?.nombre || "N/D",
+        fecha_inicio,
+        fecha_expiracion: fecha_fin,
+        ...(integrantesDB.length > 0 && {
+          integrantes: integrantesDB.map((i) => ({
+            nombre: i.nombre_completo,
+            relacion: i.relacion || null,
+          })),
+        }),
+      };
 
-        // 🔹 6️⃣ Enviar correo con QR
-        await sendEmail(
-          {
-            to: cliente.correo,
-            subject: "Tu Membresía y Código QR",
-            text: "Tu membresía ha sido activada.",
-            qrPath: qrDataUrl,
-          }
-        );
+      // 6️⃣ Generar archivo PNG del QR
+      const qrPath = await generarQRArchivo(
+        payloadQR,
+        `membresia_${id_membresia}.png`
+      );
+
+      // 7️⃣ Enviar correo (si el titular tiene correo)
+      if (cliente?.correo) {
+        await sendEmail({
+          to: cliente.correo,
+          subject: "Tu Membresía y Código QR",
+          titularNombre: cliente.nombre_completo,
+          tipoMembresia: tipo?.nombre || "N/D",
+          fechaInicio: fecha_inicio,
+          fechaFin: fecha_fin,
+          qrPath,
+          integrantes: integrantesDB, // para renderizar la lista en el correo
+        });
       }
 
+      // 8️⃣ Continuar con tu flujo
       res.redirect("/memberships/membershipList");
     } catch (err) {
       console.error("Error en createMembership:", err);
@@ -93,8 +117,7 @@ const MembershipController = {
     try {
       const { id } = req.params;
       const tipo = await MembershipModel.getTipoMembresiaById(id);
-      if (!tipo)// Primero autenticación (todos deben estar logueados)
-        return res.status(404).json({ error: "Membresía no encontrada" });
+      if (!tipo) return res.status(404).json({ error: "Membresía no encontrada" });
       res.json(tipo);
     } catch (err) {
       console.error("Error obteniendo tipo de membresía:", err);
@@ -102,14 +125,13 @@ const MembershipController = {
     }
   },
 
-   async renderTiposMembresia(req, res) {
+  async renderTiposMembresia(req, res) {
     try {
       const userRole = req.session.user?.role || "Recepcionista";
       const isAdmin = userRole === "Administrador";
       const tiposMembresia = await MembershipModel.getTiposMembresia();
-      const precioFamiliar = await MembershipModel.getPrecioFamiliar();
+      const precioFamiliar = await MembershipModel.getPrecioFamiliar?.();
 
-      // Pasa baseUrl para evitar problemas con el prefijo de router
       res.render("membershipCreate", {
         title: "Crear Membresía",
         isAdmin,
@@ -126,3 +148,4 @@ const MembershipController = {
 };
 
 export { MembershipController };
+
