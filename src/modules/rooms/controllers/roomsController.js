@@ -1,5 +1,5 @@
 // roomsController.js
-import {getHabitaciones, findReservacionById, crearRenta, getReservationes} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+import {getHabitaciones, findReservacionById, crearRenta} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 /*** --- VISTAS PRINCIPALES --- ***/
 
@@ -23,26 +23,35 @@ export const renderHabitacionesView = async (req, res) => {
   }
 };
 
-export const renderAllRervationes =async(req, res)=>{
-  try {
-    const allReservationes =await getReservationes();
-    const  user = req.session.user || {role: "Usuario"}
+// export const renderAllRervationes =async(req, res)=>{
+//   try {
+//     const allReservationes =await getReservationes();
+//     const  user = req.session.user || {role: "Usuario"}
 
-    res.render("mostarReservaciones", {
-      title: "Adminstracion de  Reservaciones",
-      allReservationes,
-      user: {
-        ...user,
-        rol: user.role
-      }
-    });
-  } catch (error) {
-    console.error("Error al renderrizar las reservaciones");
-    res.status(500).send("Errror al cargar las reservaciones")
+//     res.render("mostarReservaciones", {
+//       title: "Adminstracion de  Reservaciones",
+//       // allReservationes,
+//       user: {
+//         ...user,
+//         rol: user.role
+//       }
+//     });
+//   } catch (error) {
+//     console.error("Error al renderrizar las reservaciones");
+//     res.status(500).send("Errror al cargar las reservaciones")
 
-  }
+//   }
 
-}
+// }
+
+export const renderAllRervationes = (req, res) => {
+  res.render('mostarReservaciones', { title: 'Listado de habitaciones rentadas' });
+};
+
+export const renderAllRentas = (req, res) => {
+  res.render('mostrarRentas', { title: 'Listado de habitaciones rentadas' });
+};
+
 
 export const renderFormEditarReservacion = async (req, res) => {
   try {

@@ -13,7 +13,8 @@ import {
   renderReservacionesView,
   renderFormRentar,
   renderFormReservar,
-  renderAllRervationes
+  renderAllRervationes,
+  renderAllRentas,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -23,7 +24,9 @@ routerRoom.use(authMiddleware);
 
 // ----- VISTAS PRINCIPALES -----
 routerRoom.get("/rooms", renderHabitacionesView);
-routerRoom.get("rooms/resevaciones",renderAllRervationes)
+routerRoom.get("/rooms/list/reservations",renderAllRervationes)
+routerRoom.get("/rooms/list/rentas", renderAllRentas)
+
 
 routerRoom.get("/rooms/precios", renderPreciosView);
 routerRoom.get("/rooms/reportes", renderReservacionesView);
