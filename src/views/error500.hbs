@@ -1,0 +1,26 @@
+<div class="flex flex-col items-center mt-[10%] font-sans text-center">
+  <h1 class="text-[10rem] text-[#ffa502] animate-shake">500</h1>
+  <p class="text-[1.5rem] text-[#444] my-5">Lo sentimos, ocurrió un error interno en el servidor.</p>
+  <a href="/" class="text-[1.2rem] text-white bg-[#ffa502] px-5 py-2 rounded transition-colors duration-300 hover:bg-[#e67e22]">
+    Regresar al inicio
+  </a>
+</div>
+
+<style>
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+  }
+
+  .animate-shake {
+    animation: shake 1s infinite;
+  }
+
+  /* Para asegurar que la fuente sea Arial exacta */
+  .font-sans {
+    font-family: 'Arial', sans-serif;
+  }
+</style>

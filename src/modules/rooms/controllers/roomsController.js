@@ -1,5 +1,5 @@
 // roomsController.js
-import {getHabitaciones, findReservacionById, crearRenta, getReservationes} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+import {getHabitaciones, findReservacionById, crearRenta} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 /*** --- VISTAS PRINCIPALES --- ***/
 
@@ -11,6 +11,7 @@ export const renderHabitacionesView = async (req, res) => {
 
     res.render("habitaciones", {
       title: "Habitaciones",
+      showFooter: true,
       habitaciones,
       user: {
         ...user,
@@ -23,26 +24,41 @@ export const renderHabitacionesView = async (req, res) => {
   }
 };
 
-export const renderAllRervationes =async(req, res)=>{
-  try {
-    const allReservationes =await getReservationes();
-    const  user = req.session.user || {role: "Usuario"}
+// export const renderAllRervationes =async(req, res)=>{
+//   try {
+//     const allReservationes =await getReservationes();
+//     const  user = req.session.user || {role: "Usuario"}
 
-    res.render("mostarReservaciones", {
-      title: "Adminstracion de  Reservaciones",
-      allReservationes,
-      user: {
-        ...user,
-        rol: user.role
-      }
-    });
-  } catch (error) {
-    console.error("Error al renderrizar las reservaciones");
-    res.status(500).send("Errror al cargar las reservaciones")
+//     res.render("mostarReservaciones", {
+//       title: "Adminstracion de  Reservaciones",
+//       // allReservationes,
+//       user: {
+//         ...user,
+//         rol: user.role
+//       }
+//     });
+//   } catch (error) {
+//     console.error("Error al renderrizar las reservaciones");
+//     res.status(500).send("Errror al cargar las reservaciones")
 
-  }
+//   }
 
-}
+// }
+
+export const renderAllRervationes = (req, res) => {
+  res.render('mostarReservaciones', {
+   title: 'Listado de habitaciones rentadas',
+   showFooter: true
+   });
+};
+
+export const renderAllRentas = (req, res) => {
+  res.render('mostrarRentas', {
+    title: 'Listado de habitaciones rentadas',
+    showFooter: true
+   });
+};
+
 
 export const renderFormEditarReservacion = async (req, res) => {
   try {
@@ -60,6 +76,7 @@ export const renderFormEditarReservacion = async (req, res) => {
 
     return res.render("editarReservacion", {
       title: "Editar Reservación",
+      showFooter: true,
       reservacion,
       habitaciones,
       user: req.session.user
@@ -69,20 +86,34 @@ export const renderFormEditarReservacion = async (req, res) => {
     return res.status(500).send("Error al cargar el formulario de edición de reservación");
   }
 };
-
-export const renderPreciosView = async (req, res) => {
+// Implementacion de midleware error500, exitosamente sulado
+export const renderPreciosView = async (req, res, next) => {
   try {
-    const precios = await Room.precios();
-    res.render("precios", { title: "Precios de Habitaciones", precios });
+    // FORZAMOS UN ERROR MANUALMENTE para probar el middleware
+    throw new Error("Error interno simulado para prueba del middleware 500");
+
+    // Código normal (se puede comentar mientras pruebas)
+    // const precios = await Room.precios();
+    // res.render("precios", {
+    //   title: "Precios de Habitaciones",
+    //   showFooter: true,
+    //   precios
+    // });
   } catch (err) {
     console.error("Error al renderizar precios:", err);
-    return res.status(500).send("Error al cargar los precios");
+
+    // Llamamos al middleware de error 500
+    next(err);
   }
 };
 
+
 export const renderReservacionesView = async (req, res) => {
   try {
-    res.render("reportes", { title: "reportes"});
+    res.render("reportes", {
+      title: "reportes",
+      showFooter: true
+    });
   } catch (err) {
     console.error("Error al renderizar reportes de rentas:", err);
     return res.status(500).send("Error al cargar los reportes de rentas");
@@ -93,7 +124,11 @@ export const renderRentasView = async (req, res) => {
   try {
     const rentas = await Room.rentas();
     const habitaciones = await Room.find();
-    res.render("rentas", { title: "Rentas", rentas, habitaciones });
+    res.render("rentas", {
+      title: "Rentas",
+      showFooter: true,
+      rentas,
+      habitaciones });
   } catch (err) {
     console.error("Error al renderizar rentas:", err);
     return res.status(500).send("Error al cargar las rentas");
@@ -134,6 +169,7 @@ export const renderFormRentar = async (req, res) => {
 
     return res.render("rentar", {
       title: "Rentar habitación",
+      showFooter: true,
       habitacion,
       habitaciones,
       monto: montoCalculado,
@@ -149,7 +185,10 @@ export const renderFormRentar = async (req, res) => {
 
 
 export const renderCalendario = (req, res) => {
-  res.render('calendario', { title: 'Calendario de Habitaciones' });
+  res.render('calendario', {
+    title: 'Calendario de Habitaciones',
+    showFooter: true
+   });
 };
 
 export const fetchEventos = async (req, res) => {

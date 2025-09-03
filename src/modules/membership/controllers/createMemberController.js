@@ -158,6 +158,7 @@ const MembershipController = {
 
       res.render("membershipCreate", {
         title: "Crear Membresía",
+        showFooter: true,
         isAdmin,
         userRole,
         tiposMembresia,

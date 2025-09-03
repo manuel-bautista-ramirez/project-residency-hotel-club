@@ -13,7 +13,8 @@ import {
   renderReservacionesView,
   renderFormRentar,
   renderFormReservar,
-  renderAllRervationes
+  renderAllRervationes,
+  renderAllRentas,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -23,7 +24,9 @@ routerRoom.use(authMiddleware);
 
 // ----- VISTAS PRINCIPALES -----
 routerRoom.get("/rooms", renderHabitacionesView);
-routerRoom.get("rooms/resevaciones",renderAllRervationes)
+routerRoom.get("/rooms/list/reservations",renderAllRervationes)
+routerRoom.get("/rooms/list/rentas", renderAllRentas)
+
 
 routerRoom.get("/rooms/precios", renderPreciosView);
 routerRoom.get("/rooms/reportes", renderReservacionesView);
@@ -170,9 +173,6 @@ routerRoom.put("/api/rentas/:id/eliminar", async (req, res) => {
 // error 404  handler en cualquier modulo
 
 
-//  error 404 handler
-routerRoom.use((req, res) => {
-  res.status(404).render('error404', { title: 'Página no encontrada' });
-});
+
 
 export { routerRoom };
