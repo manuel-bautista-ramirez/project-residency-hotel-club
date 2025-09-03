@@ -20,7 +20,11 @@ router
   .post(resetPassword);
 
 // Login page - ruta específica
-router.get("/login", (req, res) => res.render("login", { title: "Inicio" }));
+router.get("/login", (req, res) => res.render("login", {
+  layout: "main",
+  title: "Inicio",
+  showFooter : false
+}));
 
 // Handle login
 router.post("/login", loginUser);
@@ -37,7 +41,10 @@ router.get("/", (req, res) => {
 router.get("/home", authMiddleware, (req, res) => {
   const user = req.session.user;
   if (!user?.username || !user?.role) return res.redirect("/login");
-  res.render("home", { title: "Home", ...user });
+  res.render("home", {
+    title: "Home",
+    showFooter: true,
+    ...user });
 });
 
 // Logout

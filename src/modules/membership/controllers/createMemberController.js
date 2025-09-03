@@ -5,6 +5,7 @@ export const MembershipController = {
     try {
       const { name, phone, email } = req.body;
       const id_cliente = await MembershipModel.createClient({
+        showFooter: true,
         name,
         phone,
         email,
@@ -83,6 +84,7 @@ export const MembershipController = {
       // Pasa baseUrl para evitar problemas con el prefijo de router
       res.render("membershipCreate", {
         title: "Crear Membresía",
+        showFooter: true,
         isAdmin,
         userRole,
         tiposMembresia,

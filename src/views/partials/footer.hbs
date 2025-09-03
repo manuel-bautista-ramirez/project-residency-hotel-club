@@ -1,0 +1,15 @@
+<footer class="fixed bottom-0 left-0 w-full h-15 flex flex-col justify-center items-center backdrop-blur-md z-50 bg-[rgba(31,41,55,0.85)] text-white text-[0.9rem] text-center">
+  <p>&copy; <span id="currentYear"></span> Hotel Jardines de la Higera — Todos los derechos reservados.</p>
+  <nav class="mt-1 space-x-1.5">
+    <a href="/" class="text-[#93c5fd] hover:text-[#3b82f6]">Inicio</a>
+    <a href="/rooms" class="text-[#93c5fd] hover:text-[#3b82f6]">Habitaciones</a>
+    <a href="/contacto" class="text-[#93c5fd] hover:text-[#3b82f6]">Contacto</a>
+  </nav>
+</footer>
+
+<script>
+  // Obtener el año actual desde la computadora
+  const yearSpan = document.getElementById('currentYear');
+  const currentYear = new Date().getFullYear();
+  yearSpan.textContent = currentYear;
+</script>

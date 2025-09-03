@@ -5,6 +5,7 @@ export const renderMembershipHome = (req, res) => {
 
     res.render('membershipHome', {
       title: 'Área de Membresías',
+      showFooter: true,
       isAdmin,
       userRole,
       userRole,
@@ -18,6 +19,7 @@ export const renderMembershipHome = (req, res) => {
 
     res.render('membershipList', {
       title: 'Lista de Membresías',
+      showFooter: true,
       isAdmin,
       userRole
     });
@@ -35,6 +37,7 @@ export const renderMembershipHome = (req, res) => {
 
         res.render('membershipCreate', {
             title: 'Crear Membresía',
+            showFooter: true,
             isAdmin,
             userRole,
             tiposMembresia,

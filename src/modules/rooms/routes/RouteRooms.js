@@ -173,9 +173,6 @@ routerRoom.put("/api/rentas/:id/eliminar", async (req, res) => {
 // error 404  handler en cualquier modulo
 
 
-//  error 404 handler
-routerRoom.use((req, res) => {
-  res.status(404).render('error404', { title: 'Página no encontrada' });
-});
+
 
 export { routerRoom };
