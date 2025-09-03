@@ -1,10 +1,10 @@
+// models/modelList.js
 import { pool } from "../../../dataBase/conecctionDataBase.js";
 
 const modelList = {
-  // Obtener todas las membresías activas con información de clientes e integrantes
+  // Obtener todas las membresías activas con información de clientes
   async getMembresiasActivas() {
     try {
-      // Consulta para obtener todas las membresías activas con información del cliente principal
       const query = `
         SELECT 
           ma.id_activa,
@@ -24,7 +24,8 @@ const modelList = {
           CASE 
             WHEN tm.max_integrantes > 1 THEN 'Familiar'
             ELSE 'Individual'
-          END as tipo
+          END as tipo,
+          (SELECT COUNT(*) FROM integrantes_membresia im WHERE im.id_activa = ma.id_activa) as total_integrantes
         FROM membresias_activas ma
         INNER JOIN clientes c ON ma.id_cliente = c.id_cliente
         INNER JOIN membresias m ON ma.id_membresia = m.id_membresia
@@ -32,18 +33,20 @@ const modelList = {
         WHERE ma.estado = 'Activa'
         ORDER BY ma.fecha_fin ASC
       `;
-      
+
       const [membresias] = await pool.query(query);
-      
-      // Para cada membresía familiar, obtener los integrantes
+
+      // Para cada membresía, obtener los integrantes si es familiar
       for (let membresia of membresias) {
         if (membresia.max_integrantes > 1) {
-          membresia.integrantes = await this.getIntegrantesMembresia(membresia.id_activa);
+          membresia.integrantes = await this.getIntegrantesMembresia(
+            membresia.id_activa
+          );
         } else {
           membresia.integrantes = [];
         }
       }
-      
+
       return membresias;
     } catch (error) {
       console.error("Error al obtener membresías activas:", error);
@@ -51,22 +54,18 @@ const modelList = {
     }
   },
 
-  // Obtener integrantes de una membresía familiar
+  // Obtener integrantes de una membresía familiar (SIMPLIFICADO)
   async getIntegrantesMembresia(id_activa) {
     try {
       const query = `
         SELECT 
-          im.id_integrante,
-          im.id_cliente,
-          c.nombre_completo,
-          rf.nombre as relacion
-        FROM integrantes_membresia im
-        INNER JOIN clientes c ON im.id_cliente = c.id_cliente
-        LEFT JOIN relaciones_familiares rf ON im.id_relacion = rf.id_relacion
-        WHERE im.id_activa = ?
-        ORDER BY im.id_integrante
+          id_integrante,
+          nombre_completo
+        FROM integrantes_membresia
+        WHERE id_activa = ?
+        ORDER BY id_integrante
       `;
-      
+
       const [integrantes] = await pool.query(query, [id_activa]);
       return integrantes;
     } catch (error) {
@@ -78,8 +77,8 @@ const modelList = {
   // Obtener membresías por tipo (Individual/Familiar)
   async getMembresiasPorTipo(tipo) {
     try {
-      const esFamiliar = tipo === 'Familiar';
-      
+      const esFamiliar = tipo === "Familiar";
+
       const query = `
         SELECT 
           ma.id_activa,
@@ -94,25 +93,28 @@ const modelList = {
           c.correo,
           tm.nombre as tipo_membresia,
           tm.max_integrantes,
-          DATEDIFF(ma.fecha_fin, CURDATE()) as dias_restantes
+          DATEDIFF(ma.fecha_fin, CURDATE()) as dias_restantes,
+          (SELECT COUNT(*) FROM integrantes_membresia im WHERE im.id_activa = ma.id_activa) as total_integrantes
         FROM membresias_activas ma
         INNER JOIN clientes c ON ma.id_cliente = c.id_cliente
         INNER JOIN membresias m ON ma.id_membresia = m.id_membresia
         INNER JOIN tipos_membresia tm ON m.id_tipo_membresia = tm.id_tipo_membresia
         WHERE ma.estado = 'Activa' 
-          AND tm.max_integrantes ${esFamiliar ? '>' : '='} 1
+          AND tm.max_integrantes ${esFamiliar ? ">" : "="} 1
         ORDER BY ma.fecha_fin ASC
       `;
-      
+
       const [membresias] = await pool.query(query);
-      
+
       // Para membresías familiares, obtener integrantes
       if (esFamiliar) {
         for (let membresia of membresias) {
-          membresia.integrantes = await this.getIntegrantesMembresia(membresia.id_activa);
+          membresia.integrantes = await this.getIntegrantesMembresia(
+            membresia.id_activa
+          );
         }
       }
-      
+
       return membresias;
     } catch (error) {
       console.error("Error al obtener membresías por tipo:", error);
@@ -124,21 +126,21 @@ const modelList = {
   async getMembresiasPorEstado(estado) {
     try {
       let condition = "";
-      
-      switch(estado) {
-        case 'Activa':
+
+      switch (estado) {
+        case "Activa":
           condition = "AND DATEDIFF(ma.fecha_fin, CURDATE()) > 7";
           break;
-        case 'Por vencer':
+        case "Por vencer":
           condition = "AND DATEDIFF(ma.fecha_fin, CURDATE()) BETWEEN 1 AND 7";
           break;
-        case 'Vencida':
+        case "Vencida":
           condition = "AND DATEDIFF(ma.fecha_fin, CURDATE()) <= 0";
           break;
         default:
           condition = "";
       }
-      
+
       const query = `
         SELECT 
           ma.id_activa,
@@ -157,7 +159,8 @@ const modelList = {
           CASE 
             WHEN tm.max_integrantes > 1 THEN 'Familiar'
             ELSE 'Individual'
-          END as tipo
+          END as tipo,
+          (SELECT COUNT(*) FROM integrantes_membresia im WHERE im.id_activa = ma.id_activa) as total_integrantes
         FROM membresias_activas ma
         INNER JOIN clientes c ON ma.id_cliente = c.id_cliente
         INNER JOIN membresias m ON ma.id_membresia = m.id_membresia
@@ -166,16 +169,18 @@ const modelList = {
           ${condition}
         ORDER BY ma.fecha_fin ASC
       `;
-      
+
       const [membresias] = await pool.query(query);
-      
+
       // Para cada membresía familiar, obtener los integrantes
       for (let membresia of membresias) {
         if (membresia.max_integrantes > 1) {
-          membresia.integrantes = await this.getIntegrantesMembresia(membresia.id_activa);
+          membresia.integrantes = await this.getIntegrantesMembresia(
+            membresia.id_activa
+          );
         }
       }
-      
+
       return membresias;
     } catch (error) {
       console.error("Error al obtener membresías por estado:", error);
@@ -204,7 +209,8 @@ const modelList = {
           CASE 
             WHEN tm.max_integrantes > 1 THEN 'Familiar'
             ELSE 'Individual'
-          END as tipo
+          END as tipo,
+          (SELECT COUNT(*) FROM integrantes_membresia im WHERE im.id_activa = ma.id_activa) as total_integrantes
         FROM membresias_activas ma
         INNER JOIN clientes c ON ma.id_cliente = c.id_cliente
         INNER JOIN membresias m ON ma.id_membresia = m.id_membresia
@@ -213,17 +219,23 @@ const modelList = {
           AND (c.nombre_completo LIKE ? OR c.telefono LIKE ? OR c.correo LIKE ?)
         ORDER BY ma.fecha_fin ASC
       `;
-      
+
       const searchTerm = `%${termino}%`;
-      const [membresias] = await pool.query(query, [searchTerm, searchTerm, searchTerm]);
-      
+      const [membresias] = await pool.query(query, [
+        searchTerm,
+        searchTerm,
+        searchTerm,
+      ]);
+
       // Para cada membresía familiar, obtener los integrantes
       for (let membresia of membresias) {
         if (membresia.max_integrantes > 1) {
-          membresia.integrantes = await this.getIntegrantesMembresia(membresia.id_activa);
+          membresia.integrantes = await this.getIntegrantesMembresia(
+            membresia.id_activa
+          );
         }
       }
-      
+
       return membresias;
     } catch (error) {
       console.error("Error al buscar membresías:", error);
@@ -231,7 +243,7 @@ const modelList = {
     }
   },
 
-  // Obtener estadísticas de membresías - CORREGIDO
+  // Obtener estadísticas de membresías
   async getEstadisticasMembresias() {
     try {
       const query = `
@@ -241,21 +253,106 @@ const modelList = {
           SUM(CASE WHEN DATEDIFF(ma.fecha_fin, CURDATE()) BETWEEN 1 AND 7 THEN 1 ELSE 0 END) as por_vencer,
           SUM(CASE WHEN DATEDIFF(ma.fecha_fin, CURDATE()) <= 0 THEN 1 ELSE 0 END) as vencidas,
           SUM(CASE WHEN tm.max_integrantes > 1 THEN 1 ELSE 0 END) as familiares,
-          SUM(CASE WHEN tm.max_integrantes = 1 THEN 1 ELSE 0 END) as individuales
+          SUM(CASE WHEN tm.max_integrantes = 1 THEN 1 ELSE 0 END) as individuales,
+          SUM(ma.precio_final) as ingresos_totales
         FROM membresias_activas ma
         INNER JOIN membresias m ON ma.id_membresia = m.id_membresia
         INNER JOIN tipos_membresia tm ON m.id_tipo_membresia = tm.id_tipo_membresia
         WHERE ma.estado = 'Activa'
       `;
-      
+
       const [stats] = await pool.query(query);
       return stats[0];
     } catch (error) {
       console.error("Error al obtener estadísticas:", error);
       throw error;
     }
-  }
+  },
+
+  // 🔽 NUEVOS MÉTODOS PARA LA ESTRUCTURA SIMPLIFICADA
+
+  // Obtener detalles completos de una membresía
+  async getMembresiaDetalles(id_activa) {
+    try {
+      const query = `
+        SELECT 
+          ma.*,
+          c.nombre_completo,
+          c.telefono,
+          c.correo,
+          tm.nombre as tipo_membresia,
+          tm.descripcion,
+          tm.max_integrantes,
+          DATEDIFF(ma.fecha_fin, CURDATE()) as dias_restantes
+        FROM membresias_activas ma
+        INNER JOIN clientes c ON ma.id_cliente = c.id_cliente
+        INNER JOIN membresias m ON ma.id_membresia = m.id_membresia
+        INNER JOIN tipos_membresia tm ON m.id_tipo_membresia = tm.id_tipo_membresia
+        WHERE ma.id_activa = ?
+      `;
+
+      const [membresia] = await pool.query(query, [id_activa]);
+
+      if (membresia.length > 0) {
+        // Obtener integrantes si es membresía familiar
+        if (membresia[0].max_integrantes > 1) {
+          membresia[0].integrantes = await this.getIntegrantesMembresia(
+            id_activa
+          );
+        } else {
+          membresia[0].integrantes = [];
+        }
+
+        // Obtener historial de pagos
+        membresia[0].pagos = await this.getPagosMembresia(id_activa);
+
+        return membresia[0];
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error al obtener detalles de membresía:", error);
+      throw error;
+    }
+  },
+
+  // Obtener pagos de una membresía
+  async getPagosMembresia(id_activa) {
+    try {
+      const query = `
+        SELECT 
+          p.*,
+          mp.nombre as metodo_pago
+        FROM pagos p
+        INNER JOIN metodos_pago mp ON p.id_metodo_pago = mp.id_metodo_pago
+        WHERE p.id_activa = ?
+        ORDER BY p.fecha_pago DESC
+      `;
+
+      const [pagos] = await pool.query(query, [id_activa]);
+      return pagos;
+    } catch (error) {
+      console.error("Error al obtener pagos de membresía:", error);
+      throw error;
+    }
+  },
+
+  // Cancelar/vencer membresía
+  async actualizarEstadoMembresia(id_activa, nuevo_estado) {
+    try {
+      const query = `
+        UPDATE membresias_activas 
+        SET estado = ? 
+        WHERE id_activa = ?
+      `;
+
+      const [result] = await pool.query(query, [nuevo_estado, id_activa]);
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Error al actualizar estado de membresía:", error);
+      throw error;
+    }
+  },
 };
 
 export { modelList };
-

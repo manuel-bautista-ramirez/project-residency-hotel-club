@@ -1,10 +1,7 @@
 // controllers/createMemberController.js
 import { MembershipModel } from "../models/modelMembership.js";
-<<<<<<< HEAD
 import { generarQRArchivo } from "../utils/qrGenerator.js";
 import { sendEmail } from "../utils/nodeMailer.js";
-=======
->>>>>>> parent of 889367e (Generator QR)
 
 const MembershipController = {
   // Crear cliente principal (queda igual)
@@ -17,15 +14,7 @@ const MembershipController = {
         telefono,
       });
       const id_cliente = result.id_cliente || result.insertId;
-<<<<<<< HEAD
       if (!id_cliente) throw new Error("No se pudo obtener el ID del cliente");
-=======
-      
-      if (!id_cliente) {
-        throw new Error('No se pudo obtener el ID del cliente');
-      }
-      
->>>>>>> parent of 889367e (Generator QR)
       res.json({ id_cliente });
     } catch (err) {
       console.error("Error en createClient:", err);
@@ -44,11 +33,7 @@ const MembershipController = {
         fecha_inicio,
         fecha_fin,
         precio_final,
-<<<<<<< HEAD
         integrantes, // array de nombres (strings) o de objetos { nombre_completo, id_relacion? }
-=======
-        integrantes, // array de nombres de integrantes
->>>>>>> parent of 889367e (Generator QR)
       } = req.body;
 
       // 1️⃣ Crear contrato en membresias
@@ -70,7 +55,6 @@ const MembershipController = {
 
       // 3️⃣ Registrar integrantes (si es familiar)
       if (integrantes && integrantes.length > 0) {
-<<<<<<< HEAD
         const integrantesData = integrantes.map((item) =>
           typeof item === "string"
             ? { nombre_completo: item, id_relacion: null }
@@ -84,8 +68,12 @@ const MembershipController = {
 
       // 4️⃣ Obtener datos para el correo/QR
       const cliente = await MembershipModel.getClienteById(id_cliente);
-      const tipo = await MembershipModel.getTipoMembresiaById(id_tipo_membresia);
-      const integrantesDB = await MembershipModel.getIntegrantesByActiva(id_activa);
+      const tipo = await MembershipModel.getTipoMembresiaById(
+        id_tipo_membresia
+      );
+      const integrantesDB = await MembershipModel.getIntegrantesByActiva(
+        id_activa
+      );
 
       // 5️⃣ Armar payload del QR (titular + fechas + tipo + integrantes si hay)
       const payloadQR = {
@@ -121,20 +109,30 @@ const MembershipController = {
         });
       }
 
-      // 8️⃣ Continuar con tu flujo
-=======
-        const integrantesData = integrantes.map((nombre) => ({
-          nombre_completo: nombre,
-          id_relacion: null,
-        }));
-        await MembershipModel.addFamilyMembers(id_activa, integrantesData);
+      // 8️⃣ Decidir cómo responder basado en el tipo de petición
+      if (req.xhr || req.headers.accept.includes("application/json")) {
+        // Es una petición AJAX - responder con JSON
+        res.json({
+          success: true,
+          message: "Membresía creada exitosamente",
+          id_membresia: id_membresia,
+        });
+      } else {
+        // Es una petición normal del navegador - hacer redirect
+        res.redirect("/memberships/listMembership");
       }
-
->>>>>>> parent of 889367e (Generator QR)
-      res.redirect("/memberships/membershipList");
     } catch (err) {
       console.error("Error en createMembership:", err);
-      res.status(500).send("Error al crear la membresía");
+
+      if (req.xhr || req.headers.accept.includes("application/json")) {
+        res.status(500).json({
+          success: false,
+          message: "Error al crear la membresía",
+          error: err.message,
+        });
+      } else {
+        res.status(500).send("Error al crear la membresía");
+      }
     }
   },
 
@@ -142,7 +140,8 @@ const MembershipController = {
     try {
       const { id } = req.params;
       const tipo = await MembershipModel.getTipoMembresiaById(id);
-      if (!tipo) return res.status(404).json({ error: "Membresía no encontrada" });
+      if (!tipo)
+        return res.status(404).json({ error: "Membresía no encontrada" });
       res.json(tipo);
     } catch (err) {
       console.error("Error obteniendo tipo de membresía:", err);
@@ -173,4 +172,3 @@ const MembershipController = {
 };
 
 export { MembershipController };
-

@@ -1,53 +1,36 @@
 import { modelList } from "../models/modelList.js";
 
 const listMembershipController = {
-  // Renderizar la vista de lista de membresías
   async renderMembershipList(req, res) {
     try {
       const userRole = req.session.user?.role || "Recepcionista";
       const isAdmin = userRole === "Administrador";
 
-      // Obtener parámetros de filtro de la query string
       const { filter, search, type, status } = req.query;
 
       let membresias = [];
       let estadisticas = {};
 
-      // Obtener estadísticas
       estadisticas = await modelList.getEstadisticasMembresias();
 
-      // Aplicar filtros según los parámetros
       if (search) {
         membresias = await modelList.buscarMembresias(search);
       } else if (type) {
         membresias = await modelList.getMembresiasPorTipo(type);
       } else if (status) {
         membresias = await modelList.getMembresiasPorEstado(status);
-      } else if (filter === "active" || !filter) {
-        // Por defecto mostrar todas las activas
+      } else {
         membresias = await modelList.getMembresiasActivas();
       }
 
-      // Formatear datos para la vista
-      // En el método renderMembershipList, modifica el mapeo de membresías:
       const membresiasFormateadas = membresias.map((membresia) => {
-        // Calcular si está activa considerando tanto el estado como la fecha
         const diasRestantes = membresia.dias_restantes;
-        const estaActiva = membresia.estado === "Activa" && diasRestantes > 0;
-        const estaVencida = diasRestantes <= 0;
 
-        // Determinar el estado real
-        let estadoReal = "Inactiva";
-        if (estaActiva) {
-          if (diasRestantes > 20) {
-            estadoReal = "Activa";
-          } else if (diasRestantes > 7) {
-            estadoReal = "Activa_Proxima";
-          } else if (diasRestantes > 0) {
-            estadoReal = "Por_Vencer";
-          }
-        } else if (estaVencida) {
+        let estadoReal = "Activa";
+        if (diasRestantes <= 0) {
           estadoReal = "Vencida";
+        } else if (diasRestantes <= 7) {
+          estadoReal = "Por_Vencer";
         }
 
         return {
@@ -60,12 +43,12 @@ const listMembershipController = {
           endDate: membresia.fecha_fin,
           status: membresia.estado,
           daysUntilExpiry: diasRestantes,
-          members: membresia.integrantes ? membresia.integrantes.length + 1 : 1,
+          members: membresia.total_integrantes + 1,
           amount: membresia.precio_final,
           isFamily: membresia.tipo === "Familiar",
-          isActive: estaActiva, // ← Esto ahora considera tanto estado como fecha
-          isExpired: estaVencida, // ← Nueva propiedad para vencidas
-          statusType: estadoReal, // ← Nueva propiedad para el tipo de estado
+          isActive: diasRestantes > 0,
+          isExpired: diasRestantes <= 0,
+          statusType: estadoReal,
           integrantes: membresia.integrantes || [],
         };
       });
@@ -84,7 +67,6 @@ const listMembershipController = {
     } catch (error) {
       console.error("Error al renderizar lista de membresías:", error);
 
-      // Enviar respuesta JSON si es una solicitud AJAX
       if (req.xhr || req.headers.accept.indexOf("json") > -1) {
         return res.status(500).json({
           success: false,
@@ -96,7 +78,6 @@ const listMembershipController = {
         });
       }
 
-      // Redirigir a una página de error genérica si la vista de error no existe
       res.status(500).send(`
         <!DOCTYPE html>
         <html>
@@ -123,14 +104,12 @@ const listMembershipController = {
     }
   },
 
-  // API: Obtener membresías (para AJAX)
   async getMembresiasAPI(req, res) {
     try {
       const { filter, search, type, status } = req.query;
 
       let membresias = [];
 
-      // Aplicar filtros según los parámetros
       if (search) {
         membresias = await modelList.buscarMembresias(search);
       } else if (type) {
@@ -141,7 +120,6 @@ const listMembershipController = {
         membresias = await modelList.getMembresiasActivas();
       }
 
-      // Formatear datos para la respuesta JSON
       const membresiasFormateadas = membresias.map((membresia) => {
         const formatDate = (dateString) => {
           if (!dateString) return "";
@@ -152,6 +130,15 @@ const listMembershipController = {
             day: "numeric",
           });
         };
+
+        const diasRestantes = membresia.dias_restantes;
+        let estadoReal = "Activa";
+        if (diasRestantes <= 0) {
+          estadoReal = "Vencida";
+        } else if (diasRestantes <= 7) {
+          estadoReal = "Por_Vencer";
+        }
+
         return {
           id: membresia.id_activa,
           fullName: membresia.nombre_completo,
@@ -161,10 +148,13 @@ const listMembershipController = {
           startDate: formatDate(membresia.fecha_inicio),
           endDate: formatDate(membresia.fecha_fin),
           status: membresia.estado,
-          daysUntilExpiry: membresia.dias_restantes,
-          members: membresia.integrantes ? membresia.integrantes.length + 1 : 1,
+          daysUntilExpiry: diasRestantes,
+          members: membresia.total_integrantes + 1,
           amount: membresia.precio_final,
           isFamily: membresia.tipo === "Familiar",
+          isActive: diasRestantes > 0,
+          isExpired: diasRestantes <= 0,
+          statusType: estadoReal,
           integrantes: membresia.integrantes || [],
         };
       });
@@ -187,11 +177,9 @@ const listMembershipController = {
     }
   },
 
-  // API: Obtener estadísticas (para AJAX)
   async getEstadisticasAPI(req, res) {
     try {
       const estadisticas = await modelList.getEstadisticasMembresias();
-
       res.json({
         success: true,
         data: estadisticas,

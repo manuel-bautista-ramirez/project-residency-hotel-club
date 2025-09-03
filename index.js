@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import session from "express-session";
 import { app } from "./src/config/app.js";
 import routerLogin from "./src/modules/login/routers/routerLogin.js";
-import { routerMember } from "./src/modules/membership/routes/membershipRoutes.js";
+import {membershipRoutes, membershipApiRoutes} from "./src/modules/membership/routes/index.js";
 import { routerRoom } from "./src/modules/rooms/routes/RouteRooms.js";
 
 // Configuración de variables para __dirname en módulos ES
@@ -32,7 +32,9 @@ app.use(
 // Iniciar el servidor
 app.listen(app.get("port"), () => {
   app.use(routerLogin);
-  app.use("/memberships", routerMember);
+  app.use("/memberships", membershipRoutes);
+  // Rutas API de modulo membresías
+  app.use("/api/memberships", membershipApiRoutes);
   app.use(routerRoom);
 
   console.log(

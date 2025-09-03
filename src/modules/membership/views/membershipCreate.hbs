@@ -77,6 +77,16 @@
                         ➕ Agregar integrante
                     </button>
                 </div>
+                {{!-- Metodo de pago --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Metodo de pago:</label>
+                    <select id="metodo_pago" name="metodo_pago" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        {{#each tiposPago}}
+                        <option value="{{id_metodo_pago}}">{{nombre}}</option>
+                        {{/each}}
+                    </select>
+                </div>
 
                 <!-- Precio final (solo visual) -->
                 <div class="mt-4">

@@ -32,12 +32,14 @@ export const renderMembershipCreate = async (req, res) => {
 
     // Obtener los datos necesarios
     const tiposMembresia = await MembershipModel.getTiposMembresia();
+    const tiposPago = await MembershipModel.getMetodosPago();
 
     res.render("membershipCreate", {
       title: "Crear Membresía",
       isAdmin,
       userRole,
       tiposMembresia,
+      tiposPago,
     });
   } catch (error) {
     console.error("Error al cargar la página de creación de membresía:", error);
