@@ -1,3 +1,4 @@
+// utils/qrGenerator.js
 import QRCode from "qrcode";
 import fs from "fs";
 import path from "path";
@@ -8,7 +9,7 @@ import path from "path";
  * @param {string} filename - Nombre de archivo (ej. "membresia_123.png")
  * @returns {Promise<string>} - Ruta absoluta del archivo generado
  */
-export async function generarQRArchivo(payload, filename = "qr.png") {
+async function generarQRArchivo(payload, filename = "qr.png") {
   const data = typeof payload === "string" ? payload : JSON.stringify(payload);
 
   const dir = path.join(process.cwd(), "uploads", "qrs");
@@ -25,4 +26,5 @@ export async function generarQRArchivo(payload, filename = "qr.png") {
   return filePath;
 }
 
-
+// Exportación esencial que faltaba
+export { generarQRArchivo };
