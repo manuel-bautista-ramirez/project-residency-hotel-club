@@ -147,6 +147,8 @@ const MembershipController = {
       res.status(500).send("Error al cargar tipos de membresía");
     }
   },
+  //
+
 };
 
 export { MembershipController };

@@ -35,6 +35,7 @@ const listMembershipController = {
 
         return {
           id: membresia.id_activa,
+          id_activa: membresia.id_activa,
           fullName: membresia.nombre_completo,
           phone: membresia.telefono,
           email: membresia.correo,
@@ -141,6 +142,7 @@ const listMembershipController = {
 
         return {
           id: membresia.id_activa,
+          id_activa: membresia.id_activa,
           fullName: membresia.nombre_completo,
           phone: membresia.telefono,
           email: membresia.correo,
@@ -193,6 +195,25 @@ const listMembershipController = {
           process.env.NODE_ENV === "development"
             ? error.message
             : "Error interno del servidor",
+      });
+    }
+  },
+  async getIntegrantesAPI(req, res) {
+    try {
+      const { id_activa } = req.params;
+
+      if (!id_activa) {
+        return res.status(400).json({
+          error: "El parámetro id_activa es requerido",
+        });
+      }
+
+      const integrantes = await modelList.getIntegrantesByMembresia(id_activa);
+      res.json(integrantes);
+    } catch (error) {
+      console.error("Error al obtener integrantes:", error);
+      res.status(500).json({
+        error: "Error interno del servidor al obtener integrantes",
       });
     }
   },

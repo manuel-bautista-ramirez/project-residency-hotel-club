@@ -13,8 +13,22 @@ routerApi.use(authMiddleware);
 // Helper para bind
 const bind = (controller, method) => controller[method].bind(controller);
 
-// API
-routerApi.get("/api/memberships", bind(listMembershipController, "getMembresiasAPI"));
-routerApi.get("/api/statistics", bind(listMembershipController, "getEstadisticasAPI"));
+// ===============================
+// RUTAS RELATIVAS
+// ===============================
+
+// Lista de membresías
+// URL final: GET /api/memberships/
+routerApi.get("/", bind(listMembershipController, "getMembresiasAPI"));
+
+// Estadísticas
+// URL final: GET /api/memberships/statistics
+routerApi.get("/statistics", bind(listMembershipController, "getEstadisticasAPI"));
+
+// Integrantes de una membresía activa
+// URL final: GET /api/memberships/:id_activa/integrantes
+routerApi.get("/:id_activa/integrantes", (req, res) =>
+  listMembershipController.getIntegrantesAPI(req, res)
+);
 
 export { routerApi as membershipApiRoutes };

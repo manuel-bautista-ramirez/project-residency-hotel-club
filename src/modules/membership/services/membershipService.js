@@ -5,7 +5,8 @@ import { sendEmail } from "../utils/nodeMailer.js";
 
 export const MembershipService = {
   async createMembershipContract(membershipData) {
-    const { id_cliente, id_tipo_membresia, fecha_inicio, fecha_fin } = membershipData;
+    const { id_cliente, id_tipo_membresia, fecha_inicio, fecha_fin } =
+      membershipData;
     return await MembershipModel.createMembershipContract({
       id_cliente,
       id_tipo_membresia,
@@ -27,7 +28,8 @@ export const MembershipService = {
   },
 
   async activateMembership(activationData) {
-    const { id_cliente, id_membresia, fecha_inicio, fecha_fin, precio_final } = activationData;
+    const { id_cliente, id_membresia, fecha_inicio, fecha_fin, precio_final } =
+      activationData;
     return await MembershipModel.activateMembership({
       id_cliente,
       id_membresia,
@@ -61,7 +63,13 @@ export const MembershipService = {
     return { cliente, tipo, integrantesDB };
   },
 
-  async generateQRPayload(cliente, tipo, fecha_inicio, fecha_fin, integrantesDB) {
+  async generateQRPayload(
+    cliente,
+    tipo,
+    fecha_inicio,
+    fecha_fin,
+    integrantesDB
+  ) {
     return {
       titular: { nombre: cliente?.nombre_completo || "N/D" },
       tipo_membresia: tipo?.nombre || "N/D",
@@ -76,7 +84,14 @@ export const MembershipService = {
     };
   },
 
-  async sendMembershipEmail(cliente, tipo, fecha_inicio, fecha_fin, qrPath, integrantesDB) {
+  async sendMembershipEmail(
+    cliente,
+    tipo,
+    fecha_inicio,
+    fecha_fin,
+    qrPath,
+    integrantesDB
+  ) {
     if (cliente?.correo) {
       await sendEmail({
         to: cliente.correo,
@@ -89,5 +104,7 @@ export const MembershipService = {
         integrantes: integrantesDB,
       });
     }
-  }
+  },
+
+  
 };

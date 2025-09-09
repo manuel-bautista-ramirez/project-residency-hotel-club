@@ -353,6 +353,23 @@ const modelList = {
       throw error;
     }
   },
+  async getIntegrantesByMembresia(id_activa) {
+    try {
+      const query = `
+        SELECT 
+          nombre_completo
+        FROM integrantes_membresia 
+        WHERE id_activa = ?
+        ORDER BY nombre_completo
+      `;
+  
+      const [rows] = await pool.query(query, [id_activa]);
+      return rows;
+    } catch (error) {
+      console.error("Error en getIntegrantesByMembresia:", error);
+      throw error;
+    }
+  }
 };
 
 export { modelList };

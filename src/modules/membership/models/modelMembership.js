@@ -188,6 +188,7 @@ const MembershipModel = {
     );
     return rows[0]?.precio || 1200.0;
   },
+
   
 };
 

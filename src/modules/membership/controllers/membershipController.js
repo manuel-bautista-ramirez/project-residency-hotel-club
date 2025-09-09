@@ -21,6 +21,8 @@ export const renderMembershipList = (req, res) => {
     title: "Lista de Membresías",
     isAdmin,
     userRole,
+    apiBase: "/memberships",
+    apiIntegrantes: "/memberships/:id_activa/integrantes",
   });
 };
 
