@@ -6,9 +6,11 @@ import { authMiddleware } from "../../login/middlewares/accessDenied.js";
 import {
   renderMembershipHome,
   renderMembershipCreate,
+  renderEditMembership,
 } from "../controllers/membershipController.js";
 import { MembershipController } from "../controllers/createMemberController.js";
 import { listMembershipController } from "../controllers/listMemberController.js";
+import { editMemberController } from "../controllers/editMemberController.js";
 
 const routerMembership = express.Router();
 
@@ -21,6 +23,7 @@ const bind = (controller, method) => controller[method].bind(controller);
 // Vistas
 routerMembership.get("/", renderMembershipHome);
 routerMembership.get("/createMembership", renderMembershipCreate);
+routerMembership.get("/editMembership/:id", renderEditMembership);
 routerMembership.get(
   "/createMembership/tipos",
   bind(MembershipController, "renderTiposMembresia")
@@ -31,11 +34,17 @@ routerMembership.get(
   "/listMembership",
   bind(listMembershipController, "renderMembershipList")
 );
-routerMembership.post("/createClient", bind(MembershipController, "createClient"));
+routerMembership.post(
+  "/createClient",
+  bind(MembershipController, "createClient")
+);
 routerMembership.post(
   "/createMembership",
   bind(MembershipController, "createMembership")
 );
+routerMembership.get('/editMembership/:id', editMemberController.editMembership);
+routerMembership.post('/updateMembership/:id', editMemberController.updateMembership);
+
 
 // Ruta con verificación de método existente
 routerMembership.get("/tipos_membresia/:id", (req, res) => {

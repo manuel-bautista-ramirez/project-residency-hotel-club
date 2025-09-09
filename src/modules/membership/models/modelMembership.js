@@ -189,7 +189,56 @@ const MembershipModel = {
     return rows[0]?.precio || 1200.0;
   },
 
-  
+  async getMembresiaById(id) {
+    try {
+      const [membresias] = await pool.query(
+        `SELECT 
+          ma.id_activa,
+          ma.id_cliente,
+          ma.id_membresia,
+          ma.fecha_inicio,
+          ma.fecha_fin,
+          ma.precio_final,
+          ma.estado,
+          c.nombre_completo,
+          c.telefono,
+          c.correo,
+          tm.nombre as tipo_membresia,
+          tm.max_integrantes,
+          tm.precio,
+          DATEDIFF(ma.fecha_fin, CURDATE()) as dias_restantes,
+          CASE 
+            WHEN tm.max_integrantes > 1 THEN 'Familiar'
+            ELSE 'Individual'
+          END as tipo
+        FROM membresias_activas ma
+        INNER JOIN clientes c ON ma.id_cliente = c.id_cliente
+        INNER JOIN membresias m ON ma.id_membresia = m.id_membresia
+        INNER JOIN tipos_membresia tm ON m.id_tipo_membresia = tm.id_tipo_membresia
+        WHERE ma.id_activa = ?`,
+        [id]
+      );
+
+      if (membresias.length === 0) {
+        return null;
+      }
+
+      const membresia = membresias[0];
+      
+      // Si es una membresía familiar, obtener los integrantes
+      if (membresia.max_integrantes > 1) {
+        membresia.integrantes = await this.getIntegrantesByActiva(id);
+      } else {
+        membresia.integrantes = [];
+      }
+
+      return membresia;
+    } catch (error) {
+      console.error("Error en getMembresiaById:", error);
+      throw error;
+    }
+  },
+
 };
 
 export { MembershipModel };
