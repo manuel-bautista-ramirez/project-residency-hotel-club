@@ -11,6 +11,7 @@ import {
 import { MembershipController } from "../controllers/createMemberController.js";
 import { listMembershipController } from "../controllers/listMemberController.js";
 import { editMemberController } from "../controllers/editMemberController.js";
+import { deleteMemberController } from "../controllers/deleteMemberController.js";
 
 const routerMembership = express.Router();
 
@@ -44,6 +45,7 @@ routerMembership.post(
 );
 routerMembership.get('/editMembership/:id', editMemberController.editMembership);
 routerMembership.post('/updateMembership/:id', editMemberController.updateMembership);
+routerMembership.delete("/delete/:id", deleteMemberController.deleteMembership);
 
 
 // Ruta con verificación de método existente
