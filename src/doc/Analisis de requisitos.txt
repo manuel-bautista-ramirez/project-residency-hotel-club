@@ -1,0 +1,109 @@
+Semana uno, las necesidades generales.
+Membresìas:
+Funcionales:
+
+Desarrollo de mòdulos de Membresìas
+Tipo de membresìa
+(Individual)
+Nombre Completo
+Nùmero de WhatsApp
+Correo Electrònico
+Fecha de Inicio
+Fecha Final
+(Àrea)
+-Gimasio $400
+-Alberca $400
+-General $600
+(Familiar)
+-Màximo de 4 personas
+-Nombre de Titular
+Descuento de Membresìa solo permitido por administrador
+-General $1500
+(Cantidad)
+Precio en Nùmero y Escrito ()
+(Apartado de Descuento, pero solo disponible para administrador)
+(Tipo de Pago)
+Transferencia, Tarjeta y Efectivo
+El comprobante se debe de enviar
+Còdigo Qr, para cada mebresìa se genera un còdigo Qr
+
+(LO QUE SOLO PUEDE HACER EL RECEPCIONISTA)
+El recepcionista, REGISTRO, COBRO, ENVÌO DE COMPROBANTE, MOSTRAR
+(LO QUE QUE PUEDE HACER EL ADMINISTRADOR)
+EDITAR, BORRAR, VISUALIZAR, CREAR, MEMBRESÌAS (TODOS LOS CAMPOS)
+(EDITAR, SE EDITA CUALQUIER INFORMACIÒN)
+(BORRAR, SE BORRA TODA LA INFORMACIÒN DE LA Membresìa)
+(VISUALIZAR, SE VISUALIZA TODA LA INFORMACIÒN)
+(CREAR)
+BOTÒN DE RENOVAR (SOLO CUANDO LA MEMBRESÌA SE CADUQUE, SE VA A PODER UTILIZAR).
+SE ENVIARÀ UN MENSAJE DE RENOVAR POR WHATSAPP 5 DÌAS ANTES DE SU VENCIMIENTO.
+MOSTRAR TABLA RESALTANDO USUARIOS PRÒXIMOS A VENCER.
+ROJO VENCIDOS, NARANJA POR VENCER, VERDES ACTIVOS, GRISES INHABILITADOS.
+Reporte SEmanal, quincenal y mensual.
+
+
+Desarrollo de mòdulo de Entradas Diarias
+Datos Generales:
+Nombre Completo
+Àrea a la que se accede
+Canchas $60
+Alberca $100
+Gimnasio $40
+Botòn para seleccionar el àrea.
+Colocar un mensaje emergente, en donde aparezca la informaciòn y confirmar.
+Solo Administrador puede Eliminar y Editar Nombres
+REporte general de ingreso de dinero, diario, semanal, quincenal y mensual.
+
+
+Desarrollo de la Tienda
+Pendiente
+
+
+Desarrollo del Mòdulo de Habitaciones
+Datos Generales:
+
+Nombre Completo
+Fecha de Ingreso, Fecha de Salida
+Tipo de Habitciòn
+-Sencilla $1000
+-Suite   $1500
+
+Temporada Alta: los precios aumentan, para esto, el usuario deberá definir el costo de las habitaciones, ya que el dueño suele poner los precios y cambiarlos año con año, por lo cual no podemos aumentar un precio y colocarlo fijo.
+El administrador podrá modificar los precios de las habitaciones en cualquier temporada.
+
+(Monto)
+-Cantidad en número
+-Cantidad escrita en letra
+
+Tipo de Pago:
+Tarjeta, Transferencia, Efectivo.
+
+Habitaciones:
+4 habitaciones Sencillas: 101, 102, 103, 104, 106, 107, 108, 109
+2 Suite: 105, 110.
+
+Restricciones con mensajes emergentes: Ocupado, desocupado.
+
+Horarios:
+Entrada 12:00 pm
+Salida 12:00 pm máximo
+Botón por si la habitación se desocupó antes.
+
+Al colocar habitación disponible, se colocará en botón naranja, hasta que personal de limpieza confirme la limpieza. Podrá colocar que la habitación está disponible y limpia para rentarse, si no, no se permitirá la renta de la habitación hasta que se confirme la limpieza (mensaje de confirmación).
+
+Reservaciones:
+En las reservaciones los puntos principales que se tomarán en cuenta son los mismos de los datos generales que se toman al rentar la habitación, a excepción de que se agregarán datos extras, como fecha en la que se reservó y fecha en la que se ocupará la habitación. Los datos que se quitarán serán los de Tipo de Pago y Monto total, esto se activará solamente. También va a existir una sección de reservas. Cuando llegue el día de la reserva y el recepcionista seleccione la reserva y seleccione el botón de rentar, se abrirá un formulario nuevo, en donde cargará la información registrada en la reserva y se habilitará la sección de Tipo de Pago y monto.
+
+Si el recepcionista quiere hacer una reserva para el mes de Noviembre, Diciembre y Enero, el precio será el que el administrador determinó para esa temporada, por lo que el precio se definirá por mes, por parte del administrador, no general.
+
+Estados:
+Disponible (gris), Ocupado (rojo), Limpieza (naranja)
+
+Calendario:
+Se mostrarán los estados también de las habitaciones.
+Calendario con fechas, para mostrar las habitaciones (ejemplo moodle). Si se puede colocar los colores dependiendo del estado, está mejor.
+
+Se envía el recibo de reserva y renta por WHATSAPP y correo, con datos de nombre, precio, día de entrada y salida, monto y tipo de pago.
+
+Reporte de habitaciones diario, semanal, quincenal y mensual. Solo lo verá el administrador.
+El recepcionista no puede editar, reservar, eliminar habitaciones o editarlas, solo lo tiene permitido el administrador.

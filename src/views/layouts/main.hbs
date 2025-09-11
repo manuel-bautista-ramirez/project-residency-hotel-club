@@ -7,6 +7,11 @@
   <link href="/styles.css" rel="stylesheet" />
 </head>
 <body class="bg-gray-100 {{#if centerContent}}min-h-screen flex justify-center items-center{{/if}}">
+
   {{{body}}}
+
+  {{#if showFooter}}
+    {{> footer year=(year)}}
+  {{/if}}
 </body>
 </html>

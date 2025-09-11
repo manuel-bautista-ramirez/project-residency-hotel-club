@@ -1,0 +1,98 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+  <form
+    action="/api/rooms/reservar"
+    method="POST"
+    class="w-full sm:max-w-lg lg:max-w-xl bg-white p-6 rounded-xl shadow-md space-y-6"
+  >
+    <input type="hidden" name="habitacion_id" value="{{habitacion.id}}" />
+
+    <!-- Cliente -->
+    <div>
+      <label
+        for="nombre_cliente"
+        class="block text-sm font-medium text-gray-700"
+      >Nombre del cliente</label>
+      <input
+        id="nombre_cliente"
+        name="nombre_cliente"
+        required
+        class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Nombre completo"
+      />
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label
+          for="correo"
+          class="block text-sm font-medium text-gray-700"
+        >Correo electrónico</label>
+        <input
+          id="correo"
+          name="correo"
+          type="email"
+          required
+          class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="correo@ejemplo.com"
+        />
+      </div>
+      <div>
+        <label
+          for="telefono"
+          class="block text-sm font-medium text-gray-700"
+        >Número de teléfono</label>
+        <input
+          id="telefono"
+          name="telefono"
+          type="tel"
+          required
+          class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="10 dígitos"
+        />
+      </div>
+    </div>
+
+    <!-- Fechas -->
+    <fieldset class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <legend class="text-sm font-medium text-gray-700">Estancia</legend>
+      <div>
+        <label for="fecha_ingreso" class="block text-sm text-gray-700">Fecha de
+          ingreso</label>
+        <input
+          id="fecha_ingreso"
+          name="fecha_ingreso"
+          type="date"
+          required
+          class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <div>
+        <label for="fecha_salida" class="block text-sm text-gray-700">Fecha de
+          salida</label>
+        <input
+          id="fecha_salida"
+          name="fecha_salida"
+          type="date"
+          required
+          class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+    </fieldset>
+
+    <!-- Botones -->
+    <div class="flex items-center justify-end gap-4 pt-4">
+      <a
+        href="/rooms"
+        class="inline-block px-4 py-2 border border-red-500 text-red-600 rounded hover:bg-red-50 transition-colors"
+      >
+        Cancelar
+      </a>
+      <button
+        type="submit"
+        class="inline-block px-5 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition-colors"
+      >
+        Crear reservación
+      </button>
+    </div>
+  </form>
+</div>
