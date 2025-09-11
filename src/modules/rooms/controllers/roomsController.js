@@ -1,13 +1,14 @@
 // roomsController.js
-import {getHabitaciones, findReservacionById, crearRenta} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+import {getHabitaciones, findReservacionById, crearRenta,  getAllReservationes, getAllRentas} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+
+
 
 /*** --- VISTAS PRINCIPALES --- ***/
 
 export const renderHabitacionesView = async (req, res) => {
   try {
+    const  user = req.session.user || {role: "Usuario"}
     const habitaciones = await getHabitaciones();
-
-    const user = req.session.user || { role: "Usuario" };
 
     res.render("habitaciones", {
       title: "Habitaciones",
@@ -24,39 +25,49 @@ export const renderHabitacionesView = async (req, res) => {
   }
 };
 
-// export const renderAllRervationes =async(req, res)=>{
-//   try {
-//     const allReservationes =await getReservationes();
-//     const  user = req.session.user || {role: "Usuario"}
+// get all Reservaciones
+export const renderAllRervationes =async(req, res)=>{
+  try {
+    const  user = req.session.user || {role: "Usuario"}
+    const allReservationes =await getAllReservationes();
 
-//     res.render("mostarReservaciones", {
-//       title: "Adminstracion de  Reservaciones",
-//       // allReservationes,
-//       user: {
-//         ...user,
-//         rol: user.role
-//       }
-//     });
-//   } catch (error) {
-//     console.error("Error al renderrizar las reservaciones");
-//     res.status(500).send("Errror al cargar las reservaciones")
 
-//   }
+    res.render("mostarReservaciones", {
+      title: "Adminstracion de  Reservaciones",
+      allReservationes,
+      user: {
+        ...user,
+        rol: user.role
+      }
+    });
+  } catch (error) {
+    console.error("Error al renderrizar las reservaciones");
+    res.status(500).send("Errror al cargar las reservaciones loco..")
 
-// }
+  }
 
-export const renderAllRervationes = (req, res) => {
-  res.render('mostarReservaciones', {
-   title: 'Listado de habitaciones rentadas',
-   showFooter: true
-   });
-};
+}
 
-export const renderAllRentas = (req, res) => {
+
+export const renderAllRentas = async (req, res) => {
+  try {
+  const  user = req.session.user || {role: "Administrador" }
+  const allRentas = await getAllRentas();
+  console.log(allRentas)
   res.render('mostrarRentas', {
     title: 'Listado de habitaciones rentadas',
-    showFooter: true
+    allRentas,
+    showFooter: true,
+    user: {
+        ...user,
+        rol: user.role
+      }
    });
+  } catch (error) {
+    console.error("Error al renderrizar las rentas loco");
+    res.status(500).send("Errror al cargar las rentas loco..")
+
+  }
 };
 
 
@@ -109,10 +120,15 @@ export const renderPreciosView = async (req, res, next) => {
 
 
 export const renderReservacionesView = async (req, res) => {
+  const  user = req.session.user || {role: "Administrador" }
   try {
     res.render("reportes", {
       title: "reportes",
-      showFooter: true
+      showFooter: true,
+      user: {
+        ...user,
+        rol: user.role
+      }
     });
   } catch (err) {
     console.error("Error al renderizar reportes de rentas:", err);
@@ -120,20 +136,6 @@ export const renderReservacionesView = async (req, res) => {
   }
 };
 
-export const renderRentasView = async (req, res) => {
-  try {
-    const rentas = await Room.rentas();
-    const habitaciones = await Room.find();
-    res.render("rentas", {
-      title: "Rentas",
-      showFooter: true,
-      rentas,
-      habitaciones });
-  } catch (err) {
-    console.error("Error al renderizar rentas:", err);
-    return res.status(500).send("Error al cargar las rentas");
-  }
-};
 
 /*** --- FORMULARIOS INDIVIDUALES --- ***/
 
@@ -200,25 +202,3 @@ export const fetchEventos = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener los eventos' });
   }
 };
-
-/*** --- API / LÓGICA --- ***/
-
-// export const getHabitaciones = async () => await Room.find();
-// export const getPrecios = async () => await Room.precios();
-// export const getReservaciones = async () => await Room.reservaciones();
-// export const getRentas = async () => await Room.rentas();
-// export const setEstadoHabitacion = async (id, estado) => await Room.setEstado(Number(id), estado);
-
-// export const crearReservacion = async ({ habitacion_id, usuario_id, nombre_cliente, correo_cliente, telefono_cliente, fecha_ingreso, fecha_salida, monto }) => {
-//   return await Room.crearReservacion({ habitacion_id, usuario_id, nombre_cliente, correo_cliente, telefono_cliente, fecha_ingreso, fecha_salida, monto });
-// };
-
-// export const crearRenta = async ({ habitacion_id, usuario_id, nombre_cliente, correo_cliente, telefono_cliente, fecha_ingreso, fecha_salida, tipo_pago, monto }) => {
-//   return await Room.crearRenta({ habitacion_id, usuario_id, nombre_cliente, correo_cliente, telefono_cliente, fecha_ingreso, fecha_salida, tipo_pago, monto });
-// };
-
-// export const obtenerPrecio = async (tipo, mes) => await Room.obtenerPrecio(tipo, mes);
-
-// export const getRentaById = async (id) => await Room.findRentaById(Number(id));
-// export const updateRenta = async (data) => await Room.updateRenta(Number(data.id), data);
-// export const deleteRenta = async (id) => await Room.deleteRenta(Number(id));

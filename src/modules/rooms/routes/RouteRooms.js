@@ -9,12 +9,11 @@ import {
   renderHabitacionesView,
   renderFormEditarReservacion,
   renderPreciosView,
-  renderRentasView,
+  renderAllRentas,
   renderReservacionesView,
   renderFormRentar,
   renderFormReservar,
   renderAllRervationes,
-  renderAllRentas,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();

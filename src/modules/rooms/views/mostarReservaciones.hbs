@@ -1,6 +1,8 @@
+    {{>navbar}}
 <div class="max-w-7xl mx-auto p-6">
-
+ {{>buttons}}
 <!-- Tabla de reservaciones  -->
+
 
   <section id="tableSection" class="overflow-x-auto">
     <table class="min-w-full bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
@@ -17,13 +19,14 @@
       </thead>
 
        <tbody class="text-gray-700 divide-y divide-gray-200">
+        {{#each allReservationes}}
         <tr class="hover:bg-gray-50 transition">
-          <td class="py-3 px-4 capitalize">manuel</td>
-          <td class="py-3 px-4 capitalize">101</td>
-          <td class="py-3 px-4 capitalize">12/07/2025</td>
-          <td class="py-3 px-4 capitalize">12/15/2025</td>
-          <td class="py-3 px-4 capitalize">12/16/2025</td>
-          <td class="py-3 px-4 capitalize">1500</td>
+          <td class="py-3 px-4 capitalize">{{this.nombre_cliente}}</td>
+          <td class="py-3 px-4 capitalize">{{this.numero_habitacion}}</td>
+          <td class="py-3 px-4 capitalize">{{this.fecha_reserva}}</td>
+          <td class="py-3 px-4 capitalize">{{this.fecha_ingreso}}</td>
+          <td class="py-3 px-4 capitalize">{{this.fecha_salida}}</td>
+          <td class="py-3 px-4 capitalize">{{this.monto}}</td>
           <td class="py-3 px-4 capitalize">
                <a href="/rooms/editar/{{this.id}}"
                  class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded-lg shadow-sm transition">
@@ -36,6 +39,7 @@
                  Eliminar
               </a>
           </td>
+          {{/each}}
        </tbody>
         </section>
 </div>

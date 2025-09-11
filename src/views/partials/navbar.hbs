@@ -8,7 +8,7 @@
       <!-- Enlaces en desktop (ocultos en móvil) -->
       <nav>
         <ul class="hidden sm:flex space-x-6">
-          {{#if (eq role "Administrador")}}
+          {{#if (eq user.role "Adminstrador")}}
           <li><a href="/admin" class="hover:text-blue-300 transition">Panel
               de Administración</a></li>
           {{/if}}
