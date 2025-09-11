@@ -34,14 +34,14 @@ export const getAllReservationes = async () => {
 export const getAllRentas = async ()=>{
   const [rows] = await pool.query(`
     SELECT re.id AS id_renta,
-          h.numero AS numero_habitacion,
-          h.estado,
-          re.nombre_cliente,
-          re.fecha_ingreso,
-          re.fecha_salida,
-          re.tipo_pagºo,
-          re.monto,
-          re.monto_letras
+           h.numero AS numero_habitacion,
+           h.estado,
+           re.nombre_cliente,
+           re.fecha_ingreso,
+           re.fecha_salida,
+           re.tipo_pago,
+           re.monto,
+           re.monto_letras
     FROM rentas re
     INNER JOIN habitaciones h ON re.habitacion_id = h.id
     ORDER BY re.fecha_ingreso DESC

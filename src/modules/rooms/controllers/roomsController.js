@@ -64,9 +64,8 @@ export const renderAllRentas = async (req, res) => {
       }
    });
   } catch (error) {
-    console.error("Error al renderrizar las rentas loco");
-    res.status(500).send("Errror al cargar las rentas loco..")
-
+    console.error("Error al renderizar las rentas loco:", error.message);
+    res.status(500).send("Error al cargar las rentas loco..");
   }
 };
 
