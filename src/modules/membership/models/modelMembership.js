@@ -44,17 +44,26 @@ const MembershipModel = {
     fecha_inicio,
     fecha_fin,
     precio_final,
+    qr_path = null
   }) {
     const [result] = await pool.query(
-      `INSERT INTO membresias_activas (id_cliente, id_membresia, fecha_inicio, fecha_fin, precio_final)
-       VALUES (?, ?, ?, ?, ?)`,
-      [id_cliente, id_membresia, fecha_inicio, fecha_fin, precio_final]
+      `INSERT INTO membresias_activas (id_cliente, id_membresia, fecha_inicio, fecha_fin, precio_final, qr_path)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [id_cliente, id_membresia, fecha_inicio, fecha_fin, precio_final, qr_path]
     );
-    return result.insertId; // id_activa
+    return result.insertId;
+  },
+
+  // Método para actualizar la ruta del QR después de generarlo
+  async updateQRPath(id_activa, qr_path) {
+    const [result] = await pool.query(
+      `UPDATE membresias_activas SET qr_path = ? WHERE id_activa = ?`,
+      [qr_path, id_activa]
+    );
+    return result.affectedRows > 0;
   },
 
   async addFamilyMembers(id_activa, integrantes) {
-    // SIMPLIFICADO: Solo insertar nombres en integrantes_membresia
     for (let integrante of integrantes) {
       await pool.query(
         `INSERT INTO integrantes_membresia (id_activa, nombre_completo)
@@ -107,17 +116,14 @@ const MembershipModel = {
   },
 
   async getIntegrantesByActiva(id_activa) {
-    // SIMPLIFICADO: Solo obtener nombres de la tabla integrantes_membresia
     const [rows] = await pool.query(
       `SELECT nombre_completo
        FROM integrantes_membresia 
        WHERE id_activa = ?`,
       [id_activa]
     );
-    return rows; // [{nombre_completo}, ...]
+    return rows;
   },
-
-  // 🔽 NUEVOS MÉTODOS PARA LA ESTRUCTURA SIMPLIFICADA
 
   async recordPayment({ id_activa, id_metodo_pago, monto }) {
     const [result] = await pool.query(
@@ -182,7 +188,6 @@ const MembershipModel = {
   },
 
   async getPrecioFamiliar() {
-    // Obtener el precio de membresía familiar
     const [rows] = await pool.query(
       `SELECT precio FROM tipos_membresia WHERE nombre = 'Familiar'`
     );
@@ -200,6 +205,7 @@ const MembershipModel = {
           ma.fecha_fin,
           ma.precio_final,
           ma.estado,
+          ma.qr_path,
           c.nombre_completo,
           c.telefono,
           c.correo,
@@ -225,7 +231,6 @@ const MembershipModel = {
 
       const membresia = membresias[0];
       
-      // Si es una membresía familiar, obtener los integrantes
       if (membresia.max_integrantes > 1) {
         membresia.integrantes = await this.getIntegrantesByActiva(id);
       } else {
@@ -235,6 +240,57 @@ const MembershipModel = {
       return membresia;
     } catch (error) {
       console.error("Error en getMembresiaById:", error);
+      throw error;
+    }
+  },
+
+  // Método para obtener información completa de membresía con método de pago
+  async getMembresiaConPago(id_activa) {
+    try {
+      const [rows] = await pool.query(
+        `SELECT 
+          ma.id_activa,
+          ma.id_cliente,
+          ma.id_membresia,
+          ma.fecha_inicio,
+          ma.fecha_fin,
+          ma.precio_final,
+          ma.estado,
+          ma.qr_path,
+          c.nombre_completo,
+          c.telefono,
+          c.correo,
+          tm.nombre as tipo_membresia,
+          tm.max_integrantes,
+          tm.precio,
+          mp.nombre as metodo_pago
+        FROM membresias_activas ma
+        INNER JOIN clientes c ON ma.id_cliente = c.id_cliente
+        INNER JOIN membresias m ON ma.id_membresia = m.id_membresia
+        INNER JOIN tipos_membresia tm ON m.id_tipo_membresia = tm.id_tipo_membresia
+        LEFT JOIN pagos p ON p.id_activa = ma.id_activa
+        LEFT JOIN metodos_pago mp ON mp.id_metodo_pago = p.id_metodo_pago
+        WHERE ma.id_activa = ?
+        ORDER BY p.fecha_pago DESC
+        LIMIT 1`,
+        [id_activa]
+      );
+
+      if (rows.length === 0) {
+        return null;
+      }
+
+      const membresia = rows[0];
+      
+      if (membresia.max_integrantes > 1) {
+        membresia.integrantes = await this.getIntegrantesByActiva(id_activa);
+      } else {
+        membresia.integrantes = [];
+      }
+
+      return membresia;
+    } catch (error) {
+      console.error("Error en getMembresiaConPago:", error);
       throw error;
     }
   },
