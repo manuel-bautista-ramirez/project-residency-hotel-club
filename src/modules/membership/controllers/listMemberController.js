@@ -217,6 +217,38 @@ const listMembershipController = {
       });
     }
   },
+
+  async getMembershipDetailsAPI(req, res) {
+    try {
+      const { id } = req.params;
+      const userRole = req.session.user?.role || "Recepcionista";
+      const isAdmin = userRole === "Administrador";
+
+      if (!id) {
+        return res.status(400).json({
+          error: "El parámetro id es requerido",
+        });
+      }
+
+      const details = await modelList.getMembresiaDetalles(id);
+
+      if (!details) {
+        return res.status(404).json({
+          error: "Membresía no encontrada",
+        });
+      }
+
+      res.json({
+        ...details,
+        isAdmin,
+      });
+    } catch (error) {
+      console.error("Error al obtener los detalles de la membresía:", error);
+      res.status(500).json({
+        error: "Error interno del servidor al obtener los detalles de la membresía",
+      });
+    }
+  },
 };
 
 export { listMembershipController };

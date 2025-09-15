@@ -31,4 +31,10 @@ routerApi.get("/:id_activa/integrantes", (req, res) =>
   listMembershipController.getIntegrantesAPI(req, res)
 );
 
+// Detalles de una membresía
+// URL final: GET /api/memberships/details/:id
+routerApi.get("/details/:id", (req, res) =>
+  listMembershipController.getMembershipDetailsAPI(req, res)
+);
+
 export { routerApi as membershipApiRoutes };
