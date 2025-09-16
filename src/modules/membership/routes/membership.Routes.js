@@ -7,6 +7,7 @@ import {
   renderMembershipHome,
   renderMembershipCreate,
   renderEditMembership,
+  renderRenewMembership,
 } from "../controllers/membershipController.js";
 import { MembershipController } from "../controllers/createMemberController.js";
 import { listMembershipController } from "../controllers/listMemberController.js";
@@ -51,6 +52,7 @@ routerMembership.get('/download-qr/:id_activa', MembershipController.downloadQR)
 routerMembership.get("/", renderMembershipHome);
 routerMembership.get("/createMembership", renderMembershipCreate);
 routerMembership.get("/editMembership/:id", renderEditMembership);
+routerMembership.get("/renew/:id", renderRenewMembership);
 routerMembership.get(
   "/createMembership/tipos",
   bind(MembershipController, "renderTiposMembresia")
@@ -71,6 +73,7 @@ routerMembership.post(
 );
 routerMembership.get('/editMembership/:id', editMemberController.editMembership);
 routerMembership.post('/updateMembership/:id', editMemberController.updateMembership);
+routerMembership.post("/renew/:id", editMemberController.renewMembership);
 routerMembership.delete("/delete/:id", deleteMemberController.deleteMembership);
 
 

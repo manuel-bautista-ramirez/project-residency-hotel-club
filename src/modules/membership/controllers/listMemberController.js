@@ -54,6 +54,7 @@ const listMembershipController = {
         };
       });
 
+      console.log(membresiasFormateadas);
       res.render("membershipList", {
         title: "Lista de Membresías",
         isAdmin,
@@ -64,6 +65,9 @@ const listMembershipController = {
         currentSearch: search || "",
         currentType: type || "",
         currentStatus: status || "",
+        helpers: {
+          eq: (a, b) => a === b,
+        }
       });
     } catch (error) {
       console.error("Error al renderizar lista de membresías:", error);

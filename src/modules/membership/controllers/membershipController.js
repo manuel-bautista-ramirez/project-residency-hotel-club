@@ -49,6 +49,47 @@ export const renderMembershipCreate = async (req, res) => {
   }
 };
 
+export const renderRenewMembership = async (req, res) => {
+  try {
+    const userRole = req.session.user?.role || "Recepcionista";
+    const isAdmin = userRole === "Administrador";
+    const { id } = req.params;
+
+    // Obtener los datos de la membresía
+    const membresia = await MembershipModel.getMembresiaById(id);
+    if (!membresia) {
+      return res.status(404).send("Membresía no encontrada");
+    }
+
+    // Obtener los tipos de membresía para el select
+    const tiposMembresia = await MembershipModel.getTiposMembresia();
+    const tiposPago = await MembershipModel.getMetodosPago();
+
+
+    res.render("renewalMembership", {
+      title: "Renovar Membresía",
+      isAdmin,
+      userRole,
+      membership: membresia,
+      tiposMembresia,
+      tiposPago,
+      helpers: {
+        formatDate: (date) => {
+          if (!date) return '';
+          const d = new Date(date);
+          return d.toISOString().split('T')[0];
+        },
+        eq: (a, b) => a === b,
+        now: () => new Date(),
+        json: (context) => JSON.stringify(context),
+      }
+    });
+  } catch (error) {
+    console.error("Error al cargar la página de renovación de membresía:", error);
+    res.status(500).send("Error al cargar la página");
+  }
+}
+
 export const renderEditMembership = async (req, res) => {
   try {
     const userRole = req.session.user?.role || "Recepcionista";

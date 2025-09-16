@@ -24,6 +24,20 @@ const MembershipModel = {
     }
   },
 
+  async updateClient({ id_cliente, nombre_completo, telefono, correo }) {
+    try {
+      const [result] = await pool.query(
+        `UPDATE clientes SET nombre_completo = ?, telefono = ?, correo = ?
+         WHERE id_cliente = ?`,
+        [nombre_completo, telefono, correo, id_cliente]
+      );
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Error en updateClient del modelo:", error);
+      throw error;
+    }
+  },
+
   async createMembershipContract({
     id_cliente,
     id_tipo_membresia,

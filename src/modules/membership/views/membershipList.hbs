@@ -378,7 +378,7 @@
                                         <i class="fas fa-eye"></i>
                                     </button>
 
-                                    {{#if (or ../isAdmin (lte this.daysUntilExpiry 5))}}
+                                    {{#if (or ../isAdmin (eq this.daysUntilExpiry 0))}}
                                     <a href="/memberships/renew/{{this.id}}"
                                         class="action-btn bg-blue-100 text-blue-600 hover:bg-blue-200" title="Renovar">
                                         <i class="fas fa-sync-alt"></i>
