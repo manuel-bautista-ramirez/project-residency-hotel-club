@@ -136,10 +136,11 @@ export const MembershipService = {
     return { cliente, tipo, integrantesDB };
   },
 
-  async generateQRPayload(cliente, tipo, fechaInicio, fechaFin, integrantes = []) {
+  async generateQRPayload(cliente, tipo, fechaInicio, fechaFin, integrantes = [], id_activa = null) {
     try {
       // Crear un objeto simple con la información esencial
       const qrData = {
+        id_activa: id_activa,
         id: cliente.id_cliente,
         nombre: cliente.nombre_completo,
         membresia: tipo.nombre,
@@ -158,6 +159,7 @@ export const MembershipService = {
         
         // Versión simplificada si los datos son demasiado grandes
         const simplifiedData = {
+          id_activa: id_activa,
           id: cliente.id_cliente,
           n: cliente.nombre_completo.substring(0, 30), // Limitar nombre
           m: tipo.nombre.substring(0, 20),
@@ -165,21 +167,22 @@ export const MembershipService = {
           f: fechaFin
         };
         
-        return JSON.stringify(simplifiedData);
+        return `http://localhost:3000/memberships/verify?data=${encodeURIComponent(JSON.stringify(simplifiedData))}`;
       }
   
-      return jsonString;
+      return `http://localhost:3000/memberships/verify?data=${encodeURIComponent(jsonString)}`;
   
     } catch (error) {
       console.error('❌ Error generando payload QR:', error);
       // Fallback: datos mínimos esenciales
-      return JSON.stringify({
+      return `http://localhost:3000/memberships/verify?data=${encodeURIComponent(JSON.stringify({
+        id_activa: id_activa,
         id: cliente.id_cliente,
         nombre: cliente.nombre_completo,
         membresia: tipo.nombre,
         inicio: fechaInicio,
         fin: fechaFin
-      });
+      }))}`;
     }
   },
   // Nuevo método para enviar comprobante por email (sin QR)

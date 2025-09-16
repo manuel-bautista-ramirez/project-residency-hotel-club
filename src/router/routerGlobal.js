@@ -1,6 +1,6 @@
 import express from "express";
 import routerLogin from "../modules/login/routers/routerLogin.js";
-import { membershipApiRoutes, membershipRoutes } from "../modules/membership/routes/index.js";
+import { membershipApiRoutes, membershipRoutes, verificationRoutes } from "../modules/membership/routes/index.js";
 import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
 
 const routerGlobal = express.Router();
@@ -8,6 +8,7 @@ const routerGlobal = express.Router();
 // Aquí se importaran  todos los routers de los módulos
 routerGlobal.use(routerLogin);
 routerGlobal.use("/memberships",membershipRoutes);
+routerGlobal.use("/memberships", verificationRoutes);
 routerGlobal.use("/api/memberships",membershipApiRoutes);
 routerGlobal.use(routerRoom);
 // Aquí importarlas las demas porfavor...

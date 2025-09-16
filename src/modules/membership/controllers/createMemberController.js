@@ -77,7 +77,8 @@ const MembershipController = {
         tipo,
         fecha_inicio,
         fecha_fin,
-        integrantesDB
+        integrantesDB,
+        id_activa
       );
 
       console.log("📋 Payload QR generado:", payloadQR);
