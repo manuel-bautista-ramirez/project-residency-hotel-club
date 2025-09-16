@@ -254,9 +254,9 @@ const MembershipUI = {
 
             <!-- Columna de QR -->
             <div class="flex flex-col items-center justify-center bg-gray-50 p-6 rounded-xl">
-              <img src="${details.qr_code}?t=${new Date().getTime()}" alt="Código QR" class="w-48 h-48">
+              <img src="${details.qr_path}?t=${new Date().getTime()}" alt="Código QR" class="w-48 h-48">
               ${details.isAdmin ? `
-                <a href="${details.qr_code}" download="qr-membresia-${details.id_activa}.png" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <a href="${details.qr_path}" download="qr-membresia-${details.id_activa}.png" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                   <i class="fas fa-download mr-2"></i>Descargar QR
                 </a>
               ` : ''}

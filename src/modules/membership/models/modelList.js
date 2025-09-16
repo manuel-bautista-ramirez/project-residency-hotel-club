@@ -14,7 +14,7 @@ const modelList = {
           ma.fecha_fin,
           ma.precio_final,
           ma.estado,
-          ma.qr_code,
+          ma.qr_path,
           c.nombre_completo,
           c.telefono,
           c.correo,
@@ -283,7 +283,7 @@ const modelList = {
           ma.fecha_fin,
           ma.precio_final,
           ma.estado,
-          ma.qr_code,
+          ma.qr_path,
           c.nombre_completo,
           c.telefono,
           c.correo,
@@ -316,11 +316,11 @@ const modelList = {
         membresiaData.pagos = await this.getPagosMembresia(id_activa);
 
         // Transformar la ruta del QR a una ruta web relativa
-        if (membresiaData.qr_code) {
+        if (membresiaData.qr_path) {
           const publicPath = '/uploads/';
-          const indexOfPublic = membresiaData.qr_code.indexOf(publicPath);
+          const indexOfPublic = membresiaData.qr_path.indexOf(publicPath);
           if (indexOfPublic !== -1) {
-            membresiaData.qr_code = membresiaData.qr_code.substring(indexOfPublic);
+            membresiaData.qr_path = membresiaData.qr_path.substring(indexOfPublic);
           }
         }
 
