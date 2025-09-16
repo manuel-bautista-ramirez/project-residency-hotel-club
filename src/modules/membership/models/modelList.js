@@ -276,7 +276,14 @@ const modelList = {
     try {
       const query = `
         SELECT 
-          ma.*,
+          ma.id_activa,
+          ma.id_cliente,
+          ma.id_membresia,
+          ma.fecha_inicio,
+          ma.fecha_fin,
+          ma.precio_final,
+          ma.estado,
+          ma.qr_code,
           c.nombre_completo,
           c.telefono,
           c.correo,
