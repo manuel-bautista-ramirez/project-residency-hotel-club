@@ -301,19 +301,30 @@ const modelList = {
       const [membresia] = await pool.query(query, [id_activa]);
 
       if (membresia.length > 0) {
+        const membresiaData = membresia[0];
+
         // Obtener integrantes si es membresía familiar
-        if (membresia[0].max_integrantes > 1) {
-          membresia[0].integrantes = await this.getIntegrantesMembresia(
+        if (membresiaData.max_integrantes > 1) {
+          membresiaData.integrantes = await this.getIntegrantesMembresia(
             id_activa
           );
         } else {
-          membresia[0].integrantes = [];
+          membresiaData.integrantes = [];
         }
 
         // Obtener historial de pagos
-        membresia[0].pagos = await this.getPagosMembresia(id_activa);
+        membresiaData.pagos = await this.getPagosMembresia(id_activa);
 
-        return membresia[0];
+        // Transformar la ruta del QR a una ruta web relativa
+        if (membresiaData.qr_code) {
+          const publicPath = '/uploads/';
+          const indexOfPublic = membresiaData.qr_code.indexOf(publicPath);
+          if (indexOfPublic !== -1) {
+            membresiaData.qr_code = membresiaData.qr_code.substring(indexOfPublic);
+          }
+        }
+
+        return membresiaData;
       }
 
       return null;
