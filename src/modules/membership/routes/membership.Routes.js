@@ -8,8 +8,8 @@ import {
   renderMembershipCreate,
   renderEditMembership,
   renderRenewMembership,
-  renderReports,
 } from "../controllers/membershipController.js";
+import { reportsController } from "../controllers/reportsController.js";
 import { MembershipController } from "../controllers/createMemberController.js";
 import { listMembershipController } from "../controllers/listMemberController.js";
 import { editMemberController } from "../controllers/editMemberController.js";
@@ -58,7 +58,7 @@ routerMembership.get(
   "/createMembership/tipos",
   bind(MembershipController, "renderTiposMembresia")
 );
-routerMembership.get("/reports", renderReports);
+routerMembership.get("/reports", bind(reportsController, "renderReports"));
 
 // Acciones CRUD
 routerMembership.get(

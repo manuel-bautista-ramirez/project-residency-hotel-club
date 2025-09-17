@@ -126,20 +126,4 @@ export const renderEditMembership = async (req, res) => {
   }
 };
 
-export const renderReports = async (req, res) => {
-const userRole = req.session.user?.role || "Recepcionista";
-const isAdmin = userRole === "Administrador";
-
-if(!isAdmin){
-  return res.status(403).send("Acceso denegado");
-}
-else{
-res.render("reports", {
-  title: "Reportes",
-  isAdmin,
-  userRole,
-});
-}         
-
-}
 

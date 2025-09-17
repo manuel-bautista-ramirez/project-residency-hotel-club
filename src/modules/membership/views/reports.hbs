@@ -190,6 +190,97 @@
         const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
         const week = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
         document.getElementById('week-input').value = `${year}-W${week.toString().padStart(2, '0')}`;
+
+        // --- Lógica para generar reportes ---
+        const previewContainer = document.querySelector('.bg-gray-50');
+
+        async function generateReportPreview(period, date) {
+            const url = `/api/memberships/reports/preview?period=${period}&date=${date}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+
+                // Formatear los números como moneda
+                const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
+
+                // Generar el HTML de la vista previa
+                const previewHtml = `
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="border border-gray-300 px-4 py-2 text-left">Método de Pago</th>
+                                <th class="border border-gray-300 px-4 py-2 text-right">Monto Acumulado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border border-gray-300 px-4 py-2">Efectivo</td>
+                                <td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.efectivo)}</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-gray-300 px-4 py-2">Tarjeta Débito</td>
+                                <td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.debito)}</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-gray-300 px-4 py-2">Tarjeta Crédito</td>
+                                <td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.credito)}</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-gray-300 px-4 py-2">Transferencia</td>
+                                <td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.transferencia)}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-gray-200 font-semibold">
+                            <tr>
+                                <td class="border border-gray-300 px-4 py-2 text-left">Total Neto</td>
+                                <td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.total)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="mt-6 flex justify-end">
+                        <a href="/api/memberships/reports/download?period=${period}&date=${date}"
+                           class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg"
+                           download>
+                            <i class="fas fa-file-pdf mr-2"></i>Descargar PDF
+                        </a>
+                    </div>
+                `;
+
+                previewContainer.innerHTML = previewHtml;
+
+            } catch (error) {
+                previewContainer.innerHTML = `<p class="text-red-500">Error al generar la vista previa: ${error.message}</p>`;
+            }
+        }
+
+        document.querySelectorAll('button').forEach(button => {
+            if(button.innerText === 'Generar Reporte') {
+                button.addEventListener('click', () => {
+                    const activePeriodOption = document.querySelector('.period-option.active-period');
+                    const period = activePeriodOption.dataset.period;
+                    let date;
+
+                    if (period === 'monthly') {
+                        date = document.getElementById('month-input').value;
+                    } else if (period === 'biweekly') {
+                        const month = document.getElementById('biweekly-month-input').value;
+                        const fortnight = document.querySelector('input[name="fortnight"]:checked').value;
+                        date = `${month}-${fortnight}`;
+                    } else if (period === 'weekly') {
+                        date = document.getElementById('week-input').value.replace('-W', 'W');
+                    }
+
+                    if(date) {
+                        generateReportPreview(period, date);
+                    }
+                });
+            }
+        });
     </script>
 </body>
 
