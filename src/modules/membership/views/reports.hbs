@@ -1,0 +1,196 @@
+<title>{{title}}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .active-period {
+        background-color: #3B82F6;
+        color: white;
+    }
+
+    #calendar {
+        transition: all 0.3s ease;
+    }
+</style>
+
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navbar (simulando el partial hbs) -->
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-line text-2xl mr-2"></i>
+                    <span class="text-xl font-semibold">Sistema de Reportes</span>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-blue-200">Inicio</a>
+                    <a href="#" class="hover:text-blue-200">Reportes</a>
+                    <a href="#" class="hover:text-blue-200">Configuración</a>
+                    <a href="#" class="hover:text-blue-200">Ayuda</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mx-auto px-4 mt-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Generador de Reportes</h1>
+            <p class="text-gray-600 mb-8">Selecciona el tipo de reporte y el período deseado para generar la
+                información.</p>
+
+            <!-- Selector de tipo de reporte -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Tipo de Reporte</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md active-period"
+                        data-period="monthly">
+                        <i class="fas fa-calendar-month text-4xl text-blue-500 mb-2"></i>
+                        <h3 class="font-semibold">Reporte Mensual</h3>
+                        <p class="text-sm text-gray-500 mt-1">Resumen completo del mes seleccionado</p>
+                    </div>
+                    <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
+                        data-period="biweekly">
+                        <i class="fas fa-calendar-alt text-4xl text-green-500 mb-2"></i>
+                        <h3 class="font-semibold">Reporte Quincenal</h3>
+                        <p class="text-sm text-gray-500 mt-1">Primera o segunda quincena del mes</p>
+                    </div>
+                    <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
+                        data-period="weekly">
+                        <i class="fas fa-calendar-week text-4xl text-purple-500 mb-2"></i>
+                        <h3 class="font-semibold">Reporte Semanal</h3>
+                        <p class="text-sm text-gray-500 mt-1">Una semana específica del año</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selector de fecha -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Selecciona la Fecha</h2>
+
+                <!-- Selector para reporte mensual -->
+                <div id="monthly-selector" class="date-selector">
+                    <label for="month-input" class="block text-gray-700 mb-2">Selecciona un mes y año:</label>
+                    <div class="flex space-x-2">
+                        <input type="month" id="month-input" class="border rounded-lg p-2 w-full md:w-64">
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            Generar Reporte
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Selector para reporte quincenal -->
+                <div id="biweekly-selector" class="date-selector hidden">
+                    <label class="block text-gray-700 mb-2">Selecciona la quincena:</label>
+                    <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <input type="radio" id="first-fortnight" name="fortnight" value="first" checked>
+                            <label for="first-fortnight">Primera quincena (días 1-15)</label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="radio" id="second-fortnight" name="fortnight" value="second">
+                            <label for="second-fortnight">Segunda quincena (días 16-fin de mes)</label>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex space-x-2">
+                        <input type="month" id="biweekly-month-input" class="border rounded-lg p-2 w-full md:w-64">
+                        <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+                            Generar Reporte
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Selector para reporte semanal -->
+                <div id="weekly-selector" class="date-selector hidden">
+                    <label for="week-input" class="block text-gray-700 mb-2">Selecciona una semana:</label>
+                    <div class="flex space-x-2">
+                        <input type="week" id="week-input" class="border rounded-lg p-2 w-full md:w-64">
+                        <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg">
+                            Generar Reporte
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista previa del reporte -->
+            <div class="bg-gray-50 rounded-lg p-6 mt-8">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
+                <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
+                    <p class="text-gray-500">Selecciona un tipo de reporte y una fecha para generar la vista previa</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer (simulando el partial hbs) -->
+    <footer class="bg-gray-800 text-white mt-12 py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Sistema de Reportes</h3>
+                    <p class="text-gray-400">Genera reportes mensuales, quincenales y semanales de forma fácil y rápida.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Documentación</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Soporte Técnico</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Preguntas Frecuentes</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contacto</h3>
+                    <p class="text-gray-400">contacto@empresa.com</p>
+                    <p class="text-gray-400">+1 (234) 567-8900</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>© 2023 Sistema de Reportes. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Funcionalidad para cambiar entre tipos de reporte
+        document.querySelectorAll('.period-option').forEach(option => {
+            option.addEventListener('click', function () {
+                // Remover clase active de todas las opciones
+                document.querySelectorAll('.period-option').forEach(opt => {
+                    opt.classList.remove('active-period');
+                    opt.classList.add('border-gray-200');
+                    opt.classList.remove('border-blue-500');
+                });
+
+                // Añadir clase active a la opción seleccionada
+                this.classList.add('active-period');
+                this.classList.remove('border-gray-200');
+                this.classList.add('border-blue-500');
+
+                // Ocultar todos los selectores de fecha
+                document.querySelectorAll('.date-selector').forEach(selector => {
+                    selector.classList.add('hidden');
+                });
+
+                // Mostrar el selector correspondiente
+                const period = this.getAttribute('data-period');
+                document.getElementById(`${period}-selector`).classList.remove('hidden');
+            });
+        });
+
+        // Establecer valores por defecto en los inputs de fecha
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = (today.getMonth() + 1).toString().padStart(2, '0');
+
+        document.getElementById('month-input').value = `${year}-${month}`;
+        document.getElementById('biweekly-month-input').value = `${year}-${month}`;
+
+        // Calcular la semana actual para el input de tipo week
+        const firstDayOfYear = new Date(year, 0, 1);
+        const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
+        const week = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        document.getElementById('week-input').value = `${year}-W${week.toString().padStart(2, '0')}`;
+    </script>
+</body>
+
+</html>

@@ -125,3 +125,21 @@ export const renderEditMembership = async (req, res) => {
     res.status(500).send("Error al cargar la página");
   }
 };
+
+export const renderReports = async (req, res) => {
+const userRole = req.session.user?.role || "Recepcionista";
+const isAdmin = userRole === "Administrador";
+
+if(!isAdmin){
+  return res.status(403).send("Acceso denegado");
+}
+else{
+res.render("reports", {
+  title: "Reportes",
+  isAdmin,
+  userRole,
+});
+}         
+
+}
+
