@@ -64,20 +64,71 @@ const reportsController = {
         endDate
       );
 
-      const templatePath = path.resolve(
-        "src",
-        "views",
-        "partials",
-        "report-template.hbs"
-      );
+      // 1. Cargar la plantilla de Handlebars
+      const templatePath = path.resolve("src", "views", "partials", "report-template.hbs");
       const templateFile = await fs.readFile(templatePath, "utf8");
       const template = hbs.compile(templateFile);
-      const html = template(incomeData);
+      const reportHtml = template(incomeData);
 
-      const browser = await puppeteer.launch();
+      // 2. Cargar el CSS de Tailwind
+      const cssPath = path.resolve("public", "styles.css");
+      const tailwindCss = await fs.readFile(cssPath, "utf8");
+
+      // 3. Definir las @font-face para la fuente local
+      const fontCss = `
+        @font-face {
+          font-family: 'Lato';
+          font-style: normal;
+          font-weight: 400;
+          src: url(file://${path.resolve("public", "fonts", "lato-v25-latin-regular.ttf")}) format('truetype');
+        }
+        @font-face {
+          font-family: 'Lato';
+          font-style: italic;
+          font-weight: 400;
+          src: url(file://${path.resolve("public", "fonts", "lato-v25-latin-italic.ttf")}) format('truetype');
+        }
+        @font-face {
+          font-family: 'Lato';
+          font-style: normal;
+          font-weight: 700;
+          src: url(file://${path.resolve("public", "fonts", "lato-v25-latin-700.ttf")}) format('truetype');
+        }
+        @font-face {
+          font-family: 'Lato';
+          font-style: italic;
+          font-weight: 700;
+          src: url(file://${path.resolve("public", "fonts", "lato-v25-latin-700italic.ttf")}) format('truetype');
+        }
+        body {
+          font-family: 'Lato', sans-serif;
+        }
+      `;
+
+      // 4. Combinar todo en un solo documento HTML
+      const finalHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>
+              ${tailwindCss}
+              ${fontCss}
+            </style>
+          </head>
+          <body>
+            ${reportHtml}
+          </body>
+        </html>
+      `;
+
+      // 5. Generar el PDF con Puppeteer
+      const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
       const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
-      const pdf = await page.pdf({ format: "A4" });
+      await page.setContent(finalHtml, { waitUntil: "networkidle0" });
+      const pdf = await page.pdf({ format: "A4", printBackground: true });
       await browser.close();
 
       const formatDate = (date) => date.toISOString().split("T")[0];
