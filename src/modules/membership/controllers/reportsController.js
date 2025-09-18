@@ -36,16 +36,59 @@ const getReportDateRange = (period, date) => {
   return { startDate, endDate };
 };
 
+const validateReportParams = (period, date) => {
+  if (!period || !date) {
+    return "El período y la fecha son obligatorios.";
+  }
+
+  const validPeriods = ["monthly", "biweekly", "weekly"];
+  if (!validPeriods.includes(period)) {
+    return "El período especificado no es válido.";
+  }
+
+  let dateRegex;
+  switch (period) {
+    case "monthly":
+      dateRegex = /^\d{4}-\d{2}$/; // YYYY-MM
+      break;
+    case "biweekly":
+      dateRegex = /^\d{4}-\d{2}-(first|second)$/; // YYYY-MM-first/second
+      break;
+    case "weekly":
+      dateRegex = /^\d{4}W\d{2}$/; // YYYYWww
+      break;
+  }
+
+  if (!dateRegex.test(date)) {
+    return `El formato de fecha para el período '${period}' no es válido.`;
+  }
+
+  return null; // No hay errores
+};
+
 const reportsController = {
   async getReportPreview(req, res) {
     try {
       const { period, date } = req.query;
+
+      const validationError = validateReportParams(period, date);
+      if (validationError) {
+        return res.status(400).json({ error: validationError });
+      }
+
       const { startDate, endDate } = getReportDateRange(period, date);
 
       const incomeData = await MembershipModel.getIncomeByPaymentMethod(
         startDate,
         endDate
       );
+
+      if (incomeData.total === 0) {
+        return res.json({
+          noData: true,
+          message: "No se encontraron ingresos para el período seleccionado.",
+        });
+      }
 
       res.json(incomeData);
     } catch (error) {
@@ -57,12 +100,24 @@ const reportsController = {
   async downloadReportPDF(req, res) {
     try {
       const { period, date } = req.query;
+
+      const validationError = validateReportParams(period, date);
+      if (validationError) {
+        // Redirect with an error message that the frontend can display
+        return res.redirect(`/reports?error=${encodeURIComponent(validationError)}`);
+      }
+
       const { startDate, endDate } = getReportDateRange(period, date);
 
       const incomeData = await MembershipModel.getIncomeByPaymentMethod(
         startDate,
         endDate
       );
+
+      if (incomeData.total === 0) {
+        const message = "No se encontraron ingresos para el período seleccionado, no se puede generar el PDF.";
+        return res.redirect(`/reports?error=${encodeURIComponent(message)}`);
+      }
 
       // 1. Cargar la plantilla de Handlebars
       const templatePath = path.resolve("src", "views", "partials", "report-template.hbs");
