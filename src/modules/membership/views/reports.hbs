@@ -261,22 +261,37 @@
         document.querySelectorAll('button').forEach(button => {
             if(button.innerText === 'Generar Reporte') {
                 button.addEventListener('click', () => {
-                    const activePeriodOption = document.querySelector('.period-option.active-period');
-                    const period = activePeriodOption.dataset.period;
-                    let date;
+                    try {
+                        const activePeriodOption = document.querySelector('.period-option.active-period');
+                        const period = activePeriodOption.dataset.period;
+                        let date;
+                        console.log('--- Report Generation Debug ---');
+                        console.log('Selected Period:', period);
 
-                    if (period === 'monthly') {
-                        date = document.getElementById('month-input').value;
-                    } else if (period === 'biweekly') {
-                        const month = document.getElementById('biweekly-month-input').value;
-                        const fortnight = document.querySelector('input[name="fortnight"]:checked').value;
-                        date = `${month}-${fortnight}`;
-                    } else if (period === 'weekly') {
-                        date = document.getElementById('week-input').value.replace('-W', 'W');
-                    }
+                        if (period === 'monthly') {
+                            const monthInput = document.getElementById('month-input').value;
+                            console.log('Raw month input:', monthInput);
+                            date = monthInput;
+                        } else if (period === 'biweekly') {
+                            const monthInput = document.getElementById('biweekly-month-input').value;
+                            const fortnightInput = document.querySelector('input[name="fortnight"]:checked').value;
+                            console.log('Raw biweekly month input:', monthInput);
+                            console.log('Raw fortnight input:', fortnightInput);
+                            date = `${monthInput}-${fortnightInput}`;
+                        } else if (period === 'weekly') {
+                            const weekInput = document.getElementById('week-input').value;
+                            console.log('Raw week input:', weekInput);
+                            date = weekInput.replace('-W', 'W');
+                        }
 
-                    if(date) {
-                        generateReportPreview(period, date);
+                        console.log('Final date string sent to backend:', date);
+                        console.log('-----------------------------');
+
+                        if(date) {
+                            generateReportPreview(period, date);
+                        }
+                    } catch (e) {
+                        console.error('An error occurred in the click handler:', e);
                     }
                 });
             }
