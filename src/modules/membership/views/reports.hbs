@@ -13,26 +13,9 @@
 </style>
 
 <body class="bg-gray-100 min-h-screen">
-    <!-- Navbar (simulando el partial hbs) -->
-    <nav class="bg-blue-600 text-white shadow-lg">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex items-center">
-                    <i class="fas fa-chart-line text-2xl mr-2"></i>
-                    <span class="text-xl font-semibold">Sistema de Reportes</span>
-                </div>
-                <div class="flex space-x-4">
-                    <a href="#" class="hover:text-blue-200">Inicio</a>
-                    <a href="#" class="hover:text-blue-200">Reportes</a>
-                    <a href="#" class="hover:text-blue-200">Configuración</a>
-                    <a href="#" class="hover:text-blue-200">Ayuda</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+    {{>navbar}}
     <!-- Contenido principal -->
-    <div class="container mx-auto px-4 mt-8">
+    <div class="container mx-auto px-4 mt-20">
         <div class="bg-white rounded-lg shadow-md p-6">
             <h1 class="text-3xl font-bold text-gray-800 mb-2">Generador de Reportes</h1>
             <p class="text-gray-600 mb-8">Selecciona el tipo de reporte y el período deseado para generar la
@@ -121,34 +104,7 @@
         </div>
     </div>
 
-    <!-- Footer (simulando el partial hbs) -->
-    <footer class="bg-gray-800 text-white mt-12 py-8">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Sistema de Reportes</h3>
-                    <p class="text-gray-400">Genera reportes mensuales, quincenales y semanales de forma fácil y rápida.
-                    </p>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Documentación</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Soporte Técnico</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Preguntas Frecuentes</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Contacto</h3>
-                    <p class="text-gray-400">contacto@empresa.com</p>
-                    <p class="text-gray-400">+1 (234) 567-8900</p>
-                </div>
-            </div>
-            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
-                <p>© 2023 Sistema de Reportes. Todos los derechos reservados.</p>
-            </div>
-        </div>
-    </footer>
+    {{>footer}}
 
     <script>
         // Funcionalidad para cambiar entre tipos de reporte
