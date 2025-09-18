@@ -25,7 +25,7 @@ const getReportDateRange = (period, date) => {
       }
       break;
     case "weekly":
-      const week = parseInt(date.substring(6));
+      const week = parseInt(date.substring(5));
       startDate = new Date(year, 0, 1 + (week - 1) * 7);
       endDate = new Date(year, 0, 1 + (week - 1) * 7 + 6);
       break;
@@ -86,7 +86,7 @@ const reportsController = {
       if (incomeData.total === 0) {
         return res.json({
           noData: true,
-          message: "No se encontraron ingresos para el período seleccionado.",
+          message: "No se encontraron datos para el reporte en esta fecha, elija una fecha correcta.",
         });
       }
 
@@ -115,7 +115,7 @@ const reportsController = {
       );
 
       if (incomeData.total === 0) {
-        const message = "No se encontraron ingresos para el período seleccionado, no se puede generar el PDF.";
+        const message = "No se encontraron datos para el reporte en esta fecha, no se puede generar el PDF.";
         return res.redirect(`/reports?error=${encodeURIComponent(message)}`);
       }
 
