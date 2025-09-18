@@ -6,15 +6,17 @@ import path from "path";
 
 const getReportDateRange = (period, date) => {
   const year = parseInt(date.substring(0, 4));
-  const month = parseInt(date.substring(5, 7)) - 1;
   let startDate, endDate;
 
   switch (period) {
-    case "monthly":
+    case "monthly": {
+      const month = parseInt(date.substring(5, 7)) - 1;
       startDate = new Date(year, month, 1);
       endDate = new Date(year, month + 1, 0);
       break;
-    case "biweekly":
+    }
+    case "biweekly": {
+      const month = parseInt(date.substring(5, 7)) - 1;
       const fortnight = date.endsWith("first") ? 1 : 16;
       if (fortnight === 1) {
         startDate = new Date(year, month, 1);
@@ -24,11 +26,16 @@ const getReportDateRange = (period, date) => {
         endDate = new Date(year, month + 1, 0);
       }
       break;
-    case "weekly":
+    }
+    case "weekly": {
       const week = parseInt(date.substring(5));
-      startDate = new Date(year, 0, 1 + (week - 1) * 7);
-      endDate = new Date(year, 0, 1 + (week - 1) * 7 + 6);
+      const firstDay = new Date(year, 0, 1 + (week - 1) * 7);
+      const dayOfWeek = firstDay.getDay();
+      const adjustment = dayOfWeek <= 4 ? 1 - dayOfWeek : 8 - dayOfWeek; // Adjust to start of the week (Monday)
+      startDate = new Date(year, 0, firstDay.getDate() + adjustment);
+      endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6);
       break;
+    }
     default:
       throw new Error("Invalid period specified");
   }
