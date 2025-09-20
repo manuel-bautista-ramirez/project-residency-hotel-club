@@ -222,17 +222,8 @@ WHERE MONTH(fecha_ingreso) = MONTH(CURDATE())
 -- =====================================================
 -- MÓDULO DE MEMBRESÍAS
 -- =====================================================
--- Eliminar tablas en orden correcto (por dependencias de FK)
-DROP TABLE IF EXISTS pagos CASCADE;
-DROP TABLE IF EXISTS integrantes_membresia CASCADE;
-DROP TABLE IF EXISTS historial_estados_membresia CASCADE;
-DROP TABLE IF EXISTS membresias_activas CASCADE;
-DROP TABLE IF EXISTS membresias CASCADE;
-DROP TABLE IF EXISTS relaciones_familiares CASCADE;
-DROP TABLE IF EXISTS metodos_pago CASCADE;
-
--- Tabla de tipos de membresía (se mantiene igual si ya existe)
-CREATE TABLE IF NOT EXISTS tipos_membresia (
+-- Tabla de tipos de membresía
+CREATE TABLE tipos_membresia (
     id_tipo_membresia SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion TEXT,
@@ -240,8 +231,8 @@ CREATE TABLE IF NOT EXISTS tipos_membresia (
     precio DECIMAL(10,2) NOT NULL
 );
 
--- Tabla de clientes (se mantiene igual si ya existe)
-CREATE TABLE IF NOT EXISTS clientes (
+-- Tabla de clientes
+CREATE TABLE clientes (
     id_cliente SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(150) NOT NULL,
     telefono VARCHAR(20),
@@ -267,12 +258,12 @@ CREATE TABLE membresias_activas (
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     precio_final DECIMAL(10,2) NOT NULL CHECK (precio_final > 0),
-    qr_code VARCHAR(255) UNIQUE,
+    qr_path VARCHAR(255) UNIQUE,
     estado VARCHAR(20) DEFAULT 'Activa' CHECK (estado IN ('Activa', 'Vencida', 'Cancelada')),
     CHECK (fecha_fin > fecha_inicio)
 );
 
--- Tabla de integrantes (simplificada)
+-- Tabla de integrantes (solo nombres, sin relaciones complejas)
 CREATE TABLE integrantes_membresia (
     id_integrante SERIAL PRIMARY KEY,
     id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
@@ -286,7 +277,7 @@ CREATE TABLE metodos_pago (
     nombre VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Tabla de pagos (simplificada)
+-- Tabla de pagos (muy simplificada)
 CREATE TABLE pagos (
     id_pago SERIAL PRIMARY KEY,
     id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
