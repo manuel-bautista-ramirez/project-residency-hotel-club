@@ -309,6 +309,50 @@ const MembershipModel = {
     }
   },
 
+  async getIncomeByPaymentMethod(startDate, endDate) {
+    const [rows] = await pool.query(
+      `
+      SELECT
+        mp.nombre as metodo_pago,
+        SUM(p.monto) as total
+      FROM pagos p
+      JOIN metodos_pago mp ON p.id_metodo_pago = mp.id_metodo_pago
+      WHERE p.fecha_pago BETWEEN ? AND ?
+      GROUP BY mp.nombre
+    `,
+      [startDate, endDate]
+    );
+
+    const ingresos = {
+      efectivo: 0,
+      debito: 0,
+      credito: 0,
+      transferencia: 0,
+    };
+
+    let totalNeto = 0;
+
+    rows.forEach((row) => {
+      const metodo = row.metodo_pago.toLowerCase();
+      const monto = parseFloat(row.total);
+
+      if (metodo.includes("efectivo")) {
+        ingresos.efectivo += monto;
+      } else if (metodo.includes("débito")) {
+        ingresos.debito += monto;
+      } else if (metodo.includes("crédito")) {
+        ingresos.credito += monto;
+      } else if (metodo.includes("transferencia")) {
+        ingresos.transferencia += monto;
+      }
+      totalNeto += monto;
+    });
+
+    return {
+      ingresos,
+      total: totalNeto,
+    };
+  },
 };
 
 export { MembershipModel };

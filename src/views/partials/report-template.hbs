@@ -1,0 +1,38 @@
+<div class="p-8 bg-white text-gray-800">
+  <!-- Encabezado -->
+  <h1 class="text-2xl font-bold text-center mb-6">Reporte de Ingresos</h1>
+
+  <!-- Tabla de ingresos -->
+  <table class="w-full border-collapse border border-gray-300">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="border border-gray-300 px-4 py-2 text-left">Método de Pago</th>
+        <th class="border border-gray-300 px-4 py-2 text-right">Monto Acumulado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="border border-gray-300 px-4 py-2">Efectivo</td>
+        <td class="border border-gray-300 px-4 py-2 text-right">{{ingresos.efectivo}}</td>
+      </tr>
+      <tr>
+        <td class="border border-gray-300 px-4 py-2">Tarjeta Débito</td>
+        <td class="border border-gray-300 px-4 py-2 text-right">{{ingresos.debito}}</td>
+      </tr>
+      <tr>
+        <td class="border border-gray-300 px-4 py-2">Tarjeta Crédito</td>
+        <td class="border border-gray-300 px-4 py-2 text-right">{{ingresos.credito}}</td>
+      </tr>
+      <tr>
+        <td class="border border-gray-300 px-4 py-2">Transferencia</td>
+        <td class="border border-gray-300 px-4 py-2 text-right">{{ingresos.transferencia}}</td>
+      </tr>
+    </tbody>
+    <tfoot class="bg-gray-200 font-semibold">
+      <tr>
+        <td class="border border-gray-300 px-4 py-2 text-left">Total Neto</td>
+        <td class="border border-gray-300 px-4 py-2 text-right">{{total}}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
