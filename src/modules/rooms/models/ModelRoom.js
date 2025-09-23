@@ -1,6 +1,7 @@
 // src/modules/rooms/models/ModelRoom.js
-import { pool } from "../../../dataBase/conecctionDataBase.js"; // tu conexión MySQL
+import { pool } from "../../../dataBase/conecctionDataBase.js"; // conexión MySQL
 
+//  get all habitations created
 export const getHabitaciones = async () => {
   try {
     const [rows] = await pool.query("SELECT * FROM habitaciones");
@@ -10,11 +11,43 @@ export const getHabitaciones = async () => {
     return [];
   }
 };
-// get all reservationes created
-export const getReservationes = async () => {
-  const [rows] = await pool.query("SELECT * FROM ")
 
+// get all reservationes created
+export const getAllReservationes = async () => {
+  const [rows] = await pool.query(`
+    SELECT r.id AS id_reservacion,
+        h.numero AS numero_habitacion,
+        h.estado,
+        r.nombre_cliente,
+        r.fecha_reserva,
+        r.fecha_ingreso,
+        r.fecha_salida,
+        r.monto
+    FROM reservaciones r
+    INNER JOIN habitaciones h ON r.habitacion_id = h.id
+    ORDER BY r.fecha_ingreso DESC
+  `);
+  return rows;
 };
+
+// get all rentas created
+export const getAllRentas = async ()=>{
+  const [rows] = await pool.query(`
+    SELECT re.id AS id_renta,
+           h.numero AS numero_habitacion,
+           h.estado,
+           re.nombre_cliente,
+           re.fecha_ingreso,
+           re.fecha_salida,
+           re.tipo_pago,
+           re.monto,
+           re.monto_letras
+    FROM rentas re
+    INNER JOIN habitaciones h ON re.habitacion_id = h.id
+    ORDER BY re.fecha_ingreso DESC
+  `);
+  return rows;
+}
 
 // Editar one  Reservation by Id
 export const findReservacionById = async (id) => {
@@ -37,19 +70,12 @@ export const findReservacionById = async (id) => {
   }
 };
 
-
+// update use status of resevation
+export const updateStatus = async () => {};
 
 /**
  * Crear una nueva renta
  */
-
-// Función auxiliar para convertir número a letras (puedes usar la que ya tengas)
-const nextId = (arr) =>
-  !arr.length ? 1 : Math.max(...arr.map((x) => Number(x.id))) + 1;
-const numeroALetras = (num) =>
-  new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(
-    num
-  );
 
 export const crearRenta = async (req, res) => {
   try {

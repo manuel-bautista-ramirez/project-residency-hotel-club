@@ -181,6 +181,12 @@ WHERE
 ORDER BY
   r.fecha_ingreso;
 
+
+  
+
+
+  SELECT
+
   -- generacion de reportes...
 
 -- Reporte de ingresos por rentas diarias
