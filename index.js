@@ -5,6 +5,9 @@ import { fileURLToPath } from "url";
 import session from "express-session";
 import { app } from "./src/config/app.js";
 import { routerGlobal } from "./src/router/routerGlobal.js";
+import routerLogin from "./src/modules/login/routers/routerLogin.js";
+import {membershipRoutes, membershipApiRoutes} from "./src/modules/membership/routes/index.js";
+import { routerRoom } from "./src/modules/rooms/routes/RouteRooms.js";
 
 // Configuración de variables para __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
@@ -31,4 +34,13 @@ app.use(
 app.listen(app.get("port"), () => {
   app.use(routerGlobal);
   console.log(`Servidor corriendo en el puerto: http://localhost:${app.get("port")}`);
+  app.use(routerLogin);
+  app.use("/memberships", membershipRoutes);
+  // Rutas API de modulo membresías
+  app.use("/api/memberships", membershipApiRoutes);
+  app.use(routerRoom);
+
+  console.log(
+    `Servidor corriendo en el puerto: http://localhost:${app.get("port")}`
+  );
 });

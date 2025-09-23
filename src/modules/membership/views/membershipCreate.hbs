@@ -1,278 +1,198 @@
-<!DOCTYPE html>
-<html lang="es">
+{{>navbar}}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Membresía</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+<body class="bg-green-50 min-h-screen p-6">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden mt-20 border border-green-200">
+        <!-- Formulario de cliente -->
+        <div class="p-6 border-b border-green-200">
+            <h1 class="text-2xl font-bold text-green-800">Crear Cliente</h1>
+            <form id="form-cliente" action="/memberships/createClient" method="POST" class="mt-4 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-green-700">Nombre completo</label>
+                    <input type="text" name="nombre_completo" required
+                        class="mt-1 block w-full px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
 
-<body class="bg-gray-50">
-    {{>navbar}}
+                <div>
+                    <label class="block text-sm font-medium text-green-700">Teléfono</label>
+                    <input type="text" name="telefono"
+                        class="mt-1 block w-full px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
 
-    <div class="container mx-auto px-4 py-8 mt-16 max-w-4xl">
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
-                <h1 class="text-2xl font-bold">Crear Membresía</h1>
-                <p class="opacity-90">Complete la información del cliente y los detalles de la membresía</p>
+                <div>
+                    <label class="block text-sm font-medium text-green-700">Correo</label>
+                    <input type="email" name="correo" required
+                        class="mt-1 block w-full px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Registrar Cliente
+                </button>
+
+                <div id="cliente-message" class="hidden text-sm font-medium"></div>
+            </form>
+        </div>
+
+        <!-- Formulario de membresía -->
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-green-800">Crear Membresía</h1>
+            <form id="createMemberForm" action="/memberships/createMembership" method="POST" class="mt-4 space-y-4">
+                <input type="hidden" id="id_cliente" name="id_cliente" value="">
+
+                <div>
+                    <label class="block text-sm font-medium text-green-700">Tipo de membresía:</label>
+                    <select id="tipoMembresia" name="id_tipo_membresia" required
+                        class="mt-1 block w-full px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                        {{#each tiposMembresia}}
+                        <option value="{{id_tipo_membresia}}" data-max="{{max_integrantes}}" data-precio="{{precio}}">
+                            {{nombre}} - ${{precio}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-green-700">Fecha de inicio:</label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" required
+                        class="mt-1 block w-full px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-green-700">Fecha de fin:</label>
+                    <input type="date" id="fecha_fin" name="fecha_fin" readonly
+                        class="mt-1 block w-full px-3 py-2 border border-green-300 rounded-md shadow-sm bg-green-50">
+                </div>
+
+                <input type="hidden" id="precio_final" name="precio_final" value="">
+
+                <div id="integrantesSection" class="hidden mt-4 p-4 border border-green-200 rounded-md bg-green-50">
+                    <h4 class="text-sm font-medium text-green-700 mb-2">Integrantes familiares</h4>
+                    <div id="integrantesContainer" class="space-y-2"></div>
+                    <button type="button" id="addIntegranteBtn"
+                        class="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        ➕ Agregar integrante
+                    </button>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-green-700">Método de pago:</label>
+                    <select id="metodo_pago" name="metodo_pago" required
+                        class="mt-1 block w-full px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                        <option value="">Seleccione un método de pago</option>
+                        {{#each tiposPago}}
+                        <option value="{{id_metodo_pago}}">{{nombre}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-green-700">Precio final:</label>
+                    <input type="text" id="precioFinal" readonly
+                        class="mt-1 block w-full px-3 py-2 border border-green-300 rounded-md shadow-sm bg-green-50">
+                </div>
+
+                {{#if isAdmin}}
+                <div class="flex items-end space-x-2">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-green-700">Descuento (%):</label>
+                        <input type="number" id="descuento" name="descuento" min="0" max="100" value="0"
+                            class="mt-1 block w-full px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <button type="button" id="aplicarDescuentoBtn"
+                        class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Aplicar
+                    </button>
+                </div>
+                {{/if}}
+
+                <button type="submit" id="submit-membership" disabled
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-400 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    Crear Membresía (complete primero el cliente)
+                </button>
+
+                <div id="membership-message" class="hidden text-sm font-medium"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para confirmación de cliente -->
+    <div id="clienteModal"
+        class="fixed inset-0 bg-black bg-opacity-50 max-h-[80vh] overflow-y-auto items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-lg font-bold text-green-800 mb-4">Confirmar Datos del Cliente</h3>
+            <div id="clienteModalContent" class="mb-4 space-y-2"></div>
+            <div class="flex justify-end space-x-3">
+                <button id="cancelClienteBtn"
+                    class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancelar</button>
+                <button id="confirmClienteBtn"
+                    class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">Confirmar</button>
             </div>
+        </div>
+    </div>
 
-            <!-- Formulario de cliente -->
-            <div class="p-6 space-y-4">
-                <form id="form-cliente" class="space-y-4">
-                    <h2 class="text-lg font-semibold text-gray-700 flex items-center">
-                        <i class="fas fa-user-circle mr-2 text-blue-500"></i>
-                        Datos del Cliente
-                    </h2>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
-                            <input type="text" name="name" placeholder="Ingrese el nombre completo" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                            <input type="text" name="phone" placeholder="Ingrese el teléfono"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
-                            <input type="email" name="email" placeholder="Ingrese el correo electrónico"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                        </div>
-                    </div>
-
-                    <div class="flex gap-3 items-end">
-                        <div class="flex-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ID Cliente generado</label>
-                            <input id="id_cliente" name="id_cliente"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly>
-                        </div>
-                        <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                            <i class="fas fa-save mr-2"></i>Registrar cliente
-                        </button>
-                    </div>
-                </form>
-
-                <hr class="my-6">
-
-                <form id="form-membership" action="{{apiBase}}/createMembership" method="POST" class="space-y-4">
-                    <input type="hidden" name="id_cliente" id="id_cliente_hidden">
-
-                    <h2 class="text-lg font-semibold text-gray-700 flex items-center">
-                        <i class="fas fa-id-card mr-2 text-blue-500"></i>
-                        Datos de la Membresía
-                    </h2>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de membresía</label>
-                        <select id="tipo_membresia" name="id_tipo_membresia"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                            {{#each tiposMembresia}}
-                            <option value="{{this.id_tipo_membresia}}">{{this.nombre}}</option>
-                            {{/each}}
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha inicio</label>
-                            <input type="date" name="fecha_inicio" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha fin</label>
-                            <input type="date" name="fecha_fin" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Precio final</label>
-                            <div class="relative">
-                                <input type="number" step="0.01" name="precio_final" id="precio"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                                    readonly>
-                                <p class="text-sm text-gray-500 mt-1"><span id="precio-texto"></span></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{#if isAdmin}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Descuento (opcional)</label>
-                        <input type="number" id="descuento"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                            min="0" max="100" placeholder="%">
-                    </div>
-                    {{/if}}
-
-                    <section id="section-integrantes" class="hidden space-y-4 pt-4 border-t">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-semibold text-gray-700">
-                                <i class="fas fa-users mr-2 text-blue-500"></i>
-                                Integrantes
-                            </h3>
-                            <button type="button" id="add-integrante"
-                                class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition flex items-center">
-                                <i class="fas fa-plus-circle mr-2"></i>Agregar integrante
-                            </button>
-                        </div>
-                        <div id="integrantes-lista" class="space-y-4"></div>
-                    </section>
-
-                    <div class="pt-4">
-                        <button type="submit"
-                            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition flex items-center">
-                            <i class="fas fa-check-circle mr-2"></i> Crear Membresía
-                        </button>
-                    </div>
-                </form>
+    <!-- Modal para confirmación de membresía -->
+    <div id="membershipModal"
+        class="fixed inset-0 bg-black bg-opacity-50 max-h-[80vh] overflow-y-auto items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-green-800 mb-4">Confirmar Membresía</h3>
+            <div id="membershipModalContent" class="mb-4 space-y-2"></div>
+            <div class="flex justify-end space-x-3">
+                <button id="cancelMembershipBtn"
+                    class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancelar</button>
+                <button id="confirmMembershipBtn"
+                    class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">Confirmar</button>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const tipoMembresiaSelect = document.getElementById("tipo_membresia");
-            const sectionIntegrantes = document.getElementById("section-integrantes");
-            const addIntegranteBtn = document.getElementById("add-integrante");
-            const integrantesLista = document.getElementById("integrantes-lista");
-            const precioInput = document.getElementById("precio");
-            const precioTexto = document.getElementById("precio-texto");
-            const formCliente = document.getElementById("form-cliente");
-            const idClienteInput = document.getElementById("id_cliente");
-            const idClienteHidden = document.getElementById("id_cliente_hidden");
-            const formMembership = document.getElementById("form-membership");
-            const descuentoInput = document.getElementById("descuento");
-            let integranteCount = 0;          // empieza en 0
-            let currentTipo = null;           // guarda el tipo seleccionado
+        // VERIFICACIÓN DE CARGA - Pon esto ANTES de cargar createMembership.js
+        console.log('🔄 Verificando carga de scripts...');
 
-            // 1) Registrar cliente por AJAX y mostrar id en input readonly
-            formCliente.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                const fd = new FormData(formCliente);
+        // Verificar si los elementos del DOM existen
+        const checkElements = () => {
+            const elements = [
+                'form-cliente', 'createMemberForm', 'clienteModal', 'membershipModal'
+            ];
 
-                try {
-                    const resp = await fetch(`${apiBase}/createClient`, {
-                        method: "POST",
-                        headers: { "Accept": "application/json" },
-                        body: new URLSearchParams(fd) // para x-www-form-urlencoded
-                    });
-                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                    const data = await resp.json();          // { id_cliente: 123 }
-                    if (!data.id_cliente) throw new Error("Respuesta inválida al crear cliente");
-                    idClienteInput.value = data.id_cliente;  // visible
-                    idClienteHidden.value = data.id_cliente; // hidden para el segundo form
-                    alert("Cliente registrado con éxito");
-                } catch (err) {
-                    console.error(err);
-                    alert("Error al registrar cliente");
-                }
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                console.log(`${element ? '✅' : '❌'} Elemento #${id}:`, element ? 'Encontrado' : 'NO encontrado');
             });
+        };
 
-            // 2) Al cambiar el tipo, carga precio y muestra/oculta familiares
-            const checkTipoMembresia = async () => {
-                const selected = tipoMembresiaSelect.value;
-                if (!selected) return;
+        // Verificar inmediatamente
+        checkElements();
 
-                try {
-                    const resp = await fetch(`${apiBase}/tipos_membresia/${selected}`, { headers: { "Accept": "application/json" } });
-                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                    const data = await resp.json(); // { id_tipo_membresia, nombre, precio, max_integrantes }
-                    currentTipo = data;
-
-                    // Precio
-                    let precioFinal = Number(data.precio);
-                    // Si hay descuento visible (sólo admin), aplícalo
-                    if (descuentoInput) {
-                        const pct = Number(descuentoInput.value || 0);
-                        if (pct > 0) {
-                            precioFinal = +(precioFinal * (1 - pct / 100)).toFixed(2);
-                        }
-                    }
-                    precioInput.value = precioFinal;
-                    precioTexto.innerText = formatoMoneda(precioFinal);
-
-                    // Integrantes
-                    if (data.max_integrantes > 1) {
-                        sectionIntegrantes.classList.remove("hidden");
-                    } else {
-                        sectionIntegrantes.classList.add("hidden");
-                        integrantesLista.innerHTML = "";
-                        integranteCount = 0;
-                    }
-                } catch (error) {
-                    console.error("Error al obtener info de membresía:", error);
-                }
-            };
-
-            tipoMembresiaSelect.addEventListener("change", checkTipoMembresia);
-
-            // Si hay campo descuento (admin), recalcule al cambiar
-            if (descuentoInput) {
-                descuentoInput.addEventListener("input", () => {
-                    if (!currentTipo) return;
-                    let precio = Number(currentTipo.precio);
-                    const pct = Number(descuentoInput.value || 0);
-                    if (pct > 0) precio = +(precio * (1 - pct / 100)).toFixed(2);
-                    precioInput.value = precio;
-                    precioTexto.innerText = formatoMoneda(precio);
-                });
-            }
-
-            // 3) Agregar integrantes dinámicos (respetando max_integrantes)
-            if (addIntegranteBtn) {
-                addIntegranteBtn.addEventListener("click", () => {
-                    if (!currentTipo) return alert("Selecciona primero el tipo de membresía");
-                    const max = Number(currentTipo.max_integrantes || 1);
-                    if (integranteCount >= (max - 1)) { // -1 porque el titular ya cuenta
-                        return alert(`Máximo ${max - 1} integrantes además del titular.`);
-                    }
-
-                    const container = document.createElement("div");
-                    container.className = "flex flex-col md:flex-row gap-3 p-3 bg-gray-50 rounded-lg integrante-item";
-                    container.innerHTML = `
-        <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-          <input type="text" name="integrantes[${integranteCount}][nombre]" required
-                 class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Parentesco</label>
-          <input type="text" name="integrantes[${integranteCount}][parentesco]" required
-                 class="w-full px-3 py-2 border rounded-lg">
-        </div>
-        <div class="flex items-end">
-          <button type="button" class="text-red-600 remove-integrante">Eliminar</button>
-        </div>
-      `;
-                    integrantesLista.appendChild(container);
-                    integranteCount++;
-
-                    container.querySelector(".remove-integrante").addEventListener("click", () => {
-                        container.remove();
-                        integranteCount--;
-                    });
-                });
-            }
-
-            // 4) Formateo MXN
-            function formatoMoneda(num) {
-                return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(num);
-            }
-
-            // Cargar info del primer tipo al abrir (si hay opciones)
-            if (tipoMembresiaSelect.value) {
-                checkTipoMembresia();
-            }
-        });
+        // Verificar después de que todo cargue
+        window.addEventListener('load', checkElements);
     </script>
 
-</body>
+    <script src="/js/moduleMembershipJs/createMembership.js"></script>
 
-</html>
+    <script>
+        // VERIFICACIÓN DE MembershipUI - Esto después de cargar el script
+        console.log('🔍 Verificando MembershipUI...');
+        console.log('MembershipUI definido:', typeof MembershipUI !== 'undefined');
+
+        if (typeof MembershipUI !== 'undefined') {
+            console.log('✅ MembershipUI cargado');
+            console.log('Tiene init?:', typeof MembershipUI.init === 'function');
+
+            // Intentar inicializar con retry por si el DOM no está listo
+            setTimeout(() => {
+                try {
+                    MembershipUI.init();
+                    console.log('✅ MembershipUI inicializado');
+                } catch (error) {
+                    console.error('❌ Error al inicializar:', error);
+                }
+            }, 100);
+        } else {
+            console.error('❌ MembershipUI NO está definido');
+            console.log('Variables globales:', Object.keys(window).filter(k =>
+                k.toLowerCase().includes('member') || k.includes('UI')
+            ));
+        }
+    </script>
+</body>

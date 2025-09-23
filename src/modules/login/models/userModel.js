@@ -120,7 +120,7 @@ const seedUsers = async () => {
     console.error("❌ Error al agregar usuarios iniciales:", error);
   }
 };
-
+    
 // 👇 Descomenta si quieres ejecutar el seed automáticamente
 //seedUsers();
 
@@ -182,3 +182,4 @@ export const resetPassword = async (userId, newPassword) => {
     throw error;
   }
 };
+ //seedUsers();

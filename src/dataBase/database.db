@@ -228,7 +228,7 @@ WHERE MONTH(fecha_ingreso) = MONTH(CURDATE())
 -- =====================================================
 -- MÓDULO DE MEMBRESÍAS
 -- =====================================================
--- Tabla de tipos de membresía (elimina ENUM)
+-- Tabla de tipos de membresía
 CREATE TABLE tipos_membresia (
     id_tipo_membresia SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE,
@@ -237,9 +237,7 @@ CREATE TABLE tipos_membresia (
     precio DECIMAL(10,2) NOT NULL
 );
 
-
-
--- Tabla de clientes (sin cambios, ya está en 3NF)
+-- Tabla de clientes
 CREATE TABLE clientes (
     id_cliente SERIAL PRIMARY KEY,
     nombre_completo VARCHAR(150) NOT NULL,
@@ -248,14 +246,7 @@ CREATE TABLE clientes (
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla de relaciones familiares (nueva)
-CREATE TABLE relaciones_familiares (
-    id_relacion SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL UNIQUE,
-    descripcion TEXT
-);
-
--- Tabla de membresías (precios base históricos)
+-- Tabla de membresías (contratos base)
 CREATE TABLE membresias (
     id_membresia SERIAL PRIMARY KEY,
     id_cliente INT NOT NULL REFERENCES clientes(id_cliente),
@@ -265,9 +256,7 @@ CREATE TABLE membresias (
     fecha_creacion TIMESTAMP DEFAULT NOW()
 );
 
-
-
--- Tabla de membresías activas
+-- Tabla de membresías activas (instancias activas)
 CREATE TABLE membresias_activas (
     id_activa SERIAL PRIMARY KEY,
     id_cliente INTEGER NOT NULL REFERENCES clientes(id_cliente),
@@ -275,46 +264,46 @@ CREATE TABLE membresias_activas (
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     precio_final DECIMAL(10,2) NOT NULL CHECK (precio_final > 0),
-    qr_code VARCHAR(255) UNIQUE,
+    qr_path VARCHAR(255) UNIQUE,
     estado VARCHAR(20) DEFAULT 'Activa' CHECK (estado IN ('Activa', 'Vencida', 'Cancelada')),
     CHECK (fecha_fin > fecha_inicio)
 );
 
--- Tabla de integrantes (reemplaza familiares)
+-- Tabla de integrantes (solo nombres, sin relaciones complejas)
 CREATE TABLE integrantes_membresia (
     id_integrante SERIAL PRIMARY KEY,
     id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
-    id_cliente INTEGER NOT NULL REFERENCES clientes(id_cliente),
-    id_relacion INTEGER REFERENCES relaciones_familiares(id_relacion),
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(id_activa, id_cliente)
+    nombre_completo VARCHAR(150) NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla de métodos de pago (elimina ENUM)
+-- Tabla de métodos de pago (simplificada)
 CREATE TABLE metodos_pago (
     id_metodo_pago SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL UNIQUE,
-    descripcion TEXT
+    nombre VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Tabla de pagos
+-- Tabla de pagos (muy simplificada)
 CREATE TABLE pagos (
     id_pago SERIAL PRIMARY KEY,
     id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
     id_metodo_pago INTEGER NOT NULL REFERENCES metodos_pago(id_metodo_pago),
     monto DECIMAL(10,2) NOT NULL CHECK (monto > 0),
-    fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    comprobante_url VARCHAR(255),
-    referencia_pago VARCHAR(100)
+    fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla de estados de membresía (para auditoría)
-CREATE TABLE historial_estados_membresia (
-    id_historial SERIAL PRIMARY KEY,
-    id_activa INTEGER NOT NULL REFERENCES membresias_activas(id_activa),
-    estado_anterior VARCHAR(20),
-    estado_nuevo VARCHAR(20) NOT NULL,
-    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    motivo_cambio TEXT
-); TEXT
-  );
+-- Insertar métodos de pago básicos
+INSERT INTO metodos_pago (nombre) VALUES 
+('Efectivo'),
+('Tarjeta de crédito'),
+('Tarjeta de débito'),
+('Transferencia bancaria');
+ON CONFLICT (nombre) DO NOTHING;
+
+-- Insertar tipos de membresía básicos (si no existen)
+INSERT INTO tipos_membresia (nombre, descripcion, max_integrantes, precio) VALUES 
+('Individual GYM', 'Membresía para una persona', 1, 500.00),
+('Individual Alberca', 'Membresía para una persona', 1, 500.00),
+('Individual General', 'Membresía para una persona', 1, 500.00),
+('Familiar', 'Membresía para toda la familia', 4, 1200.00);
+ON CONFLICT (nombre) DO NOTHING;

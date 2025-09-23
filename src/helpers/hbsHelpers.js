@@ -9,5 +9,10 @@ export const hbsHelpers = {
     return args.every(Boolean);
   },
   not: (a) => !a,
+
+  // Helper para comparar mayor que
+  gt: (a, b) => a > b,
+  // Helper para comparar menor o igual que
+  lte: (a, b) => a <= b,
   //json: (context) => JSON.stringify(context)
 };
