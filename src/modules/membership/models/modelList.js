@@ -14,7 +14,7 @@ const modelList = {
           ma.fecha_fin,
           ma.precio_final,
           ma.estado,
-          ma.qr_code,
+          ma.qr_path,
           c.nombre_completo,
           c.telefono,
           c.correo,
@@ -276,7 +276,14 @@ const modelList = {
     try {
       const query = `
         SELECT 
-          ma.*,
+          ma.id_activa,
+          ma.id_cliente,
+          ma.id_membresia,
+          ma.fecha_inicio,
+          ma.fecha_fin,
+          ma.precio_final,
+          ma.estado,
+          ma.qr_path,
           c.nombre_completo,
           c.telefono,
           c.correo,
@@ -294,19 +301,30 @@ const modelList = {
       const [membresia] = await pool.query(query, [id_activa]);
 
       if (membresia.length > 0) {
+        const membresiaData = membresia[0];
+
         // Obtener integrantes si es membresía familiar
-        if (membresia[0].max_integrantes > 1) {
-          membresia[0].integrantes = await this.getIntegrantesMembresia(
+        if (membresiaData.max_integrantes > 1) {
+          membresiaData.integrantes = await this.getIntegrantesMembresia(
             id_activa
           );
         } else {
-          membresia[0].integrantes = [];
+          membresiaData.integrantes = [];
         }
 
         // Obtener historial de pagos
-        membresia[0].pagos = await this.getPagosMembresia(id_activa);
+        membresiaData.pagos = await this.getPagosMembresia(id_activa);
 
-        return membresia[0];
+        // Transformar la ruta del QR a una ruta web relativa
+        if (membresiaData.qr_path) {
+          const publicPath = '/uploads/';
+          const indexOfPublic = membresiaData.qr_path.indexOf(publicPath);
+          if (indexOfPublic !== -1) {
+            membresiaData.qr_path = membresiaData.qr_path.substring(indexOfPublic);
+          }
+        }
+
+        return membresiaData;
       }
 
       return null;

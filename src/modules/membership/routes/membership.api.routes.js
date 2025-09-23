@@ -4,6 +4,7 @@
 import express from "express";
 import { authMiddleware } from "../../login/middlewares/accessDenied.js";
 import { listMembershipController } from "../controllers/listMemberController.js";
+import { reportsController } from "../controllers/reportsController.js";
 
 const routerApi = express.Router();
 
@@ -30,5 +31,18 @@ routerApi.get("/statistics", bind(listMembershipController, "getEstadisticasAPI"
 routerApi.get("/:id_activa/integrantes", (req, res) =>
   listMembershipController.getIntegrantesAPI(req, res)
 );
+
+// Detalles de una membresía
+// URL final: GET /api/memberships/details/:id
+routerApi.get("/details/:id", (req, res) =>
+  listMembershipController.getMembershipDetailsAPI(req, res)
+);
+
+// Reportes
+// URL final: GET /api/memberships/reports/preview
+routerApi.get("/reports/preview", bind(reportsController, "getReportPreview"));
+
+// URL final: GET /api/memberships/reports/download
+routerApi.get("/reports/download", bind(reportsController, "downloadReportPDF"));
 
 export { routerApi as membershipApiRoutes };

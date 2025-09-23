@@ -65,6 +65,17 @@ const MembershipUI = {
           stopPropagation: () => e.stopPropagation()
         });
       }
+
+      const viewDetailsBtn = e.target.closest('.view-details-btn');
+      if (viewDetailsBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleViewDetailsClick({
+          currentTarget: viewDetailsBtn,
+          preventDefault: () => e.preventDefault(),
+          stopPropagation: () => e.stopPropagation()
+        });
+      }
     });
   },
 
@@ -193,6 +204,124 @@ const MembershipUI = {
         }
       }
     });
+  },
+
+  showDetailsModal: function (details) {
+    const modalHtml = `
+      <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 details-modal">
+        <div class="bg-white rounded-2xl p-8 w-11/12 md:w-1/2 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-800">
+              <i class="fas fa-id-card-alt mr-3 text-green-500"></i>Detalles de la Membresía
+            </h3>
+            <button class="text-gray-500 hover:text-gray-800 transition-colors close-details-modal">
+              <i class="fas fa-times text-2xl"></i>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Columna de Información -->
+            <div class="space-y-4">
+              <div>
+                <p class="text-sm font-semibold text-gray-500">Titular</p>
+                <p class="text-lg font-medium text-gray-900">${details.nombre_completo}</p>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-gray-500">Tipo de Membresía</p>
+                <p class="text-lg font-medium text-gray-900">${details.tipo_membresia}</p>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-gray-500">Periodo</p>
+                <p class="text-lg font-medium text-gray-900">
+                  ${this.formatDate(details.fecha_inicio)} - ${this.formatDate(details.fecha_fin)}
+                </p>
+              </div>
+              ${details.integrantes && details.integrantes.length > 0 ? `
+                <div>
+                  <p class="text-sm font-semibold text-gray-500">Integrantes</p>
+                  <ul class="list-disc list-inside mt-1 space-y-1">
+                    ${details.integrantes.map(int => `<li class="text-gray-700">${int.nombre_completo}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+              ${details.pagos && details.pagos.length > 0 ? `
+                <div>
+                  <p class="text-sm font-semibold text-gray-500">Último Pago</p>
+                  <p class="text-lg font-medium text-gray-900">$${details.pagos[0].monto} (${details.pagos[0].metodo_pago})</p>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Columna de QR -->
+            <div class="flex flex-col items-center justify-center bg-gray-50 p-6 rounded-xl">
+              <img src="${details.qr_path}?t=${new Date().getTime()}" alt="Código QR" class="w-48 h-48">
+              ${details.isAdmin ? `
+                <a href="${details.qr_path}" download="qr-membresia-${details.id_activa}.png" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                  <i class="fas fa-download mr-2"></i>Descargar QR
+                </a>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="mt-8 flex justify-end">
+            <button class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors close-details-modal">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const existingModal = document.querySelector(".details-modal");
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+    document.querySelectorAll(".close-details-modal").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelector(".details-modal").remove();
+      });
+    });
+
+    document.querySelector(".details-modal").addEventListener("click", function (e) {
+      if (e.target === this) {
+        this.remove();
+      }
+    });
+  },
+
+  handleViewDetailsClick: function (e) {
+    const button = e.currentTarget;
+    const id = button.getAttribute("data-id");
+
+    if (!id) {
+      console.error("No se encontró el ID de la membresía");
+      return;
+    }
+
+    const originalHtml = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(`/api/memberships/details/${id}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error al cargar los detalles');
+        }
+        return response.json();
+      })
+      .then(details => {
+        this.showDetailsModal(details);
+      })
+      .catch(error => {
+        console.error("Error al obtener detalles de la membresía:", error);
+      })
+      .finally(() => {
+        button.innerHTML = originalHtml;
+        button.disabled = false;
+      });
   },
 
   handleViewMembersClick: function (e) {

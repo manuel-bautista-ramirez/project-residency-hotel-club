@@ -41,11 +41,17 @@ const MembershipUI = {
     this.duracionDias = 30;
     this.precioBase = 0;
     this.descuentoAplicado = 0;
+    this.procesandoCliente = false; // ← Nueva variable
+    this.procesandoMembresia = false; // ← Nueva variable
 
     // Manejar envío del formulario de cliente
     if (this.formCliente) {
       this.formCliente.addEventListener("submit", (e) => {
         e.preventDefault();
+        if (this.procesandoCliente) {
+          console.log("⚠️ Ya se está procesando un cliente, ignorando envío");
+          return;
+        }
         this.mostrarModalCliente();
       });
     }
@@ -53,6 +59,10 @@ const MembershipUI = {
     // Confirmar creación de cliente
     if (this.confirmClienteBtn) {
       this.confirmClienteBtn.addEventListener("click", () => {
+        if (this.procesandoCliente) {
+          console.log("⚠️ Ya se está procesando un cliente, ignorando clic");
+          return;
+        }
         this.confirmarCliente();
       });
     }
@@ -68,6 +78,12 @@ const MembershipUI = {
     if (this.formMembership) {
       this.formMembership.addEventListener("submit", (e) => {
         e.preventDefault();
+        if (this.procesandoMembresia) {
+          console.log(
+            "⚠️ Ya se está procesando una membresía, ignorando envío"
+          );
+          return;
+        }
         if (!this.clienteRegistrado) {
           this.showMessage(
             this.membershipMessage,
@@ -83,6 +99,10 @@ const MembershipUI = {
     // Confirmar creación de membresía
     if (this.confirmMembershipBtn) {
       this.confirmMembershipBtn.addEventListener("click", () => {
+        if (this.procesandoMembresia) {
+          console.log("⚠️ Ya se está procesando una membresía, ignorando clic");
+          return;
+        }
         this.confirmarMembresia();
       });
     }
@@ -158,7 +178,18 @@ const MembershipUI = {
   },
 
   confirmarCliente: async function () {
+    if (this.procesandoCliente) {
+      console.log("⚠️ Ya se está procesando un cliente, ignorando doble clic");
+      return;
+    }
+
+    this.procesandoCliente = true;
     this.clienteModal.classList.add("hidden");
+
+    if (this.confirmClienteBtn) {
+      this.confirmClienteBtn.disabled = true;
+    }
+
     const submitBtn = this.formCliente.querySelector('button[type="submit"]');
     const originalBtnText = submitBtn.innerHTML;
 
@@ -220,6 +251,11 @@ const MembershipUI = {
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalBtnText;
+      this.procesandoCliente = false;
+
+      if (this.confirmClienteBtn) {
+        this.confirmClienteBtn.disabled = false;
+      }
     }
   },
 
@@ -268,7 +304,20 @@ const MembershipUI = {
   },
 
   confirmarMembresia: async function () {
+    if (this.procesandoMembresia) {
+      console.log(
+        "⚠️ Ya se está procesando una membresía, ignorando doble clic"
+      );
+      return;
+    }
+
+    this.procesandoMembresia = true;
     this.membershipModal.classList.add("hidden");
+
+    if (this.confirmMembershipBtn) {
+      this.confirmMembershipBtn.disabled = true;
+    }
+
     const submitBtn = this.formMembership.querySelector(
       'button[type="submit"]'
     );
@@ -285,6 +334,10 @@ const MembershipUI = {
           "Error: ID de cliente inválido. Por favor, registre el cliente nuevamente.",
           "error"
         );
+        this.procesandoMembresia = false;
+        if (this.confirmMembershipBtn) {
+          this.confirmMembershipBtn.disabled = false;
+        }
         return;
       }
 
@@ -295,6 +348,10 @@ const MembershipUI = {
           "Error: La fecha de inicio no puede ser anterior a hoy",
           "error"
         );
+        this.procesandoMembresia = false;
+        if (this.confirmMembershipBtn) {
+          this.confirmMembershipBtn.disabled = false;
+        }
         return;
       }
 
@@ -308,6 +365,10 @@ const MembershipUI = {
             "Error: Debe agregar al menos un integrante familiar",
             "error"
           );
+          this.procesandoMembresia = false;
+          if (this.confirmMembershipBtn) {
+            this.confirmMembershipBtn.disabled = false;
+          }
           return;
         }
 
@@ -318,12 +379,18 @@ const MembershipUI = {
               "Error: Todos los integrantes deben tener un nombre",
               "error"
             );
+            this.procesandoMembresia = false;
+            if (this.confirmMembershipBtn) {
+              this.confirmMembershipBtn.disabled = false;
+            }
             return;
           }
         }
       }
 
       const formData = new FormData(this.formMembership);
+      console.log("📤 Enviando datos de membresía...");
+
       const resp = await fetch(this.formMembership.action, {
         method: "POST",
         body: new URLSearchParams(formData),
@@ -333,26 +400,24 @@ const MembershipUI = {
         },
       });
 
-      if (resp.redirected) {
-        window.location.href = resp.url;
-        return;
-      }
-
       const responseData = await resp.json();
+      console.log("📥 Respuesta recibida:", responseData);
 
       if (!resp.ok) {
         throw new Error(responseData.error || "Error HTTP " + resp.status);
       }
 
       if (responseData.success) {
-        this.showMessage(
-          this.membershipMessage,
-          "Membresía creada con éxito. Redirigiendo...",
-          "success"
-        );
-        setTimeout(() => {
-          window.location.href = "/membership/membershipList";
-        }, 2000);
+        // Mostrar el modal de éxito con la información de la membresía
+        this.mostrarModalExito(responseData.data);
+
+        // Deshabilitar el formulario temporalmente para prevenir reenvíos
+        this.formMembership.classList.add("opacity-50");
+        this.formMembership
+          .querySelectorAll("input, select, button")
+          .forEach((el) => {
+            el.disabled = true;
+          });
       } else {
         throw new Error(responseData.message || "Error desconocido");
       }
@@ -366,7 +431,199 @@ const MembershipUI = {
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalBtnText;
+      this.procesandoMembresia = false;
+
+      if (this.confirmMembershipBtn) {
+        this.confirmMembershipBtn.disabled = false;
+      }
     }
+  },
+
+  // Método para mostrar el modal de éxito con QR
+  mostrarModalExito: function (data) {
+    // Convertir número a letras
+    const convertirNumeroALetras = (numero) => {
+      const unidades = [
+        "",
+        "uno",
+        "dos",
+        "tres",
+        "cuatro",
+        "cinco",
+        "seis",
+        "siete",
+        "ocho",
+        "nueve",
+      ];
+      const decenas = [
+        "",
+        "",
+        "veinte",
+        "treinta",
+        "cuarenta",
+        "cincuenta",
+        "sesenta",
+        "setenta",
+        "ochenta",
+        "noventa",
+      ];
+
+      if (numero === 0) return "cero";
+      if (numero < 10) return unidades[numero];
+      if (numero < 100) {
+        const dec = Math.floor(numero / 10);
+        const uni = numero % 10;
+        return decenas[dec] + (uni > 0 ? " y " + unidades[uni] : "");
+      }
+      return numero.toString();
+    };
+
+    const precioEnLetras =
+      convertirNumeroALetras(Math.floor(data.precio_final)) + " pesos";
+
+    let integrantesHTML = "";
+    if (data.integrantes && data.integrantes.length > 0) {
+      integrantesHTML = `
+        <div class="mt-4">
+          <h4 class="font-medium text-green-700 mb-2">Integrantes:</h4>
+          <ul class="list-disc pl-5">
+            ${data.integrantes
+              .map((i) => `<li>${i.nombre_completo}</li>`)
+              .join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+    // Crear el modal de éxito
+    const modalHTML = `
+      <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div class="text-center mb-6">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+              <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-green-800">¡Membresía Creada Exitosamente!</h3>
+          </div>
+          
+          <div class="border border-green-200 rounded-lg p-4 mb-4">
+            <h4 class="font-medium text-green-700 mb-3">Información de la Membresía:</h4>
+            <div class="space-y-2 text-sm">
+              <p><strong>Titular:</strong> ${data.titular}</p>
+              <p><strong>Tipo de membresía:</strong> ${data.tipo_membresia}</p>
+              <p><strong>Fecha de inicio:</strong> ${data.fecha_inicio}</p>
+              <p><strong>Fecha de expiración:</strong> ${data.fecha_fin}</p>
+              <p><strong>Método de pago:</strong> ${data.metodo_pago}</p>
+              <p><strong>Total pagado:</strong> $${data.precio_final.toFixed(
+                2
+              )}</p>
+              <p><strong>Total en letras:</strong> ${precioEnLetras}</p>
+            </div>
+            ${integrantesHTML}
+          </div>
+
+          <div class="border border-green-200 rounded-lg p-4 mb-4">
+            <h4 class="font-medium text-green-700 mb-3 text-center">Código QR de Acceso:</h4>
+            <div class="flex justify-center mb-3">
+              <img id="qrImage" src="${data.qr_path}?t=${new Date().getTime()}" 
+                   alt="QR de membresía ${data.titular}" 
+                   class="w-48 h-48 border border-gray-300 rounded object-contain bg-white"
+                   onerror="this.style.display='none'; document.getElementById('qrError').style.display='block';">
+            </div>
+            <div id="qrError" class="text-center text-yellow-600 mb-3" style="display: none;">
+              <i class="fas fa-exclamation-triangle"></i> El QR se está generando...
+            </div>
+            <div class="text-center">
+              <button onclick="MembershipUI.descargarQR(${data.id_activa})" 
+                      class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                </svg>
+                Descargar QR
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+            <p class="text-sm text-green-700 text-center">
+              <strong>¡Importante!</strong> Se ha enviado un comprobante a su correo electrónico.
+              Presente este QR en recepción para acceder a las instalaciones.
+            </p>
+          </div>
+
+          <div class="flex justify-center space-x-3">
+            <button onclick="MembershipUI.cerrarModalExito()" 
+                    class="px-6 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+              Cerrar
+            </button>
+            <button onclick="window.location.href='/memberships/listMembership'" 
+                    class="px-6 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">
+              Ver Lista de Membresías
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Agregar el modal al body
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+    // Intentar recargar la imagen después de un breve retraso
+    setTimeout(() => {
+      const qrImage = document.getElementById("qrImage");
+      if (qrImage) {
+        qrImage.src = qrImage.src.split("?")[0] + "?t=" + new Date().getTime();
+      }
+    }, 1000);
+  },
+
+  // Método para cerrar el modal de éxito
+  cerrarModalExito: function () {
+    const modal = document.getElementById("successModal");
+    if (modal) {
+      modal.remove();
+    }
+    // Opcionalmente limpiar el formulario
+    this.limpiarFormularios();
+  },
+
+  // Método para descargar el QR
+  descargarQR: function (id_activa) {
+    const link = document.createElement("a");
+    link.href = `/memberships/download-qr/${id_activa}`;
+    link.download = `membresia_${id_activa}_qr.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  },
+
+  // Método para limpiar formularios
+  limpiarFormularios: function () {
+    if (this.formCliente) {
+      this.formCliente.reset();
+    }
+    if (this.formMembership) {
+      this.formMembership.reset();
+      this.integrantesContainer.innerHTML = "";
+      this.integrantesSection.classList.add("hidden");
+    }
+
+    this.clienteRegistrado = false;
+    this.submitMembershipBtn.disabled = true;
+    this.submitMembershipBtn.classList.remove(
+      "bg-green-600",
+      "hover:bg-green-700",
+      "focus:ring-green-500"
+    );
+    this.submitMembershipBtn.classList.add(
+      "bg-gray-400",
+      "hover:bg-gray-400",
+      "focus:ring-gray-400"
+    );
+    this.submitMembershipBtn.textContent =
+      "Crear Membresía (complete primero el cliente)";
   },
 
   handleTipoMembresiaChange: function (e) {
@@ -482,7 +739,7 @@ const MembershipUI = {
     if (this.precioBase) {
       const precioConDescuento =
         this.precioBase - this.precioBase * (this.descuentoAplicado / 100);
-      this.precioFinalInput.value = `$${precioConDescuento.toFixed(2)}`;
+      this.precioFinalInput.value = `${precioConDescuento.toFixed(2)}`;
       this.precioFinalHidden.value = precioConDescuento.toFixed(2);
     }
   },
