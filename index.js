@@ -34,13 +34,5 @@ app.use(
 app.listen(app.get("port"), () => {
   app.use(routerGlobal);
   console.log(`Servidor corriendo en el puerto: http://localhost:${app.get("port")}`);
-  app.use(routerLogin);
-  app.use("/memberships", membershipRoutes);
-  // Rutas API de modulo membresías
-  app.use("/api/memberships", membershipApiRoutes);
-  app.use(routerRoom);
 
-  console.log(
-    `Servidor corriendo en el puerto: http://localhost:${app.get("port")}`
-  );
 });
