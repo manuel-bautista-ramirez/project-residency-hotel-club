@@ -1,23 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
+<title>{{title}}</title>
+<link rel="stylesheet" href="/public/css/css/all.min.css">
+<link rel="stylesheet" href="/public/css/css/v5-font-face.css">
+<link rel="stylesheet" href="/public/css/css/v5-shims.css">
+<style>
+    .card-height {
+        height: 180px;
+    }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Área de Membresías</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+    @media (max-width: 768px) {
         .card-height {
-            height: 180px;
+            height: 160px;
         }
-
-        @media (max-width: 768px) {
-            .card-height {
-                height: 160px;
-            }
-        }
-    </style>
-</head>
+    }
+</style>
 {{>navbar}}
 
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
@@ -142,5 +137,3 @@
         });
     </script>
 </body>
-
-</html>
