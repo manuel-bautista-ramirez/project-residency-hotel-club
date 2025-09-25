@@ -30,11 +30,11 @@
           <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.monto}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.monto_letras}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4 text-center flex flex-wrap justify-center gap-2 sm:gap-4">
-            <a href="/rentas/eliminar/{{this.id_renta}}"
-              class="px-2 sm:px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition"
-              onclick="return confirm('¿Eliminar la renta de {{this.numero_habitacion}}?')">
-              Eliminar
-            </a>
+            <form action="/rentas/eliminar/{{this.id_renta}}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar la renta de {{this.numero_habitacion}}?');">
+              <button type="submit" class="px-2 sm:px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
+                Eliminar
+              </button>
+            </form>
           </td>
         </tr>
         {{/each}}

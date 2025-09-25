@@ -16,6 +16,8 @@ import {
   renderAllRervationes,
   deleteByIdResevation,
   changesStatus,
+  deleteIdRenta,
+  handleCreateReservation
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -34,10 +36,12 @@ routerRoom.get("/rooms/reportes", renderReservacionesView);
 
 // ----- FORMULARIOS INDIVIDUALES -----
 routerRoom.get("/rooms/reservar/:id", createResevation);
+routerRoom.post("/rooms/reservar/:id", handleCreateReservation);
 routerRoom.post("/rooms/changes/status/:id",changesStatus);
 routerRoom.get("/rooms/rentar/:id", renderFormRentar );
 routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
-routerRoom.get("/rooms/delete/:id",deleteByIdResevation )
+routerRoom.post("/rooms/delete/:id",deleteByIdResevation );
+routerRoom.post("/rentas/eliminar/:id",deleteIdRenta );
 
 // routerRoom.get("/rooms/calendario", renderCalendario)
 // routerRoom.get('/rooms/calendario', fetchEventos);

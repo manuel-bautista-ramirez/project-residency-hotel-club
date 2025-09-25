@@ -1,5 +1,5 @@
 // roomsController.js
-import {getHabitaciones, findReservacionById, crearRenta,  getAllReservationes, getAllRentas, deletebyReservation, updateRoomStatus} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+import {getHabitaciones, findReservacionById, crearRenta,  getAllReservationes, getAllRentas, deletebyReservation, updateRoomStatus, deleteByIdRenta, createReservation} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 
 
@@ -44,19 +44,17 @@ export const changesStatus = async (req, res) => {
 // create new reservation by id Room
 export const handleCreateReservation = async (req, res) => {
   try {
-    const {
-      habitacion_id,
-      nombre_cliente,
-      correo,
-      telefono,
-      fecha_ingreso,
-      fecha_salida,
-    } = req.body;
+    const habitacion_id = Number(req.params.id);
+    const { nombre_cliente, correo, telefono, fecha_ingreso, fecha_salida } = req.body;
 
-    // Obtener usuario_id desde la sesión (ajusta según tu lógica)
-    const usuario_id = req.session.user ? req.session.user.id : 1;
+    // Solo lee el usuario_id de la sesión
+    const usuario_id = req.session.id;
+    console.log("Usuario ID from session:", usuario_id);
 
-    // Llamar a la función del modelo para crear la reservación
+    if (!usuario_id) {
+      return res.status(401).send("Usuario no autenticado");
+    }
+
     const reservationData = {
       habitacion_id,
       usuario_id,
@@ -72,11 +70,11 @@ export const handleCreateReservation = async (req, res) => {
     if (result) {
       return res.redirect("/rooms");
     } else {
-      return res.status(500).send("Error al crear la reservación");
+      return res.status(500).send("Error al crear la reservación...");
     }
   } catch (err) {
     console.error("Error handleCreateReservation:", err);
-    return res.status(500).send("Error al crear la reservación");
+    return res.status(500).send("Error al crear la reservación...");
   }
 };
 
@@ -107,11 +105,24 @@ export const renderAllRervationes =async(req, res)=>{
 }
 
 // delete by id reservation
-export const  deleteByIdResevation = async ( req, res) => {
-  const deleteIdReservation = deletebyReservation();
-  console.log(deleteIdReservation)
-}
+export const deleteByIdResevation = async (req, res) => {
+  try {
+    const reservationId = Number(req.params.id);
+    if (Number.isNaN(reservationId)) return res.status(400).send("ID inválido");
 
+    const success = await deletebyReservation(reservationId);
+  console.log("Delete reservation result:", success);
+
+    if (success) {
+      res.redirect("/rooms/list/reservations");
+    } else {
+      res.status(500).send("No se pudo eliminar la reservación");
+    }
+  } catch (err) {
+    console.error("Error deleting reservation:", err);
+    res.status(500).send("Error al eliminar la reservación");
+  }
+};
 
 export const renderAllRentas = async (req, res) => {
   try {
@@ -132,6 +143,28 @@ export const renderAllRentas = async (req, res) => {
     res.status(500).send("Error al cargar las rentas loco..");
   }
 };
+
+
+// delete by id renta
+export const deleteIdRenta = async (req, res) => {
+  try {
+    const rentaId = Number(req.params.id);
+    if (Number.isNaN(rentaId)) return res.status(400).send("ID inválido");
+
+    const success = await deleteByIdRenta(rentaId);
+    if (success) {
+      res.redirect("/rentas/list"); // Ajusta la ruta según tu vista de rentas
+    } else {
+      res.status(500).send("No se pudo eliminar la renta");
+    }
+  } catch (err) {
+    console.error("Error deleting renta:", err);
+    res.status(500).send("Error al eliminar la renta");
+  }
+};
+
+
+
 
 
 export const renderFormEditarReservacion = async (req, res) => {

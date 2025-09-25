@@ -97,14 +97,18 @@ export const getAllReservationes = async () => {
 
 
 // delete by id reservation
-export const deletebyReservation = async () =>{
-  // consult by id of reservation delete
- const [rows] = await pool.query (`
-
-
-    `)
-    return rows;
-}
+export const deletebyReservation = async (id) => {
+  try {
+    const [result] = await pool.query(
+      "DELETE FROM reservaciones WHERE id = ?",
+      [id]
+    );
+    return result.affectedRows > 0;
+  } catch (err) {
+    console.error("Error deleting reservation:", err);
+    return false;
+  }
+};
 
 
 
@@ -126,6 +130,21 @@ export const getAllRentas = async ()=>{
   `);
   return rows;
 }
+
+export const deleteByIdRenta = async (id) => {
+  try {
+    const [result] = await pool.query(
+      "DELETE FROM rentas WHERE id = ?",
+      [id]
+    );
+    return result.affectedRows > 0;
+  } catch (err) {
+    console.error("Error deleting renta:", err);
+    return false;
+  }
+};
+
+
 
 // Editar one  Reservation by Id
 export const findReservacionById = async (id) => {

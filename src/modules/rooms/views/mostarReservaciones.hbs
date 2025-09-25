@@ -1,4 +1,4 @@
-    {{>navbar}}
+{{>navbar}}
 <div class="max-w-7xl mx-auto p-6">
  {{>buttons}}
 <!-- Tabla de reservaciones  -->
@@ -13,7 +13,6 @@
           <th class="py-3 px-4 text-left">Fecha de Reserva</th>
           <th class="py-3 px-4 text-left">Fecha de Ingreso</th>
           <th class="py-3 px-4 text-left">Fecha de Salida</th>
-          <th class="py-3 px-4 text-left">Monto</th>
           <th class="py-3 px-4 text-center">Acciones</th>
         </tr>
       </thead>
@@ -26,18 +25,16 @@
           <td class="py-3 px-4 capitalize">{{this.fecha_reserva}}</td>
           <td class="py-3 px-4 capitalize">{{this.fecha_ingreso}}</td>
           <td class="py-3 px-4 capitalize">{{this.fecha_salida}}</td>
-          <td class="py-3 px-4 capitalize">{{this.monto}}</td>
           <td class="py-3 px-4 capitalize">
                <a href="/rooms/editar/{{this.id_reservacion}}"
                  class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded-lg shadow-sm transition">
                  Editar reservación
               </a>
-
-               <a href="/rooms/delete/{{this.id_reservacion}}"
-                 class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg shadow-sm transition"
-                 onclick="return confirm('¿Eliminar habitación {{this.this.id_reservacion}}?')">
-                 Eliminar
-              </a>
+              <form action="/rooms/delete/{{this.id_reservacion}}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar reservación {{this.id_reservacion}}?');">
+                <button type="submit" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg shadow-sm transition">
+                  Eliminar
+                </button>
+              </form>
           </td>
           {{/each}}
        </tbody>
