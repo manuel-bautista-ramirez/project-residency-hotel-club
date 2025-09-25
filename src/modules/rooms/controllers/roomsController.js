@@ -320,13 +320,3 @@ export const fetchEventos = async (req, res) => {
   }
 };
 
-export const cambiarEstado = async (req, res) => {
-  const { id } = req.params;
-  const { estado } = req.body; // "limpieza", "disponible", "ocupado"
-  const ok = await cambiarEstadoHabitacion(id, estado);
-  if (ok) {
-    res.redirect("/habitaciones");
-  } else {
-    res.status(500).send("No se pudo actualizar el estado.");
-  }
-};
