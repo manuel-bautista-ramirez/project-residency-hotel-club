@@ -40,33 +40,54 @@ export const changesStatus = async (req, res) => {
   }
 };
 
+// set numbers to works
+function convertMumbersWorks(numero) {
+  const unidades = ["cero", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve", "veinte"];
+  if (numero >= 0 && numero <= 20) return unidades[numero];
+  return numero.toString(); // Para números mayores, solo retorna el número como texto
+}
 
 // create new reservation by id Room
 export const handleCreateReservation = async (req, res) => {
   try {
+    // 1. Obtener el ID de la habitación desde la URL
     const habitacion_id = Number(req.params.id);
-    const { nombre_cliente, correo, telefono, fecha_ingreso, fecha_salida } = req.body;
-
-    // Solo lee el usuario_id de la sesión
-    const usuario_id = req.session.id;
-    console.log("Usuario ID from session:", usuario_id);
-
-    if (!usuario_id) {
-      return res.status(401).send("Usuario no autenticado");
+    if (Number.isNaN(habitacion_id)) {
+      return res.status(400).send("ID de habitación inválido");
     }
 
+    // 2. Obtener los datos del formulario
+    const { nombre_cliente, correo, telefono, fecha_ingreso, fecha_salida, monto } = req.body;
+
+    // 3. Obtener el ID numérico del usuario autenticado
+    const usuario_id = req.session.user?.id;
+    console.log("Usuario ID from session:", usuario_id);
+
+    // Validar que el usuario esté autenticado y el ID sea numérico
+    if (!usuario_id || Number.isNaN(Number(usuario_id))) {
+      return res.status(401).send("Usuario no autenticado o ID inválido");
+    }
+
+    // 4. Convertir el monto a letras
+    const monto_letras = convertMumbersWorks(Number(monto) || 0);
+
+    // 5. Construir el objeto de datos de la reservación
     const reservationData = {
       habitacion_id,
-      usuario_id,
+      usuario_id: Number(usuario_id), // Asegura que sea numérico
       nombre_cliente,
       correo,
       telefono,
       fecha_ingreso,
       fecha_salida,
+      monto: Number(monto) || 0,
+      monto_letras
     };
 
+    // 6. Crear la reservación en la base de datos
     const result = await createReservation(reservationData);
 
+    // 7. Redireccionar o mostrar error
     if (result) {
       return res.redirect("/rooms");
     } else {

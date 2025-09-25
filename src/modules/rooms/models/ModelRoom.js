@@ -37,7 +37,10 @@ export const createReservation = async (reservationData) => {
     telefono,
     fecha_ingreso,
     fecha_salida,
+    monto,
+    monto_letras
   } = reservationData;
+  const usuarioIdInt = Number(usuario_id);
   try {
     // 1. Insertar el medio de mensaje
     const [medioResult] = await pool.query(
@@ -49,15 +52,17 @@ export const createReservation = async (reservationData) => {
     // 2. Insertar la reservación
     const [result] = await pool.query(
       `INSERT INTO reservaciones
-       (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida)
-        VALUES (?, ?, ?, ?, CURDATE(), ?, ?)`,
+       (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida ,monto, monto_letras)
+        VALUES (?, ?, ?, ?, CURDATE(), ?, ?, ?,?)`,
       [
         habitacion_id,
-        usuario_id,
+        usuarioIdInt,
         id_medio_mensaje,
         nombre_cliente,
         fecha_ingreso,
         fecha_salida,
+        monto,
+        monto_letras
       ]
     );
 

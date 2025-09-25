@@ -37,6 +37,7 @@ routerRoom.get("/rooms/reportes", renderReservacionesView);
 // ----- FORMULARIOS INDIVIDUALES -----
 routerRoom.get("/rooms/reservar/:id", createResevation);
 routerRoom.post("/rooms/reservar/:id", handleCreateReservation);
+
 routerRoom.post("/rooms/changes/status/:id",changesStatus);
 routerRoom.get("/rooms/rentar/:id", renderFormRentar );
 routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
