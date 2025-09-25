@@ -39,7 +39,12 @@ routerRoom.get("/rooms/reservar/:id", createResevation);
 routerRoom.post("/rooms/reservar/:id", handleCreateReservation);
 
 routerRoom.post("/rooms/changes/status/:id",changesStatus);
-routerRoom.get("/rooms/rentar/:id", renderFormRentar );
+
+
+routerRoom.get("/rooms/rentar/:id", renderFormRentar )
+routerRoom.post("/rooms/createRenta/:id", handleCreateReservation )
+
+
 routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
 routerRoom.post("/rooms/delete/:id",deleteByIdResevation );
 routerRoom.post("/rentas/eliminar/:id",deleteIdRenta );

@@ -285,7 +285,7 @@ export const renderFormRentar = async (req, res) => {
     const habitacion_id = Number(req.params.id);
     if (Number.isNaN(habitacion_id)) return res.status(400).send("ID de habitación inválido");
 
-    const habitaciones = await crearRenta();
+    const habitaciones = await getHabitaciones();
     const habitacion = habitaciones.find(h => Number(h.id) === habitacion_id);
     if (!habitacion) return res.status(404).send("Habitación no encontrada");
 
@@ -293,9 +293,6 @@ export const renderFormRentar = async (req, res) => {
       title: "Rentar habitación",
       showFooter: true,
       habitacion,
-      habitaciones,
-      monto: montoCalculado,
-      monto_letras: montoEnLetras,
       user: req.session.user
     });
   } catch (err) {
