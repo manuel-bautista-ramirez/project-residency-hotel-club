@@ -25,13 +25,18 @@
           <td class="py-2 px-4 capitalize">{{this.tipo}}</td>
           <td class="py-2 px-4 font-semibold">
             {{#if (eq this.estado 'disponible')}}
-              <span class="px-2 py-0.5 rounded-md bg-gray-200 text-gray-800 text-sm"><button  type="button">Disponible</button></span>
+              <span class="px-2 py-0.5 rounded-md bg-gray-200 text-gray-800 text-sm">Disponible</span>
             {{/if}}
             {{#if (eq this.estado 'ocupado')}}
-              <span class="px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-sm"><button type="button">Ocupado</button></span>
+              <span class="px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-sm">Ocupado</span>
             {{/if}}
             {{#if (eq this.estado 'limpieza')}}
-              <span class="px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 text-sm"><button type="button">Limpieza</button></span>
+              <span
+                class="px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 text-sm cursor-pointer"
+                onclick="openModal({{this.id}})"
+              >
+                Limpieza
+              </span>
             {{/if}}
           </td>
 
@@ -49,8 +54,34 @@
             </a>
           </td>
         </tr>
+
+        {{!-- Modal para confirmar limpieza --}}
+        {{#if (eq this.estado 'limpieza')}}
+        <div id="modal-clean-{{this.id}}" class="fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-40 hidden">
+          <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4 text-orange-700">Confirmar limpieza</h2>
+            <p class="mb-6 text-gray-700">¿Estás seguro de que deseas cambiar el estado a <span class="font-bold text-gray-800">Disponible</span> para la habitación <span class="font-bold">{{this.numero}}</span>?</p>
+            <form action="/rooms/changes/status/{{this.id}}" method="POST" class="flex flex-col gap-3">
+              <input type="hidden" name="status" value="disponible" />
+              <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeModal({{this.id}})" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg font-semibold">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold">Confirmar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        {{/if}}
         {{/each}}
       </tbody>
     </table>
   </section>
 </div>
+
+<script>
+  function openModal(id) {
+    document.getElementById('modal-clean-' + id).style.display = 'flex';
+  }
+  function closeModal(id) {
+    document.getElementById('modal-clean-' + id).style.display = 'none';
+  }
+</script>

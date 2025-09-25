@@ -12,6 +12,71 @@ export const getHabitaciones = async () => {
   }
 };
 
+// change room status
+export const updateRoomStatus = async (roomId, newStatus) => {
+  try {
+    const [result] = await pool.query(
+      "UPDATE habitaciones SET estado = ? WHERE id = ?",
+      [newStatus, roomId]
+    );
+    return result.affectedRows > 0;
+  } catch (err) {
+    console.error("Error updating room status:", err);
+    return false;
+  }
+};
+
+
+// create a new reservation
+export const createReservation = async (reservationData) => {
+  const {
+    habitacion_id,
+    usuario_id,
+    nombre_cliente,
+    correo,
+    telefono,
+    fecha_ingreso,
+    fecha_salida,
+  } = reservationData;
+  try {
+    // 1. Insertar el medio de mensaje
+    const [medioResult] = await pool.query(
+      `INSERT INTO medios_mensajes (correo_cliente, telefono_cliente) VALUES (?, ?)`,
+      [correo, telefono]
+    );
+    const id_medio_mensaje = medioResult.insertId;
+
+    // 2. Insertar la reservación
+    const [result] = await pool.query(
+      `INSERT INTO reservaciones
+       (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida)
+        VALUES (?, ?, ?, ?, CURDATE(), ?, ?)`,
+      [
+        habitacion_id,
+        usuario_id,
+        id_medio_mensaje,
+        nombre_cliente,
+        fecha_ingreso,
+        fecha_salida,
+      ]
+    );
+
+    // 3. Cambiar el estado de la habitación a "ocupado"
+    await pool.query(
+      "UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?",
+      [habitacion_id]
+    );
+
+    return { id: result.insertId, ...reservationData };
+  } catch (err) {
+    console.error("Error createReservation:", err);
+    return null;
+  }
+};
+
+
+
+
 // get all reservationes created
 export const getAllReservationes = async () => {
   const [rows] = await pool.query(`
@@ -29,6 +94,19 @@ export const getAllReservationes = async () => {
   `);
   return rows;
 };
+
+
+// delete by id reservation
+export const deletebyReservation = async () =>{
+  // consult by id of reservation delete
+ const [rows] = await pool.query (`
+
+
+    `)
+    return rows;
+}
+
+
 
 // get all rentas created
 export const getAllRentas = async ()=>{

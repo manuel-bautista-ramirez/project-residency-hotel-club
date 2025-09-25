@@ -12,8 +12,10 @@ import {
   renderAllRentas,
   renderReservacionesView,
   renderFormRentar,
-  renderFormReservar,
+  createResevation,
   renderAllRervationes,
+  deleteByIdResevation,
+  changesStatus,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -31,9 +33,11 @@ routerRoom.get("/rooms/precios", renderPreciosView);
 routerRoom.get("/rooms/reportes", renderReservacionesView);
 
 // ----- FORMULARIOS INDIVIDUALES -----
-routerRoom.get("/rooms/reservar/:id", renderFormReservar);
+routerRoom.get("/rooms/reservar/:id", createResevation);
+routerRoom.post("/rooms/changes/status/:id",changesStatus);
 routerRoom.get("/rooms/rentar/:id", renderFormRentar );
 routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
+routerRoom.get("/rooms/delete/:id",deleteByIdResevation )
 
 // routerRoom.get("/rooms/calendario", renderCalendario)
 // routerRoom.get('/rooms/calendario', fetchEventos);

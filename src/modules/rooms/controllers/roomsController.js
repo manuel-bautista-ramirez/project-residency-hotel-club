@@ -1,10 +1,9 @@
 // roomsController.js
-import {getHabitaciones, findReservacionById, crearRenta,  getAllReservationes, getAllRentas} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+import {getHabitaciones, findReservacionById, crearRenta,  getAllReservationes, getAllRentas, deletebyReservation, updateRoomStatus} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 
 
 /*** --- VISTAS PRINCIPALES --- ***/
-
 export const renderHabitacionesView = async (req, res) => {
   try {
     const  user = req.session.user || {role: "Usuario"}
@@ -18,12 +17,71 @@ export const renderHabitacionesView = async (req, res) => {
         ...user,
         rol: user.role
       }
+
     });
   } catch (err) {
     console.error("Error al renderizar habitaciones:", err);
     res.status(500).send("Error al cargar las habitaciones");
   }
 };
+// change status
+export const changesStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;  //  "disponible"
+  const success = await updateRoomStatus(id, status);
+
+  console.log("Status change result:", success);
+
+  if (success) {
+    res.redirect("/rooms");
+  }
+  else {
+    res.status(500).send("No se pudo actualizar el estado.");
+  }
+};
+
+
+// create new reservation by id Room
+export const handleCreateReservation = async (req, res) => {
+  try {
+    const {
+      habitacion_id,
+      nombre_cliente,
+      correo,
+      telefono,
+      fecha_ingreso,
+      fecha_salida,
+    } = req.body;
+
+    // Obtener usuario_id desde la sesión (ajusta según tu lógica)
+    const usuario_id = req.session.user ? req.session.user.id : 1;
+
+    // Llamar a la función del modelo para crear la reservación
+    const reservationData = {
+      habitacion_id,
+      usuario_id,
+      nombre_cliente,
+      correo,
+      telefono,
+      fecha_ingreso,
+      fecha_salida,
+    };
+
+    const result = await createReservation(reservationData);
+
+    if (result) {
+      return res.redirect("/rooms");
+    } else {
+      return res.status(500).send("Error al crear la reservación");
+    }
+  } catch (err) {
+    console.error("Error handleCreateReservation:", err);
+    return res.status(500).send("Error al crear la reservación");
+  }
+};
+
+
+
 
 // get all Reservaciones
 export const renderAllRervationes =async(req, res)=>{
@@ -46,6 +104,12 @@ export const renderAllRervationes =async(req, res)=>{
 
   }
 
+}
+
+// delete by id reservation
+export const  deleteByIdResevation = async ( req, res) => {
+  const deleteIdReservation = deletebyReservation();
+  console.log(deleteIdReservation)
 }
 
 
@@ -96,6 +160,9 @@ export const renderFormEditarReservacion = async (req, res) => {
     return res.status(500).send("Error al cargar el formulario de edición de reservación");
   }
 };
+
+
+
 // Implementacion de midleware error500, exitosamente sulado
 export const renderPreciosView = async (req, res, next) => {
   try {
@@ -138,12 +205,12 @@ export const renderReservacionesView = async (req, res) => {
 
 /*** --- FORMULARIOS INDIVIDUALES --- ***/
 
-export const renderFormReservar = async (req, res) => {
+export const createResevation = async (req, res) => {
   try {
     const habitacion_id = Number(req.params.id);
     if (Number.isNaN(habitacion_id)) return res.status(400).send("ID de habitación inválido");
 
-    const habitaciones = await Room.find();
+    const habitaciones = await getHabitaciones();
     const habitacion = habitaciones.find(h => Number(h.id) === habitacion_id);
     if (!habitacion) return res.status(404).send("Habitación no encontrada");
 
@@ -199,5 +266,16 @@ export const fetchEventos = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener los eventos' });
+  }
+};
+
+export const cambiarEstado = async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body; // "limpieza", "disponible", "ocupado"
+  const ok = await cambiarEstadoHabitacion(id, estado);
+  if (ok) {
+    res.redirect("/habitaciones");
+  } else {
+    res.status(500).send("No se pudo actualizar el estado.");
   }
 };
