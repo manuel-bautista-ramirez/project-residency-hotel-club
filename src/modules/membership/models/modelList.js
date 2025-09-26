@@ -1,5 +1,5 @@
 // models/modelList.js
-import { pool } from "../../../dataBase/conecctionDataBase.js";
+import { pool } from "../../../dataBase/connectionDataBase.js";
 
 const modelList = {
   // Obtener todas las membresías activas con información de clientes

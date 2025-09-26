@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import session from "express-session";
 import { app } from "./src/config/app.js";
 import { routerGlobal } from "./src/router/routerGlobal.js";
-import router from "./src/modules/login/routers/routerLogin.js";
+import { config } from "./src/config/configuration.js";
 
 // Configuración de variables para __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
@@ -20,22 +20,23 @@ app.use(express.json());
 // Configuración de sesiones
 app.use(
   session({
-    secret: "las_mujeres_me_dan_miedo",
+    secret: config.session.secret,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false },
   })
 );
 
+// Middleware global para pasar user a todas las vistas
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || { role: "Usuario" };
+  next();
+});
+
+// Rutas globales
+app.use(routerGlobal);
+
 // Iniciar servidor
 app.listen(app.get("port"), () => {
   console.log(`Servidor corriendo en: http://localhost:${app.get("port")}`);
-  // Middleware global para pasar user a todas las vistas
-  app.use((req, res, next) => {
-    res.locals.user = req.session.user || { role: "Usuario" };
-    next();
-  });
-
-  // Rutas globales
-  app.use(routerGlobal);
 });
