@@ -1,9 +1,17 @@
+
 <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+
+
+
   <form
     action="/rooms/reservar/{{habitacion.id}}"
     method="POST"
     class="w-full sm:max-w-lg lg:max-w-xl bg-white p-6 rounded-xl shadow-md space-y-6"
   >
+
+  <header class="mb-6 flex items-center justify-between">
+      <a href="/rooms" class="text-sm text-gray-600 hover:underline">← Volver a habitaciones</a>
+    </header>
     <div class="mb-4">
       <label for="habitacion_id" class="block text-sm font-medium text-gray-700">ID de habitación</label>
       <input

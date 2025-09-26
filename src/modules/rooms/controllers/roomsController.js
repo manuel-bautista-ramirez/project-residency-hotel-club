@@ -1,5 +1,9 @@
 // roomsController.js
-import {getHabitaciones, findReservacionById, crearRenta,  getAllReservationes, getAllRentas, deletebyReservation, updateRoomStatus, deleteByIdRenta, createReservation} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+import {getHabitaciones, findReservacionById,  getAllReservationes, getAllRentas, deletebyReservation, updateRoomStatus, deleteByIdRenta, createReservation, setNewPrice, getAllPrices,
+createRenta, getPrecioPorTipoYMes,
+roomIsOccupied,
+getRoomPriceByTypeAndMonth
+} from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 
 
@@ -100,8 +104,6 @@ export const handleCreateReservation = async (req, res) => {
 };
 
 
-
-
 // get all Reservaciones
 export const renderAllRervationes =async(req, res)=>{
   try {
@@ -185,9 +187,6 @@ export const deleteIdRenta = async (req, res) => {
 };
 
 
-
-
-
 export const renderFormEditarReservacion = async (req, res) => {
   try {
     const reservacionId = Number(req.params.id);
@@ -214,30 +213,6 @@ export const renderFormEditarReservacion = async (req, res) => {
     return res.status(500).send("Error al cargar el formulario de edición de reservación");
   }
 };
-
-
-
-// Implementacion de midleware error500, exitosamente sulado
-export const renderPreciosView = async (req, res, next) => {
-  try {
-    // FORZAMOS UN ERROR MANUALMENTE para probar el middleware
-    throw new Error("Error interno simulado para prueba del middleware 500");
-
-    // Código normal (se puede comentar mientras pruebas)
-    // const precios = await Room.precios();
-    // res.render("precios", {
-    //   title: "Precios de Habitaciones",
-    //   showFooter: true,
-    //   precios
-    // });
-  } catch (err) {
-    console.error("Error al renderizar precios:", err);
-
-    // Llamamos al middleware de error 500
-    next(err);
-  }
-};
-
 
 export const renderReservacionesView = async (req, res) => {
   const  user = req.session.user || {role: "Administrador" }
@@ -289,10 +264,19 @@ export const renderFormRentar = async (req, res) => {
     const habitacion = habitaciones.find(h => Number(h.id) === habitacion_id);
     if (!habitacion) return res.status(404).send("Habitación no encontrada");
 
+    // Obtener el mes actual
+    const mesActual = new Date().getMonth() + 1;
+
+    // Obtener el precio por tipo y mes actual
+    const monto = await getPrecioPorTipoYMes(habitacion.tipo, mesActual) || 0;
+    const monto_letras = numeroALetras(monto);
+
     return res.render("rentar", {
       title: "Rentar habitación",
       showFooter: true,
       habitacion,
+      monto,
+      monto_letras,
       user: req.session.user
     });
   } catch (err) {
@@ -300,6 +284,19 @@ export const renderFormRentar = async (req, res) => {
     return res.status(500).send("Error al cargar el formulario de renta");
   }
 };
+
+
+// Helper para convertir números a letras (simplificado)
+function numeroALetras(num) {
+  return `${num} pesos`; // Implementa tu lógica si quieres algo más elaborado
+}
+
+
+// set new renta get mes , price , tyepe room
+export const handleCreateRenta = async (req, res) => {
+
+};
+
 
 
 
@@ -320,3 +317,108 @@ export const fetchEventos = async (req, res) => {
   }
 };
 
+ // get all prices
+export const renderAllPriceView = async (req, res) => {
+  try {
+    const precios = await getAllPrices();
+    res.render("precios", {
+      title: "Precios de Habitaciones",
+      showFooter: true,
+      meses: precios // <-- ENVÍA COMO 'meses' SI TU PLANTILLA USA {{#each meses}}
+    });
+  } catch (err) {
+    console.error("Error al renderizar precios:", err);
+    res.status(500).send("Error al cargar los precios");
+  }
+};
+
+
+///  funciones de  asrconas  para vericar el estado  de disponibilidad  de las habitaciones y precios segun el mes.
+// Comprobar disponibilidad
+export const apiCheckAvailability = async (req, res) => {
+  try {
+    const roomId = Number(req.params.id);
+    const checkIn = req.query.check_in;
+    const checkOut = req.query.check_out;
+
+    // Aquí debes hacer la consulta real a la tabla de rentas o reservaciones
+    // Por ejemplo:
+    // SELECT * FROM rentas WHERE habitacion_id = ? AND (check_in < ? AND check_out > ?)
+    // Para simplificar, devolvemos siempre disponible
+    const available = true;
+
+    res.json({ available });
+  } catch (err) {
+    console.error("Error en apiCheckAvailability:", err);
+    res.json({ available: false, error: err.message });
+  }
+};
+
+
+// Obtener precio por tipo de habitación y mes
+export const apiGetPriceByMonth = async (req, res) => {
+  try {
+    const roomId = Number(req.params.id);
+    const month = Number(req.query.month);
+
+    const rooms = await getHabitaciones();
+    console.log("Habitaciones obtenidas:", rooms);
+
+    const room = rooms.find(r => Number(r.id) === roomId);
+    if (!room) {
+      console.log("Habitación no encontrada:", roomId);
+      return res.json({ price: 0, price_text: "" });
+    }
+
+    // ⚠ Usamos la columna correcta: 'tipo'
+    const roomType = room.tipo;
+    console.log("Buscando precio para tipo:", roomType, "mes:", month);
+
+    const price = await getRoomPriceByTypeAndMonth(roomType.trim(), month) || 0;
+    const price_text = `${price} pesos`;
+
+    res.json({ price, price_text });
+  } catch (err) {
+    console.error("Error en apiGetPriceByMonth:", err);
+    res.json({ price: 0, price_text: "", error: err.message });
+  }
+};
+
+
+
+
+
+export const renderRentForm = async (req, res) => {
+  try {
+    const roomId = Number(req.params.id);
+    if (Number.isNaN(roomId)) return res.status(400).send("Invalid room ID");
+
+    const rooms = await getHabitaciones();
+    const room = rooms.find(r => Number(r.id) === roomId);
+    if (!room) return res.status(404).send("Room not found");
+
+    const currentMonth = new Date().getMonth() + 1;
+    const price = await getRoomPriceByTypeAndMonth(room.type, currentMonth) || 0;
+    const price_text = `${price} pesos`;
+
+    return res.render("rent", {
+      title: "Rent Room",
+      showFooter: true,
+      room,
+      price,
+      price_text,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error("Error in renderRentForm:", err);
+    return res.status(500).send("Error loading rent form");
+  }
+};
+
+
+//set  new  for type room (switch, individual)
+// export const handleNewPriceRoom= async (req, res) => {
+//   try {
+//     const typeRoom = Number(req.params.id);
+//     if (Number.isNaN(typeRoom) {
+//       return res.status(400).send("id Invalido de tipo de habitacion");

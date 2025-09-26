@@ -5,12 +5,13 @@ import { pool } from "../../../dataBase/conecctionDataBase.js"; // conexión MyS
 export const getHabitaciones = async () => {
   try {
     const [rows] = await pool.query("SELECT * FROM habitaciones");
-    return rows; // devolvemos directamente las filas
+    return rows;
   } catch (err) {
     console.error("Error getHabitaciones:", err);
     return [];
   }
 };
+
 
 // change room status
 export const updateRoomStatus = async (roomId, newStatus) => {
@@ -26,7 +27,6 @@ export const updateRoomStatus = async (roomId, newStatus) => {
   }
 };
 
-
 // create a new reservation
 export const createReservation = async (reservationData) => {
   const {
@@ -38,7 +38,7 @@ export const createReservation = async (reservationData) => {
     fecha_ingreso,
     fecha_salida,
     monto,
-    monto_letras
+    monto_letras,
   } = reservationData;
   const usuarioIdInt = Number(usuario_id);
   try {
@@ -62,7 +62,7 @@ export const createReservation = async (reservationData) => {
         fecha_ingreso,
         fecha_salida,
         monto,
-        monto_letras
+        monto_letras,
       ]
     );
 
@@ -78,9 +78,6 @@ export const createReservation = async (reservationData) => {
     return null;
   }
 };
-
-
-
 
 // get all reservationes created
 export const getAllReservationes = async () => {
@@ -100,7 +97,6 @@ export const getAllReservationes = async () => {
   return rows;
 };
 
-
 // delete by id reservation
 export const deletebyReservation = async (id) => {
   try {
@@ -115,10 +111,8 @@ export const deletebyReservation = async (id) => {
   }
 };
 
-
-
 // get all rentas created
-export const getAllRentas = async ()=>{
+export const getAllRentas = async () => {
   const [rows] = await pool.query(`
     SELECT re.id AS id_renta,
            h.numero AS numero_habitacion,
@@ -134,14 +128,12 @@ export const getAllRentas = async ()=>{
     ORDER BY re.fecha_ingreso DESC
   `);
   return rows;
-}
+};
 
+// delete by id renta
 export const deleteByIdRenta = async (id) => {
   try {
-    const [result] = await pool.query(
-      "DELETE FROM rentas WHERE id = ?",
-      [id]
-    );
+    const [result] = await pool.query("DELETE FROM rentas WHERE id = ?", [id]);
     return result.affectedRows > 0;
   } catch (err) {
     console.error("Error deleting renta:", err);
@@ -149,9 +141,7 @@ export const deleteByIdRenta = async (id) => {
   }
 };
 
-
-
-// Editar one  Reservation by Id
+// Edit one  Reservation by Id
 export const findReservacionById = async (id) => {
   try {
     const query = `
@@ -172,14 +162,18 @@ export const findReservacionById = async (id) => {
   }
 };
 
-// update use status of resevation
-export const updateStatus = async () => {};
 
-/**
- * Crear una nueva renta
- */
+// get price by type and month
+export const getPrecioPorTipoYMes = async (tipo_habitacion, mes) => {
+  const [rows] = await pool.query(
+    "SELECT monto FROM precios WHERE tipo_habitacion = ? AND mes = ?",
+    [tipo_habitacion, mes]
+  );
+  return rows.length ? rows[0].monto : null;
+};
 
-export const crearRenta = async (req, res) => {
+// create a new renta
+export const createRenta = async (req, res) => {
   try {
     const {
       habitacion_id,
@@ -253,6 +247,85 @@ export const crearRenta = async (req, res) => {
     return res.status(500).send("Error al crear la renta");
   }
 };
+
+// get all Prices
+export const getAllPrices = async () => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT
+        mes,
+        MAX(CASE WHEN tipo_habitacion = 'sencilla' THEN monto END) AS sencilla,
+        MAX(CASE WHEN tipo_habitacion = 'suite' THEN monto END) AS suite
+      FROM precios
+      GROUP BY mes
+      ORDER BY mes
+    `);
+    return rows;
+  } catch (error) {
+    console.error("Error getAllPrices:", error);
+    return [];
+  }
+};
+
+// set new price
+export const setNewPrice = async (priceData) => {
+  const { tipo_habitacion, mes, monto } = priceData;
+  try {
+    const [result] = await pool.query(
+      `INSERT INTO precios (tipo_habitacion, mes, monto)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE monto = ?`,
+      [tipo_habitacion, mes, monto, monto]
+    );
+    return { id: result.insertId, ...priceData };
+  } catch (err) {
+    console.error("Error setNewPrice:", err);
+    return null;
+  }
+};
+
+///  funciones de  asrconas  para vericar el estado  de disponibilidad  de las habitaciones y precios segun el mes.
+export const roomIsOccupied = async (roomId, checkIn, checkOut) => {
+  try {
+    const [rentas] = await pool.query(
+      `SELECT id FROM rentas
+       WHERE habitacion_id = ? AND (
+         (fecha_ingreso <= ? AND fecha_salida >= ?) OR
+         (fecha_ingreso <= ? AND fecha_salida >= ?)
+       )`,
+      [roomId, checkIn, checkIn, checkOut, checkOut]
+    );
+
+    const [reservaciones] = await pool.query(
+      `SELECT id FROM reservaciones
+       WHERE habitacion_id = ? AND (
+         (fecha_ingreso <= ? AND fecha_salida >= ?) OR
+         (fecha_ingreso <= ? AND fecha_salida >= ?)
+       )`,
+      [roomId, checkIn, checkIn, checkOut, checkOut]
+    );
+
+    return rentas.length > 0 || reservaciones.length > 0;
+  } catch (err) {
+    console.error("roomIsOccupied error:", err);
+    throw err; // que el llamador maneje el error
+  }
+};
+
+// Obtener precio por tipo y mes
+export const getRoomPriceByTypeAndMonth = async (roomType, month) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT monto FROM precios WHERE tipo_habitacion = ? AND mes = ?",
+      [roomType, month]
+    );
+    return rows.length ? rows[0].monto : null;
+  } catch (err) {
+    console.error("Error getRoomPriceByTypeAndMonth:", err);
+    return null;
+  }
+};
+
 
 /** Helpers **/
 // const nextId = (arr) => (!arr.length ? 1 : Math.max(...arr.map(x => Number(x.id))) + 1);

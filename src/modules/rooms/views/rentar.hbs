@@ -1,103 +1,136 @@
+
+
+
 <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-  <form action="/api/rentas" method="POST" id="formRenta"
-        class="w-full sm:max-w-lg lg:max-w-xl bg-white p-6 rounded-xl shadow-md space-y-6">
 
-      {{!-- <div class="mb-4">
-      <label for="habitacion_id" class="block text-sm font-medium text-gray-700">ID de habitación</label>
-      <input
-        id="habitacion_id"
-        name="habitacion_id"
-        type="text"
-        value="{{habitacion.id}}"
-        readonly
-        class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2 bg-gray-100 text-gray-700 focus:outline-none"
-      />
-    </div> --}}
 
-    <!-- Cliente -->
+
+  <form
+    id="formRent"
+    class="w-full sm:max-w-lg lg:max-w-xl bg-white p-6 rounded-xl shadow-md space-y-6"
+  >
+
+  <header class="mb-6 flex items-center justify-between">
+      <a href="/rooms" class="text-sm text-gray-600 hover:underline">← Volver a habitaciones</a>
+    </header>
+    
+    <input type="hidden" id="room_id" value="{{habitacion.id}}">
+
+    <!-- Client Info -->
     <div>
-      <label for="nombre_cliente" class="block text-sm font-medium text-gray-700">Nombre del cliente</label>
-      <input id="nombre_cliente" name="nombre_cliente" required
-             class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2
-                    focus:outline-none focus:ring-2 focus:ring-green-500"
-             placeholder="Nombre completo">
+      <label for="client_name" class="block text-sm font-medium text-gray-700">Client Name</label>
+      <input id="client_name" name="client_name" required class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2" placeholder="Full name" />
     </div>
 
+    <!-- Email and Phone -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label for="correo" class="block text-sm font-medium text-gray-700">Correo electrónico</label>
-        <input id="correo" name="correo" type="email" required
-               class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2
-                      focus:outline-none focus:ring-2 focus:ring-green-500"
-               placeholder="correo@ejemplo.com">
+        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input id="email" name="email" type="email" required class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2" placeholder="email@example.com" />
       </div>
       <div>
-        <label for="telefono" class="block text-sm font-medium text-gray-700">Número de teléfono</label>
-        <input id="telefono" name="telefono" type="tel" required
-               class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2
-                      focus:outline-none focus:ring-2 focus:ring-green-500"
-               placeholder="10 dígitos">
+        <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+        <input id="phone" name="phone" type="tel" required class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2" placeholder="10 digits" />
       </div>
     </div>
 
-    <!-- Fechas -->
+    <!-- Dates -->
     <fieldset class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <legend class="text-sm font-medium text-gray-700">Estancia</legend>
+      <legend class="text-sm font-medium text-gray-700">Stay</legend>
       <div>
-        <label for="fecha_ingreso" class="block text-sm text-gray-700">Fecha de ingreso</label>
-        <input id="fecha_ingreso" name="fecha_ingreso" type="date" required
-               class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2
-                      focus:outline-none focus:ring-2 focus:ring-green-500" />
+        <label for="check_in" class="block text-sm text-gray-700">Check-in Date</label>
+        <input id="check_in" name="check_in" type="date" required class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2" />
       </div>
       <div>
-        <label for="fecha_salida" class="block text-sm text-gray-700">Fecha de salida</label>
-        <input id="fecha_salida" name="fecha_salida" type="date" required
-               class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2
-                      focus:outline-none focus:ring-2 focus:ring-green-500" />
+        <label for="check_out" class="block text-sm text-gray-700">Check-out Date</label>
+        <input id="check_out" name="check_out" type="date" required class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2" />
       </div>
     </fieldset>
 
-    <!-- Monto -->
+    <!-- Price -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label for="monto" class="block text-sm font-medium text-gray-700">Monto</label>
-        <input id="monto" name="monto" type="number" value="{{monto}}" readonly
-               class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2
-                      focus:outline-none focus:ring-2 focus:ring-green-500"
-               placeholder="0.00" />
+        <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
+        <input id="price" name="price" type="number" readonly class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2" placeholder="0.00" />
       </div>
       <div>
-        <label for="monto_letras" class="block text-sm font-medium text-gray-700">Monto en letras</label>
-        <input id="monto_letras" name="monto_letras" type="text" value="{{monto_letras}}" readonly
-               class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2" />
+        <label for="price_text" class="block text-sm font-medium text-gray-700">Price in words</label>
+        <input id="price_text" name="price_text" type="text" readonly class="mt-1 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2" />
       </div>
     </div>
 
-    <!-- Pago -->
+    <!-- Payment -->
     <div>
-      <label for="tipo_pago" class="block text-sm font-medium text-gray-700">Tipo de pago</label>
-      <select id="tipo_pago" name="tipo_pago" required
-              class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2
-                     focus:outline-none focus:ring-2 focus:ring-green-500">
-        <option value="">-- Selecciona --</option>
-        <option value="Tarjeta">Tarjeta</option>
-        <option value="Transferencia">Transferencia</option>
-        <option value="Efectivo">Efectivo</option>
+      <label for="payment_type" class="block text-sm font-medium text-gray-700">Payment Type</label>
+      <select id="payment_type" name="payment_type" required class="mt-1 w-full rounded-lg border border-gray-400 px-3 py-2">
+        <option value="">-- Select --</option>
+        <option value="Card">Card</option>
+        <option value="Transfer">Transfer</option>
+        <option value="Cash">Cash</option>
       </select>
     </div>
 
-    <!-- Botones -->
+    <!-- Buttons -->
     <div class="flex items-center justify-end gap-4 pt-4">
-      <a href="/rooms"
-         class="inline-block px-4 py-2 border border-red-500 text-red-600 rounded
-                hover:bg-red-50 transition-colors">
-        Cancelar
-      </a>
-      <button type="submit"
-              class="inline-block px-5 py-2 bg-green-600 text-white rounded shadow
-                     hover:bg-green-700 transition-colors">
-        Crear renta
-      </button>
+      <a href="/rooms" class="inline-block px-4 py-2 border border-red-500 text-red-600 rounded hover:bg-red-50 transition-colors">Cancel</a>
+      <button type="submit" class="inline-block px-5 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 transition-colors">Create rent</button>
     </div>
   </form>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+  const roomId = Number(document.getElementById("room_id").value);
+  const checkInInput = document.getElementById("check_in");
+  const checkOutInput = document.getElementById("check_out");
+  const priceField = document.getElementById("price");
+  const priceTextField = document.getElementById("price_text");
+
+  async function fetchPrice(checkIn) {
+    if (!checkIn) return;
+    const month = new Date(checkIn).getMonth() + 1;
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/price?month=${month}`);
+      const json = await res.json();
+      priceField.value = json.price ?? 0;
+      priceTextField.value = json.price_text ?? "";
+      console.log("Precio obtenido:", json);
+    } catch (err) {
+      console.error("Error obteniendo precio:", err);
+    }
+  }
+
+  async function checkAvailability(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return;
+    try {
+      const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      if (!json.available) {
+        alert("La habitación no está disponible en esas fechas.");
+        checkInInput.value = "";
+        checkOutInput.value = "";
+        priceField.value = "";
+        priceTextField.value = "";
+      }
+      console.log("Disponibilidad:", json);
+    } catch (err) {
+      console.error("Error verificando disponibilidad:", err);
+    }
+  }
+
+  checkInInput.addEventListener("change", async (e) => {
+    const checkIn = e.target.value;
+    await fetchPrice(checkIn);
+    const checkOut = checkOutInput.value;
+    if (checkOut) await checkAvailability(checkIn, checkOut);
+  });
+
+  checkOutInput.addEventListener("change", async (e) => {
+    const checkIn = checkInInput.value;
+    const checkOut = e.target.value;
+    if (checkIn && checkOut) await checkAvailability(checkIn, checkOut);
+  });
+});
+
+</script>

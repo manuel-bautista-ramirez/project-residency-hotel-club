@@ -1,8 +1,70 @@
-<div class="max-w-7xl mx-auto p-6">
-  <!-- Header -->
-  <header class="mb-6 text-center">
-    <h1 class="text-3xl font-extrabold text-blue-900 tracking-tight">Modificar los precios de las habitaciones</h1>
+<div class="max-w-4xl mx-auto p-6">
+  <h1 class="text-2xl font-bold text-blue-900 text-center mb-6">
+    Modificar precios de habitaciones por mes
+  </h1>
 
-  <p>Aquí se mostrarán los precios para Modificar de las habitaciones (senillas y suites)
+  <header class="mb-6 flex items-center justify-between">
+      <a href="/rooms" class="text-sm text-gray-600 hover:underline">← Volver a habitaciones</a>
+    </header>
 
-  </header>
+  <div class="overflow-x-auto">
+    <table class="min-w-full border border-gray-200 bg-white rounded-lg shadow">
+      <thead class="bg-blue-800 text-white">
+        <tr>
+          <th class="px-4 py-2 text-left">Tipo de Habitación</th>
+          <th class="px-4 py-2 text-left">Mes</th>
+          <th class="px-4 py-2 text-left">Precio ($)</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {{#each meses}}
+          <tr class="hover:bg-blue-50 transition">
+            <td class="px-4 py-2 text-gray-700 font-medium">Sencilla</td>
+            <td class="px-4 py-2">{{this.mes}}</td>
+            <td class="px-4 py-2">
+              <input type="number" value="{{this.sencilla}}" min="0" step="0.01"
+                     class="border rounded px-2 py-1 w-24 text-right"
+                     data-tipo="sencilla" data-mes="{{this.mes}}">
+            </td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition">
+            <td class="px-4 py-2 text-gray-700 font-medium">Suite</td>
+            <td class="px-4 py-2">{{this.mes}}</td>
+            <td class="px-4 py-2">
+              <input type="number" value="{{this.suite}}" min="0" step="0.01"
+                     class="border rounded px-2 py-1 w-24 text-right"
+                     data-tipo="suite" data-mes="{{this.mes}}">
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const inputs = document.querySelectorAll('input[type="number"]');
+
+  inputs.forEach(input => {
+    input.addEventListener('change', () => {
+      const tipo = input.dataset.tipo;
+      const mes = input.dataset.mes;
+      const monto = input.value;
+
+      // Aquí envías al backend via fetch/AJAX
+      fetch('/api/update-precio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo, mes, monto })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.success){
+          console.log(`Precio de ${tipo} actualizado para mes ${mes}`);
+        }
+      });
+    });
+  });
+
+  // O también puedes usar el botón "Guardar cambios" para actualizar todos los inputs juntos
+</script>
