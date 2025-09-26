@@ -512,9 +512,4 @@ export const renderRentForm = async (req, res) => {
   }
 };
 
-//set  new  for type room (switch, individual)
-// export const handleNewPriceRoom= async (req, res) => {
-//   try {
-//     const typeRoom = Number(req.params.id);
-//     if (Number.isNaN(typeRoom) {
-//       return res.status(400).send("id Invalido de tipo de habitacion");
+

@@ -27,17 +27,15 @@ app.use(
   })
 );
 
-
-
 // Iniciar servidor
 app.listen(app.get("port"), () => {
   console.log(`Servidor corriendo en: http://localhost:${app.get("port")}`);
   // Middleware global para pasar user a todas las vistas
-app.use((req, res, next) => {
-  res.locals.user = req.session.user || { role: "Usuario" };
-  next();
-});
+  app.use((req, res, next) => {
+    res.locals.user = req.session.user || { role: "Usuario" };
+    next();
+  });
 
-// Rutas globales
-app.use(routerGlobal);
+  // Rutas globales
+  app.use(routerGlobal);
 });
