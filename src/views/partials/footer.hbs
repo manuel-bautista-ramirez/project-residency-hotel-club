@@ -8,8 +8,10 @@
 </footer>
 
 <script>
-  // Obtener el año actual desde la computadora
-  const yearSpan = document.getElementById('currentYear');
-  const currentYear = new Date().getFullYear();
-  yearSpan.textContent = currentYear;
+  document.addEventListener("DOMContentLoaded", () => {
+    const yearSpan = document.getElementById('currentYear');
+    if (yearSpan) {
+      yearSpan.textContent = new Date().getFullYear();
+    }
+  });
 </script>

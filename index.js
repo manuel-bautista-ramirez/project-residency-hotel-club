@@ -1,13 +1,10 @@
-// Importación de dependencias
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import session from "express-session";
 import { app } from "./src/config/app.js";
 import { routerGlobal } from "./src/router/routerGlobal.js";
-import routerLogin from "./src/modules/login/routers/routerLogin.js";
-import {membershipRoutes, membershipApiRoutes} from "./src/modules/membership/routes/index.js";
-import { routerRoom } from "./src/modules/rooms/routes/RouteRooms.js";
+import router from "./src/modules/login/routers/routerLogin.js";
 
 // Configuración de variables para __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
@@ -30,9 +27,17 @@ app.use(
   })
 );
 
-// Iniciar el servidor
-app.listen(app.get("port"), () => {
-  app.use(routerGlobal);
-  console.log(`Servidor corriendo en el puerto: http://localhost:${app.get("port")}`);
 
+
+// Iniciar servidor
+app.listen(app.get("port"), () => {
+  console.log(`Servidor corriendo en: http://localhost:${app.get("port")}`);
+  // Middleware global para pasar user a todas las vistas
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || { role: "Usuario" };
+  next();
+});
+
+// Rutas globales
+app.use(routerGlobal);
 });

@@ -1,42 +1,9 @@
-<html lang="es">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hotel Residencial</title>
-</head>
-
-<body class="min-h-screen bg-gradient-to-b from-blue-50 to-white">
 
   <!-- HEADER que contiene:
        - En desktop: logo + enlaces en línea
        - En móvil: logo + botón hamburguesa -->
   {{>navbar}}
-
-  <!-- Sidebar móvil: oculto en desktop (sm:hidden), visible en móvil cuando se activa -->
-  <nav id="sidebar"
-    class="fixed inset-y-0 left-0 w-64 bg-blue-800 text-white transform -translate-x-full transition-transform duration-200 ease-in-out sm:hidden z-40">
-    <!-- Dentro del sidebar -->
-    <div class="flex items-center justify-between px-4 py-4 border-b border-blue-700">
-      <a href="/" class="text-lg font-bold hover:text-blue-300 transition">
-        Hotel Residencial
-      </a>
-      <!-- Botón cerrar en el sidebar -->
-      <button id="btn-close-sidebar" class="focus:outline-none" aria-label="Cerrar menú">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-    <ul class="flex flex-col px-4 py-6 space-y-4">
-      {{#if (eq role "Administrador")}}
-      <li><a href="/admin" class="block hover:text-blue-300 transition">Panel de Administración</a></li>
-      {{/if}}
-      <li><a href="/rooms" class="block hover:text-blue-300 transition">Habitaciones</a></li>
-      <li><a href="/services" class="block hover:text-blue-300 transition">Servicios</a></li>
-      <li><a href="/logout" class="block hover:text-blue-300 transition">Cerrar Sesión</a></li>
-    </ul>
-  </nav>
 
   <!-- Overlay semitransparente cuando sidebar está abierto (solo en móvil) -->
   <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden sm:hidden z-30"></div>
@@ -116,7 +83,3 @@
       });
     });
   </script>
-
-</body>
-
-</html>

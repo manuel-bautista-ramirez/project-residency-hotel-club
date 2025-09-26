@@ -5,25 +5,25 @@ import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
 
 const routerGlobal = express.Router();
 
-// Aquí se importaran  todos los routers de los módulos
+// Rutas de módulos
 routerGlobal.use(routerLogin);
-routerGlobal.use("/memberships",membershipRoutes);
-routerGlobal.use("/api/memberships",membershipApiRoutes);
+routerGlobal.use("/memberships", membershipRoutes);
+routerGlobal.use("/api/memberships", membershipApiRoutes);
 routerGlobal.use(routerRoom);
-// Aquí importarlas las demas porfavor...
 
-// Middleware para manejar error 404 (operando después de las rutas de las modulos)
+
+// Middleware para manejar error 404 (después de todas las rutas)
 routerGlobal.use((req, res) => {
   res.status(404).render("error404", {
     layout: "main",
     title: "Página no encontrada",
-    messengger: "La ruta que estás intentando acceder no existe compilla.",
+    messengger: "La ruta que estás intentando acceder no existe.",
     url: req.originalUrl,
     showFooter: true,
   });
 });
 
-// Middleware para manejar error 500 (recibiendo 4 parámetros)
+// Middleware para manejar error 500
 routerGlobal.use((err, req, res, next) => {
   const isDev = process.env.NODE_ENV === "development";
 

@@ -22,7 +22,7 @@ export const renderHabitacionesView = async (req, res) => {
     const user = req.session.user || { role: "Usuario" };
     const habitaciones = await getHabitaciones();
 
-    res.render("habitaciones", {
+    res.render("ShowAllRooms", {
       title: "Habitaciones",
       showFooter: true,
       habitaciones,
@@ -145,7 +145,7 @@ export const renderAllRervationes = async (req, res) => {
     const user = req.session.user || { role: "Usuario" };
     const allReservationes = await getAllReservationes();
 
-    res.render("mostarReservaciones", {
+    res.render("showReservations", {
       title: "Adminstracion de  Reservaciones",
       allReservationes,
       user: {
@@ -184,7 +184,7 @@ export const renderAllRentas = async (req, res) => {
     const user = req.session.user || { role: "Administrador" };
     const allRentas = await getAllRentas();
     console.log(allRentas);
-    res.render("mostrarRentas", {
+    res.render("showRent", {
       title: "Listado de habitaciones rentadas",
       allRentas,
       showFooter: true,
@@ -236,7 +236,7 @@ export const renderFormEditarReservacion = async (req, res) => {
 
     const habitaciones = await getHabitaciones();
 
-    return res.render("editarReservacion", {
+    return res.render(" editReservation", {
       title: "Editar Reservación",
       showFooter: true,
       reservacion,
@@ -254,7 +254,7 @@ export const renderFormEditarReservacion = async (req, res) => {
 export const renderReservacionesView = async (req, res) => {
   const user = req.session.user || { role: "Administrador" };
   try {
-    res.render("reportes", {
+    res.render("reports", {
       title: "reportes",
       showFooter: true,
       user: {
@@ -280,7 +280,7 @@ export const createResevation = async (req, res) => {
     const habitacion = habitaciones.find((h) => Number(h.id) === habitacion_id);
     if (!habitacion) return res.status(404).send("Habitación no encontrada");
 
-    return res.render("reservar", {
+    return res.render("reserve", {
       title: "Reservar habitación",
       habitacion,
       habitaciones,
@@ -309,7 +309,7 @@ export const renderFormRentar = async (req, res) => {
     const monto = (await getPrecioPorTipoYMes(habitacion.tipo, mesActual)) || 0;
     const monto_letras = numeroALetras(monto);
 
-    return res.render("rentar", {
+    return res.render("rent", {
       title: "Rentar habitación",
       showFooter: true,
       habitacion,
@@ -402,7 +402,7 @@ export const handleCreateRenta = async (req, res) => {
 };
 
 export const renderCalendario = (req, res) => {
-  res.render("calendario", {
+  res.render("calendar", {
     title: "Calendario de Habitaciones",
     showFooter: true,
   });
@@ -422,7 +422,7 @@ export const fetchEventos = async (req, res) => {
 export const renderAllPriceView = async (req, res) => {
   try {
     const precios = await getAllPrices();
-    res.render("precios", {
+    res.render("prices", {
       title: "Precios de Habitaciones",
       showFooter: true,
       meses: precios, // <-- ENVÍA COMO 'meses' SI TU PLANTILLA USA {{#each meses}}

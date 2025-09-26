@@ -1,0 +1,116 @@
+{{>navbar}}
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-24">
+  <!-- Header -->
+  <header class="text-center py-6 sm:py-12">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-900 tracking-tight mb-6">Habitaciones</h1>
+    {{>buttons}}
+  </header>
+
+  <!-- Grid de Habitaciones -->
+  <section id="roomsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {{#each habitaciones}}
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col justify-between">
+      <div class="p-4">
+        <h2 class="text-lg font-bold text-blue-900 mb-2">Habitación {{this.numero}}</h2>
+        <p class="text-gray-700 capitalize mb-2">Tipo: {{this.tipo}}</p>
+        <p class="font-semibold">
+          Estado:
+          {{#if (eq this.estado 'disponible')}}
+            <span class="px-2 py-0.5 rounded-md bg-gray-200 text-gray-800 text-sm">Disponible</span>
+          {{/if}}
+          {{#if (eq this.estado 'ocupado')}}
+            <span class="px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-sm">Ocupado</span>
+          {{/if}}
+          {{#if (eq this.estado 'limpieza')}}
+            <span class="px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 text-sm cursor-pointer"
+                  onclick="openModal({{this.id}})">Limpieza</span>
+          {{/if}}
+        </p>
+      </div>
+
+      <div class="p-4 flex flex-wrap justify-center gap-2">
+        <a href="/rooms/reservar/{{this.id}}"
+           class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow text-sm w-full sm:w-auto text-center">
+           Reservar
+        </a>
+        <a href="/rooms/rentar/{{this.id}}"
+           class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow text-sm w-full sm:w-auto text-center">
+           Rentar
+        </a>
+      </div>
+
+      <!-- Modal limpieza -->
+      {{#if (eq this.estado 'limpieza')}}
+<!-- Modal limpieza -->
+<div id="modal-clean-{{this.id}}" class="fixed inset-0 z-50 bg-black bg-opacity-40 px-4 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm sm:max-w-md flex flex-col items-center justify-center">
+    <h2 class="text-lg sm:text-xl font-bold mb-4 text-orange-700">Confirmar limpieza</h2>
+    <p class="mb-6 text-gray-700 text-sm sm:text-base">
+      ¿Deseas cambiar el estado a <span class="font-bold text-gray-800">Disponible</span> para la habitación <span class="font-bold">{{this.numero}}</span>?
+    </p>
+    <form action="/rooms/changes/status/{{this.id}}" method="POST" class="flex flex-col gap-3 w-full">
+      <input type="hidden" name="status" value="disponible" />
+      <div class="flex flex-col sm:flex-row justify-end gap-2">
+        <button type="button" onclick="closeModal({{this.id}})"
+                class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-auto">Cancelar</button>
+        <button type="submit"
+                class="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold w-full sm:w-auto">Confirmar</button>
+      </div>
+    </form>
+  </div>
+</div>
+      {{/if}}
+    </div>
+    {{/each}}
+  </section>
+</div>
+
+{{>footer}}
+
+<script>
+  // Abrir y cerrar modales de limpieza
+  function openModal(id) {
+    document.getElementById('modal-clean-' + id).classList.remove('hidden');
+  }
+  function closeModal(id) {
+    document.getElementById('modal-clean-' + id).classList.add('hidden');
+  }
+
+  // Hamburger menú móvil
+  document.getElementById("btn-open-sidebar")?.addEventListener("click", () => {
+    document.getElementById("mobile-menu")?.classList.toggle("hidden");
+  });
+
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      const btnOpen =
+        document.getElementById('btn-open-sidebar'); const btnClose =
+          document.getElementById('btn-close-sidebar'); const sidebar =
+            document.getElementById('sidebar'); const overlay =
+              document.getElementById('overlay'); function openSidebar() {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+              } function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+              } btnOpen.addEventListener('click',
+                openSidebar); btnClose.addEventListener('click', closeSidebar);
+      overlay.addEventListener('click', closeSidebar); // Al cambiar tamaño: si
+      pasa a desktop, nos aseguramos de ocultar sidebar y overlay
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 640) {
+          sidebar.classList.add('-translate-x-full');
+          overlay.classList.add('hidden');
+        }
+      }); // Opcional: cerrar sidebar cuando
+      se clickea un enlace document.querySelectorAll('#sidebar a').forEach(a => {
+        a.addEventListener('click', () => {
+          if (window.innerWidth < 640) {
+            closeSidebar();
+          }
+        });
+      });
+    });
+
+</script>

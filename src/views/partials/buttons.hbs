@@ -1,8 +1,8 @@
- <div class="mt-3 flex justify-center gap-4">
-      {{#if (eq user.role 'Administrador')}}
-        <a href="/rooms/precios" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow transition">Modificar Precios</a>
-        <a href="/rooms/reportes" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition">Reportes</a>
-          <a href="/rooms/list/rentas" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition">Mostar Rentas</a>
-      {{/if}}
-         <a href="/rooms/list/reservations" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition">Mostrar Reservaciones</a>
-    </div>
+<div class="mt-3 flex flex-wrap justify-center gap-3">
+  {{#if (eq user.role 'Administrador')}}
+    <a href="/rooms/precios" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow transition w-full sm:w-auto text-center">Modificar Precios</a>
+    <a href="/rooms/reportes" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition w-full sm:w-auto text-center">Reportes</a>
+    <a href="/rooms/list/rentas" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition w-full sm:w-auto text-center">Mostrar Rentas</a>
+  {{/if}}
+  <a href="/rooms/list/reservations" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition w-full sm:w-auto text-center">Mostrar Reservaciones</a>
+</div>
