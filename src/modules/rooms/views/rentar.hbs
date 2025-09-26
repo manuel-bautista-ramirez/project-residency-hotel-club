@@ -7,13 +7,15 @@
 
   <form
     id="formRent"
+    action="/rooms/create-renta/{{habitacion.id}}"
+    method="POST"
     class="w-full sm:max-w-lg lg:max-w-xl bg-white p-6 rounded-xl shadow-md space-y-6"
   >
 
   <header class="mb-6 flex items-center justify-between">
       <a href="/rooms" class="text-sm text-gray-600 hover:underline">← Volver a habitaciones</a>
     </header>
-    
+
     <input type="hidden" id="room_id" value="{{habitacion.id}}">
 
     <!-- Client Info -->
@@ -80,57 +82,106 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-  const roomId = Number(document.getElementById("room_id").value);
-  const checkInInput = document.getElementById("check_in");
-  const checkOutInput = document.getElementById("check_out");
-  const priceField = document.getElementById("price");
-  const priceTextField = document.getElementById("price_text");
+    const roomId = Number(document.getElementById("room_id").value);
+    const checkInInput = document.getElementById("check_in");
+    const checkOutInput = document.getElementById("check_out");
+    const priceField = document.getElementById("price");
+    const priceTextField = document.getElementById("price_text");
 
-  async function fetchPrice(checkIn) {
-    if (!checkIn) return;
-    const month = new Date(checkIn).getMonth() + 1;
-    try {
-      const res = await fetch(`/api/rooms/${roomId}/price?month=${month}`);
-      const json = await res.json();
-      priceField.value = json.price ?? 0;
-      priceTextField.value = json.price_text ?? "";
-      console.log("Precio obtenido:", json);
-    } catch (err) {
-      console.error("Error obteniendo precio:", err);
-    }
-  }
+    async function fetchPrice(checkIn) {
+      if (!checkIn) return;
+      const month = new Date(checkIn).getMonth() + 1;
+      try {
+        const res = await fetch(`/api/rooms/${roomId}/price?month=${month}`);
+        const json = await res.json();
+        const price = json.price ?? 0;
 
-  async function checkAvailability(checkIn, checkOut) {
-    if (!checkIn || !checkOut) return;
-    try {
-      const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      if (!json.available) {
-        alert("La habitación no está disponible en esas fechas.");
-        checkInInput.value = "";
-        checkOutInput.value = "";
-        priceField.value = "";
-        priceTextField.value = "";
+        priceField.value = price;
+        priceTextField.value = numberToWords(price);
+
+        console.log("Precio obtenido:", json);
+      } catch (err) {
+        console.error("Error obteniendo precio:", err);
       }
-      console.log("Disponibilidad:", json);
-    } catch (err) {
-      console.error("Error verificando disponibilidad:", err);
     }
-  }
 
-  checkInInput.addEventListener("change", async (e) => {
-    const checkIn = e.target.value;
-    await fetchPrice(checkIn);
-    const checkOut = checkOutInput.value;
-    if (checkOut) await checkAvailability(checkIn, checkOut);
+    async function checkAvailability(checkIn, checkOut) {
+      if (!checkIn || !checkOut) return;
+      try {
+        const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        if (!json.available) {
+          alert("La habitación no está disponible en esas fechas.");
+          checkInInput.value = "";
+          checkOutInput.value = "";
+          priceField.value = "";
+          priceTextField.value = "";
+        }
+        console.log("Disponibilidad:", json);
+      } catch (err) {
+        console.error("Error verificando disponibilidad:", err);
+      }
+    }
+
+    function numberToWords(num) {
+      const unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
+      const especiales = ["diez", "once", "doce", "trece", "catorce", "quince",
+                          "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
+      const decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta",
+                       "sesenta", "setenta", "ochenta", "noventa"];
+      const centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos",
+                        "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
+
+      if (num === 0) return "cero pesos";
+      if (num === 100) return "cien pesos";
+
+      let words = "";
+
+      if (num >= 1000000) {
+        return num + " pesos"; // fuera del alcance, muestra como número
+      }
+
+      if (num >= 1000) {
+        const miles = Math.floor(num / 1000);
+        if (miles === 1) {
+          words += "mil";
+        } else {
+          words += numberToWords(miles).replace(" pesos", "") + " mil";
+        }
+        num = num % 1000;
+        if (num > 0) words += " ";
+      }
+
+      if (num >= 100) {
+        words += centenas[Math.floor(num / 100)];
+        num = num % 100;
+        if (num > 0) words += " ";
+      }
+
+      if (num >= 20) {
+        words += decenas[Math.floor(num / 10)];
+        if (num % 10 > 0) words += " y " + unidades[num % 10];
+      } else if (num >= 10) {
+        words += especiales[num - 10];
+      } else if (num > 0) {
+        words += unidades[num];
+      }
+
+      return words + " pesos";
+    }
+
+    checkInInput.addEventListener("change", async (e) => {
+      const checkIn = e.target.value;
+      await fetchPrice(checkIn);
+      const checkOut = checkOutInput.value;
+      if (checkOut) await checkAvailability(checkIn, checkOut);
+    });
+
+    checkOutInput.addEventListener("change", async (e) => {
+      const checkIn = checkInInput.value;
+      const checkOut = e.target.value;
+      if (checkIn && checkOut) await checkAvailability(checkIn, checkOut);
+    });
   });
-
-  checkOutInput.addEventListener("change", async (e) => {
-    const checkIn = checkInInput.value;
-    const checkOut = e.target.value;
-    if (checkIn && checkOut) await checkAvailability(checkIn, checkOut);
-  });
-});
-
 </script>

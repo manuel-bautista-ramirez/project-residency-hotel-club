@@ -96,13 +96,6 @@ CREATE TABLE IF NOT EXISTS medios_mensajes (
   telefono_cliente VARCHAR(20) NOT NULL
 );
 
-INSERT INTO medios_mensajes (correo_cliente, telefono_cliente)
-VALUES ('correo@ejemplo.com', '4451234567');
-
-INSERT INTO medios_mensajes (correo_cliente, telefono_cliente)
-VALUES ('cliente_renta@ejemplo.com', '4469876543');
-
-
 
 -- 3) Tabla de Reservaciones
 -- Se guarda el precio al momento de la reserva
@@ -123,17 +116,6 @@ CREATE TABLE IF NOT EXISTS reservaciones (
   FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
 );
 
-INSERT INTO reservaciones (
-  habitacion_id, usuario_id, id_medio_mensaje,
-  nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida,
-  monto, monto_letras
-) VALUES (
-  1, 1, LAST_INSERT_ID(),
-  'Juan Perez', CURDATE(), '2024-06-10', '2024-06-15',
-  600.00, 'Seiscientos pesos'
-);
-
-
 -- 4) Tabla de Rentas
 -- Registro de ocupación real de habitaciones
 CREATE TABLE IF NOT EXISTS rentas (
@@ -151,16 +133,6 @@ CREATE TABLE IF NOT EXISTS rentas (
   FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
   FOREIGN KEY (usuario_id) REFERENCES users_hotel (id),
   FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
-);
-
-INSERT INTO rentas (
-  habitacion_id, usuario_id, id_medio_mensaje,
-  nombre_cliente, fecha_ingreso, fecha_salida,
-  tipo_pago, monto, monto_letras
-) VALUES (
-  1, 1, LAST_INSERT_ID(),
-  'Juan Perez', '2024-06-10', '2024-06-15',
-  'efectivo', 600.00, 'Seiscientos pesos'
 );
 
 -- =====================================================
@@ -182,7 +154,7 @@ ORDER BY
   r.fecha_ingreso;
 
 
-  
+
 
 
   SELECT
@@ -293,7 +265,7 @@ CREATE TABLE pagos (
 );
 
 -- Insertar métodos de pago básicos
-INSERT INTO metodos_pago (nombre) VALUES 
+INSERT INTO metodos_pago (nombre) VALUES
 ('Efectivo'),
 ('Tarjeta de crédito'),
 ('Tarjeta de débito'),
@@ -301,7 +273,7 @@ INSERT INTO metodos_pago (nombre) VALUES
 ON CONFLICT (nombre) DO NOTHING;
 
 -- Insertar tipos de membresía básicos (si no existen)
-INSERT INTO tipos_membresia (nombre, descripcion, max_integrantes, precio) VALUES 
+INSERT INTO tipos_membresia (nombre, descripcion, max_integrantes, precio) VALUES
 ('Individual GYM', 'Membresía para una persona', 1, 500.00),
 ('Individual Alberca', 'Membresía para una persona', 1, 500.00),
 ('Individual General', 'Membresía para una persona', 1, 500.00),

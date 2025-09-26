@@ -43,8 +43,8 @@ routerRoom.post("/rooms/reservar/:id", handleCreateReservation);
 
 routerRoom.post("/rooms/changes/status/:id", changesStatus);
 
-routerRoom.get("/rooms/rentar/:id", renderFormRentar);
-routerRoom.post("/rooms/createRenta/:id", handleCreateRenta);
+routerRoom.get("/rooms/rentar/:id", renderFormRentar);  
+routerRoom.post("/rooms/create-renta/:id", handleCreateRenta);
 
 routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
 

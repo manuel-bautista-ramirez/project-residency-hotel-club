@@ -12,7 +12,6 @@ export const getHabitaciones = async () => {
   }
 };
 
-
 // change room status
 export const updateRoomStatus = async (roomId, newStatus) => {
   try {
@@ -162,7 +161,6 @@ export const findReservacionById = async (id) => {
   }
 };
 
-
 // get price by type and month
 export const getPrecioPorTipoYMes = async (tipo_habitacion, mes) => {
   const [rows] = await pool.query(
@@ -284,34 +282,7 @@ export const setNewPrice = async (priceData) => {
   }
 };
 
-///  funciones de  asrconas  para vericar el estado  de disponibilidad  de las habitaciones y precios segun el mes.
-export const roomIsOccupied = async (roomId, checkIn, checkOut) => {
-  try {
-    const [rentas] = await pool.query(
-      `SELECT id FROM rentas
-       WHERE habitacion_id = ? AND (
-         (fecha_ingreso <= ? AND fecha_salida >= ?) OR
-         (fecha_ingreso <= ? AND fecha_salida >= ?)
-       )`,
-      [roomId, checkIn, checkIn, checkOut, checkOut]
-    );
-
-    const [reservaciones] = await pool.query(
-      `SELECT id FROM reservaciones
-       WHERE habitacion_id = ? AND (
-         (fecha_ingreso <= ? AND fecha_salida >= ?) OR
-         (fecha_ingreso <= ? AND fecha_salida >= ?)
-       )`,
-      [roomId, checkIn, checkIn, checkOut, checkOut]
-    );
-
-    return rentas.length > 0 || reservaciones.length > 0;
-  } catch (err) {
-    console.error("roomIsOccupied error:", err);
-    throw err; // que el llamador maneje el error
-  }
-};
-
+//  funciones de  asrconas  para vericar el estado  de disponibilidad  de las habitaciones y precios segun el mes.
 // Obtener precio por tipo y mes
 export const getRoomPriceByTypeAndMonth = async (roomType, month) => {
   try {
@@ -326,6 +297,47 @@ export const getRoomPriceByTypeAndMonth = async (roomType, month) => {
   }
 };
 
+// Insert a messaging method and return the generated ID
+export const createMessageMethod = async (email, phone) => {
+  const [result] = await pool.query(
+    `INSERT INTO medios_mensajes (correo_cliente, telefono_cliente) VALUES (?, ?)`,
+    [email, phone]
+  );
+  return result.insertId;
+};
+
+// Insert a rent using the messaging method ID
+export const createRent = async ({
+  room_id,
+  user_id,
+  message_method_id,
+  client_name,
+  check_in_date,
+  check_out_date,
+  payment_type,
+  amount,
+  amount_text,
+}) => {
+  const [result] = await pool.query(
+    `INSERT INTO rentas (
+      habitacion_id, usuario_id, id_medio_mensaje,
+      nombre_cliente, fecha_ingreso, fecha_salida,
+      tipo_pago, monto, monto_letras
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      room_id,
+      user_id,
+      message_method_id,
+      client_name,
+      check_in_date,
+      check_out_date,
+      payment_type,
+      amount,
+      amount_text,
+    ]
+  );
+  return result.insertId;
+};
 
 /** Helpers **/
 // const nextId = (arr) => (!arr.length ? 1 : Math.max(...arr.map(x => Number(x.id))) + 1);
