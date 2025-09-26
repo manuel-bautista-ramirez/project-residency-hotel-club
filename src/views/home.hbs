@@ -51,35 +51,3 @@
     </section>
   </main>
 
-  <!-- JavaScript para toggle del sidebar en móvil -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const btnOpen =
-        document.getElementById('btn-open-sidebar'); const btnClose =
-          document.getElementById('btn-close-sidebar'); const sidebar =
-            document.getElementById('sidebar'); const overlay =
-              document.getElementById('overlay'); function openSidebar() {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-              } function closeSidebar() {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-              } btnOpen.addEventListener('click',
-                openSidebar); btnClose.addEventListener('click', closeSidebar);
-      overlay.addEventListener('click', closeSidebar); // Al cambiar tamaño: si
-      pasa a desktop, nos aseguramos de ocultar sidebar y overlay
-      window.addEventListener('resize', () => {
-        if (window.innerWidth >= 640) {
-          sidebar.classList.add('-translate-x-full');
-          overlay.classList.add('hidden');
-        }
-      }); // Opcional: cerrar sidebar cuando
-      se clickea un enlace document.querySelectorAll('#sidebar a').forEach(a => {
-        a.addEventListener('click', () => {
-          if (window.innerWidth < 640) {
-            closeSidebar();
-          }
-        });
-      });
-    });
-  </script>
