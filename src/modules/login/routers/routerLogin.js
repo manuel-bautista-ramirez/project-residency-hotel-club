@@ -4,32 +4,51 @@ import {
   loginUser,
   sendPasswordResetLink,
   resetPassword,
+  renderResetPasswordForm
 } from "../controllers/authControllerUsers.js";
 
 const router = express.Router();
 
-router
-  .route("/password-reset/request")
-  .get((req, res) => res.render("requestPassword")) // Mostrar formulario
-  .post(sendPasswordResetLink); // Enviar enlace
+// =====================
+// Rutas de recuperación (PÚBLICAS, sin authMiddleware)
+// =====================
 
-// Restablecer contraseña
-router
-  .route("/password-reset/reset/:token")
-  .get((req, res) => res.render("resetPassword", { token: req.params.token })) // Mostrar formulario
-  .post(resetPassword);
+// Formulario para pedir recuperación
+router.get("/password-reset/request", (req, res) =>
+  res.render("requestPassword")
+);
 
-// Login page - ruta específica
-router.get("/login", (req, res) => res.render("login", {
-  layout: "main",
-  title: "Inicio",
-  showFooter : false
-}));
+// Generar enlace de recuperación
+router.post("/password-reset/request", sendPasswordResetLink);
 
-// Handle login
+// Mostrar formulario de reset (popup con token)
+router.get("/password-reset/reset/:token", renderResetPasswordForm);
+
+// Procesar nueva contraseña
+router.post("/password-reset/reset/:token", resetPassword);
+
+// =====================
+// Rutas de login/logout (PÚBLICAS)
+// =====================
+router.get("/login", (req, res) =>
+  res.render("login", {
+    layout: "main",
+    title: "Inicio",
+    showFooter: false,
+  })
+);
+
 router.post("/login", loginUser);
 
-// Ruta raíz - redirige según autenticación
+router.get("/logout", (req, res) =>
+  req.session.destroy((err) =>
+    err ? res.status(500).send("Error al cerrar sesión") : res.redirect("/")
+  )
+);
+
+// =====================
+// Rutas privadas (con authMiddleware)
+// =====================
 router.get("/", (req, res) => {
   if (req.session.user) {
     return res.redirect("/home");
@@ -37,24 +56,16 @@ router.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-// Protected home page
 router.get("/home", authMiddleware, (req, res) => {
   const user = req.session.user;
   if (!user?.username || !user?.role) return res.redirect("/login");
   res.render("home", {
     title: "Home",
     showFooter: true,
-    ...user });
+    ...user,
+  });
 });
 
-// Logout
-router.get("/logout", (req, res) =>
-  req.session.destroy((err) =>
-    err ? res.status(500).send("Error al cerrar sesión") : res.redirect("/")
-  )
-);
-
-// Admin panel de prueba (HTML directo)
 router.get("/admin", roleMiddleware("Administrador"), (req, res) => {
   res.send("<h1>Panel de Administración</h1>");
 });

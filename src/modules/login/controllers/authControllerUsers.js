@@ -18,24 +18,20 @@ export const sendPasswordResetLink = async (req, res) => {
   const { username } = req.body;
 
   try {
-    // Buscar usuario por nombre
     const user = await findUserByUsername(username);
     if (!user) {
       return res.status(404).render("requestPassword", { error: "Usuario no encontrado" });
     }
 
-    // Crear token y expiración (1 hora)
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 3600000);
 
-    // Guardar token en la tabla password_resets
     await savePasswordResetToken(user.id, token, expiresAt);
 
-    // Crear enlace de recuperación
+    // ✅ Pasamos el enlace correcto y un mensaje de éxito
     const resetLink = `http://localhost:3000/password-reset/reset/${token}`;
+    res.render("requestPassword", { resetLink, success: "Enlace generado correctamente" });
 
-    // Mostrar enlace en la interfaz y en consola
-    res.render("requestPassword", { success: `${resetLink}` });
     console.log(`Enlace de recuperación generado: ${resetLink}`);
   } catch (error) {
     console.error("Error al generar enlace de recuperación:", error);
@@ -43,31 +39,56 @@ export const sendPasswordResetLink = async (req, res) => {
   }
 };
 
+// 🌟 Mostrar formulario de reset (popup)
+export const renderResetPasswordForm = async (req, res) => {
+  const { token } = req.params;
+  const resetToken = await getPasswordResetToken(token);
+
+  if (!resetToken || new Date(resetToken.expires_at) < new Date()) {
+    return res.status(400).render("resetPassword", { error: "El token es inválido o ha expirado." });
+  }
+
+  res.render("resetPassword", { token });
+};
+
 // 🌟 Restablecer contraseña usando token
 export const resetPassword = async (req, res) => {
   const { token } = req.params;
-  const { password } = req.body;
+  const { password, confirmPassword } = req.body;
 
   try {
-    // Buscar token en la DB
-    const resetToken = await getPasswordResetToken(token);
+    if (password !== confirmPassword) {
+      return res.render("resetPassword", { token, error: "Las contraseñas no coinciden." });
+    }
 
+    const resetToken = await getPasswordResetToken(token);
     if (!resetToken || new Date(resetToken.expires_at) < new Date()) {
       return res.status(400).render("resetPassword", { error: "El token es inválido o ha expirado." });
     }
 
-    // Actualizar contraseña usando el modelo (updateUserPassword hace el hash)
     await updateUserPassword(resetToken.user_id, password);
-
-    // Eliminar token usado
     await deletePasswordResetToken(token);
 
-    res.render("resetPassword", { success: "Contraseña restablecida correctamente." });
+    // 🔹 Cierra la ventana emergente y redirige la ventana padre (requestPassword) al login
+    res.send(`
+      <html>
+        <body>
+          <script>
+            alert("Contraseña restablecida correctamente.");
+            if (window.opener) {
+              window.opener.location.href = "/login"; // redirige la ventana padre
+            }
+            window.close();
+          </script>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error("Error al restablecer contraseña:", error);
     res.status(500).send("Error en el servidor");
   }
-};
+};;
+
 
 export const loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -114,7 +135,7 @@ export const loginUser = async (req, res) => {
   if (isPasswordValid) {
     // Guardar el usuario en la sesión con su tipo
     req.session.user = {
-      id : user.id, 
+      id : user.id,
       username: user.username,
       role: user.role,
     };

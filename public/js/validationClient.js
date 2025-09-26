@@ -10,7 +10,6 @@ const passwordInput = document.getElementById('password');
 
 // Validar el campo de usuario
 usernameInput.addEventListener('input', () => {
-  console.log('Validating username:', usernameInput.value);
   if (usernameRegex.test(usernameInput.value)) {
     usernameInput.classList.add('border-green-500');
     usernameInput.classList.remove('border-red-500');
@@ -18,6 +17,7 @@ usernameInput.addEventListener('input', () => {
     usernameInput.classList.remove('border-green-500');
     usernameInput.classList.add('border-red-500');
   }
+  console.log("Captutando el Usario: ", usernameInput.value);
 });
 
 // Validar el campo de contraseña
@@ -29,4 +29,6 @@ passwordInput.addEventListener('input', () => {
     passwordInput.classList.remove('border-green-500');
     passwordInput.classList.add('border-red-500');
   }
+
+  console.log("Capturando la constraseña: ", passwordInput.value);
 });

@@ -1,13 +1,12 @@
 import { pool } from "../../../dataBase/conecctionDataBase.js";
 
 async function deleteMembershipById(id) {
-  const connection = await pool.getConnection();
 
   try {
-    await connection.beginTransaction();
+
 
     // 1. Primero obtener información de la membresía activa
-    const [membresiaActiva] = await connection.query(
+    const [membresiaActiva] = await pool.query(
       "SELECT id_activa, id_cliente, id_membresia FROM membresias_activas WHERE id_activa = ?",
       [id]
     );
@@ -19,27 +18,27 @@ async function deleteMembershipById(id) {
     const { id_cliente, id_membresia } = membresiaActiva[0];
 
     // 2. Eliminar pagos relacionados (si existen)
-    await connection.query("DELETE FROM pagos WHERE id_activa = ?", [id]);
+    await  pool.query("DELETE FROM pagos WHERE id_activa = ?", [id]);
 
     // 3. Eliminar integrantes (si es membresía familiar)
-    await connection.query(
+    await  pool.query(
       "DELETE FROM integrantes_membresia WHERE id_activa = ?",
       [id]
     );
 
     // 4. Eliminar la membresía activa
-    const [deleteMembresiaActiva] = await connection.query(
+    const [deleteMembresiaActiva] = await  pool.query(
       "DELETE FROM membresias_activas WHERE id_activa = ?",
       [id]
     );
 
     // 5. Eliminar la membresía base (de la tabla membresias)
-    await connection.query("DELETE FROM membresias WHERE id_membresia = ?", [
+    await pool.query("DELETE FROM membresias WHERE id_membresia = ?", [
       id_membresia,
     ]);
 
     // 6. Verificar si el cliente tiene otras membresías activas
-    const [otrasMembresias] = await connection.query(
+    const [otrasMembresias] = await  pool.query(
       "SELECT COUNT(*) as count FROM membresias_activas WHERE id_cliente = ?",
       [id_cliente]
     );
@@ -51,13 +50,13 @@ async function deleteMembershipById(id) {
       ]);
     }
 
-    await connection.commit();
+    await  pool.commit();
     return deleteMembresiaActiva;
   } catch (error) {
-    await connection.rollback();
+    await  pool.rollback();
     throw error;
   } finally {
-    connection.release();
+    pool.release();
   }
 }
 
