@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { pool } from "../../../dataBase/conecctionDataBase.js";
+import { pool } from "../../../dataBase/connectionDataBase.js";
 
 const SALT_ROUNDS = 10; // Constante para las rondas de hash
 

@@ -17,7 +17,7 @@ usernameInput.addEventListener('input', () => {
     usernameInput.classList.remove('border-green-500');
     usernameInput.classList.add('border-red-500');
   }
-  console.log("Captutando el Usario: ", usernameInput.value);
+  // console.log("Captutando el Usario: ", usernameInput.value);
 });
 
 // Validar el campo de contraseña
@@ -30,5 +30,5 @@ passwordInput.addEventListener('input', () => {
     passwordInput.classList.add('border-red-500');
   }
 
-  console.log("Capturando la constraseña: ", passwordInput.value);
+  // console.log("Capturando la constraseña: ", passwordInput.value);
 });
