@@ -1,5 +1,5 @@
 // models/modelMembership.js
-import { pool } from "../../../dataBase/conecctionDataBase.js";
+import { pool } from "../../../dataBase/connectionDataBase.js";
 
 const MembershipModel = {
   async createClient({ nombre_completo, telefono, correo }) {
