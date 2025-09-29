@@ -52,6 +52,32 @@ const MembershipController = {
     }
   },
 
+  async serveQRCode(req, res) {
+    try {
+      const { id_activa } = req.params;
+      const membresia = await MembershipModel.getMembresiaById(id_activa);
+
+      if (!membresia || !membresia.qr_path) {
+        return res.status(404).json({ error: "QR no encontrado" });
+      }
+
+      // La ruta en la BD es relativa (ej: "/uploads/qrs/qr_31_nombre.png")
+      // Construir la ruta absoluta: public + ruta_relativa
+      const qrFullPath = path.join(process.cwd(), "public", membresia.qr_path);
+
+      if (!fs.existsSync(qrFullPath)) {
+        return res.status(404).json({ error: "Archivo QR no encontrado" });
+      }
+
+      // Servir el archivo directamente
+      res.sendFile(qrFullPath);
+
+    } catch (error) {
+      console.error("Error al servir QR:", error);
+      res.status(500).json({ error: "Error al obtener el QR" });
+    }
+  },
+
   // Método para descargar el QR - CORREGIDO para usar uploads/qrs/
   // Método para descargar el QR - CORREGIDO para usar public/uploads/qrs/
   async downloadQR(req, res) {

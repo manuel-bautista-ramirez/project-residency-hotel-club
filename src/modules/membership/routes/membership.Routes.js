@@ -24,27 +24,10 @@ routerMembership.use(authMiddleware);
 const bind = (controller, method) => controller[method].bind(controller);
 
 // Ruta para servir la imagen QR
-routerMembership.get('/api/qr/:id_activa', async (req, res) => {
-  try {
-    const { id_activa } = req.params;
-    const membresia = await MembershipModel.getMembresiaById(id_activa);
-    
-    if (!membresia || !membresia.qr_path) {
-      return res.status(404).json({ error: "QR no encontrado" });
-    }
-
-    if (!fs.existsSync(membresia.qr_path)) {
-      return res.status(404).json({ error: "Archivo QR no encontrado" });
-    }
-
-    // Servir el archivo directamente
-    res.sendFile(path.resolve(membresia.qr_path));
-    
-  } catch (error) {
-    console.error("Error al servir QR:", error);
-    res.status(500).json({ error: "Error al obtener el QR" });
-  }
-});
+routerMembership.get(
+  "/api/qr/:id_activa",
+  bind(MembershipController, "serveQRCode")
+);
 
 // Ruta para descargar el QR
 routerMembership.get('/download-qr/:id_activa', MembershipController.downloadQR);
