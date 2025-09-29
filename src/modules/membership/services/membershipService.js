@@ -50,9 +50,7 @@ export const MembershipService = {
         color: {
           dark: '#16a34a',
           light: '#FFFFFF'
-        },
-        // Forzar versión específica si es necesario
-        version: 10 // Versión 10 soporta ~500 caracteres
+        }
       });
   
       console.log(`✅ QR generado: ${qrFullPath}`);
