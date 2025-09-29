@@ -207,6 +207,57 @@ export const MembershipService = {
     }
   },
 
+  async renewMembership(oldMembershipId, renewalData) {
+    const {
+      id_cliente,
+      nombre_completo,
+      telefono,
+      correo,
+      id_tipo_membresia,
+      fecha_inicio,
+      fecha_fin,
+      id_metodo_pago,
+    } = renewalData;
+
+    // 1. Actualizar datos del cliente
+    await MembershipModel.updateClient({
+      id_cliente,
+      nombre_completo,
+      telefono,
+      correo,
+    });
+
+    // 2. Desactivar la membresía antigua
+    await MembershipModel.updateEstadoMembresia(oldMembershipId, 'Vencida');
+
+    // 3. Crear el nuevo contrato de membresía
+    const id_membresia = await MembershipModel.createMembershipContract({
+      id_cliente,
+      id_tipo_membresia,
+      fecha_inicio,
+      fecha_fin,
+    });
+
+    // 4. Activar la nueva membresía
+    const tipoMembresia = await MembershipModel.getTipoMembresiaById(id_tipo_membresia);
+    const precio_final = tipoMembresia.precio;
+
+    const id_activa_nueva = await MembershipModel.activateMembership({
+      id_cliente,
+      id_membresia,
+      fecha_inicio,
+      fecha_fin,
+      precio_final,
+    });
+
+    // 5. Registrar el pago
+    await MembershipModel.recordPayment({
+      id_activa: id_activa_nueva,
+      id_metodo_pago,
+      monto: precio_final,
+    });
+  },
+
   // Función para convertir número a palabras (básica)
   convertirNumeroALetras(numero) {
     const unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
