@@ -8,8 +8,8 @@ export const config={
   },
   mysql:{
     host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'manuel',
-    password: process.env.DB_PASSWORD || 'manuel12',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '586226',
     database: process.env.DB_NAME || 'hotel_club'
 
   },
