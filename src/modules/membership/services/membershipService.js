@@ -207,6 +207,103 @@ export const MembershipService = {
     }
   },
 
+  async createCompleteMembership(membershipData) {
+    const {
+      id_cliente,
+      id_tipo_membresia,
+      fecha_inicio,
+      fecha_fin,
+      precio_final,
+      integrantes,
+      metodo_pago,
+    } = membershipData;
+
+    // 1️⃣ Crear contrato en membresias
+    const id_membresia = await this.createMembershipContract({
+      id_cliente,
+      id_tipo_membresia,
+      fecha_inicio,
+      fecha_fin,
+    });
+
+    // 2️⃣ Activar membresía (sin QR path inicialmente)
+    const id_activa = await this.activateMembership({
+      id_cliente,
+      id_membresia,
+      fecha_inicio,
+      fecha_fin,
+      precio_final,
+    });
+
+    // 3️⃣ Registrar integrantes (si es familiar)
+    await this.addFamilyMembers(id_activa, integrantes);
+
+    // 4️⃣ Obtener datos para el QR
+    const { cliente, tipo, integrantesDB } = await this.getMembershipDetails(
+      id_cliente,
+      id_tipo_membresia,
+      id_activa
+    );
+
+    // 5️⃣ Armar payload del QR
+    const payloadQR = await this.generateQRPayload(
+      cliente,
+      tipo,
+      fecha_inicio,
+      fecha_fin,
+      integrantesDB
+    );
+
+    // 6️⃣ Generar archivo PNG del QR
+    const qrPath = await this.generateQRCode(
+      payloadQR,
+      id_activa,
+      cliente.nombre_completo
+    );
+
+    // 7️⃣ Actualizar la ruta del QR en la base de datos
+    await MembershipModel.updateQRPath(id_activa, qrPath);
+
+    // 8️⃣ Registrar el pago
+    if (metodo_pago) {
+      await MembershipModel.recordPayment({
+        id_activa,
+        id_metodo_pago: metodo_pago,
+        monto: precio_final,
+      });
+    }
+
+    // 9️⃣ Obtener información completa para el modal
+    const membresiaCompleta = await MembershipModel.getMembresiaConPago(
+      id_activa
+    );
+
+    // 🔟 Enviar email de comprobante (sin QR)
+    await this.sendMembershipReceiptEmail(
+      cliente,
+      tipo,
+      fecha_inicio,
+      fecha_fin,
+      integrantesDB,
+      membresiaCompleta.metodo_pago,
+      precio_final
+    );
+
+    // Devolver la información completa para la respuesta
+    return {
+      id_activa: id_activa,
+      id_membresia: id_membresia,
+      titular: cliente.nombre_completo,
+      tipo_membresia: tipo.nombre,
+      fecha_inicio: fecha_inicio,
+      fecha_fin: fecha_fin,
+      precio_final: parseFloat(precio_final),
+      metodo_pago: membresiaCompleta.metodo_pago || "No especificado",
+      integrantes: integrantesDB,
+      qr_path: qrPath,
+    };
+  },
+
   async renewMembership(oldMembershipId, renewalData) {
     const {
       id_cliente,

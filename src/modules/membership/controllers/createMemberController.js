@@ -33,106 +33,14 @@ const MembershipController = {
   // Crear membresía (familiar o individual)
   async createMembership(req, res) {
     try {
-      const {
-        id_cliente,
-        id_tipo_membresia,
-        fecha_inicio,
-        fecha_fin,
-        precio_final,
-        integrantes,
-        metodo_pago,
-      } = req.body;
+      // Delegar toda la lógica de negocio al servicio
+      const newMembershipData = await MembershipService.createCompleteMembership(req.body);
 
-      // 1️⃣ Crear contrato en membresias
-      const id_membresia = await MembershipService.createMembershipContract({
-        id_cliente,
-        id_tipo_membresia,
-        fecha_inicio,
-        fecha_fin,
-      });
-
-      // 2️⃣ Activar membresía (sin QR path inicialmente)
-      const id_activa = await MembershipService.activateMembership({
-        id_cliente,
-        id_membresia,
-        fecha_inicio,
-        fecha_fin,
-        precio_final,
-      });
-
-      // 3️⃣ Registrar integrantes (si es familiar)
-      await MembershipService.addFamilyMembers(id_activa, integrantes);
-
-      // 4️⃣ Obtener datos para el QR
-      const { cliente, tipo, integrantesDB } =
-        await MembershipService.getMembershipDetails(
-          id_cliente,
-          id_tipo_membresia,
-          id_activa
-        );
-
-      // 5️⃣ Armar payload del QR
-      const payloadQR = await MembershipService.generateQRPayload(
-        cliente,
-        tipo,
-        fecha_inicio,
-        fecha_fin,
-        integrantesDB
-      );
-
-      console.log("📋 Payload QR generado:", payloadQR);
-
-      // 6️⃣ Generar archivo PNG del QR
-      const qrPath = await MembershipService.generateQRCode(
-        payloadQR,
-        id_activa,
-        cliente.nombre_completo
-      );
-
-      // 7️⃣ Actualizar la ruta del QR en la base de datos (debe ser ruta relativa)
-      await MembershipModel.updateQRPath(id_activa, qrPath);
-
-      // 8️⃣ Registrar el pago
-      if (metodo_pago) {
-        await MembershipModel.recordPayment({
-          id_activa,
-          id_metodo_pago: metodo_pago,
-          monto: precio_final,
-        });
-      }
-
-      // 9️⃣ Obtener información completa para el modal
-      const membresiaCompleta = await MembershipModel.getMembresiaConPago(
-        id_activa
-      );
-
-      // 🔟 Enviar email de comprobante (sin QR)
-      await MembershipService.sendMembershipReceiptEmail(
-        cliente,
-        tipo,
-        fecha_inicio,
-        fecha_fin,
-        integrantesDB,
-        membresiaCompleta.metodo_pago,
-        precio_final
-      );
-
-      // Responder con la información completa para el modal
+      // Responder con la información completa que devuelve el servicio
       res.json({
         success: true,
         message: "Membresía creada exitosamente",
-        data: {
-          id_activa: id_activa,
-          id_membresia: id_membresia,
-          titular: cliente.nombre_completo,
-          tipo_membresia: tipo.nombre,
-          fecha_inicio: fecha_inicio,
-          fecha_fin: fecha_fin,
-          precio_final: parseFloat(precio_final),
-          metodo_pago: membresiaCompleta.metodo_pago || "No especificado",
-          integrantes: integrantesDB,
-          qr_path: qrPath,
-        },
+        data: newMembershipData,
       });
     } catch (err) {
       console.error("Error en createMembership:", err);
