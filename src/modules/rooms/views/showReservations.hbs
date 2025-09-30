@@ -1,47 +1,96 @@
 {{>navbar}}
-<div class="max-w-7xl mx-auto p-6">
+<link rel="stylesheet" href="/css/all.min.css">
+<div class="max-w-7xl mx-auto px-3 sm:px-4 pt-24 sm:pt-28 pb-24">
  {{>buttons}}
-<!-- Tabla de reservaciones  -->
+<!-- Tabla de reservaciones (solo desktop) -->
 
-
-  <section id="tableSection" class="overflow-x-auto">
+  <section id="tableSection" class="overflow-x-auto mt-6 hidden lg:block">
     <table class="min-w-full bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
-      <thead class="bg-blue-800 text-white text-sm uppercase">
+      <thead class="bg-blue-800 text-white text-xs sm:text-sm uppercase">
         <tr>
-          <th class="py-3 px-4 text-left">Nombe del cliente</th>
-          <th class="py-3 px-4 text-left">numero de habitacion</th>
-          <th class="py-3 px-4 text-left">Fecha de Reserva</th>
-          <th class="py-3 px-4 text-left">Fecha de Ingreso</th>
-          <th class="py-3 px-4 text-left">Fecha de Salida</th>
-          <th class="py-3 px-4 text-center">Acciones</th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-user text-[0.9rem]"></i> Cliente</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-door-closed text-[0.9rem]"></i> Habitación</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-regular fa-calendar"></i> Reserva</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-day text-[0.9rem]"></i> Ingreso</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-check text-[0.9rem]"></i> Salida</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-center"><span class="inline-flex items-center gap-1.5 whitespace-nowrap justify-center w-full"><i class="fa-solid fa-ellipsis-vertical text-[0.9rem]"></i> Acciones</span></th>
         </tr>
       </thead>
 
-       <tbody class="text-gray-700 divide-y divide-gray-200">
+       <tbody class="text-gray-700 divide-y divide-gray-200 text-xs sm:text-sm">
         {{#each allReservationes}}
         <tr class="hover:bg-gray-50 transition">
-          <td class="py-3 px-4 capitalize">{{this.nombre_cliente}}</td>
-          <td class="py-3 px-4 capitalize">{{this.numero_habitacion}}</td>
-          <td class="py-3 px-4 capitalize">{{this.fecha_reserva}}</td>
-          <td class="py-3 px-4 capitalize">{{this.fecha_ingreso}}</td>
-          <td class="py-3 px-4 capitalize">{{this.fecha_salida}}</td>
-          <td class="py-3 px-4 capitalize">
+          <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.nombre_cliente}}</td>
+          <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.numero_habitacion}}</td>
+          <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_reserva}}</td>
+          <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_ingreso}}</td>
+          <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_salida}}</td>
+          <td class="py-2 px-3 sm:py-3 sm:px-4">
                <a href="/rooms/editar/{{this.id_reservacion}}"
-                 class="px-4 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded-lg shadow-sm transition">
-                 Editar
+                 class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
+                 <i class="fa-solid fa-pen-to-square"></i>
+                 <span>Editar</span>
               </a>
 
                 <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}"
-                 class="px-4 py-1 m bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded-lg shadow-sm transition">
-                confirmar
+                 class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
+                 <i class="fa-solid fa-check"></i>
+                 <span>Confirmar</span>
               </a>
               <form action="/rooms/delete/{{this.id_reservacion}}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar reservación {{this.id_reservacion}}?');">
-                <button type="submit" class="px-4  py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg shadow-sm transition">
-                  Eliminar
+                <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
+                  <i class="fa-solid fa-trash-can"></i>
+                  <span>Eliminar</span>
                 </button>
               </form>
           </td>
           {{/each}}
        </tbody>
         </section>
+
+  <!-- Cards de reservaciones (móvil y tablet) -->
+  <section id="cardsSection" class="mt-6 grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:hidden">
+    {{#each allReservationes}}
+    <article class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="bg-blue-900 text-white px-3 py-2">
+        <h3 class="font-bold text-sm inline-flex items-center gap-1.5">
+          <i class="fa-solid fa-bed text-[1rem]"></i>
+          <span>Hab. {{this.numero_habitacion}} • {{this.nombre_cliente}}</span>
+        </h3>
+      </div>
+      <div class="p-4 space-y-3 text-sm text-gray-800">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div>
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar"></i> Reserva</div>
+            <div>{{this.fecha_reserva}}</div>
+          </div>
+          <div>
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar-plus"></i> Ingreso</div>
+            <div>{{this.fecha_ingreso}}</div>
+          </div>
+          <div>
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar-check"></i> Salida</div>
+            <div>{{this.fecha_salida}}</div>
+          </div>
+        </div>
+        <div class="pt-2 flex flex-wrap gap-2">
+          <a href="/rooms/editar/{{this.id_reservacion}}" class="inline-flex items-center gap-1.5 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm shadow-sm transition-colors">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>Editar</span>
+          </a>
+          <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}" class="inline-flex items-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+            <i class="fa-solid fa-check"></i>
+            <span>Confirmar</span>
+          </a>
+          <form action="/rooms/delete/{{this.id_reservacion}}" method="POST" onsubmit="return confirm('¿Eliminar reservación {{this.id_reservacion}}?');">
+            <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+              <i class="fa-solid fa-trash-can"></i>
+              <span>Eliminar</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </article>
+    {{/each}}
+  </section>
 </div>

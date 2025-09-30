@@ -1,27 +1,93 @@
 {{>navbar}}
+<link rel="stylesheet" href="/css/all.min.css">
 
-<div class="max-w-7xl mx-auto p-4 sm:p-6">
+<div class="max-w-7xl mx-auto px-3 sm:px-4 pt-24 sm:pt-28 pb-24">
   {{>buttons}}
 
-  <!-- Tabla de rentas -->
-  <section id="tableSection" class="overflow-x-auto mt-6">
+  <!-- Filtros -->
+  <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <!-- Búsqueda libre -->
+      <div class="flex flex-col gap-1">
+        <label for="rentSearch" class="text-xs font-medium text-slate-600">Buscar (cliente, habitación, monto, letras)</label>
+        <input id="rentSearch" type="text" placeholder="Escribe para filtrar..."
+               class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <!-- Rango de fechas (ingreso) -->
+      <div class="flex flex-col gap-1 md:col-span-2 max-w-sm">
+        <label for="rentFrom" class="text-xs font-medium text-slate-600">Ingreso desde</label>
+        <input id="rentFrom" type="date" class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+    </div>
+    <div class="mt-3 flex items-center justify-between gap-2">
+      <div id="rentCount" class="text-xs text-slate-600">Mostrando todas las rentas</div>
+      <button id="rentReset" class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg inline-flex items-center gap-1.5">
+        <i class="fa-solid fa-eraser"></i>
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
+
+  <!-- Paginación -->
+  <section class="mt-3 sm:mt-4 flex items-center gap-2 justify-between sm:justify-end">
+    <div class="flex items-center gap-2">
+      <label class="text-xs text-slate-600">Por página</label>
+      <select id="rentPageSize" class="px-2 py-1 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        <option>10</option>
+        <option>20</option>
+        <option>50</option>
+      </select>
+      <div class="flex items-center gap-2">
+        <button id="rentPagePrev" class="px-3 py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 inline-flex items-center gap-1.5">
+          <i class="fa-solid fa-angle-left"></i>
+          Anterior
+        </button>
+        <span id="rentPageInfo" class="text-xs text-slate-600">Página 1 de 1</span>
+        <button id="rentPageNext" class="px-3 py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 inline-flex items-center gap-1.5">
+          Siguiente
+          <i class="fa-solid fa-angle-right"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading Overlay -->
+  <div id="rentsLoadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+    <div class="flex flex-col items-center gap-3">
+      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="img">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-sm text-blue-900 font-medium">Cargando rentas...</p>
+    </div>
+  </div>
+
+  <!-- Tabla de rentas (solo desktop) -->
+  <section id="tableSection" class="overflow-x-auto mt-6 hidden lg:block">
     <table class="min-w-full bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
       <thead class="bg-blue-800 text-white text-xs sm:text-sm uppercase">
         <tr>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left">Nombre del cliente</th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left">Número de habitación</th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left">Fecha de Ingreso</th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left">Fecha de Salida</th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left">Tipo de Pago</th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left">Monto</th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left">Monto en letras</th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-center">Acciones</th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-user text-[0.9rem]"></i> Cliente</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-door-closed text-[0.9rem]"></i> Habitación</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-day text-[0.9rem]"></i> Ingreso</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-check text-[0.9rem]"></i> Salida</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-credit-card text-[0.9rem]"></i> Tipo de pago</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-coins text-[0.9rem]"></i> Monto</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-file-lines text-[0.9rem]"></i> Monto en letras</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-center"><span class="inline-flex items-center gap-1.5 whitespace-nowrap justify-center w-full"><i class="fa-solid fa-ellipsis-vertical text-[0.9rem]"></i> Acciones</span></th>
         </tr>
       </thead>
 
       <tbody class="text-gray-700 divide-y divide-gray-200 text-xs sm:text-sm">
         {{#each allRentas}}
-        <tr class="hover:bg-gray-50 transition">
+        <tr class="hover:bg-gray-50 rent-reveal opacity-0 translate-y-1 transition-all duration-500"
+            data-nombre="{{this.nombre_cliente}}"
+            data-hab="{{this.numero_habitacion}}"
+            data-ingreso="{{this.fecha_ingreso}}"
+            data-salida="{{this.fecha_salida}}"
+            data-pago="{{this.tipo_pago}}"
+            data-monto="{{this.monto}}"
+            data-letras="{{this.monto_letras}}">
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.nombre_cliente}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.numero_habitacion}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_ingreso}}</td>
@@ -29,16 +95,318 @@
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.tipo_pago}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.monto}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.monto_letras}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4 text-center flex flex-wrap justify-center gap-2 sm:gap-4">
-            <form action="/rentas/eliminar/{{this.id_renta}}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar la renta de {{this.numero_habitacion}}?');">
-              <button type="submit" class="px-2 sm:px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
-                Eliminar
-              </button>
-            </form>
+          <td class="py-2 px-3 sm:py-3 sm:px-4">
+            <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
+              <form action="/rentas/eliminar/{{this.id_renta}}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar la renta de {{this.numero_habitacion}}?');">
+                <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
+                  <i class="fa-solid fa-trash-can"></i>
+                  <span>Eliminar</span>
+                </button>
+              </form>
+            </div>
           </td>
         </tr>
         {{/each}}
       </tbody>
     </table>
   </section>
+
+  <!-- Cards de rentas (móvil y tablet) -->
+  <section id="cardsSection" class="mt-6 grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:hidden">
+    {{#each allRentas}}
+    <article class="bg-white rounded-xl shadow-lg overflow-hidden rent-reveal opacity-0 translate-y-1 transition-all duration-500"
+             data-nombre="{{this.nombre_cliente}}"
+             data-hab="{{this.numero_habitacion}}"
+             data-ingreso="{{this.fecha_ingreso}}"
+             data-salida="{{this.fecha_salida}}"
+             data-pago="{{this.tipo_pago}}"
+             data-monto="{{this.monto}}"
+             data-letras="{{this.monto_letras}}">
+      <div class="bg-blue-900 text-white px-3 py-2">
+        <h3 class="font-bold text-sm inline-flex items-center gap-1.5">
+          <i class="fa-solid fa-bed text-[1rem]"></i>
+          <span>Hab. {{this.numero_habitacion}} • {{this.nombre_cliente}}</span>
+        </h3>
+      </div>
+      <div class="p-4 space-y-3 text-sm text-gray-800">
+        <!-- Primera fila: Ingreso, Salida, Pago -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div>
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar-plus"></i> Ingreso</div>
+            <div>{{this.fecha_ingreso}}</div>
+          </div>
+          <div>
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar-check"></i> Salida</div>
+            <div>{{this.fecha_salida}}</div>
+          </div>
+          <div>
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-solid fa-credit-card"></i> Pago</div>
+            <div class="capitalize">{{this.tipo_pago}}</div>
+          </div>
+        </div>
+        <!-- Segunda fila: Monto y Monto en letras -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-solid fa-coins"></i> Monto</div>
+            <div>{{this.monto}}</div>
+          </div>
+          <div>
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-file-lines"></i> Monto en letras</div>
+            <div class="capitalize">{{this.monto_letras}}</div>
+          </div>
+        </div>
+        <div class="pt-2">
+          <form action="/rentas/eliminar/{{this.id_renta}}" method="POST" onsubmit="return confirm('¿Eliminar la renta de {{this.numero_habitacion}}?');">
+            <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+              <i class="fa-solid fa-trash-can"></i>
+              <span>Eliminar</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </article>
+    {{/each}}
+  </section>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('rentsLoadingOverlay');
+    const rows = Array.from(document.querySelectorAll('.rent-reveal'));
+    // Filtros
+    const q = document.getElementById('rentSearch');
+    // const pay = document.getElementById('rentPayType'); // removed
+    const from = document.getElementById('rentFrom');
+    const reset = document.getElementById('rentReset');
+    const count = document.getElementById('rentCount');
+    // removed salida filters
+    // Vista y paginación
+    const tableSection = document.getElementById('tableSection');
+    const cardsSection = document.getElementById('cardsSection');
+    const btnViewTable = document.getElementById('rentViewTable');
+    const btnViewCards = document.getElementById('rentViewCards');
+    const selPageSize = document.getElementById('rentPageSize');
+    const btnPrev = document.getElementById('rentPagePrev');
+    const btnNext = document.getElementById('rentPageNext');
+    const lblPage = document.getElementById('rentPageInfo');
+
+    let sortKey = '';
+    let sortDir = 'asc'; // 'asc' | 'desc'
+    let page = 1;
+    let pageSize = parseInt(selPageSize ? selPageSize.value : '10', 10) || 10;
+
+    // Ocultar overlay tras breve tiempo para evitar parpadeo
+    setTimeout(() => { if (overlay) overlay.classList.add('hidden'); }, 300);
+
+    // Reveal-on-scroll para filas
+    if (!('IntersectionObserver' in window) || rows.length === 0) {
+      rows.forEach(r => r.classList.remove('opacity-0', 'translate-y-1'));
+    } else {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.remove('opacity-0', 'translate-y-1');
+            entry.target.classList.add('opacity-100', 'translate-y-0');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      rows.forEach((el, idx) => {
+        el.style.transitionDelay = `${Math.min(idx * 20, 200)}ms`;
+        io.observe(el);
+      });
+    }
+
+    // --- Filtrado ---
+    function norm(str) { return (str || '').toString().trim().toLowerCase(); }
+    function inRange(dateStr, fromStr) {
+      if (!fromStr) return true;
+      const d = new Date(dateStr);
+      if (Number.isNaN(d)) return false;
+      if (fromStr && d < new Date(fromStr)) return false;
+      return true;
+    }
+    function applyFilters() {
+      const text = norm(q.value);
+      const f = from.value;
+      let visible = 0;
+      rows.forEach(el => {
+        const d = {
+          nombre: norm(el.dataset.nombre || ''),
+          hab: (el.dataset.hab || '').toString(),
+          ingreso: el.dataset.ingreso || '',
+          salida: el.dataset.salida || '',
+          pago: norm(el.dataset.pago || ''),
+          monto: (el.dataset.monto || '').toString(),
+          letras: norm(el.dataset.letras || '')
+        };
+        const hayTexto = !text || (
+          d.nombre.includes(text) || d.hab.includes(text) || d.monto.includes(text) || d.letras.includes(text)
+        );
+        const hayFechaIn = inRange(d.ingreso, f);
+        const show = hayTexto && hayFechaIn;
+        el.classList.toggle('hidden', !show);
+        if (show) visible++;
+      });
+      if (count) count.textContent = visible === rows.length ? 'Mostrando todas las rentas' : `Mostrando ${visible} de ${rows.length} rentas`;
+      // Reiniciar a página 1 después de filtrar
+      page = 1;
+      applySortAndPaginate();
+    }
+    ['input','change'].forEach(evt => {
+      q.addEventListener(evt, applyFilters);
+      from.addEventListener(evt, applyFilters);
+    });
+    reset.addEventListener('click', () => {
+      q.value = '';
+      from.value = '';
+      applyFilters();
+    });
+    // Inicial
+    applyFilters();
+
+    // --- Ordenamiento ---
+    function getVisibleRows() {
+      return rows.filter(el => !el.classList.contains('hidden'));
+    }
+    function coerce(key, val) {
+      if (key === 'monto') return parseFloat(val) || 0;
+      if (key === 'hab') return parseInt(val, 10) || 0;
+      if (key === 'ingreso' || key === 'salida') return new Date(val).getTime() || 0;
+      return norm(val);
+    }
+    function applySortAndPaginate() {
+      const visible = getVisibleRows();
+      let arr = visible.slice();
+      if (sortKey) {
+        arr.sort((a, b) => {
+          const av = coerce(sortKey, a.dataset[sortKey] || '');
+          const bv = coerce(sortKey, b.dataset[sortKey] || '');
+          if (av < bv) return sortDir === 'asc' ? -1 : 1;
+          if (av > bv) return sortDir === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+      // Paginar: ocultar por estilo inline sólo para paginación
+      const total = arr.length;
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      if (page > totalPages) page = totalPages;
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize;
+      rows.forEach(el => { el.style.display = el.classList.contains('hidden') ? '' : ''; });
+      arr.forEach((el, idx) => {
+        const inPage = idx >= start && idx < end;
+        el.style.display = inPage ? '' : 'none';
+      });
+      if (lblPage) lblPage.textContent = `Página ${total ? page : 0} de ${totalPages}`;
+      if (btnPrev) btnPrev.disabled = page <= 1;
+      if (btnNext) btnNext.disabled = page >= totalPages;
+    }
+
+    // Eventos de ordenamiento (click en headers de la tabla)
+    document.querySelectorAll('#tableSection thead th').forEach((th, idx) => {
+      const mapIdxToKey = {
+        0: 'nombre',
+        1: 'hab',
+        2: 'ingreso',
+        3: 'salida',
+        4: 'pago',
+        5: 'monto',
+        6: 'letras'
+      };
+      const key = mapIdxToKey[idx];
+      if (!key) return;
+      th.style.cursor = 'pointer';
+      function clearIndicators() {
+        document.querySelectorAll('#tableSection thead th .sort-indicator').forEach(el => el.remove());
+      }
+      function addIndicator(target, dir) {
+        const span = document.createElement('span');
+        span.className = 'sort-indicator inline-block ml-1 align-middle';
+        span.innerHTML = dir === 'asc'
+          ? '<svg class="w-3 h-3 opacity-90" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7l5 5H7l5-5z"/></svg>'
+          : '<svg class="w-3 h-3 opacity-90" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17l-5-5h10l-5 5z"/></svg>';
+        target.appendChild(span);
+      }
+      th.addEventListener('click', () => {
+        if (sortKey === key) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortKey = key;
+          sortDir = 'asc';
+        }
+        page = 1;
+        applySortAndPaginate();
+        // update indicators
+        clearIndicators();
+        addIndicator(th.querySelector('span') || th, sortDir);
+      });
+    });
+    // Inicializar indicador en el primer click manual cuando el usuario ordene; opcionalmente podríamos definir un orden por defecto y mostrarlo aquí.
+
+    // Paginación eventos
+    if (selPageSize) selPageSize.addEventListener('change', () => {
+      pageSize = parseInt(selPageSize.value, 10) || 10;
+      page = 1;
+      applySortAndPaginate();
+    });
+    if (btnPrev) btnPrev.addEventListener('click', () => { page = Math.max(1, page - 1); applySortAndPaginate(); });
+    if (btnNext) btnNext.addEventListener('click', () => { page = page + 1; applySortAndPaginate(); });
+
+    // Toggle vista en desktop
+    function setView(view) {
+      // view: 'table' | 'cards'
+      if (!tableSection || !cardsSection) return;
+      if (view === 'table') {
+        tableSection.classList.remove('hidden');
+        cardsSection.classList.add('hidden');
+        if (btnViewTable && btnViewCards) {
+          btnViewTable.classList.add('bg-blue-600','text-white');
+          btnViewCards.classList.remove('bg-blue-600','text-white');
+          btnViewCards.classList.add('bg-white','text-slate-700');
+        }
+      } else {
+        tableSection.classList.add('hidden');
+        cardsSection.classList.remove('hidden');
+        if (btnViewTable && btnViewCards) {
+          btnViewCards.classList.add('bg-blue-600','text-white');
+          btnViewTable.classList.remove('bg-blue-600','text-white');
+          btnViewTable.classList.add('bg-white','text-slate-700');
+        }
+      }
+      // Recalcular paginación con la nueva vista
+      page = 1;
+      applySortAndPaginate();
+    }
+    if (btnViewTable) btnViewTable.addEventListener('click', () => setView('table'));
+    if (btnViewCards) btnViewCards.addEventListener('click', () => setView('cards'));
+
+    // CSV export (filtradas, sin limitar por paginación)
+    function exportCSV() {
+      const visible = rows.filter(el => !el.classList.contains('hidden'));
+      const header = ['Nombre del cliente','Número de habitación','Fecha de Ingreso','Fecha de Salida','Tipo de Pago','Monto','Monto en letras'];
+      const lines = [header.join(',')];
+      visible.forEach(el => {
+        const vals = [el.dataset.nombre, el.dataset.hab, el.dataset.ingreso, el.dataset.salida, el.dataset.pago, el.dataset.monto, el.dataset.letras]
+          .map(v => '"' + (v || '').toString().replace(/"/g,'""') + '"');
+        lines.push(vals.join(','));
+      });
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'rentas.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+    // Botón export (lo añadimos al lado derecho de paginación)
+    const exportBtn = document.createElement('button');
+    exportBtn.innerHTML = '<i class="fa-solid fa-file-export mr-1.5"></i> Exportar CSV';
+    exportBtn.className = 'px-3 py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 inline-flex items-center';
+    const pagControls = document.getElementById('rentPageNext')?.parentElement?.parentElement;
+    if (pagControls) { pagControls.appendChild(exportBtn); exportBtn.addEventListener('click', exportCSV); }
+
+    // Inicializar vista según breakpoint (cards en móvil/tablet, tabla en escritorio)
+    const prefersTable = window.matchMedia('(min-width: 1024px)').matches; // lg
+    setView(prefersTable ? 'table' : 'cards');
+  });
+</script>
