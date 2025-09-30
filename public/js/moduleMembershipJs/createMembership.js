@@ -5,6 +5,10 @@ const MembershipUI = {
     this.bindEvents(); // 2. Asignar eventos
     this.setMinDate();
     this.triggerInitialEvents();
+
+    // Hacer campos calculados de solo lectura
+    if (this.precioFinalInput) this.precioFinalInput.readOnly = true;
+    if (this.fechaFinInput) this.fechaFinInput.readOnly = true;
   },
 
   // 1. Guardar todos los elementos en un solo lugar
@@ -132,10 +136,10 @@ const MembershipUI = {
       });
     }
 
-    // Calcular fecha de fin
+    // Recalcular cuando cambia la fecha de inicio
     if (this.fechaInicioInput) {
       this.fechaInicioInput.addEventListener("change", () => {
-        this.calcularFechaFin();
+        this.updateCalculatedDetails();
       });
     }
 
@@ -146,10 +150,19 @@ const MembershipUI = {
       });
     }
 
-    // Aplicar descuento (solo para admin)
+    // Recalcular cuando se aplica un descuento
     if (this.aplicarDescuentoBtn) {
       this.aplicarDescuentoBtn.addEventListener("click", () => {
-        this.aplicarDescuento();
+        const descuento = parseInt(this.descuentoInput.value) || 0;
+        if (descuento < 0 || descuento > 100) {
+          this.showMessage(
+            this.membershipMessage,
+            "El descuento debe estar entre 0 y 100%",
+            "error"
+          );
+          return;
+        }
+        this.updateCalculatedDetails();
       });
     }
   },
@@ -650,16 +663,49 @@ const MembershipUI = {
       "Crear Membresía (complete primero el cliente)";
   },
 
+  updateCalculatedDetails: async function () {
+    const id_tipo_membresia = this.tipoMembresiaSelect.value;
+    const fecha_inicio = this.fechaInicioInput.value;
+    const descuento = this.descuentoInput ? parseInt(this.descuentoInput.value) || 0 : 0;
+
+    if (!id_tipo_membresia || !fecha_inicio) {
+      return; // No hacer nada si falta información
+    }
+
+    try {
+      this.showMessage(this.membershipMessage, "Calculando...", "success");
+
+      const resp = await fetch("/memberships/api/calculate-details", {
+        method: "POST",
+        body: JSON.stringify({ id_tipo_membresia, fecha_inicio, descuento }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        throw new Error(data.error || "Error del servidor");
+      }
+
+      this.precioFinalInput.value = data.precio_final;
+      this.precioFinalHidden.value = data.precio_final;
+      this.fechaFinInput.value = data.fecha_fin;
+      this.membershipMessage.classList.add("hidden");
+
+    } catch (err) {
+      console.error("Error al calcular detalles:", err);
+      this.showMessage(this.membershipMessage, `Error: ${err.message}`, "error");
+    }
+  },
+
   handleTipoMembresiaChange: function (e) {
     const selectedOption = e.target.options[e.target.selectedIndex];
     this.maxIntegrantes = parseInt(selectedOption.dataset.max, 10);
-    this.precioBase = parseFloat(selectedOption.dataset.precio);
 
-    this.aplicarPrecioConDescuento();
-
-    if (this.fechaInicioInput.value) {
-      this.calcularFechaFin();
-    }
+    this.updateCalculatedDetails(); // Llamada a la API
 
     if (this.maxIntegrantes > 1) {
       this.integrantesSection.classList.remove("hidden");
@@ -670,20 +716,6 @@ const MembershipUI = {
       this.integrantesSection.classList.add("hidden");
       this.integrantesContainer.innerHTML = "";
     }
-  },
-
-  calcularFechaFin: function () {
-    if (!this.fechaInicioInput.value) return;
-
-    const startDate = new Date(this.fechaInicioInput.value);
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + this.duracionDias);
-
-    const yyyy = endDate.getFullYear();
-    const mm = String(endDate.getMonth() + 1).padStart(2, "0");
-    const dd = String(endDate.getDate()).padStart(2, "0");
-
-    this.fechaFinInput.value = `${yyyy}-${mm}-${dd}`;
   },
 
   agregarIntegrante: function () {
@@ -736,35 +768,6 @@ const MembershipUI = {
       setTimeout(() => {
         this.membershipMessage.classList.add("hidden");
       }, 3000);
-    }
-  },
-
-  aplicarDescuento: function () {
-    const descuento = parseInt(this.descuentoInput.value) || 0;
-    if (descuento < 0 || descuento > 100) {
-      this.showMessage(
-        this.membershipMessage,
-        "El descuento debe estar entre 0 y 100%",
-        "error"
-      );
-      return;
-    }
-
-    this.descuentoAplicado = descuento;
-    this.aplicarPrecioConDescuento();
-    this.showMessage(
-      this.membershipMessage,
-      `Descuento del ${descuento}% aplicado correctamente`,
-      "success"
-    );
-  },
-
-  aplicarPrecioConDescuento: function () {
-    if (this.precioBase) {
-      const precioConDescuento =
-        this.precioBase - this.precioBase * (this.descuentoAplicado / 100);
-      this.precioFinalInput.value = `${precioConDescuento.toFixed(2)}`;
-      this.precioFinalHidden.value = precioConDescuento.toFixed(2);
     }
   },
 

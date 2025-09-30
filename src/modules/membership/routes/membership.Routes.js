@@ -32,6 +32,12 @@ routerMembership.get(
 // Ruta para descargar el QR
 routerMembership.get('/download-qr/:id_activa', MembershipController.downloadQR);
 
+// Ruta para calcular detalles de membresía (precio, fecha fin)
+routerMembership.post(
+  "/api/calculate-details",
+  bind(MembershipController, "calculateDetails")
+);
+
 // Vistas
 routerMembership.get("/", renderMembershipHome);
 routerMembership.get("/createMembership", renderMembershipCreate);

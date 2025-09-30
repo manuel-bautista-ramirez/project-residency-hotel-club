@@ -134,51 +134,14 @@ export const MembershipService = {
     return { cliente, tipo, integrantesDB };
   },
 
-  async generateQRPayload(cliente, tipo, fechaInicio, fechaFin, integrantes = []) {
-    try {
-      // Crear un objeto simple con la información esencial
-      const qrData = {
-        id: cliente.id_cliente,
-        nombre: cliente.nombre_completo,
-        membresia: tipo.nombre,
-        inicio: fechaInicio,
-        fin: fechaFin,
-        // Solo incluir información crítica para evitar datos excesivos
-        integrantes: integrantes.length > 0 ? integrantes.map(i => i.nombre_completo) : []
-      };
-  
-      // Convertir a JSON string y limitar el tamaño
-      const jsonString = JSON.stringify(qrData);
-      
-      // Verificar que no exceda el límite recomendado para QR (∼4KB)
-      if (jsonString.length > 4000) {
-        console.warn('⚠️ Los datos del QR son muy grandes, simplificando...');
-        
-        // Versión simplificada si los datos son demasiado grandes
-        const simplifiedData = {
-          id: cliente.id_cliente,
-          n: cliente.nombre_completo.substring(0, 30), // Limitar nombre
-          m: tipo.nombre.substring(0, 20),
-          i: fechaInicio,
-          f: fechaFin
-        };
-        
-        return JSON.stringify(simplifiedData);
-      }
-  
-      return jsonString;
-  
-    } catch (error) {
-      console.error('❌ Error generando payload QR:', error);
-      // Fallback: datos mínimos esenciales
-      return JSON.stringify({
-        id: cliente.id_cliente,
-        nombre: cliente.nombre_completo,
-        membresia: tipo.nombre,
-        inicio: fechaInicio,
-        fin: fechaFin
-      });
-    }
+  async generateQRPayload(id_activa) {
+    // The most robust QR payload is a simple, unique identifier.
+    // All other details can be fetched from the server upon scanning.
+    // This prevents the QR code from growing too large and failing.
+    const qrData = {
+      id_activa: id_activa,
+    };
+    return JSON.stringify(qrData);
   },
   // Nuevo método para enviar comprobante por email (sin QR)
   async sendMembershipReceiptEmail(
@@ -210,30 +173,40 @@ export const MembershipService = {
       id_cliente,
       id_tipo_membresia,
       fecha_inicio,
-      fecha_fin,
-      precio_final,
       integrantes,
       metodo_pago,
+      descuento,
     } = membershipData;
+
+    // --- REFUERZO DE SEGURIDAD ---
+    // Se ignoran el precio y fecha_fin enviados por el cliente y se recalculan en el servidor.
+    const {
+      precio_final: authoritative_price,
+      fecha_fin: authoritative_end_date,
+    } = await this.calculateMembershipDetails(
+      id_tipo_membresia,
+      fecha_inicio,
+      descuento
+    );
 
     // 1️⃣ Crear contrato en membresias
     const id_membresia = await this.createMembershipContract({
       id_cliente,
       id_tipo_membresia,
       fecha_inicio,
-      fecha_fin,
+      fecha_fin: authoritative_end_date, // Usar valor calculado
     });
 
-    // 2️⃣ Activar membresía (sin QR path inicialmente)
+    // 2️⃣ Activar membresía
     const id_activa = await this.activateMembership({
       id_cliente,
       id_membresia,
       fecha_inicio,
-      fecha_fin,
-      precio_final,
+      fecha_fin: authoritative_end_date, // Usar valor calculado
+      precio_final: authoritative_price, // Usar valor calculado
     });
 
-    // 3️⃣ Registrar integrantes (si es familiar)
+    // 3️⃣ Registrar integrantes
     await this.addFamilyMembers(id_activa, integrantes);
 
     // 4️⃣ Obtener datos para el QR
@@ -244,13 +217,7 @@ export const MembershipService = {
     );
 
     // 5️⃣ Armar payload del QR
-    const payloadQR = await this.generateQRPayload(
-      cliente,
-      tipo,
-      fecha_inicio,
-      fecha_fin,
-      integrantesDB
-    );
+    const payloadQR = await this.generateQRPayload(id_activa);
 
     // 6️⃣ Generar archivo PNG del QR
     const qrPath = await this.generateQRCode(
@@ -267,7 +234,7 @@ export const MembershipService = {
       await MembershipModel.recordPayment({
         id_activa,
         id_metodo_pago: metodo_pago,
-        monto: precio_final,
+        monto: authoritative_price, // Usar valor calculado
       });
     }
 
@@ -276,15 +243,15 @@ export const MembershipService = {
       id_activa
     );
 
-    // 🔟 Enviar email de comprobante (sin QR)
+    // 🔟 Enviar email de comprobante
     await this.sendMembershipReceiptEmail(
       cliente,
       tipo,
       fecha_inicio,
-      fecha_fin,
+      authoritative_end_date, // Usar valor calculado
       integrantesDB,
       membresiaCompleta.metodo_pago,
-      precio_final
+      authoritative_price // Usar valor calculado
     );
 
     // Devolver la información completa para la respuesta
@@ -294,11 +261,44 @@ export const MembershipService = {
       titular: cliente.nombre_completo,
       tipo_membresia: tipo.nombre,
       fecha_inicio: fecha_inicio,
-      fecha_fin: fecha_fin,
-      precio_final: parseFloat(precio_final),
+      fecha_fin: authoritative_end_date,
+      precio_final: parseFloat(authoritative_price),
       metodo_pago: membresiaCompleta.metodo_pago || "No especificado",
       integrantes: integrantesDB,
       qr_path: qrPath,
+    };
+  },
+
+  async calculateMembershipDetails(id_tipo_membresia, fecha_inicio, descuento = 0) {
+    if (!id_tipo_membresia || !fecha_inicio) {
+      throw new Error("El tipo de membresía y la fecha de inicio son requeridos.");
+    }
+
+    const tipoMembresia = await MembershipModel.getTipoMembresiaById(id_tipo_membresia);
+    if (!tipoMembresia) {
+      throw new Error("El tipo de membresía no es válido.");
+    }
+
+    // Calcular fecha de fin
+    const startDate = new Date(fecha_inicio);
+    const endDate = new Date(startDate);
+    // Asumimos que la duración viene en días desde la BD
+    const duracionDias = tipoMembresia.duracion_dias || 30;
+    endDate.setDate(startDate.getDate() + duracionDias);
+
+    const yyyy = endDate.getFullYear();
+    const mm = String(endDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(endDate.getDate()).padStart(2, '0');
+    const fecha_fin_calculada = `${yyyy}-${mm}-${dd}`;
+
+    // Calcular precio final
+    const precioBase = parseFloat(tipoMembresia.precio);
+    const descuentoAplicado = Math.max(0, Math.min(100, descuento)); // Clamp discount between 0-100
+    const precio_final_calculado = precioBase - (precioBase * (descuentoAplicado / 100));
+
+    return {
+      precio_final: precio_final_calculado.toFixed(2),
+      fecha_fin: fecha_fin_calculada,
     };
   },
 

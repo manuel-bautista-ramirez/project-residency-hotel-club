@@ -90,8 +90,30 @@ async renewMembership(req, res) {
     try {
       const { id } = req.params; // id_activa de la membresía a renovar
 
+      const {
+        id_cliente,
+        nombre_completo,
+        telefono,
+        correo,
+        id_tipo_membresia,
+        fecha_inicio,
+        fecha_fin,
+        id_metodo_pago,
+      } = req.body;
+
+      const renewalData = {
+        id_cliente,
+        nombre_completo,
+        telefono,
+        correo,
+        id_tipo_membresia,
+        fecha_inicio,
+        fecha_fin,
+        id_metodo_pago,
+      };
+
       // Delegar toda la lógica de negocio al servicio
-      await MembershipService.renewMembership(id, req.body);
+      await MembershipService.renewMembership(id, renewalData);
 
       res.redirect("/memberships/listMembership?success=Membresía renovada correctamente");
     } catch (error) {
