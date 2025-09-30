@@ -1,5 +1,6 @@
 import { MembershipModel } from "../models/modelMembership.js";
 import { updateMembershipById } from "../models/modelEdit.js";
+import { MembershipService } from "../services/membershipService.js";
 
 export const editMemberController = {
   // Editar membresia - GET
@@ -88,6 +89,7 @@ export const editMemberController = {
 async renewMembership(req, res) {
     try {
       const { id } = req.params; // id_activa de la membresía a renovar
+
       const {
         id_cliente,
         nombre_completo,
@@ -99,43 +101,19 @@ async renewMembership(req, res) {
         id_metodo_pago,
       } = req.body;
 
-      // 1. Actualizar datos del cliente
-      await MembershipModel.updateClient({
+      const renewalData = {
         id_cliente,
         nombre_completo,
         telefono,
         correo,
-      });
-
-      // 2. Desactivar la membresía antigua
-      await MembershipModel.updateEstadoMembresia(id, 'Vencida');
-
-      // 3. Crear el nuevo contrato de membresía
-      const id_membresia = await MembershipModel.createMembershipContract({
-        id_cliente,
         id_tipo_membresia,
         fecha_inicio,
         fecha_fin,
-      });
-
-      // 4. Activar la nueva membresía
-      const tipoMembresia = await MembershipModel.getTipoMembresiaById(id_tipo_membresia);
-      const precio_final = tipoMembresia.precio;
-
-      const id_activa_nueva = await MembershipModel.activateMembership({
-        id_cliente,
-        id_membresia,
-        fecha_inicio,
-        fecha_fin,
-        precio_final,
-      });
-
-      // 5. Registrar el pago
-      await MembershipModel.recordPayment({
-        id_activa: id_activa_nueva,
         id_metodo_pago,
-        monto: precio_final,
-      });
+      };
+
+      // Delegar toda la lógica de negocio al servicio
+      await MembershipService.renewMembership(id, renewalData);
 
       res.redirect("/memberships/listMembership?success=Membresía renovada correctamente");
     } catch (error) {

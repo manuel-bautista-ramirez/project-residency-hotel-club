@@ -74,7 +74,4 @@ router.get("/admin", roleMiddleware("Administrador"), (req, res) => {
     "<h1>Panel de Administración</h1>");
 });
 
-
-
-
 export default router;
