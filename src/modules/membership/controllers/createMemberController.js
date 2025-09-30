@@ -33,8 +33,26 @@ const MembershipController = {
   // Crear membresía (familiar o individual)
   async createMembership(req, res) {
     try {
-      // Delegar toda la lógica de negocio al servicio
-      const newMembershipData = await MembershipService.createCompleteMembership(req.body);
+      // Construir explícitamente el objeto para el servicio por seguridad
+      const {
+        id_cliente,
+        id_tipo_membresia,
+        fecha_inicio,
+        integrantes,
+        metodo_pago,
+        descuento,
+      } = req.body;
+
+      const membershipData = {
+        id_cliente,
+        id_tipo_membresia,
+        fecha_inicio,
+        integrantes,
+        metodo_pago,
+        descuento: descuento || 0, // Asegurar que el descuento sea un número
+      };
+
+      const newMembershipData = await MembershipService.createCompleteMembership(membershipData);
 
       // Responder con la información completa que devuelve el servicio
       res.json({
@@ -49,6 +67,21 @@ const MembershipController = {
         message: "Error al crear la membresía",
         error: err.message,
       });
+    }
+  },
+
+  async calculateDetails(req, res) {
+    try {
+      const { id_tipo_membresia, fecha_inicio, descuento } = req.body;
+      const details = await MembershipService.calculateMembershipDetails(
+        id_tipo_membresia,
+        fecha_inicio,
+        descuento
+      );
+      res.json(details);
+    } catch (error) {
+      console.error("Error calculating membership details:", error);
+      res.status(400).json({ error: error.message });
     }
   },
 
