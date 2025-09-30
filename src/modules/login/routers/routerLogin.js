@@ -33,8 +33,7 @@ router.post("/password-reset/reset/:token", resetPassword);
 router.get("/login", (req, res) =>
   res.render("login", {
     layout: "main",
-    title: "Inicio",
-    showFooter: false,
+    title: "Inicio"
   })
 );
 
@@ -66,13 +65,17 @@ router.get("/home", authMiddleware, (req, res) => {
   });
 });
 
-router.get("/admin", roleMiddleware("Administrador"), (req, res) => {
-  res.send("<h1>Panel de Administración</h1>");
-});
-
-
 router.get("/services", roleMiddleware("Administrador"), (req, res) => {
   res.send("<h1>Panel de Servicios - Gestión de comunicaciones con clientes (correo, WhatsApp)</h1>");
 });
+
+router.get("/admin", roleMiddleware("Administrador"), (req, res) => {
+  res.send(
+    "<h1>Panel de Administración</h1>");
+});
+router.get("/services", roleMiddleware("Administrador"), (req, res) => {
+  res.send("<h1>Panel de Servicios - Gestión de comunicaciones con clientes (correo, WhatsApp)</h1>");
+});
+
 
 export default router;
