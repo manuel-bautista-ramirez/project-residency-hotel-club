@@ -1,43 +1,21 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Área de Membresías</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .card-height {
-            height: 180px;
-        }
-
-        @media (max-width: 768px) {
-            .card-height {
-                height: 160px;
-            }
-        }
-    </style>
-</head>
+<title>{{title}}</title>
+<link rel="stylesheet" href="/css/all.min.css">
 {{>navbar}}
 
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-6xl mx-auto mt-20">
-        <!-- Header -->
         <div class="text-center mb-10">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-                <i class="fas fa-id-card-alt mr-3 text-blue-500"></i>Área de Membresías
+                <i class="fa-solid fa-address-card text-blue-600"></i>Área de Membresías
             </h1>
-            <p class="text-gray-600 max-w-2xl mx-auto">Gestiona las membresías de tu organización de forma eficiente y
-                segura</p>
+            <p class="text-gray-600 max-w-2xl mx-auto">Aquí podrás gestionar el área de membresías</p>
         </div>
-
-        {{!-- Si es administrador --}}
+        {{!-- Si es administrador podrá crear, ver y generar reportes--}}
         {{#if isAdmin}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- Crear nueva membresía -->
             <a href="memberships/createMembership" class="block group">
                 <div
-                    class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    class="bg-white rounded-xl shadow-md overflow-hidden h-[160px] md:h-[180px] flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
                     <div class="p-5 flex items-start">
                         <div class="bg-blue-100 p-3 rounded-lg mr-4 flex-shrink-0">
                             <i class="fas fa-plus-circle text-blue-600 text-xl"></i>
@@ -50,11 +28,10 @@
                     <div class="bg-blue-500 h-2 w-0 group-hover:w-full transition-all duration-300"></div>
                 </div>
             </a>
-
             {{!-- Ver lista de membresías --}}
             <a href="/memberships/listMembership" class="block group">
                 <div
-                    class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    class="bg-white rounded-xl shadow-md overflow-hidden h-[160px] md:h-[180px] flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
                     <div class="p-5 flex items-start">
                         <div class="bg-green-100 p-3 rounded-lg mr-4 flex-shrink-0">
                             <i class="fas fa-list text-green-600 text-xl"></i>
@@ -67,11 +44,10 @@
                     <div class="bg-green-500 h-2 w-0 group-hover:w-full transition-all duration-300"></div>
                 </div>
             </a>
-
             {{!-- Generar Reportes --}}
             <a href="/memberships/reports" class="block group md:col-span-2 lg:col-span-1">
                 <div
-                    class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    class="bg-white rounded-xl shadow-md overflow-hidden h-[160px] md:h-[180px] flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
                     <div class="p-5 flex items-start">
                         <div class="bg-purple-100 p-3 rounded-lg mr-4 flex-shrink-0">
                             <i class="fas fa-chart-bar text-purple-600 text-xl"></i>
@@ -86,12 +62,11 @@
             </a>
         </div>
         {{else}}
-        {{!-- Si es recepcionista --}}
+        {{!-- Si es recepcionista solo podrá ver y crear membresías--}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mx-auto">
-            <!-- Crear nueva membresía -->
             <a href="/memberships/createMembership" class="block group">
                 <div
-                    class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    class="bg-white rounded-xl shadow-md overflow-hidden h-[160px] md:h-[180px] flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
                     <div class="p-5 flex items-start">
                         <div class="bg-blue-100 p-3 rounded-lg mr-4 flex-shrink-0">
                             <i class="fas fa-plus-circle text-blue-600 text-xl"></i>
@@ -104,11 +79,9 @@
                     <div class="bg-blue-500 h-2 w-0 group-hover:w-full transition-all duration-300"></div>
                 </div>
             </a>
-
-            <!-- Ver lista de membresías -->
             <a href="/memberships/listMembership" class="block group">
                 <div
-                    class="bg-white rounded-xl shadow-md overflow-hidden card-height flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
+                    class="bg-white rounded-xl shadow-md overflow-hidden h-[160px] md:h-[180px] flex flex-col justify-between transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-xl">
                     <div class="p-5 flex items-start">
                         <div class="bg-green-100 p-3 rounded-lg mr-4 flex-shrink-0">
                             <i class="fas fa-list text-green-600 text-xl"></i>
@@ -124,23 +97,4 @@
         </div>
         {{/if}}
     </div>
-
-    <script>
-        // Script para manejar el efecto de hover consistente
-        document.addEventListener('DOMContentLoaded', function () {
-            const cards = document.querySelectorAll('.group');
-
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function () {
-                    this.querySelector('.h-2').classList.add('w-full');
-                });
-
-                card.addEventListener('mouseleave', function () {
-                    this.querySelector('.h-2').classList.remove('w-full');
-                });
-            });
-        });
-    </script>
 </body>
-
-</html>

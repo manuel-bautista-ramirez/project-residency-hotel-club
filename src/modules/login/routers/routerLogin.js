@@ -73,8 +73,9 @@ router.get("/admin", roleMiddleware("Administrador"), (req, res) => {
   res.send(
     "<h1>Panel de Administración</h1>");
 });
-
-
+router.get("/services", roleMiddleware("Administrador"), (req, res) => {
+  res.send("<h1>Panel de Servicios - Gestión de comunicaciones con clientes (correo, WhatsApp)</h1>");
+});
 
 
 export default router;

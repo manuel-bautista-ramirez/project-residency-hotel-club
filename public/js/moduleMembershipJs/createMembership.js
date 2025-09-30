@@ -1,13 +1,18 @@
 // Funciones de utilidad
 const MembershipUI = {
   init: function () {
-    this.bindEvents();
+    this.cacheDOM(); // 1. Guardar elementos del DOM
+    this.bindEvents(); // 2. Asignar eventos
     this.setMinDate();
     this.triggerInitialEvents();
+
+    // Hacer campos calculados de solo lectura
+    if (this.precioFinalInput) this.precioFinalInput.readOnly = true;
+    if (this.fechaFinInput) this.fechaFinInput.readOnly = true;
   },
 
-  bindEvents: function () {
-    // Referencias a elementos del DOM
+  // 1. Guardar todos los elementos en un solo lugar
+  cacheDOM: function () {
     this.formCliente = document.getElementById("form-cliente");
     this.formMembership = document.getElementById("createMemberForm");
     this.clienteMessage = document.getElementById("cliente-message");
@@ -41,9 +46,12 @@ const MembershipUI = {
     this.duracionDias = 30;
     this.precioBase = 0;
     this.descuentoAplicado = 0;
-    this.procesandoCliente = false; // ← Nueva variable
-    this.procesandoMembresia = false; // ← Nueva variable
+    this.procesandoCliente = false;
+    this.procesandoMembresia = false;
+  },
 
+  // 2. Asignar todos los eventos
+  bindEvents: function () {
     // Manejar envío del formulario de cliente
     if (this.formCliente) {
       this.formCliente.addEventListener("submit", (e) => {
@@ -52,7 +60,10 @@ const MembershipUI = {
           console.log("⚠️ Ya se está procesando un cliente, ignorando envío");
           return;
         }
-        this.mostrarModalCliente();
+        // ✅ INTEGRACIÓN: Primero valida, y solo si es válido, muestra el modal.
+        if (Validator.validateForm(this.formCliente)) {
+          this.mostrarModalCliente();
+        }
       });
     }
 
@@ -84,15 +95,19 @@ const MembershipUI = {
           );
           return;
         }
-        if (!this.clienteRegistrado) {
-          this.showMessage(
-            this.membershipMessage,
-            "Debe registrar un cliente primero",
-            "error"
-          );
-          return;
+        // ✅ INTEGRACIÓN EN EL SEGUNDO FORMULARIO
+        if (Validator.validateForm(this.formMembership)) {
+          // Lógica adicional del formulario de membresía
+          if (!this.clienteRegistrado) {
+            this.showMessage(
+              this.membershipMessage,
+              "Debe registrar un cliente primero",
+              "error"
+            );
+            return;
+          }
+          this.mostrarModalMembresia();
         }
-        this.mostrarModalMembresia();
       });
     }
 
@@ -121,10 +136,10 @@ const MembershipUI = {
       });
     }
 
-    // Calcular fecha de fin
+    // Recalcular cuando cambia la fecha de inicio
     if (this.fechaInicioInput) {
       this.fechaInicioInput.addEventListener("change", () => {
-        this.calcularFechaFin();
+        this.updateCalculatedDetails();
       });
     }
 
@@ -135,14 +150,24 @@ const MembershipUI = {
       });
     }
 
-    // Aplicar descuento (solo para admin)
+    // Recalcular cuando se aplica un descuento
     if (this.aplicarDescuentoBtn) {
       this.aplicarDescuentoBtn.addEventListener("click", () => {
-        this.aplicarDescuento();
+        const descuento = parseInt(this.descuentoInput.value) || 0;
+        if (descuento < 0 || descuento > 100) {
+          this.showMessage(
+            this.membershipMessage,
+            "El descuento debe estar entre 0 y 100%",
+            "error"
+          );
+          return;
+        }
+        this.updateCalculatedDetails();
       });
     }
   },
 
+  // 3. El resto de las funciones se mantienen igual
   setMinDate: function () {
     // Establecer fecha mínima como hoy
     const today = new Date();
@@ -169,10 +194,10 @@ const MembershipUI = {
     const correo = formData.get("correo");
 
     this.clienteModalContent.innerHTML = `
-            <p><strong>Nombre:</strong> ${nombre}</p>
-            <p><strong>Teléfono:</strong> ${telefono}</p>
-            <p><strong>Correo:</strong> ${correo}</p>
-        `;
+          <p><strong>Nombre:</strong> ${nombre}</p>
+          <p><strong>Teléfono:</strong> ${telefono}</p>
+          <p><strong>Correo:</strong> ${correo}</p>
+      `;
 
     this.clienteModal.classList.remove("hidden");
   },
@@ -287,18 +312,18 @@ const MembershipUI = {
     }
 
     this.membershipModalContent.innerHTML = `
-            <p><strong>Tipo de membresía:</strong> ${tipoMembresiaText}</p>
-            <p><strong>Fecha de inicio:</strong> ${fechaInicio}</p>
-            <p><strong>Fecha de fin:</strong> ${fechaFin}</p>
-            <p><strong>Método de pago:</strong> ${metodoPagoText}</p>
-            <p><strong>Precio final:</strong> ${precioFinal}</p>
-            ${integrantesHTML}
-            ${
-              this.descuentoAplicado > 0
-                ? `<p><strong>Descuento aplicado:</strong> ${this.descuentoAplicado}%</p>`
-                : ""
-            }
-        `;
+          <p><strong>Tipo de membresía:</strong> ${tipoMembresiaText}</p>
+          <p><strong>Fecha de inicio:</strong> ${fechaInicio}</p>
+          <p><strong>Fecha de fin:</strong> ${fechaFin}</p>
+          <p><strong>Método de pago:</strong> ${metodoPagoText}</p>
+          <p><strong>Precio final:</strong> ${precioFinal}</p>
+          ${integrantesHTML}
+          ${
+            this.descuentoAplicado > 0
+              ? `<p><strong>Descuento aplicado:</strong> ${this.descuentoAplicado}%</p>`
+              : ""
+          }
+      `;
 
     this.membershipModal.classList.remove("hidden");
   },
@@ -484,88 +509,100 @@ const MembershipUI = {
     let integrantesHTML = "";
     if (data.integrantes && data.integrantes.length > 0) {
       integrantesHTML = `
-        <div class="mt-4">
-          <h4 class="font-medium text-green-700 mb-2">Integrantes:</h4>
-          <ul class="list-disc pl-5">
-            ${data.integrantes
-              .map((i) => `<li>${i.nombre_completo}</li>`)
-              .join("")}
-          </ul>
-        </div>
-      `;
+              <div class="mt-4">
+                  <h4 class="font-medium text-green-700 mb-2">Integrantes:</h4>
+                  <ul class="list-disc pl-5">
+                      ${data.integrantes
+                        .map((i) => `<li>${i.nombre_completo}</li>`)
+                        .join("")}
+                  </ul>
+              </div>
+          `;
     }
 
     // Crear el modal de éxito
     const modalHTML = `
-      <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <div class="text-center mb-6">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-              <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-            </div>
-            <h3 class="text-lg font-bold text-green-800">¡Membresía Creada Exitosamente!</h3>
-          </div>
-          
-          <div class="border border-green-200 rounded-lg p-4 mb-4">
-            <h4 class="font-medium text-green-700 mb-3">Información de la Membresía:</h4>
-            <div class="space-y-2 text-sm">
-              <p><strong>Titular:</strong> ${data.titular}</p>
-              <p><strong>Tipo de membresía:</strong> ${data.tipo_membresia}</p>
-              <p><strong>Fecha de inicio:</strong> ${data.fecha_inicio}</p>
-              <p><strong>Fecha de expiración:</strong> ${data.fecha_fin}</p>
-              <p><strong>Método de pago:</strong> ${data.metodo_pago}</p>
-              <p><strong>Total pagado:</strong> $${data.precio_final.toFixed(
-                2
-              )}</p>
-              <p><strong>Total en letras:</strong> ${precioEnLetras}</p>
-            </div>
-            ${integrantesHTML}
-          </div>
+          <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <div class="text-center mb-6">
+                      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                          <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                      </div>
+                      <h3 class="text-lg font-bold text-green-800">¡Membresía Creada Exitosamente!</h3>
+                  </div>
+                  
+                  <div class="border border-green-200 rounded-lg p-4 mb-4">
+                      <h4 class="font-medium text-green-700 mb-3">Información de la Membresía:</h4>
+                      <div class="space-y-2 text-sm">
+                          <p><strong>Titular:</strong> ${data.titular}</p>
+                          <p><strong>Tipo de membresía:</strong> ${
+                            data.tipo_membresia
+                          }</p>
+                          <p><strong>Fecha de inicio:</strong> ${
+                            data.fecha_inicio
+                          }</p>
+                          <p><strong>Fecha de expiración:</strong> ${
+                            data.fecha_fin
+                          }</p>
+                          <p><strong>Método de pago:</strong> ${
+                            data.metodo_pago
+                          }</p>
+                          <p><strong>Total pagado:</strong> $${data.precio_final.toFixed(
+                            2
+                          )}</p>
+                          <p><strong>Total en letras:</strong> ${precioEnLetras}</p>
+                      </div>
+                      ${integrantesHTML}
+                  </div>
 
-          <div class="border border-green-200 rounded-lg p-4 mb-4">
-            <h4 class="font-medium text-green-700 mb-3 text-center">Código QR de Acceso:</h4>
-            <div class="flex justify-center mb-3">
-              <img id="qrImage" src="${data.qr_path}?t=${new Date().getTime()}" 
-                   alt="QR de membresía ${data.titular}" 
-                   class="w-48 h-48 border border-gray-300 rounded object-contain bg-white"
-                   onerror="this.style.display='none'; document.getElementById('qrError').style.display='block';">
-            </div>
-            <div id="qrError" class="text-center text-yellow-600 mb-3" style="display: none;">
-              <i class="fas fa-exclamation-triangle"></i> El QR se está generando...
-            </div>
-            <div class="text-center">
-              <button onclick="MembershipUI.descargarQR(${data.id_activa})" 
-                      class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
-                </svg>
-                Descargar QR
-              </button>
-            </div>
-          </div>
+                  <div class="border border-green-200 rounded-lg p-4 mb-4">
+                      <h4 class="font-medium text-green-700 mb-3 text-center">Código QR de Acceso:</h4>
+                      <div class="flex justify-center mb-3">
+                          <img id="qrImage" src="${
+                            data.qr_path
+                          }?t=${new Date().getTime()}" 
+                              alt="QR de membresía ${data.titular}" 
+                              class="w-48 h-48 border border-gray-300 rounded object-contain bg-white"
+                              onerror="this.style.display='none'; document.getElementById('qrError').style.display='block';">
+                      </div>
+                      <div id="qrError" class="text-center text-yellow-600 mb-3" style="display: none;">
+                          <i class="fas fa-exclamation-triangle"></i> El QR se está generando...
+                      </div>
+                      <div class="text-center">
+                          <button onclick="MembershipUI.descargarQR(${
+                            data.id_activa
+                          })" 
+                                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                              </svg>
+                              Descargar QR
+                          </button>
+                      </div>
+                  </div>
 
-          <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-            <p class="text-sm text-green-700 text-center">
-              <strong>¡Importante!</strong> Se ha enviado un comprobante a su correo electrónico.
-              Presente este QR en recepción para acceder a las instalaciones.
-            </p>
-          </div>
+                  <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                      <p class="text-sm text-green-700 text-center">
+                          <strong>¡Importante!</strong> Se ha enviado un comprobante a su correo electrónico.
+                          Presente este QR en recepción para acceder a las instalaciones.
+                      </p>
+                  </div>
 
-          <div class="flex justify-center space-x-3">
-            <button onclick="MembershipUI.cerrarModalExito()" 
-                    class="px-6 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-              Cerrar
-            </button>
-            <button onclick="window.location.href='/memberships/listMembership'" 
-                    class="px-6 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">
-              Ver Lista de Membresías
-            </button>
+                  <div class="flex justify-center space-x-3">
+                      <button onclick="MembershipUI.cerrarModalExito()" 
+                              class="px-6 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                          Cerrar
+                      </button>
+                      <button onclick="window.location.href='/memberships/listMembership'" 
+                              class="px-6 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">
+                          Ver Lista de Membresías
+                      </button>
+                  </div>
+              </div>
           </div>
-        </div>
-      </div>
-    `;
+      `;
 
     // Agregar el modal al body
     document.body.insertAdjacentHTML("beforeend", modalHTML);
@@ -626,16 +663,49 @@ const MembershipUI = {
       "Crear Membresía (complete primero el cliente)";
   },
 
+  updateCalculatedDetails: async function () {
+    const id_tipo_membresia = this.tipoMembresiaSelect.value;
+    const fecha_inicio = this.fechaInicioInput.value;
+    const descuento = this.descuentoInput ? parseInt(this.descuentoInput.value) || 0 : 0;
+
+    if (!id_tipo_membresia || !fecha_inicio) {
+      return; // No hacer nada si falta información
+    }
+
+    try {
+      this.showMessage(this.membershipMessage, "Calculando...", "success");
+
+      const resp = await fetch("/memberships/api/calculate-details", {
+        method: "POST",
+        body: JSON.stringify({ id_tipo_membresia, fecha_inicio, descuento }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        throw new Error(data.error || "Error del servidor");
+      }
+
+      this.precioFinalInput.value = data.precio_final;
+      this.precioFinalHidden.value = data.precio_final;
+      this.fechaFinInput.value = data.fecha_fin;
+      this.membershipMessage.classList.add("hidden");
+
+    } catch (err) {
+      console.error("Error al calcular detalles:", err);
+      this.showMessage(this.membershipMessage, `Error: ${err.message}`, "error");
+    }
+  },
+
   handleTipoMembresiaChange: function (e) {
     const selectedOption = e.target.options[e.target.selectedIndex];
     this.maxIntegrantes = parseInt(selectedOption.dataset.max, 10);
-    this.precioBase = parseFloat(selectedOption.dataset.precio);
 
-    this.aplicarPrecioConDescuento();
-
-    if (this.fechaInicioInput.value) {
-      this.calcularFechaFin();
-    }
+    this.updateCalculatedDetails(); // Llamada a la API
 
     if (this.maxIntegrantes > 1) {
       this.integrantesSection.classList.remove("hidden");
@@ -646,20 +716,6 @@ const MembershipUI = {
       this.integrantesSection.classList.add("hidden");
       this.integrantesContainer.innerHTML = "";
     }
-  },
-
-  calcularFechaFin: function () {
-    if (!this.fechaInicioInput.value) return;
-
-    const startDate = new Date(this.fechaInicioInput.value);
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + this.duracionDias);
-
-    const yyyy = endDate.getFullYear();
-    const mm = String(endDate.getMonth() + 1).padStart(2, "0");
-    const dd = String(endDate.getDate()).padStart(2, "0");
-
-    this.fechaFinInput.value = `${yyyy}-${mm}-${dd}`;
   },
 
   agregarIntegrante: function () {
@@ -676,12 +732,12 @@ const MembershipUI = {
         "mb-2"
       );
       integranteDiv.innerHTML = `
-                <input type="text" name="integrantes[]" placeholder="Nombre completo del integrante" required 
-                       class="flex-1 px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
-                <button type="button" class="removeBtn px-3 py-2 border border-transparent rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                    ❌ Eliminar
-                </button>
-            `;
+              <input type="text" name="integrantes[]" placeholder="Nombre completo del integrante" required 
+                  class="flex-1 px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+              <button type="button" class="removeBtn px-3 py-2 border border-transparent rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                  ❌ Eliminar
+              </button>
+          `;
       this.integrantesContainer.appendChild(integranteDiv);
 
       integranteDiv
@@ -712,35 +768,6 @@ const MembershipUI = {
       setTimeout(() => {
         this.membershipMessage.classList.add("hidden");
       }, 3000);
-    }
-  },
-
-  aplicarDescuento: function () {
-    const descuento = parseInt(this.descuentoInput.value) || 0;
-    if (descuento < 0 || descuento > 100) {
-      this.showMessage(
-        this.membershipMessage,
-        "El descuento debe estar entre 0 y 100%",
-        "error"
-      );
-      return;
-    }
-
-    this.descuentoAplicado = descuento;
-    this.aplicarPrecioConDescuento();
-    this.showMessage(
-      this.membershipMessage,
-      `Descuento del ${descuento}% aplicado correctamente`,
-      "success"
-    );
-  },
-
-  aplicarPrecioConDescuento: function () {
-    if (this.precioBase) {
-      const precioConDescuento =
-        this.precioBase - this.precioBase * (this.descuentoAplicado / 100);
-      this.precioFinalInput.value = `${precioConDescuento.toFixed(2)}`;
-      this.precioFinalHidden.value = precioConDescuento.toFixed(2);
     }
   },
 

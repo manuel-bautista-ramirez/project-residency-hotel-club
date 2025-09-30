@@ -33,106 +33,32 @@ const MembershipController = {
   // Crear membresía (familiar o individual)
   async createMembership(req, res) {
     try {
+      // Construir explícitamente el objeto para el servicio por seguridad
       const {
         id_cliente,
         id_tipo_membresia,
         fecha_inicio,
-        fecha_fin,
-        precio_final,
         integrantes,
         metodo_pago,
+        descuento,
       } = req.body;
 
-      // 1️⃣ Crear contrato en membresias
-      const id_membresia = await MembershipService.createMembershipContract({
+      const membershipData = {
         id_cliente,
         id_tipo_membresia,
         fecha_inicio,
-        fecha_fin,
-      });
+        integrantes,
+        metodo_pago,
+        descuento: descuento || 0, // Asegurar que el descuento sea un número
+      };
 
-      // 2️⃣ Activar membresía (sin QR path inicialmente)
-      const id_activa = await MembershipService.activateMembership({
-        id_cliente,
-        id_membresia,
-        fecha_inicio,
-        fecha_fin,
-        precio_final,
-      });
+      const newMembershipData = await MembershipService.createCompleteMembership(membershipData);
 
-      // 3️⃣ Registrar integrantes (si es familiar)
-      await MembershipService.addFamilyMembers(id_activa, integrantes);
-
-      // 4️⃣ Obtener datos para el QR
-      const { cliente, tipo, integrantesDB } =
-        await MembershipService.getMembershipDetails(
-          id_cliente,
-          id_tipo_membresia,
-          id_activa
-        );
-
-      // 5️⃣ Armar payload del QR
-      const payloadQR = await MembershipService.generateQRPayload(
-        cliente,
-        tipo,
-        fecha_inicio,
-        fecha_fin,
-        integrantesDB
-      );
-
-      console.log("📋 Payload QR generado:", payloadQR);
-
-      // 6️⃣ Generar archivo PNG del QR
-      const qrPath = await MembershipService.generateQRCode(
-        payloadQR,
-        id_activa,
-        cliente.nombre_completo
-      );
-
-      // 7️⃣ Actualizar la ruta del QR en la base de datos (debe ser ruta relativa)
-      await MembershipModel.updateQRPath(id_activa, qrPath);
-
-      // 8️⃣ Registrar el pago
-      if (metodo_pago) {
-        await MembershipModel.recordPayment({
-          id_activa,
-          id_metodo_pago: metodo_pago,
-          monto: precio_final,
-        });
-      }
-
-      // 9️⃣ Obtener información completa para el modal
-      const membresiaCompleta = await MembershipModel.getMembresiaConPago(
-        id_activa
-      );
-
-      // 🔟 Enviar email de comprobante (sin QR)
-      await MembershipService.sendMembershipReceiptEmail(
-        cliente,
-        tipo,
-        fecha_inicio,
-        fecha_fin,
-        integrantesDB,
-        membresiaCompleta.metodo_pago,
-        precio_final
-      );
-
-      // Responder con la información completa para el modal
+      // Responder con la información completa que devuelve el servicio
       res.json({
         success: true,
         message: "Membresía creada exitosamente",
-        data: {
-          id_activa: id_activa,
-          id_membresia: id_membresia,
-          titular: cliente.nombre_completo,
-          tipo_membresia: tipo.nombre,
-          fecha_inicio: fecha_inicio,
-          fecha_fin: fecha_fin,
-          precio_final: parseFloat(precio_final),
-          metodo_pago: membresiaCompleta.metodo_pago || "No especificado",
-          integrantes: integrantesDB,
-          qr_path: qrPath,
-        },
+        data: newMembershipData,
       });
     } catch (err) {
       console.error("Error en createMembership:", err);
@@ -141,6 +67,47 @@ const MembershipController = {
         message: "Error al crear la membresía",
         error: err.message,
       });
+    }
+  },
+
+  async calculateDetails(req, res) {
+    try {
+      const { id_tipo_membresia, fecha_inicio, descuento } = req.body;
+      const details = await MembershipService.calculateMembershipDetails(
+        id_tipo_membresia,
+        fecha_inicio,
+        descuento
+      );
+      res.json(details);
+    } catch (error) {
+      console.error("Error calculating membership details:", error);
+      res.status(400).json({ error: error.message });
+    }
+  },
+
+  async serveQRCode(req, res) {
+    try {
+      const { id_activa } = req.params;
+      const membresia = await MembershipModel.getMembresiaById(id_activa);
+
+      if (!membresia || !membresia.qr_path) {
+        return res.status(404).json({ error: "QR no encontrado" });
+      }
+
+      // La ruta en la BD es relativa (ej: "/uploads/qrs/qr_31_nombre.png")
+      // Construir la ruta absoluta: public + ruta_relativa
+      const qrFullPath = path.join(process.cwd(), "public", membresia.qr_path);
+
+      if (!fs.existsSync(qrFullPath)) {
+        return res.status(404).json({ error: "Archivo QR no encontrado" });
+      }
+
+      // Servir el archivo directamente
+      res.sendFile(qrFullPath);
+
+    } catch (error) {
+      console.error("Error al servir QR:", error);
+      res.status(500).json({ error: "Error al obtener el QR" });
     }
   },
 
