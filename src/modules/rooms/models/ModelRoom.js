@@ -1,5 +1,5 @@
 // src/modules/rooms/models/ModelRoom.js
-import { pool } from "../../../dataBase/conecctionDataBase.js"; // conexión MySQL
+import { pool } from "../../../dataBase/connectionDataBase.js"; // conexión MySQL
 
 //  get all habitations created
 export const getHabitaciones = async () => {

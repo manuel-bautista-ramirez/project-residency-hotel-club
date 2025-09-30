@@ -1,39 +1,38 @@
 import bcrypt from "bcrypt";
-import { pool } from "../../../dataBase/conecctionDataBase.js";
+import { pool } from "../../../dataBase/connectionDataBase.js";
 
 const SALT_ROUNDS = 10; // Constante para las rondas de hash
 
-// 👉 Agregar usuario
+//  Agregar usuario
 export const addUser = async (username, password, role) => {
   try {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const query =
       "INSERT INTO users_hotel (username, password, role) VALUES (?, ?, ?)";
     const [result] = await pool.query(query, [username, hashedPassword, role]);
-    console.log(`✅ Usuario ${username} agregado con ID ${result.insertId}.`);
+    console.log(`Usuario ${username} agregado con ID ${result.insertId}.`);
   } catch (error) {
-    console.error(`❌ Error al agregar el usuario ${username}:`, error);
+    console.error(`Error al agregar el usuario ${username}:`, error);
     throw error;
   }
 };
 
-// 👉 Buscar usuario por username
+// Buscar usuario por username
 export const findUserByUsername = async (username) => {
   try {
     const query = "SELECT * FROM users_hotel WHERE username = ?";
     const [rows] = await pool.query(query, [username]);
-    console.log("Resultados:", rows);
     return rows.length > 0 ? rows[0] : null;
   } catch (error) {
-    console.error(`❌ Error al buscar el usuario ${username}:`, error);
+    console.error(`Error al buscar el usuario ${username}:`, error);
     throw error;
   }
 };
 
-// 👉 Verificar contraseña
+// Verificar contraseña
 export const verifyPassword = async (inputPassword, storedPassword) => {
   if (!inputPassword || !storedPassword) {
-    console.error("❌ Error: Contraseña ingresada o almacenada es inválida.");
+    console.error("Error: Contraseña ingresada o almacenada es inválida.");
     return false;
   }
   try {
@@ -44,39 +43,39 @@ export const verifyPassword = async (inputPassword, storedPassword) => {
   }
 };
 
-// 👉 Actualizar contraseña de un usuario por ID
+// Actualizar contraseña de un usuario por ID
 export const updateUserPassword = async (userId, newPassword) => {
   try {
     const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
     const query = "UPDATE users_hotel SET password = ? WHERE id = ?";
     const [result] = await pool.query(query, [hashedPassword, userId]);
-    console.log(`✅ Contraseña del usuario ${userId} actualizada.`, result);
+    console.log(`Contraseña del usuario ${userId} actualizada.`, result);
   } catch (error) {
     console.error(
-      `❌ Error al actualizar la contraseña del usuario ${userId}:`,
+      `Error al actualizar la contraseña del usuario ${userId}:`,
       error
     );
     throw error;
   }
 };
 
-// 👉 Actualizar contraseña de un usuario por username
+// Actualizar contraseña de un usuario por username
 export const updateUserPasswordByUsername = async (username, newPassword) => {
   try {
     const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
     const query = "UPDATE users_hotel SET password = ? WHERE username = ?";
     const [result] = await pool.query(query, [hashedPassword, username]);
-    console.log(`✅ Contraseña del usuario ${username} actualizada.`, result);
+    console.log(`Contraseña del usuario ${username} actualizada.`, result);
   } catch (error) {
     console.error(
-      `❌ Error al actualizar la contraseña del usuario ${username}:`,
+      ` Error al actualizar la contraseña del usuario ${username}:`,
       error
     );
     throw error;
   }
 };
 
-// 👉 Login de usuario
+// Login de usuario
 export const loginUser = async (username, password) => {
   try {
     const user = await findUserByUsername(username);
@@ -89,15 +88,15 @@ export const loginUser = async (username, password) => {
       throw new Error("Contraseña incorrecta");
     }
 
-    console.log(`✅ Usuario ${username} autenticado correctamente.`);
+    console.log(`Usuario ${username} autenticado correctamente.`);
     return user;
   } catch (error) {
-    console.error(`❌ Error en login de usuario ${username}:`, error.message);
+    console.error(`Error en login de usuario ${username}:`, error.message);
     throw error;
   }
 };
 
-// 👉 Seed inicial de usuarios
+// Seed inicial de usuarios
 const seedUsers = async () => {
   const users = [
     { username: "manuel", password: "manuel123", role: "Administrador" },
@@ -109,19 +108,19 @@ const seedUsers = async () => {
       const existingUser = await findUserByUsername(user.username);
       if (!existingUser) {
         await addUser(user.username, user.password, user.role);
-        console.log(`✅ Usuario ${user.username} agregado correctamente.`);
+        console.log(`Usuario ${user.username} agregado correctamente.`);
       } else {
         console.log(
-          `ℹ️ Usuario ${user.username} ya existe. No se agregó nuevamente.`
+          `Usuario ${user.username} ya existe. No se agregó nuevamente.`
         );
       }
     }
   } catch (error) {
-    console.error("❌ Error al agregar usuarios iniciales:", error);
+    console.error("Error al agregar usuarios iniciales:", error);
   }
 };
-    
-// 👇 Descomenta si quieres ejecutar el seed automáticamente
+
+// Descomenta si quieres ejecutar el seed automáticamente
 //seedUsers();
 
 
@@ -133,9 +132,9 @@ export const savePasswordResetToken = async (userId, token, expiresAt) => {
       VALUES (?, ?, ?)
       ON DUPLICATE KEY UPDATE token = ?, expires_at = ?`;
     await pool.query(query, [userId, token, expiresAt, token, expiresAt]);
-    console.log(`✅ Token de recuperación guardado para usuario ${userId}`);
+    console.log(`Token de recuperación guardado para usuario ${userId}`);
   } catch (error) {
-    console.error("❌ Error al guardar el token de recuperación:", error);
+    console.error("Error al guardar el token de recuperación:", error);
     throw error;
   }
 };
@@ -147,7 +146,7 @@ export const getPasswordResetToken = async (token) => {
     const [rows] = await pool.query(query, [token]);
     return rows.length > 0 ? rows[0] : null;
   } catch (error) {
-    console.error("❌ Error al obtener el token de recuperación:", error);
+    console.error("Error al obtener el token de recuperación:", error);
     throw error;
   }
 };
@@ -157,9 +156,9 @@ export const deletePasswordResetToken = async (token) => {
   try {
     const query = "DELETE FROM password_resets WHERE token = ?";
     await pool.query(query, [token]);
-    console.log(`🗑️ Token eliminado: ${token}`);
+    console.log(`Token eliminado: ${token}`);
   } catch (error) {
-    console.error("❌ Error al eliminar el token de recuperación:", error);
+    console.error("Error al eliminar el token de recuperación:", error);
     throw error;
   }
 };
@@ -175,10 +174,10 @@ export const resetPassword = async (userId, newPassword) => {
       throw new Error("No se pudo actualizar la contraseña (usuario no encontrado).");
     }
 
-    console.log(`✅ Contraseña del usuario ${userId} actualizada.`);
+    console.log(`Contraseña del usuario ${userId} actualizada.`);
     return true;
   } catch (error) {
-    console.error("❌ Error al resetear la contraseña:", error);
+    console.error("Error al resetear la contraseña:", error);
     throw error;
   }
 };

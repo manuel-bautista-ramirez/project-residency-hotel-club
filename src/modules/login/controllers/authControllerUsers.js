@@ -13,7 +13,7 @@ import {
   validatePassword,
 } from "../middlewares/validation/textBox.js";
 
-// 🌟 Generar enlace de recuperación
+//  Generar enlace de recuperación
 export const sendPasswordResetLink = async (req, res) => {
   const { username } = req.body;
 
@@ -28,7 +28,7 @@ export const sendPasswordResetLink = async (req, res) => {
 
     await savePasswordResetToken(user.id, token, expiresAt);
 
-    // ✅ Pasamos el enlace correcto y un mensaje de éxito
+    // Pasamos el enlace correcto y un mensaje de éxito
     const resetLink = `http://localhost:3000/password-reset/reset/${token}`;
     res.render("requestPassword", { resetLink, success: "Enlace generado correctamente" });
 
@@ -39,7 +39,7 @@ export const sendPasswordResetLink = async (req, res) => {
   }
 };
 
-// 🌟 Mostrar formulario de reset (popup)
+// Mostrar formulario de reset (popup)
 export const renderResetPasswordForm = async (req, res) => {
   const { token } = req.params;
   const resetToken = await getPasswordResetToken(token);
@@ -51,7 +51,7 @@ export const renderResetPasswordForm = async (req, res) => {
   res.render("resetPassword", { token });
 };
 
-// 🌟 Restablecer contraseña usando token
+// Restablecer contraseña usando token
 export const resetPassword = async (req, res) => {
   const { token } = req.params;
   const { password, confirmPassword } = req.body;

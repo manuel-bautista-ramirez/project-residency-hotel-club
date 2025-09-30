@@ -1,4 +1,4 @@
-import { pool } from "../../../dataBase/conecctionDataBase.js";
+import { pool } from "../../../dataBase/connectionDataBase.js";
 
 async function updateMembershipById(id, data) {
   const connection = await pool.getConnection();

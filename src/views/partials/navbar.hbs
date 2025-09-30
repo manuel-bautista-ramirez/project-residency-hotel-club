@@ -1,48 +1,59 @@
-<header class="bg-blue-800 text-white fixed top-0 left-0 w-full z-50 shadow-md">
-  <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
+<header class="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-blue-800 to-blue-700 text-white shadow-md border-b border-blue-700/40 backdrop-saturate-150">
+  <!-- iOS safe-area filler to prevent white stripe at the notch/status bar -->
+  <div class="md:hidden" style="height: env(safe-area-inset-top); background: #1e40af;"></div>
+  <div class="max-w-7xl mx-auto flex items-center justify-between p-2.5 sm:p-3 lg:p-3 min-h-[48px] sm:min-h-[54px]">
     <!-- Logo -->
-    <a href="/" class="text-xl font-bold hover:text-blue-300 transition">Hotel Residencial</a>
+    <a href="/" class="inline-flex items-center gap-1.5 text-xs sm:text-sm md:text-base font-bold leading-tight tracking-tight hover:text-blue-200 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 opacity-90">
+        <path d="M3 10.5l9-6 9 6V19a2 2 0 01-2 2h-4.5v-5h-5V21H5a 2 2 0 01-2-2v-8.5z" />
+      </svg>
+      Hotel Residencial
+    </a>
 
     <!-- Enlaces desktop -->
-    <nav>
-      <ul class="hidden sm:flex space-x-6">
+    <nav aria-label="Principal" class="hidden md:block">
+      <ul class="flex items-center gap-1.5 md:gap-2 lg:gap-3 flex-nowrap whitespace-nowrap overflow-hidden">
         {{#if (eq user.role "Administrador")}}
-          <li><a href="/admin" class="hover:text-blue-300 transition">Panel de Administración</a></li>
+          <li><a href="/admin" class="px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">Panel de Administración</a></li>
         {{/if}}
-        <li><a href="/rooms" class="hover:text-blue-300 transition">Habitaciones</a></li>
-        <li><a href="/memberships" class="hover:text-green-200">Membresías</a></li>
-        <li><a href="/services" class="hover:text-blue-300 transition">Servicios</a></li>
-        <li><a href="/logout" class="hover:text-blue-300 transition">Cerrar Sesión</a></li>
+        <li><a href="/rooms" class="px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">Habitaciones</a></li>
+        <li><a href="/memberships" class="px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">Membresías</a></li>
+          {{#if (eq user.role "Administrador")}}
+      <li><a href="/services" class="px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">Servicios</a></li>
+          {{/if}}
+        <li><a href="/logout" class="px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">Cerrar Sesión</a></li>
       </ul>
     </nav>
 
     <!-- Botón hamburguesa móvil -->
-    <button id="btn-open-sidebar" class="sm:hidden focus:outline-none" aria-label="Abrir menú">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <button id="btn-open-sidebar" class="md:hidden focus:outline-none p-2 rounded hover:bg-white/10 active:scale-[0.98] transition" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
+      <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
     </button>
   </div>
 
   <!-- Sidebar móvil -->
-  <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-blue-700 transform -translate-x-full transition-transform z-40">
-    <div class="flex justify-between items-center p-4 border-b border-blue-600">
+  <div id="sidebar" class="fixed top-0 left-0 w-64 max-w-[80vw] bg-blue-700 shadow-xl transform -translate-x-full transition-transform duration-200 ease-out z-40 flex flex-col" role="dialog" aria-modal="true" aria-hidden="true" style="height: 100dvh; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);">
+    <div class="flex justify-between items-center p-4 border-b border-blue-600/60 sticky top-0 bg-blue-700" style="margin-top: calc(-1 * env(safe-area-inset-top)); padding-top: calc(env(safe-area-inset-top) + 1rem);">
       <span class="font-bold text-white">Menú</span>
-      <button id="btn-close-sidebar" class="text-white focus:outline-none">&times;</button>
+      <button id="btn-close-sidebar" class="text-white focus:outline-none hover:text-green-200 p-2 rounded" aria-label="Cerrar menú">&times;</button>
     </div>
-    <ul class="flex flex-col space-y-4 p-4">
+    <ul class="flex-1 flex flex-col space-y-2 p-3 bg-blue-700 text-white overflow-y-auto">
       {{#if (eq user.role "Administrador")}}
-        <li><a href="/admin" class="hover:text-blue-300 transition">Panel de Administración</a></li>
+        <li><a href="/admin" class="block px-3 py-2 rounded hover:bg-white/10 text-white">Panel de Administración</a></li>
       {{/if}}
-      <li><a href="/rooms" class="hover:text-blue-300 transition">Habitaciones</a></li>
-      <li><a href="/memberships" class="hover:text-green-200">Membresías</a></li>
-      <li><a href="/services" class="hover:text-blue-300 transition">Servicios</a></li>
-      <li><a href="/logout" class="hover:text-blue-300 transition">Cerrar Sesión</a></li>
+      <li><a href="/rooms" class="block px-3 py-2 rounded hover:bg-white/10 text-white">Habitaciones</a></li>
+      <li><a href="/memberships" class="block px-3 py-2 rounded hover:bg-white/10 text-white">Membresías</a></li>
+        {{#if (eq user.role "Administrador")}}
+      <li><a href="/services" class="block px-3 py-2 rounded hover:bg-white/10 text-white">Servicios</a></li>
+          {{/if}}
+      <li><a href="/logout" class="block px-3 py-2 rounded hover:bg-white/10 text-white">Cerrar Sesión</a></li>
     </ul>
   </div>
 
   <!-- Overlay semitransparente -->
-  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-30 sm:hidden"></div>
+  <div id="overlay" class="fixed inset-0 bg-black/50 hidden z-30 md:hidden"></div>
 </header>
 
 <script>
@@ -51,24 +62,84 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnClose = document.getElementById('btn-close-sidebar');
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('overlay');
+  const focusableSelectors = 'a, button, input, select, textarea, [tabindex]';
+  let lastFocused = null;
+
+  // Set mobile browser bar color to match navbar (blue-800)
+  (function setThemeColor() {
+    const NAV_BLUE = '#1e40af';
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', NAV_BLUE);
+    // Also set platform-specific meta where possible
+    let ms = document.querySelector('meta[name="msapplication-navbutton-color"]');
+    if (!ms) {
+      ms = document.createElement('meta');
+      ms.setAttribute('name', 'msapplication-navbutton-color');
+      document.head.appendChild(ms);
+    }
+    ms.setAttribute('content', NAV_BLUE);
+    let appleCap = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+    if (!appleCap) {
+      appleCap = document.createElement('meta');
+      appleCap.setAttribute('name', 'apple-mobile-web-app-capable');
+      document.head.appendChild(appleCap);
+    }
+    appleCap.setAttribute('content', 'yes');
+    let appleStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (!appleStyle) {
+      appleStyle = document.createElement('meta');
+      appleStyle.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+      document.head.appendChild(appleStyle);
+    }
+    appleStyle.setAttribute('content', 'black-translucent');
+    // Optional: keep it updated if system theme changes
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mql && typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', () => meta.setAttribute('content', NAV_BLUE));
+    }
+  })();
 
   const openSidebar = () => {
+    lastFocused = document.activeElement;
     sidebar.classList.remove('-translate-x-full');
+    sidebar.setAttribute('aria-hidden', 'false');
+    btnOpen.setAttribute('aria-expanded', 'true');
     overlay.classList.remove('hidden');
+    // prevent body scroll
+    document.body.style.overflow = 'hidden';
+    // focus first link
+    const first = sidebar.querySelector(focusableSelectors);
+    if (first) first.focus();
   };
 
   const closeSidebar = () => {
     sidebar.classList.add('-translate-x-full');
+    sidebar.setAttribute('aria-hidden', 'true');
+    btnOpen.setAttribute('aria-expanded', 'false');
     overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+    if (lastFocused) lastFocused.focus();
   };
 
   btnOpen.addEventListener('click', openSidebar);
   btnClose.addEventListener('click', closeSidebar);
   overlay.addEventListener('click', closeSidebar);
 
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !sidebar.classList.contains('-translate-x-full')) {
+      closeSidebar();
+    }
+  });
+
   // Cerrar sidebar si cambia a desktop
   window.addEventListener('resize', () => {
-    if (window.innerWidth >= 640) {
+    if (window.innerWidth >= 768) {
       closeSidebar();
     }
   });
@@ -76,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cerrar sidebar al hacer click en cualquier enlace
   document.querySelectorAll('#sidebar a').forEach(a => {
     a.addEventListener('click', () => {
-      if (window.innerWidth < 640) closeSidebar();
+      if (window.innerWidth < 768) closeSidebar();
     });
   });
 });

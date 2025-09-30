@@ -1,70 +1,338 @@
-<div class="max-w-4xl mx-auto p-6">
-  <h1 class="text-2xl font-bold text-blue-900 text-center mb-6">
-    Modificar precios de habitaciones por mes
-  </h1>
+{{>navbar}}
 
-  <header class="mb-6 flex items-center justify-between">
-      <a href="/rooms" class="text-sm text-gray-600 hover:underline">← Volver a habitaciones</a>
-    </header>
+<div class="max-w-4xl mx-auto px-2 sm:px-3 pt-4 sm:pt-6 pb-4 sm:pb-6">
+  <!-- Header -->
+  <header class="text-center py-2 sm:py-3">
+    <h1 class="text-base sm:text-lg font-bold text-blue-900 mb-2">
+      Precios de Habitaciones
+    </h1>
+    <div class="mb-2 flex items-center justify-center">
+      <a href="/rooms" class="text-xs sm:text-sm text-gray-600 hover:underline">← Volver</a>
+    </div>
+  </header>
 
-  <div class="overflow-x-auto">
-    <table class="min-w-full border border-gray-200 bg-white rounded-lg shadow">
-      <thead class="bg-blue-800 text-white">
-        <tr>
-          <th class="px-4 py-2 text-left">Tipo de Habitación</th>
-          <th class="px-4 py-2 text-left">Mes</th>
-          <th class="px-4 py-2 text-left">Precio ($)</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        {{#each meses}}
-          <tr class="hover:bg-blue-50 transition">
-            <td class="px-4 py-2 text-gray-700 font-medium">Sencilla</td>
-            <td class="px-4 py-2">{{this.mes}}</td>
-            <td class="px-4 py-2">
-              <input type="number" value="{{this.sencilla}}" min="0" step="0.01"
-                     class="border rounded px-2 py-1 w-24 text-right"
-                     data-tipo="sencilla" data-mes="{{this.mes}}">
-            </td>
-          </tr>
-          <tr class="hover:bg-blue-50 transition">
-            <td class="px-4 py-2 text-gray-700 font-medium">Suite</td>
-            <td class="px-4 py-2">{{this.mes}}</td>
-            <td class="px-4 py-2">
-              <input type="number" value="{{this.suite}}" min="0" step="0.01"
-                     class="border rounded px-2 py-1 w-24 text-right"
-                     data-tipo="suite" data-mes="{{this.mes}}">
-            </td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
+  <!-- Desktop Table View -->
+  <div class="hidden lg:block">
+    <div class="overflow-x-auto">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <table class="min-w-full">
+          <thead class="bg-blue-900 text-white">
+            <tr>
+              <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Tipo de Habitación</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Mes</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Precio ($)</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {{#each meses}}
+              <tr class="hover:bg-blue-50 transition-colors duration-200">
+                <td class="px-6 py-4 text-gray-900 font-medium">Individual</td>
+                <td class="px-6 py-4 text-gray-700">{{this.mes}}</td>
+                <td class="px-6 py-4">
+                  <input type="number" value="{{this.sencilla}}" min="0" step="0.01"
+                         class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                         data-tipo="sencilla" data-mes="{{this.mes}}">
+                </td>
+                <td class="px-6 py-4">
+                  <button class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors duration-200">
+                    Guardar
+                  </button>
+                </td>
+              </tr>
+              <tr class="hover:bg-blue-50 transition-colors duration-200">
+                <td class="px-6 py-4 text-gray-900 font-medium">Suite</td>
+                <td class="px-6 py-4 text-gray-700">{{this.mes}}</td>
+                <td class="px-6 py-4">
+                  <input type="number" value="{{this.suite}}" min="0" step="0.01"
+                         class="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                         data-tipo="suite" data-mes="{{this.mes}}">
+                </td>
+                <td class="px-6 py-4">
+                  <button class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors duration-200">
+                    Guardar
+                  </button>
+                </td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-</div>
+
+  <!-- Tablet View -->
+  <div class="hidden md:block lg:hidden">
+    <div class="grid gap-4">
+      {{#each meses}}
+        <div class="bg-white rounded-xl shadow-lg p-6">
+          <h3 class="text-lg font-bold text-blue-900 mb-4">{{this.mes}}</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <!-- Individual -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Individual</label>
+              <div class="flex gap-2">
+                <input type="number" value="{{this.sencilla}}" min="0" step="0.01"
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                       data-tipo="sencilla" data-mes="{{this.mes}}">
+                <button class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
+                  Guardar
+                </button>
+              </div>
+            </div>
+            <!-- Suite -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Suite</label>
+              <div class="flex gap-2">
+                <input type="number" value="{{this.suite}}" min="0" step="0.01"
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                       data-tipo="suite" data-mes="{{this.mes}}">
+                <button class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium">
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+
+  <!-- Mobile View -->
+  <div class="block md:hidden">
+    <div class="space-y-4">
+      {{#each meses}}
+        <div class="bg-white rounded shadow-md overflow-hidden">
+          <div class="bg-blue-900 text-white px-3 py-2">
+            <h3 class="font-bold text-sm">Mes {{this.mes}}</h3>
+          </div>
+          <div class="p-3 space-y-3">
+            <!-- Individual -->
+            <div class="border-b border-gray-200 pb-2">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-sm font-medium text-gray-900">Individual</span>
+              </div>
+              <div class="flex gap-2">
+                <div class="flex-1">
+                  <input type="number" value="{{this.sencilla}}" min="0" step="0.01"
+                         class="w-full px-2 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-right text-sm"
+                         data-tipo="sencilla" data-mes="{{this.mes}}"
+                         placeholder="0.00">
+                </div>
+                <button class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium whitespace-nowrap">
+                  Guardar
+                </button>
+              </div>
+            </div>
+            <!-- Suite -->
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-sm font-medium text-gray-900">Suite</span>
+              </div>
+              <div class="flex gap-2">
+                <div class="flex-1">
+                  <input type="number" value="{{this.suite}}" min="0" step="0.01"
+                         class="w-full px-2 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-right text-sm"
+                         data-tipo="suite" data-mes="{{this.mes}}"
+                         placeholder="0.00">
+                </div>
+                <button class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium whitespace-nowrap">
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+
+{{>footer}}
 
 <script>
+  // Variables globales
+  let changedInputs = new Set();
   const inputs = document.querySelectorAll('input[type="number"]');
+  const saveButtons = document.querySelectorAll('button:not([type="button"])');
+  const bulkSaveBtn = document.querySelector('button:contains("Guardar Todos")');
+  const resetBtn = document.querySelector('button:contains("Restablecer")');
 
-  inputs.forEach(input => {
-    input.addEventListener('change', () => {
-      const tipo = input.dataset.tipo;
-      const mes = input.dataset.mes;
-      const monto = input.value;
+  // Función para mostrar notificaciones
+  function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg text-white font-medium transition-all duration-300 ${
+      type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+    }`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
 
-      // Aquí envías al backend via fetch/AJAX
-      fetch('/api/update-precio', {
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
+
+  // Función para actualizar precio individual
+  async function updatePrice(tipo, mes, monto, button) {
+    const originalText = button.textContent;
+    button.textContent = 'Guardando...';
+    button.disabled = true;
+
+    try {
+      const response = await fetch('/api/rooms/update-precio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tipo, mes, monto })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if(data.success){
-          console.log(`Precio de ${tipo} actualizado para mes ${mes}`);
-        }
       });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification(`Precio de ${tipo} actualizado para ${mes}`, 'success');
+        changedInputs.delete(`${tipo}-${mes}`);
+      } else {
+        showNotification('Error al actualizar el precio', 'error');
+      }
+    } catch (error) {
+      showNotification('Error de conexión', 'error');
+      console.error('Error:', error);
+    } finally {
+      button.textContent = originalText;
+      button.disabled = false;
+    }
+  }
+
+  // Función para guardar todos los cambios
+  async function saveAllChanges() {
+    const changes = [];
+    changedInputs.forEach(key => {
+      const [tipo, mes] = key.split('-');
+      const input = document.querySelector(`input[data-tipo="${tipo}"][data-mes="${mes}"]`);
+      if (input) {
+        changes.push({
+          tipo,
+          mes,
+          monto: input.value
+        });
+      }
+    });
+
+    if (changes.length === 0) {
+      showNotification('No hay cambios para guardar', 'info');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/rooms/update-precios-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ changes })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification(`${changes.length} precios actualizados correctamente`, 'success');
+        changedInputs.clear();
+        updateChangedInputsStyle();
+      } else {
+        showNotification('Error al actualizar los precios', 'error');
+      }
+    } catch (error) {
+      showNotification('Error de conexión', 'error');
+      console.error('Error:', error);
+    }
+  }
+
+  // Función para actualizar estilos de inputs modificados
+  function updateChangedInputsStyle() {
+    inputs.forEach(input => {
+      const key = `${input.dataset.tipo}-${input.dataset.mes}`;
+      if (changedInputs.has(key)) {
+        input.classList.add('border-yellow-400', 'bg-yellow-50');
+      } else {
+        input.classList.remove('border-yellow-400', 'bg-yellow-50');
+      }
+    });
+  }
+
+  // Event listeners para inputs
+  inputs.forEach(input => {
+    const originalValue = input.value;
+
+    input.addEventListener('input', () => {
+      const key = `${input.dataset.tipo}-${input.dataset.mes}`;
+      if (input.value !== originalValue) {
+        changedInputs.add(key);
+      } else {
+        changedInputs.delete(key);
+      }
+      updateChangedInputsStyle();
+    });
+
+    // Validación en tiempo real
+    input.addEventListener('blur', () => {
+      const value = parseFloat(input.value);
+      if (isNaN(value) || value < 0) {
+        input.value = originalValue;
+        showNotification('Precio inválido. Se restauró el valor original.', 'error');
+      }
     });
   });
 
-  // O también puedes usar el botón "Guardar cambios" para actualizar todos los inputs juntos
+  // Event listeners para botones individuales de guardar
+  document.addEventListener('click', (e) => {
+    if (e.target.textContent.trim() === 'Guardar' && e.target.tagName === 'BUTTON') {
+      const input = e.target.closest('tr, div').querySelector('input[type="number"]');
+      if (input) {
+        const tipo = input.dataset.tipo;
+        const mes = input.dataset.mes;
+        const monto = input.value;
+        updatePrice(tipo, mes, monto, e.target);
+      }
+    }
+  });
+
+  // Event listener para guardar todos los cambios
+  document.addEventListener('click', (e) => {
+    if (e.target.textContent.includes('Guardar Todos')) {
+      saveAllChanges();
+    }
+  });
+
+  // Event listener para restablecer valores
+  document.addEventListener('click', (e) => {
+    if (e.target.textContent.includes('Restablecer')) {
+      if (confirm('¿Estás seguro de que quieres restablecer todos los valores?')) {
+        location.reload();
+      }
+    }
+  });
+
+  // Advertencia antes de salir si hay cambios sin guardar
+  window.addEventListener('beforeunload', (e) => {
+    if (changedInputs.size > 0) {
+      e.preventDefault();
+      e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
+    }
+  });
+
+  // Atajos de teclado
+  document.addEventListener('keydown', (e) => {
+    // Ctrl+S para guardar todos los cambios
+    if (e.ctrlKey && e.key === 's') {
+      e.preventDefault();
+      saveAllChanges();
+    }
+
+    // Escape para restablecer
+    if (e.key === 'Escape') {
+      if (changedInputs.size > 0 && confirm('¿Restablecer todos los cambios?')) {
+        location.reload();
+      }
+    }
+  });
+
+  // Inicialización
+  console.log('Sistema de precios inicializado correctamente');
 </script>
