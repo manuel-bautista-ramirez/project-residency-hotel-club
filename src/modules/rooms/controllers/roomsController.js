@@ -14,6 +14,7 @@ import {
   getPrecioPorTipoYMes,
   getRoomPriceByTypeAndMonth,
   createMessageMethod,
+  checkRoomAvailability,
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 /*** --- VISTAS PRINCIPALES --- ***/
@@ -157,6 +158,12 @@ export const handleCreateReservation = async (req, res) => {
     }
   } catch (err) {
     console.error("Error handleCreateReservation:", err);
+    
+    // Verificar si el error es por disponibilidad
+    if (err.message && err.message.includes('no está disponible')) {
+      return res.status(409).send(`<script>alert('${err.message}'); window.location.href='/rooms';</script>`);
+    }
+    
     return res.status(500).send("Error al crear la reservación...");
   }
 };
@@ -483,7 +490,13 @@ export const handleCreateRenta = async (req, res) => {
     res.redirect("/rooms"); // redirigir o mostrar mensaje de éxito
   } catch (err) {
     console.error("Error creando la renta:", err);
-    res.status(500).send("Error creando la renta");
+    
+    // Verificar si el error es por disponibilidad
+    if (err.message && err.message.includes('no está disponible')) {
+      return res.status(409).send(`<script>alert('${err.message}'); window.location.href='/rooms';</script>`);
+    }
+    
+    return res.status(500).send("Error creando la renta");
   }
 };
 
@@ -527,11 +540,12 @@ export const apiCheckAvailability = async (req, res) => {
     const checkIn = req.query.check_in;
     const checkOut = req.query.check_out;
 
-    // Aquí debes hacer la consulta real a la tabla de rentas o reservaciones
-    // Por ejemplo:
-    // SELECT * FROM rentas WHERE habitacion_id = ? AND (check_in < ? AND check_out > ?)
-    // Para simplificar, devolvemos siempre disponible
-    const available = true;
+    if (!checkIn || !checkOut) {
+      return res.json({ available: false, error: "Fechas no proporcionadas" });
+    }
+
+    // Verificar disponibilidad usando la función del modelo
+    const available = await checkRoomAvailability(roomId, checkIn, checkOut);
 
     res.json({ available });
   } catch (err) {
@@ -567,6 +581,80 @@ export const apiGetPriceByMonth = async (req, res) => {
   } catch (err) {
     console.error("Error en apiGetPriceByMonth:", err);
     res.json({ price: 0, price_text: "", error: err.message });
+  }
+};
+
+// Actualizar precio individual
+export const apiUpdatePrice = async (req, res) => {
+  try {
+    const { tipo, mes, monto } = req.body;
+
+    if (!tipo || !mes || monto === undefined) {
+      return res.json({ success: false, error: 'Datos incompletos' });
+    }
+
+    const result = await setNewPrice({
+      tipo_habitacion: tipo,
+      mes: Number(mes),
+      monto: Number(monto)
+    });
+
+    if (result) {
+      res.json({ success: true, message: 'Precio actualizado correctamente' });
+    } else {
+      res.json({ success: false, error: 'Error al actualizar el precio' });
+    }
+  } catch (err) {
+    console.error('Error en apiUpdatePrice:', err);
+    res.json({ success: false, error: err.message });
+  }
+};
+
+// Actualizar múltiples precios
+export const apiUpdatePricesBulk = async (req, res) => {
+  try {
+    const { changes } = req.body;
+
+    if (!changes || !Array.isArray(changes) || changes.length === 0) {
+      return res.json({ success: false, error: 'No hay cambios para procesar' });
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const change of changes) {
+      const { tipo, mes, monto } = change;
+      try {
+        const result = await setNewPrice({
+          tipo_habitacion: tipo,
+          mes: Number(mes),
+          monto: Number(monto)
+        });
+        if (result) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      } catch (err) {
+        console.error(`Error actualizando precio ${tipo}-${mes}:`, err);
+        errorCount++;
+      }
+    }
+
+    if (errorCount === 0) {
+      res.json({ 
+        success: true, 
+        message: `${successCount} precios actualizados correctamente` 
+      });
+    } else {
+      res.json({ 
+        success: false, 
+        error: `${errorCount} errores, ${successCount} éxitos` 
+      });
+    }
+  } catch (err) {
+    console.error('Error en apiUpdatePricesBulk:', err);
+    res.json({ success: false, error: err.message });
   }
 };
 

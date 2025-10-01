@@ -4,11 +4,94 @@ import { pool } from "../../../dataBase/connectionDataBase.js"; // conexión MyS
 //  get all habitations created
 export const getHabitaciones = async () => {
   try {
-    const [rows] = await pool.query("SELECT * FROM habitaciones");
-    return rows;
+    const [rows] = await pool.query(`
+      SELECT 
+        h.*,
+        CASE
+          -- Si hay una renta activa HOY, está ocupada
+          WHEN EXISTS (
+            SELECT 1 FROM rentas re 
+            WHERE re.habitacion_id = h.id 
+            AND CURDATE() BETWEEN DATE(re.fecha_ingreso) AND DATE(re.fecha_salida)
+          ) THEN 'ocupado'
+          
+          -- Si hay una reservación activa HOY, está ocupada
+          WHEN EXISTS (
+            SELECT 1 FROM reservaciones r 
+            WHERE r.habitacion_id = h.id 
+            AND CURDATE() BETWEEN DATE(r.fecha_ingreso) AND DATE(r.fecha_salida)
+          ) THEN 'ocupado'
+          
+          -- Si el estado fue cambiado manualmente a disponible, respetarlo
+          WHEN h.estado = 'disponible' THEN 'disponible'
+          
+          -- Si una renta ya venció (fecha_salida pasó), automáticamente pasa a limpieza
+          WHEN EXISTS (
+            SELECT 1 FROM rentas re 
+            WHERE re.habitacion_id = h.id 
+            AND DATE(re.fecha_salida) < CURDATE()
+          ) THEN 'limpieza'
+          
+          -- Si una reservación ya venció (fecha_salida pasó), automáticamente pasa a limpieza
+          WHEN EXISTS (
+            SELECT 1 FROM reservaciones r 
+            WHERE r.habitacion_id = h.id 
+            AND DATE(r.fecha_salida) < CURDATE()
+          ) THEN 'limpieza'
+          
+          -- Si el estado manual es limpieza, mantener limpieza
+          WHEN h.estado = 'limpieza' THEN 'limpieza'
+          
+          -- De lo contrario, está disponible
+          ELSE 'disponible'
+        END AS estado_real
+      FROM habitaciones h
+    `);
+    
+    // Mapear el estado_real al campo estado para mantener compatibilidad
+    return rows.map(row => ({
+      ...row,
+      estado: row.estado_real
+    }));
   } catch (err) {
     console.error("Error getHabitaciones:", err);
     return [];
+  }
+};
+
+// Verificar disponibilidad de habitación en un rango de fechas
+export const checkRoomAvailability = async (roomId, fechaIngreso, fechaSalida, excludeReservationId = null, excludeRentId = null) => {
+  try {
+    const query = `
+      SELECT 
+        (
+          -- Verificar si hay rentas en conflicto
+          (SELECT COUNT(*) 
+           FROM rentas 
+           WHERE habitacion_id = ? 
+           AND (? < fecha_salida AND ? > fecha_ingreso)
+           ${excludeRentId ? 'AND id != ?' : ''}
+          ) +
+          -- Verificar si hay reservaciones en conflicto
+          (SELECT COUNT(*) 
+           FROM reservaciones 
+           WHERE habitacion_id = ? 
+           AND (? < fecha_salida AND ? > fecha_ingreso)
+           ${excludeReservationId ? 'AND id != ?' : ''}
+          )
+        ) AS conflicts
+    `;
+    
+    const params = [roomId, fechaIngreso, fechaSalida];
+    if (excludeRentId) params.push(excludeRentId);
+    params.push(roomId, fechaIngreso, fechaSalida);
+    if (excludeReservationId) params.push(excludeReservationId);
+    
+    const [rows] = await pool.query(query, params);
+    return rows[0].conflicts === 0; // true si está disponible, false si hay conflictos
+  } catch (err) {
+    console.error('Error checkRoomAvailability:', err);
+    return false;
   }
 };
 
@@ -41,6 +124,12 @@ export const createReservation = async (reservationData) => {
   } = reservationData;
   const usuarioIdInt = Number(usuario_id);
   try {
+    // 0. Verificar disponibilidad de la habitación
+    const isAvailable = await checkRoomAvailability(habitacion_id, fecha_ingreso, fecha_salida);
+    if (!isAvailable) {
+      throw new Error('La habitación no está disponible para las fechas seleccionadas');
+    }
+
     // 1. Insertar el medio de mensaje
     const [medioResult] = await pool.query(
       `INSERT INTO medios_mensajes (correo_cliente, telefono_cliente) VALUES (?, ?)`,
@@ -74,7 +163,7 @@ export const createReservation = async (reservationData) => {
     return { id: result.insertId, ...reservationData };
   } catch (err) {
     console.error("Error createReservation:", err);
-    return null;
+    throw err; // Propagar el error para manejarlo en el controlador
   }
 };
 
@@ -322,6 +411,12 @@ export const createRent = async ({
   console.log('📥 Fechas recibidas en el modelo:');
   console.log('  - check_in_date:', check_in_date, typeof check_in_date);
   console.log('  - check_out_date:', check_out_date, typeof check_out_date);
+  
+  // 0. Verificar disponibilidad de la habitación
+  const isAvailable = await checkRoomAvailability(room_id, check_in_date, check_out_date);
+  if (!isAvailable) {
+    throw new Error('La habitación no está disponible para las fechas seleccionadas');
+  }
   
   const params = [
     room_id,

@@ -21,6 +21,8 @@ import {
   handleCreateReservation,
   apiCheckAvailability,
   apiGetPriceByMonth,
+  apiUpdatePrice,
+  apiUpdatePricesBulk,
   renderRentForm,
 } from "../controllers/roomsController.js";
 
@@ -58,7 +60,8 @@ routerRoom.post("/rentas/eliminar/:id", deleteIdRenta);
 
 routerRoom.get("/api/rooms/:id/price", apiGetPriceByMonth);
 routerRoom.get("/api/rooms/:id/available", apiCheckAvailability);
-
+routerRoom.post("/api/rooms/update-precio", apiUpdatePrice);
+routerRoom.post("/api/rooms/update-precios-bulk", apiUpdatePricesBulk);
 
 routerRoom.get("/rooms/rent/:id", renderRentForm);
 

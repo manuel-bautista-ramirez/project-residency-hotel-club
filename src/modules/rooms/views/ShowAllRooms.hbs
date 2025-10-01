@@ -125,35 +125,53 @@
            Rentar
         </a>
       </div>
-
-      <!-- Modal limpieza -->
-      {{#if (eq this.estado 'limpieza')}}
-<!-- Modal limpieza -->
-<div id="modal-clean-{{this.id}}" class="fixed inset-0 z-50 bg-black bg-opacity-40 px-4 hidden">
-  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm sm:max-w-md flex flex-col items-center justify-center">
-    <h2 class="text-lg sm:text-xl font-bold mb-4 text-orange-700">Confirmar limpieza</h2>
-    <p class="mb-6 text-gray-700 text-sm sm:text-base">
-      ¿Deseas cambiar el estado a <span class="font-bold text-gray-800">Disponible</span> para la habitación <span class="font-bold">{{this.numero}}</span>?
-    </p>
-    <form action="/rooms/changes/status/{{this.id}}" method="POST" class="flex flex-col gap-3 w-full">
-      <input type="hidden" name="status" value="disponible" />
-      <div class="flex flex-col sm:flex-row justify-end gap-2">
-        <button type="button" onclick="closeModal({{this.id}})"
-                class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-auto">Cancelar</button>
-        <button type="submit"
-                class="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold w-full sm:w-auto">Confirmar</button>
-      </div>
-    </form>
-  </div>
-</div>
-      {{/if}}
     </div>
     {{/each}}
   </section>
 </div>
 
+<!-- Modales de limpieza fuera de los cards -->
+{{#each habitaciones}}
+  {{#if (eq this.estado 'limpieza')}}
+  <div id="modal-clean-{{this.id}}" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md">
+      <h2 class="text-lg sm:text-xl font-bold mb-4 text-orange-700 text-center">Confirmar limpieza</h2>
+      <p class="mb-6 text-gray-700 text-sm sm:text-base text-center">
+        ¿Deseas cambiar el estado a <span class="font-bold text-gray-800">Disponible</span> para la habitación <span class="font-bold text-blue-600">{{this.numero}}</span>?
+      </p>
+      <form action="/rooms/changes/status/{{this.id}}" method="POST" class="flex flex-col gap-3 w-full">
+        <input type="hidden" name="status" value="disponible" />
+        <div class="flex flex-col sm:flex-row justify-end gap-2">
+          <button type="button" onclick="closeModal({{this.id}})"
+                  class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold w-full sm:w-auto transition-colors">Cancelar</button>
+          <button type="submit"
+                  class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold w-full sm:w-auto transition-colors">Confirmar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {{/if}}
+{{/each}}
+
 {{>footer}}
 <script>
+  // Funciones para abrir y cerrar modales de limpieza
+  function openModal(roomId) {
+    const modal = document.getElementById(`modal-clean-${roomId}`);
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex', 'items-center', 'justify-center');
+    }
+  }
+
+  function closeModal(roomId) {
+    const modal = document.getElementById(`modal-clean-${roomId}`);
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex', 'items-center', 'justify-center');
+    }
+  }
+
   // Revela tarjetas de habitación con intersección (stagger natural por scroll)
   document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('.room-card');

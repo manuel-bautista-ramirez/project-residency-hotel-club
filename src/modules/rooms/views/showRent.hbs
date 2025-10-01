@@ -97,12 +97,10 @@
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.monto_letras}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">
             <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
-              <form action="/rentas/eliminar/{{this.id_renta}}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar la renta de {{this.numero_habitacion}}?');">
-                <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
-                  <i class="fa-solid fa-trash-can"></i>
-                  <span>Eliminar</span>
-                </button>
-              </form>
+              <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Eliminar</span>
+              </button>
             </div>
           </td>
         </tr>
@@ -156,12 +154,10 @@
           </div>
         </div>
         <div class="pt-2">
-          <form action="/rentas/eliminar/{{this.id_renta}}" method="POST" onsubmit="return confirm('¿Eliminar la renta de {{this.numero_habitacion}}?');">
-            <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
-              <i class="fa-solid fa-trash-can"></i>
-              <span>Eliminar</span>
-            </button>
-          </form>
+          <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+            <i class="fa-solid fa-trash-can"></i>
+            <span>Eliminar</span>
+          </button>
         </div>
       </div>
     </article>
@@ -169,7 +165,60 @@
   </section>
 </div>
 
+<!-- Modal de confirmación de eliminación -->
+<div id="deleteModal" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
+  <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
+    <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+      <i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl"></i>
+    </div>
+    <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Eliminar renta?</h2>
+    <p class="mb-6 text-gray-600 text-sm sm:text-base text-center">
+      Estás a punto de eliminar la renta de la habitación <span id="deleteRoomNumber" class="font-bold text-blue-600"></span> para el cliente <span id="deleteClientName" class="font-bold text-gray-900"></span>.
+    </p>
+    <p class="mb-6 text-red-600 text-xs sm:text-sm text-center font-medium">
+      <i class="fa-solid fa-circle-exclamation"></i> Esta acción no se puede deshacer.
+    </p>
+    <form id="deleteForm" method="POST" class="flex flex-col gap-3 w-full">
+      <div class="flex flex-col sm:flex-row justify-end gap-2">
+        <button type="button" onclick="closeDeleteModal()"
+                class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-auto transition-colors">
+          <i class="fa-solid fa-xmark"></i> Cancelar
+        </button>
+        <button type="submit"
+                class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold w-full sm:w-auto transition-colors">
+          <i class="fa-solid fa-trash-can"></i> Eliminar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
+  // Funciones para el modal de eliminación
+  function openDeleteModal(rentId, roomNumber, clientName) {
+    const modal = document.getElementById('deleteModal');
+    const form = document.getElementById('deleteForm');
+    const roomNumberSpan = document.getElementById('deleteRoomNumber');
+    const clientNameSpan = document.getElementById('deleteClientName');
+    
+    if (modal && form) {
+      form.action = `/rentas/eliminar/${rentId}`;
+      roomNumberSpan.textContent = roomNumber;
+      clientNameSpan.textContent = clientName;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  }
+
+  function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+
+  // Código principal
   document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('rentsLoadingOverlay');
     const rows = Array.from(document.querySelectorAll('.rent-reveal'));
