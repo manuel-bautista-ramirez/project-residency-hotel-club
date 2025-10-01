@@ -99,15 +99,16 @@ CREATE TABLE IF NOT EXISTS medios_mensajes (
 
 -- 3) Tabla de Reservaciones
 -- Se guarda el precio al momento de la reserva
+-- NOTA: Columnas DATETIME permiten guardar fecha Y hora (12:00 PM)
 CREATE TABLE IF NOT EXISTS reservaciones (
   id INT AUTO_INCREMENT PRIMARY KEY,
   habitacion_id INT NOT NULL,
   usuario_id INT NOT NULL,
   id_medio_mensaje INT NOT NULL,
   nombre_cliente VARCHAR(100) NOT NULL,
-  fecha_reserva DATE NOT NULL,
-  fecha_ingreso DATE NOT NULL,
-  fecha_salida DATE NOT NULL,
+  fecha_reserva DATETIME NOT NULL,
+  fecha_ingreso DATETIME NOT NULL,
+  fecha_salida DATETIME NOT NULL,
   monto DECIMAL(10, 2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -118,14 +119,15 @@ CREATE TABLE IF NOT EXISTS reservaciones (
 
 -- 4) Tabla de Rentas
 -- Registro de ocupación real de habitaciones
+-- NOTA: Columnas DATETIME permiten guardar fecha Y hora (12:00 PM)
 CREATE TABLE IF NOT EXISTS rentas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   habitacion_id INT NOT NULL,
   usuario_id INT NOT NULL,
   id_medio_mensaje INT NOT NULL,
   nombre_cliente VARCHAR(100) NOT NULL,
-  fecha_ingreso DATE NOT NULL,
-  fecha_salida DATE NOT NULL,
+  fecha_ingreso DATETIME NOT NULL,
+  fecha_salida DATETIME NOT NULL,
   tipo_pago ENUM ('tarjeta', 'transferencia', 'efectivo') NOT NULL,
   monto DECIMAL(10, 2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
@@ -154,19 +156,18 @@ ORDER BY
   r.fecha_ingreso;
 
 
-
-  SELECT
-
-  -- generacion de reportes...
+-- =====================================================
+-- GENERACIÓN DE REPORTES
+-- =====================================================
 
 -- Reporte de ingresos por rentas diarias
 SELECT
-    fecha_ingreso AS dia,
+    DATE(fecha_ingreso) AS dia,
     COUNT(id) AS total_rentas,
     SUM(monto) AS total_ingresos
 FROM rentas
-GROUP BY fecha_ingreso
-ORDER BY fecha_ingreso;
+GROUP BY DATE(fecha_ingreso)
+ORDER BY DATE(fecha_ingreso);
 
 
 -- Reporte de ingresos por rentas en la última semana
@@ -190,7 +191,6 @@ SELECT
 FROM rentas
 WHERE MONTH(fecha_ingreso) = MONTH(CURDATE())
   AND YEAR(fecha_ingreso) = YEAR(CURDATE());
-
 
 
 

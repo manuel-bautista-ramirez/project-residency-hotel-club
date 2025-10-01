@@ -129,11 +129,11 @@
           </svg>
           <input
             id="fecha_ingreso"
-            name="fecha_ingreso"
             type="date"
             required
             class="w-full pl-9 pr-3 py-3 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"
           />
+          <input type="hidden" id="fecha_ingreso_with_time" name="fecha_ingreso" value=""/>
         </div>
       </div>
       <div>
@@ -144,11 +144,11 @@
           </svg>
           <input
             id="fecha_salida"
-            name="fecha_salida"
             type="date"
             required
             class="w-full pl-9 pr-3 py-3 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"
           />
+          <input type="hidden" id="fecha_salida_with_time" name="fecha_salida" value=""/>
         </div>
       </div>
     </fieldset>
@@ -225,18 +225,71 @@
     const durationDisplay = document.getElementById("duration-display");
     const nightsCount = document.getElementById("nights-count");
     const submitButton = document.querySelector('button[type="submit"]');
+    
+    // ============================================
+    // VALIDACIÓN: Solo reservaciones desde MAÑANA en adelante
+    // ============================================
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    
+    // Establecer fecha mínima de ingreso = MAÑANA
+    checkInInput.setAttribute('min', tomorrowStr);
+    checkInInput.value = tomorrowStr; // Establecer mañana por defecto
+    
+    // Fecha de salida mínima = 2 días después de hoy (pasado mañana)
+    const dayAfterTomorrow = new Date(today);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+    const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0];
+    checkOutInput.setAttribute('min', dayAfterTomorrowStr);
+    checkOutInput.value = dayAfterTomorrowStr; // Establecer pasado mañana por defecto
+    
+    // Validar si el usuario intenta seleccionar HOY
+    checkInInput.addEventListener('change', function() {
+      const selectedDate = new Date(this.value);
+      const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      
+      if (selectedDate <= todayMidnight) {
+        showNotification('⚠️ Las reservaciones solo se pueden hacer desde mañana en adelante', 'error');
+        this.value = tomorrowStr;
+      }
+    });
+    
+    // Actualizar fecha mínima de salida cuando cambia entrada
+    checkInInput.addEventListener('input', function() {
+      const checkInDate = new Date(this.value);
+      const nextDay = new Date(checkInDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      checkOutInput.min = nextDay.toISOString().split('T')[0];
+      
+      if (checkOutInput.value && checkOutInput.value <= this.value) {
+        checkOutInput.value = nextDay.toISOString().split('T')[0];
+      }
+    });
 
     // Reveal flow: hide overlay and skeleton, show form
     setTimeout(() => {
       hideOverlay();
       if (skeleton) skeleton.classList.add('hidden');
       if (form) form.classList.remove('hidden');
+      
+      // ============================================
+      // CALCULAR PRECIO AUTOMÁTICAMENTE al cargar
+      // ============================================
+      const initialCheckIn = checkInInput.value;
+      const initialCheckOut = checkOutInput.value;
+      
+      if (initialCheckIn && initialCheckOut) {
+        const nights = updateDurationDisplay(initialCheckIn, initialCheckOut);
+        // Calcular precio automáticamente
+        checkAvailability(initialCheckIn, initialCheckOut).then(isAvailable => {
+          if (isAvailable) {
+            fetchPrice(initialCheckIn, nights);
+          }
+        });
+      }
     }, 350);
-
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    checkInInput.min = today;
-    checkOutInput.min = today;
 
     // Show notification function
     function showNotification(message, type = 'info') {
@@ -306,17 +359,33 @@
       }
     }
 
+    // Add time to date (12:00 PM noon in local time)
+    function addTimeToDate(dateStr, isCheckout = false) {
+      if (!dateStr) return '';
+      // Create a date at noon local time
+      const date = new Date(`${dateStr}T12:00:00`);
+      // Format as YYYY-MM-DD HH:MM:SS for MySQL
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day} 12:00:00`;
+    }
+
     // Check room availability
     async function checkAvailability(checkIn, checkOut) {
       if (!checkIn || !checkOut) return false;
 
       try {
-        const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
+        // Add time to dates (12:00 PM for both check-in and check-out)
+        const checkInWithTime = addTimeToDate(checkIn);
+        const checkOutWithTime = addTimeToDate(checkOut, true);
+        
+        const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
         const res = await fetch(url);
         const json = await res.json();
 
         if (!json.available) {
-          showNotification("La habitación no está disponible en esas fechas", 'error');
+          showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta.", 'error');
           checkInInput.value = "";
           checkOutInput.value = "";
           priceField.value = "";
@@ -326,7 +395,7 @@
           return false;
         }
 
-        showNotification("Habitación disponible", 'success');
+        showNotification("Habitación disponible para las fechas seleccionadas", 'success');
         return true;
       } catch (err) {
         showNotification('Error al verificar disponibilidad', 'error');
@@ -385,7 +454,7 @@
     }
 
     // Validate form before submission
-    function validateForm() {
+    async function validateForm() {
       const checkIn = checkInInput.value;
       const checkOut = checkOutInput.value;
 
@@ -404,6 +473,12 @@
         return false;
       }
 
+      // Verificar disponibilidad una última vez antes de enviar
+      const isAvailable = await checkAvailability(checkIn, checkOut);
+      if (!isAvailable) {
+        return false;
+      }
+
       return true;
     }
 
@@ -417,17 +492,19 @@
 
       if (checkOut && new Date(checkOut) <= new Date(checkIn)) {
         checkOutInput.value = "";
-        showNotification('Fecha de salida actualizada', 'info');
-      }
-
-      if (checkIn && checkOut) {
+        priceField.value = "";
+        priceTextField.value = "";
+        durationDisplay.classList.add('hidden');
+        showNotification('Por favor seleccione una nueva fecha de salida', 'info');
+      } else if (checkIn && checkOut) {
         const nights = updateDurationDisplay(checkIn, checkOut);
         const isAvailable = await checkAvailability(checkIn, checkOut);
         if (isAvailable) {
           await fetchPrice(checkIn, nights);
         }
       } else if (checkIn) {
-        await fetchPrice(checkIn, 1);
+        // Solo mostrar mensaje, NO calcular precio
+        showNotification('Por favor seleccione una fecha de salida', 'info');
       }
     });
 
@@ -451,14 +528,35 @@
     });
 
     // Form submission validation
-    document.getElementById('formReserve').addEventListener('submit', (e) => {
-      if (!validateForm()) {
-        e.preventDefault();
-      } else {
-        submitButton.disabled = true;
-        submitButton.textContent = 'Creando reservación...';
-        if (overlay) overlay.classList.remove('hidden');
+    document.getElementById('formReserve').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const isValid = await validateForm();
+      if (!isValid) {
+        return;
       }
+      
+      // Add time to hidden inputs
+      const checkInWithTime = addTimeToDate(checkInInput.value);
+      const checkOutWithTime = addTimeToDate(checkOutInput.value, true);
+      
+      console.log('Enviando fechas con hora:');
+      console.log('fecha_ingreso:', checkInWithTime);
+      console.log('fecha_salida:', checkOutWithTime);
+      
+      // Update the HIDDEN input values with time before submitting
+      const hiddenCheckIn = document.getElementById('fecha_ingreso_with_time');
+      const hiddenCheckOut = document.getElementById('fecha_salida_with_time');
+      
+      if (hiddenCheckIn) hiddenCheckIn.value = checkInWithTime;
+      if (hiddenCheckOut) hiddenCheckOut.value = checkOutWithTime;
+      
+      submitButton.disabled = true;
+      submitButton.textContent = 'Creando reservación...';
+      if (overlay) overlay.classList.remove('hidden');
+      
+      // Submit the form
+      e.target.submit();
     });
 
     // Phone number formatting

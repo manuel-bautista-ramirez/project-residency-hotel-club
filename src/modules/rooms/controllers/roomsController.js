@@ -108,18 +108,40 @@ export const handleCreateReservation = async (req, res) => {
       return res.status(401).send("Usuario no autenticado o ID inválido");
     }
 
-    // 4. Convertir el monto a letras
+    // 4. Convertir fechas para que se guarden correctamente con hora 12:00 local
+    const fechaIngresoDate = new Date(fecha_ingreso);
+    const fechaSalidaDate = new Date(fecha_salida);
+    
+    // Ajustar a 18:00 UTC para que al leer sea 12:00 local (GMT-6)
+    fechaIngresoDate.setUTCHours(18, 0, 0, 0);
+    fechaSalidaDate.setUTCHours(18, 0, 0, 0);
+    
+    // Formatear manualmente usando valores UTC para evitar cualquier conversión del driver
+    const formatUTCForMySQL = (date) => {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    };
+    
+    const fecha_ingreso_formatted = formatUTCForMySQL(fechaIngresoDate);
+    const fecha_salida_formatted = formatUTCForMySQL(fechaSalidaDate);
+
+    // 5. Convertir el monto a letras
     const monto_letras = convertMumbersWorks(Number(monto) || 0);
 
-    // 5. Construir el objeto de datos de la reservación
+    // 6. Construir el objeto de datos de la reservación
     const reservationData = {
       habitacion_id,
       usuario_id: Number(usuario_id), // Asegura que sea numérico
       nombre_cliente,
       correo,
       telefono,
-      fecha_ingreso,
-      fecha_salida,
+      fecha_ingreso: fecha_ingreso_formatted,
+      fecha_salida: fecha_salida_formatted,
       monto: Number(monto) || 0,
       monto_letras,
     };
@@ -145,9 +167,17 @@ export const renderAllRervationes = async (req, res) => {
     const user = req.session.user || { role: "Usuario" };
     const allReservationes = await getAllReservationes();
 
+    // Convertir fechas a formato ISO string para preservar la hora en los atributos HTML
+    const reservacionesFormateadas = allReservationes.map(reservacion => ({
+      ...reservacion,
+      fecha_reserva: reservacion.fecha_reserva ? new Date(reservacion.fecha_reserva).toISOString() : null,
+      fecha_ingreso: reservacion.fecha_ingreso ? new Date(reservacion.fecha_ingreso).toISOString() : null,
+      fecha_salida: reservacion.fecha_salida ? new Date(reservacion.fecha_salida).toISOString() : null,
+    }));
+
     res.render("showReservations", {
       title: "Adminstracion de  Reservaciones",
-      allReservationes,
+      allReservationes: reservacionesFormateadas,
       user: {
         ...user,
         rol: user.role,
@@ -183,10 +213,18 @@ export const renderAllRentas = async (req, res) => {
   try {
     const user = req.session.user || { role: "Administrador" };
     const allRentas = await getAllRentas();
-    console.log(allRentas);
+    
+    // Convertir fechas a formato ISO string para preservar la hora en los atributos HTML
+    const rentasFormateadas = allRentas.map(renta => ({
+      ...renta,
+      fecha_ingreso: renta.fecha_ingreso ? new Date(renta.fecha_ingreso).toISOString() : null,
+      fecha_salida: renta.fecha_salida ? new Date(renta.fecha_salida).toISOString() : null,
+    }));
+    
+    console.log(rentasFormateadas);
     res.render("showRent", {
       title: "Listado de habitaciones rentadas",
-      allRentas,
+      allRentas: rentasFormateadas,
       showFooter: true,
       user: {
         ...user,
@@ -345,6 +383,52 @@ export const handleCreateRenta = async (req, res) => {
     price_text,
   } = req.body;
 
+  // Convertir fechas para que se guarden correctamente con hora 12:00 local
+  console.log('\n🔍 === DEPURACIÓN DE FECHAS (BACKEND) ===');
+  console.log('📥 Fecha recibida del frontend (check_in):', check_in);
+  console.log('📥 Fecha recibida del frontend (check_out):', check_out);
+  
+  const checkInDate = new Date(check_in);
+  const checkOutDate = new Date(check_out);
+  
+  console.log('📅 Date object ANTES de ajustar:');
+  console.log('  - checkInDate:', checkInDate.toString());
+  console.log('  - checkInDate UTC:', checkInDate.toUTCString());
+  console.log('  - checkInDate ISO:', checkInDate.toISOString());
+  
+  // Ajustar para que UTC sea 18:00 (no hora local)
+  // Si queremos 12:00 local (GMT-6), necesitamos 18:00 UTC
+  checkInDate.setUTCHours(18, 0, 0, 0);
+  checkOutDate.setUTCHours(18, 0, 0, 0);
+  
+  console.log('📅 Date object DESPUÉS de ajustar a 18:00 UTC:');
+  console.log('  - checkInDate:', checkInDate.toString());
+  console.log('  - checkInDate UTC:', checkInDate.toUTCString());
+  console.log('  - checkInDate ISO:', checkInDate.toISOString());
+  console.log('  - UTC Hours:', checkInDate.getUTCHours());
+  console.log('  - Local Hours:', checkInDate.getHours());
+  
+  // Formatear manualmente usando valores UTC para evitar cualquier conversión del driver
+  const formatUTCForMySQL = (date) => {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+    // Devolver string puro sin zona horaria para que MySQL lo guarde tal cual
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+  
+  const check_in_formatted = formatUTCForMySQL(checkInDate);
+  const check_out_formatted = formatUTCForMySQL(checkOutDate);
+  
+  console.log('💾 Fecha que se enviará a MySQL (string puro):');
+  console.log('  - check_in_formatted:', check_in_formatted);
+  console.log('  - check_out_formatted:', check_out_formatted);
+  console.log('  - Tipo:', typeof check_in_formatted);
+  console.log('=== FIN DEPURACIÓN DE FECHAS ===\n');
+  
   // Depuración: mostrar todos los datos recibidos
   console.log("=== Depuración de datos del formulario ===");
   console.log({
@@ -353,8 +437,10 @@ export const handleCreateRenta = async (req, res) => {
     client_name,
     email,
     phone,
-    check_in,
-    check_out,
+    check_in_original: check_in,
+    check_out_original: check_out,
+    check_in_formatted,
+    check_out_formatted,
     payment_type,
     price,
     price_text,
@@ -379,14 +465,14 @@ export const handleCreateRenta = async (req, res) => {
       return res.status(400).send("Tipo de pago inválido");
     }
 
-    // 2. Insertar renta usando nombres correctos
+    // 2. Insertar renta usando nombres correctos con fechas formateadas
     const rent_id = await createRent({
       room_id: habitacion_id,
       user_id: usuario_id,
       message_method_id: message_method_id,
       client_name: client_name,
-      check_in_date: check_in,
-      check_out_date: check_out,
+      check_in_date: check_in_formatted,
+      check_out_date: check_out_formatted,
       payment_type: tipo_pago,
       amount: price,
       amount_text: price_text,

@@ -1,89 +1,186 @@
 {{>navbar}}
 <link rel="stylesheet" href="/css/all.min.css">
+
 <div class="max-w-7xl mx-auto px-3 sm:px-4 pt-24 sm:pt-28 pb-24">
- {{>buttons}}
-<!-- Tabla de reservaciones (solo desktop) -->
+  {{>buttons}}
 
-  <section id="tableSection" class="overflow-x-auto mt-6 hidden lg:block">
-    <table class="min-w-full bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
-      <thead class="bg-blue-800 text-white text-xs sm:text-sm uppercase">
-        <tr>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-user text-[0.9rem]"></i> Cliente</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-door-closed text-[0.9rem]"></i> Habitación</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-regular fa-calendar"></i> Reserva</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-day text-[0.9rem]"></i> Ingreso</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-check text-[0.9rem]"></i> Salida</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-center"><span class="inline-flex items-center gap-1.5 whitespace-nowrap justify-center w-full"><i class="fa-solid fa-ellipsis-vertical text-[0.9rem]"></i> Acciones</span></th>
-        </tr>
-      </thead>
+  <!-- Filtros -->
+  <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <!-- Búsqueda libre -->
+      <div class="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
+        <label for="reservationSearch" class="text-xs font-medium text-slate-600">Buscar (cliente, habitación, fechas)</label>
+        <input id="reservationSearch" type="text" placeholder="Escribe para filtrar..."
+               class="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
+      </div>
+      <!-- Rango de fechas (ingreso) -->
+      <div class="flex flex-col gap-1 sm:col-span-2 lg:col-span-2">
+        <label for="reservationFrom" class="text-xs font-medium text-slate-600">Ingreso desde</label>
+        <input id="reservationFrom" type="date" class="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full lg:max-w-sm">
+      </div>
+    </div>
+    <div class="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      <div id="reservationCount" class="text-xs text-slate-600">Mostrando todas las reservaciones</div>
+      <button id="reservationReset" class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg inline-flex items-center gap-1.5 transition-colors whitespace-nowrap">
+        <i class="fa-solid fa-eraser"></i>
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
 
-       <tbody class="text-gray-700 divide-y divide-gray-200 text-xs sm:text-sm">
-        {{#each allReservationes}}
-        <tr class="hover:bg-gray-50 transition">
-          <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.nombre_cliente}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.numero_habitacion}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_reserva}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_ingreso}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_salida}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">
-               <a href="/rooms/editar/{{this.id_reservacion}}"
-                 class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
-                 <i class="fa-solid fa-pen-to-square"></i>
-                 <span>Editar</span>
-              </a>
+  <!-- Paginación -->
+  <section class="mt-3 sm:mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-2 justify-between">
+    <div class="flex items-center gap-2 justify-center sm:justify-start">
+      <label class="text-xs text-slate-600 whitespace-nowrap">Por página</label>
+      <select id="reservationPageSize" class="px-2 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        <option>10</option>
+        <option>20</option>
+        <option>50</option>
+      </select>
+    </div>
+    <div class="flex items-center gap-2 justify-center sm:justify-end">
+      <button id="reservationPagePrev" class="px-2.5 sm:px-3 py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 inline-flex items-center gap-1 sm:gap-1.5 transition-colors">
+        <i class="fa-solid fa-angle-left"></i>
+        <span class="hidden sm:inline">Anterior</span>
+      </button>
+      <span id="reservationPageInfo" class="text-xs text-slate-600 whitespace-nowrap px-2">Página 1 de 1</span>
+      <button id="reservationPageNext" class="px-2.5 sm:px-3 py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 inline-flex items-center gap-1 sm:gap-1.5 transition-colors">
+        <span class="hidden sm:inline">Siguiente</span>
+        <i class="fa-solid fa-angle-right"></i>
+      </button>
+    </div>
+  </section>
 
+  <!-- Loading Overlay -->
+  <div id="reservationsLoadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+    <div class="flex flex-col items-center gap-3">
+      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="img">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-sm text-blue-900 font-medium">Cargando reservaciones...</p>
+    </div>
+  </div>
+
+  <!-- Tabla de reservaciones (solo desktop) -->
+  <section id="tableSection" class="mt-6 hidden lg:block">
+    <div class="bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
+      <table class="w-full table-fixed">
+        <thead class="bg-blue-800 text-white text-xs uppercase">
+          <tr>
+            <th class="py-2.5 px-2 text-left w-[16%]"><span class="inline-flex items-center gap-1"><i class="fa-solid fa-user text-[0.75rem]"></i> <span class="truncate">Cliente</span></span></th>
+            <th class="py-2.5 px-2 text-left w-[12%]"><span class="inline-flex items-center gap-1"><i class="fa-solid fa-door-closed text-[0.75rem]"></i> <span class="truncate">Hab.</span></span></th>
+            <th class="py-2.5 px-2 text-left w-[13%]"><span class="inline-flex items-center gap-1"><i class="fa-regular fa-calendar text-[0.75rem]"></i> <span class="truncate">Reserva</span></span></th>
+            <th class="py-2.5 px-2 text-left w-[13%]"><span class="inline-flex items-center gap-1"><i class="fa-solid fa-calendar-day text-[0.75rem]"></i> <span class="truncate">Ingreso</span></span></th>
+            <th class="py-2.5 px-2 text-left w-[13%]"><span class="inline-flex items-center gap-1"><i class="fa-solid fa-calendar-check text-[0.75rem]"></i> <span class="truncate">Salida</span></span></th>
+            <th class="py-2.5 px-2 text-center w-[33%]"><span class="inline-flex items-center gap-1 justify-center"><i class="fa-solid fa-ellipsis-vertical text-[0.75rem]"></i> <span>Acciones</span></span></th>
+          </tr>
+        </thead>
+
+        <tbody class="text-gray-700 divide-y divide-gray-200 text-xs">
+          {{#each allReservationes}}
+          <tr class="hover:bg-gray-50 transition-colors reservation-row"
+              data-nombre="{{this.nombre_cliente}}"
+              data-hab="{{this.numero_habitacion}}"
+              data-reserva="{{this.fecha_reserva}}"
+              data-ingreso="{{this.fecha_ingreso}}"
+              data-salida="{{this.fecha_salida}}">
+            <td class="py-2.5 px-2 capitalize">
+              <div class="truncate" title="{{this.nombre_cliente}}">{{this.nombre_cliente}}</div>
+            </td>
+            <td class="py-2.5 px-2 capitalize">
+              <div class="truncate" title="{{this.numero_habitacion}}">{{this.numero_habitacion}}</div>
+            </td>
+            <td class="py-2.5 px-2">
+              <div class="truncate">{{this.fecha_reserva}}</div>
+            </td>
+            <td class="py-2.5 px-2">
+              <div class="truncate">{{this.fecha_ingreso}}</div>
+            </td>
+            <td class="py-2.5 px-2">
+              <div class="truncate">{{this.fecha_salida}}</div>
+            </td>
+            <td class="py-2.5 px-2">
+              <div class="flex items-center justify-center gap-1 flex-wrap">
+                <a href="/rooms/editar/{{this.id_reservacion}}"
+                   class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-[0.7rem] rounded shadow-sm transition-colors"
+                   title="Editar">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  <span class="hidden xl:inline">Editar</span>
+                </a>
                 <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}"
-                 class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
-                 <i class="fa-solid fa-check"></i>
-                 <span>Confirmar</span>
-              </a>
-              <form action="/rooms/delete/{{this.id_reservacion}}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar reservación {{this.id_reservacion}}?');">
-                <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
-                  <i class="fa-solid fa-trash-can"></i>
-                  <span>Eliminar</span>
-                </button>
-              </form>
-          </td>
+                   class="inline-flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-[0.7rem] rounded shadow-sm transition-colors"
+                   title="Confirmar">
+                  <i class="fa-solid fa-check"></i>
+                  <span class="hidden xl:inline">Confirmar</span>
+                </a>
+                <form action="/rooms/delete/{{this.id_reservacion}}" method="POST" style="display:inline;" onsubmit="return confirm('¿Eliminar reservación {{this.id_reservacion}}?');">
+                  <button type="submit" 
+                          class="inline-flex items-center gap-1 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-[0.7rem] rounded shadow-sm transition-colors"
+                          title="Eliminar">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span class="hidden xl:inline">Eliminar</span>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
           {{/each}}
-       </tbody>
-        </section>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <!-- Cards de reservaciones (móvil y tablet) -->
-  <section id="cardsSection" class="mt-6 grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:hidden">
+  <section id="cardsSection" class="mt-6 grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2 lg:hidden">
     {{#each allReservationes}}
-    <article class="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div class="bg-blue-900 text-white px-3 py-2">
-        <h3 class="font-bold text-sm inline-flex items-center gap-1.5">
-          <i class="fa-solid fa-bed text-[1rem]"></i>
-          <span>Hab. {{this.numero_habitacion}} • {{this.nombre_cliente}}</span>
+    <article class="bg-white rounded-xl shadow-lg overflow-hidden reservation-reveal transition-all duration-300"
+             data-nombre="{{this.nombre_cliente}}"
+             data-hab="{{this.numero_habitacion}}"
+             data-reserva="{{this.fecha_reserva}}"
+             data-ingreso="{{this.fecha_ingreso}}"
+             data-salida="{{this.fecha_salida}}">
+      <div class="bg-blue-900 text-white px-4 py-3">
+        <h3 class="font-bold text-sm sm:text-base inline-flex items-center gap-2">
+          <i class="fa-solid fa-bed text-base"></i>
+          <span class="truncate">Hab. {{this.numero_habitacion}} • {{this.nombre_cliente}}</span>
         </h3>
       </div>
-      <div class="p-4 space-y-3 text-sm text-gray-800">
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <div>
-            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar"></i> Reserva</div>
-            <div>{{this.fecha_reserva}}</div>
+      <div class="p-4 space-y-4 text-sm text-gray-800">
+        <div class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-3">
+          <div class="flex flex-col">
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5 mb-1">
+              <i class="fa-regular fa-calendar"></i>
+              <span>Reserva</span>
+            </div>
+            <div class="font-medium">{{this.fecha_reserva}}</div>
           </div>
-          <div>
-            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar-plus"></i> Ingreso</div>
-            <div>{{this.fecha_ingreso}}</div>
+          <div class="flex flex-col">
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5 mb-1">
+              <i class="fa-regular fa-calendar-plus"></i>
+              <span>Ingreso</span>
+            </div>
+            <div class="font-medium">{{this.fecha_ingreso}}</div>
           </div>
-          <div>
-            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar-check"></i> Salida</div>
-            <div>{{this.fecha_salida}}</div>
+          <div class="flex flex-col">
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5 mb-1">
+              <i class="fa-regular fa-calendar-check"></i>
+              <span>Salida</span>
+            </div>
+            <div class="font-medium">{{this.fecha_salida}}</div>
           </div>
         </div>
-        <div class="pt-2 flex flex-wrap gap-2">
-          <a href="/rooms/editar/{{this.id_reservacion}}" class="inline-flex items-center gap-1.5 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm shadow-sm transition-colors">
+        <div class="pt-2 border-t border-gray-100 flex flex-col xs:flex-row flex-wrap gap-2">
+          <a href="/rooms/editar/{{this.id_reservacion}}" class="flex-1 xs:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm shadow-sm transition-colors">
             <i class="fa-solid fa-pen-to-square"></i>
             <span>Editar</span>
           </a>
-          <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}" class="inline-flex items-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+          <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}" class="flex-1 xs:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm shadow-sm transition-colors">
             <i class="fa-solid fa-check"></i>
             <span>Confirmar</span>
           </a>
-          <form action="/rooms/delete/{{this.id_reservacion}}" method="POST" onsubmit="return confirm('¿Eliminar reservación {{this.id_reservacion}}?');">
-            <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+          <form action="/rooms/delete/{{this.id_reservacion}}" method="POST" onsubmit="return confirm('¿Eliminar reservación {{this.id_reservacion}}?');" class="flex-1 xs:flex-none">
+            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
               <i class="fa-solid fa-trash-can"></i>
               <span>Eliminar</span>
             </button>
@@ -94,3 +191,304 @@
     {{/each}}
   </section>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('reservationsLoadingOverlay');
+    const rowsTable = Array.from(document.querySelectorAll('.reservation-row'));
+    const rowsCards = Array.from(document.querySelectorAll('.reservation-reveal'));
+    const rows = [...rowsTable, ...rowsCards];
+    
+    // Filtros
+    const q = document.getElementById('reservationSearch');
+    const from = document.getElementById('reservationFrom');
+    const reset = document.getElementById('reservationReset');
+    const count = document.getElementById('reservationCount');
+    
+    // Paginación
+    const selPageSize = document.getElementById('reservationPageSize');
+    const btnPrev = document.getElementById('reservationPagePrev');
+    const btnNext = document.getElementById('reservationPageNext');
+    const lblPage = document.getElementById('reservationPageInfo');
+    
+    let sortKey = '';
+    let sortDir = 'asc';
+    let page = 1;
+    let pageSize = parseInt(selPageSize ? selPageSize.value : '10', 10) || 10;
+    
+    // Función para formatear fechas con hora
+    function formatDateTime(dateStr) {
+      if (!dateStr) return '';
+      
+      let date;
+      
+      // Si ya es un objeto Date
+      if (dateStr instanceof Date) {
+        date = dateStr;
+      } 
+      // Si es un string
+      else if (typeof dateStr === 'string') {
+        // Si la fecha viene en formato ISO o YYYY-MM-DD
+        if (dateStr.includes('T') || dateStr.includes('Z') || dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+          date = new Date(dateStr);
+        } else {
+          return dateStr; // Si no reconocemos el formato, devolver original
+        }
+      } 
+      else {
+        return String(dateStr); // Convertir a string si no es Date ni string
+      }
+      
+      if (isNaN(date.getTime())) {
+        return String(dateStr); // Si la fecha es inválida, devolver original
+      }
+      
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      // Formato: DD/MM/YYYY HH:MM
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+    
+    // Formatear fechas en la tabla usando data attributes
+    rowsTable.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      
+      // Obtener fechas del atributo data-*
+      const reservaISO = row.getAttribute('data-reserva');
+      const ingresoISO = row.getAttribute('data-ingreso');
+      const salidaISO = row.getAttribute('data-salida');
+      
+      // Formatear fecha reserva (col 2)
+      if (cells[2] && reservaISO) {
+        const divs = cells[2].querySelectorAll('div');
+        if (divs[0]) divs[0].textContent = formatDateTime(reservaISO);
+      }
+      
+      // Formatear fecha ingreso (col 3)
+      if (cells[3] && ingresoISO) {
+        const divs = cells[3].querySelectorAll('div');
+        if (divs[0]) divs[0].textContent = formatDateTime(ingresoISO);
+      }
+      
+      // Formatear fecha salida (col 4)
+      if (cells[4] && salidaISO) {
+        const divs = cells[4].querySelectorAll('div');
+        if (divs[0]) divs[0].textContent = formatDateTime(salidaISO);
+      }
+    });
+    
+    // Formatear fechas en las cards usando data attributes
+    rowsCards.forEach(card => {
+      const reservaISO = card.getAttribute('data-reserva');
+      const ingresoISO = card.getAttribute('data-ingreso');
+      const salidaISO = card.getAttribute('data-salida');
+      
+      const allDivs = card.querySelectorAll('div');
+      let reservaProcessed = false;
+      let ingresoProcessed = false;
+      let salidaProcessed = false;
+      
+      allDivs.forEach(div => {
+        const text = div.textContent.trim();
+        
+        // Procesar fechas en orden: reserva, ingreso, salida
+        if (!reservaProcessed && text.match(/^\d{4}-\d{2}-\d{2}/) && reservaISO) {
+          div.textContent = formatDateTime(reservaISO);
+          reservaProcessed = true;
+        } 
+        else if (reservaProcessed && !ingresoProcessed && text.match(/^\d{4}-\d{2}-\d{2}/) && ingresoISO) {
+          div.textContent = formatDateTime(ingresoISO);
+          ingresoProcessed = true;
+        }
+        else if (ingresoProcessed && !salidaProcessed && text.match(/^\d{4}-\d{2}-\d{2}/) && salidaISO) {
+          div.textContent = formatDateTime(salidaISO);
+          salidaProcessed = true;
+        }
+      });
+    });
+    
+    // Ocultar overlay tras breve tiempo
+    setTimeout(() => { 
+      if (overlay) overlay.classList.add('hidden'); 
+    }, 300);
+    
+    // --- Funciones auxiliares ---
+    function norm(str) { return (str || '').toString().trim().toLowerCase(); }
+    
+    function inRange(dateStr, fromStr) {
+      if (!fromStr) return true;
+      const d = new Date(dateStr);
+      if (Number.isNaN(d.getTime())) return false;
+      if (fromStr && d < new Date(fromStr)) return false;
+      return true;
+    }
+    
+    // --- Filtrado ---
+    function applyFilters() {
+      const text = norm(q.value);
+      const f = from.value;
+      let visible = 0;
+      
+      rows.forEach(el => {
+        const d = {
+          nombre: norm(el.dataset.nombre || ''),
+          hab: (el.dataset.hab || '').toString(),
+          reserva: el.dataset.reserva || '',
+          ingreso: el.dataset.ingreso || '',
+          salida: el.dataset.salida || ''
+        };
+        
+        const hayTexto = !text || (
+          d.nombre.includes(text) || 
+          d.hab.includes(text) || 
+          d.reserva.includes(text) ||
+          d.ingreso.includes(text) ||
+          d.salida.includes(text)
+        );
+        const hayFechaIn = inRange(d.ingreso, f);
+        const show = hayTexto && hayFechaIn;
+        
+        el.classList.toggle('hidden', !show);
+        if (show) visible++;
+      });
+      
+      if (count) {
+        count.textContent = visible === rows.length 
+          ? 'Mostrando todas las reservaciones' 
+          : `Mostrando ${visible} de ${rows.length} reservaciones`;
+      }
+      
+      // Reiniciar a página 1 después de filtrar
+      page = 1;
+      applySortAndPaginate();
+    }
+    
+    ['input','change'].forEach(evt => {
+      q.addEventListener(evt, applyFilters);
+      from.addEventListener(evt, applyFilters);
+    });
+    
+    reset.addEventListener('click', () => {
+      q.value = '';
+      from.value = '';
+      applyFilters();
+    });
+    
+    // --- Ordenamiento y paginación ---
+    function getVisibleRows() {
+      return rows.filter(el => !el.classList.contains('hidden'));
+    }
+    
+    function coerce(key, val) {
+      if (key === 'hab') return parseInt(val, 10) || 0;
+      if (key === 'reserva' || key === 'ingreso' || key === 'salida') {
+        return new Date(val).getTime() || 0;
+      }
+      return norm(val);
+    }
+    
+    function applySortAndPaginate() {
+      const visible = getVisibleRows();
+      let arr = visible.slice();
+      
+      // Ordenar si hay clave de ordenamiento
+      if (sortKey) {
+        arr.sort((a, b) => {
+          const av = coerce(sortKey, a.dataset[sortKey] || '');
+          const bv = coerce(sortKey, b.dataset[sortKey] || '');
+          if (av < bv) return sortDir === 'asc' ? -1 : 1;
+          if (av > bv) return sortDir === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+      
+      // Paginar
+      const total = arr.length;
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      if (page > totalPages) page = totalPages;
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize;
+      
+      rows.forEach(el => { el.style.display = el.classList.contains('hidden') ? '' : ''; });
+      arr.forEach((el, idx) => {
+        const inPage = idx >= start && idx < end;
+        el.style.display = inPage ? '' : 'none';
+      });
+      
+      if (lblPage) lblPage.textContent = `Página ${total ? page : 0} de ${totalPages}`;
+      if (btnPrev) btnPrev.disabled = page <= 1;
+      if (btnNext) btnNext.disabled = page >= totalPages;
+    }
+    
+    // Eventos de ordenamiento en headers de tabla
+    document.querySelectorAll('#tableSection thead th').forEach((th, idx) => {
+      const mapIdxToKey = {
+        0: 'nombre',
+        1: 'hab',
+        2: 'reserva',
+        3: 'ingreso',
+        4: 'salida'
+      };
+      const key = mapIdxToKey[idx];
+      if (!key) return;
+      
+      th.style.cursor = 'pointer';
+      
+      function clearIndicators() {
+        document.querySelectorAll('#tableSection thead th .sort-indicator').forEach(el => el.remove());
+      }
+      
+      function addIndicator(target, dir) {
+        const span = document.createElement('span');
+        span.className = 'sort-indicator inline-block ml-1 align-middle';
+        span.innerHTML = dir === 'asc'
+          ? '<svg class="w-3 h-3 opacity-90" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7l5 5H7l5-5z"/></svg>'
+          : '<svg class="w-3 h-3 opacity-90" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17l-5-5h10l-5 5z"/></svg>';
+        target.appendChild(span);
+      }
+      
+      th.addEventListener('click', () => {
+        if (sortKey === key) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortKey = key;
+          sortDir = 'asc';
+        }
+        page = 1;
+        applySortAndPaginate();
+        clearIndicators();
+        addIndicator(th.querySelector('span') || th, sortDir);
+      });
+    });
+    
+    // Eventos de paginación
+    if (selPageSize) {
+      selPageSize.addEventListener('change', () => {
+        pageSize = parseInt(selPageSize.value, 10) || 10;
+        page = 1;
+        applySortAndPaginate();
+      });
+    }
+    
+    if (btnPrev) {
+      btnPrev.addEventListener('click', () => {
+        page = Math.max(1, page - 1);
+        applySortAndPaginate();
+      });
+    }
+    
+    if (btnNext) {
+      btnNext.addEventListener('click', () => {
+        page = page + 1;
+        applySortAndPaginate();
+      });
+    }
+    
+    // Inicializar filtros
+    applyFilters();
+  });
+</script>

@@ -85,7 +85,7 @@ export const getAllReservationes = async () => {
         h.numero AS numero_habitacion,
         h.estado,
         r.nombre_cliente,
-        r.fecha_reserva,
+        r.fecha_registro AS fecha_reserva,
         r.fecha_ingreso,
         r.fecha_salida,
         r.monto
@@ -318,23 +318,33 @@ export const createRent = async ({
   amount,
   amount_text,
 }) => {
+  console.log('\n🔍 === DEPURACIÓN createRent (MODEL) ===');
+  console.log('📥 Fechas recibidas en el modelo:');
+  console.log('  - check_in_date:', check_in_date, typeof check_in_date);
+  console.log('  - check_out_date:', check_out_date, typeof check_out_date);
+  
+  const params = [
+    room_id,
+    user_id,
+    message_method_id,
+    client_name,
+    check_in_date,
+    check_out_date,
+    payment_type,
+    amount,
+    amount_text,
+  ];
+  
+  console.log('📤 Parámetros que se enviarán a MySQL:', params);
+  console.log('=== FIN DEPURACIÓN createRent ===\n');
+  
   const [result] = await pool.query(
     `INSERT INTO rentas (
       habitacion_id, usuario_id, id_medio_mensaje,
       nombre_cliente, fecha_ingreso, fecha_salida,
       tipo_pago, monto, monto_letras
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      room_id,
-      user_id,
-      message_method_id,
-      client_name,
-      check_in_date,
-      check_out_date,
-      payment_type,
-      amount,
-      amount_text,
-    ]
+    params
   );
   return result.insertId;
 };
