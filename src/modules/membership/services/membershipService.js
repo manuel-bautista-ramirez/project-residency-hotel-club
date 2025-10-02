@@ -547,8 +547,9 @@ export const MembershipService = {
     return { pdf, filename };
   },
 
-  async getMembershipListData(queryParams) {
+  async getMembershipListData(queryParams, userRole = 'Recepcionista') {
     const { search, type, status } = queryParams;
+    const isAdmin = userRole === 'Administrador';
 
     // 1. Obtener estadísticas
     const estadisticas = await modelList.getEstadisticasMembresias();
@@ -565,15 +566,37 @@ export const MembershipService = {
       membresias = await modelList.getMembresiasActivas();
     }
 
-    // 3. Formatear los datos (lógica de negocio)
+    // 3. Formatear los datos (lógica de negocio y presentación)
     const membresiasFormateadas = membresias.map((membresia) => {
       const diasRestantes = membresia.dias_restantes;
+      const estadoDB = membresia.estado;
 
-      let estadoReal = "Activa";
-      if (diasRestantes <= 0) {
-        estadoReal = "Vencida";
-      } else if (diasRestantes <= 7) {
-        estadoReal = "Por_Vencer";
+      let statusClass = '';
+      let statusText = '';
+      let statusIcon = '';
+
+      if (estadoDB === 'Activa' && diasRestantes > 0) {
+        if (diasRestantes <= 7) {
+          statusClass = 'bg-amber-100 text-amber-800 border-amber-200';
+          statusText = `Por vencer (${diasRestantes} días)`;
+          statusIcon = 'fa-exclamation-triangle';
+        } else if (diasRestantes <= 20) {
+          statusClass = 'bg-green-100 text-green-800 border-green-200';
+          statusText = `Activa (${diasRestantes} días)`;
+          statusIcon = 'fa-check-circle';
+        } else {
+          statusClass = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+          statusText = `Activa (${diasRestantes} días)`;
+          statusIcon = 'fa-check-circle';
+        }
+      } else if (estadoDB === 'Inactiva') {
+        statusClass = 'bg-gray-100 text-gray-800 border-gray-200';
+        statusText = 'Inactiva';
+        statusIcon = 'fa-ban';
+      } else { // Vencida
+        statusClass = 'bg-red-100 text-red-800 border-red-200';
+        statusText = 'Vencida';
+        statusIcon = 'fa-times-circle';
       }
 
       return {
@@ -590,10 +613,12 @@ export const MembershipService = {
         members: membresia.total_integrantes + 1,
         amount: membresia.precio_final,
         isFamily: membresia.tipo === "Familiar",
-        isActive: diasRestantes > 0,
-        isExpired: diasRestantes <= 0,
-        statusType: estadoReal,
         integrantes: membresia.integrantes || [],
+        // Nuevos campos para la vista
+        statusClass: `status-badge ${statusClass} text-xs`,
+        statusText: statusText,
+        statusIcon: `fas ${statusIcon}`,
+        canRenew: isAdmin || diasRestantes <= 0,
       };
     });
 

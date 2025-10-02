@@ -7,7 +7,7 @@ const listMembershipController = {
       const isAdmin = userRole === "Administrador";
       const { filter, search, type, status } = req.query;
 
-      const listData = await MembershipService.getMembershipListData(req.query);
+      const listData = await MembershipService.getMembershipListData(req.query, userRole);
 
       res.render("membershipList", {
         title: "Lista de Membresías",

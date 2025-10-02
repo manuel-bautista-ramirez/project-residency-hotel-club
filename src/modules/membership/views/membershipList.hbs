@@ -324,43 +324,9 @@
                                 </div>
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap">
-                                {{#if this.isActive}}
-                                {{#if (gt this.daysUntilExpiry 20)}}
-                                <span
-                                    class="status-badge bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs">
-                                    <i class="fas fa-check-circle mr-1 text-emerald-600"></i>Activa
-                                    <span class="ml-1">({{this.daysUntilExpiry}} días)</span>
+                                <span class="{{this.statusClass}}">
+                                    <i class="{{this.statusIcon}} mr-1"></i>{{this.statusText}}
                                 </span>
-                                {{else}}
-                                {{#if (gt this.daysUntilExpiry 7)}}
-                                <span class="status-badge bg-green-100 text-green-800 border border-green-200 text-xs">
-                                    <i class="fas fa-check-circle mr-1 text-green-600"></i>Activa
-                                    <span class="ml-1">({{this.daysUntilExpiry}} días)</span>
-                                </span>
-                                {{else}}
-                                {{#if (gt this.daysUntilExpiry 0)}}
-                                <span class="status-badge bg-amber-100 text-amber-800 border border-amber-200 text-xs">
-                                    <i class="fas fa-exclamation-triangle mr-1 text-amber-600"></i>Por vencer
-                                    <span class="ml-1">({{this.daysUntilExpiry}} días)</span>
-                                </span>
-                                {{else}}
-                                <span class="status-badge bg-red-100 text-red-800 border border-red-200 text-xs">
-                                    <i class="fas fa-times-circle mr-1 text-red-600"></i>Vencida
-                                </span>
-                                {{/if}}
-                                {{/if}}
-                                {{/if}}
-                                {{else}}
-                                {{#if this.isExpired}}
-                                <span class="status-badge bg-red-100 text-red-800 border border-red-200 text-xs">
-                                    <i class="fas fa-times-circle mr-1 text-red-600"></i>Vencida
-                                </span>
-                                {{else}}
-                                <span class="status-badge bg-gray-100 text-gray-800 border border-gray-200 text-xs">
-                                    <i class="fas fa-ban mr-1 text-gray-600"></i>Inactiva
-                                </span>
-                                {{/if}}
-                                {{/if}}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
@@ -378,7 +344,7 @@
                                         <i class="fas fa-eye"></i>
                                     </button>
 
-                                    {{#if (or ../isAdmin (eq this.daysUntilExpiry 0))}}
+                                    {{#if this.canRenew}}
                                     <a href="/memberships/renew/{{this.id}}"
                                         class="action-btn bg-blue-100 text-blue-600 hover:bg-blue-200" title="Renovar">
                                         <i class="fas fa-sync-alt"></i>

@@ -133,36 +133,5 @@
         </form>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tipoMembresiaSelect = document.getElementById('id_tipo_membresia');
-            const fechaInicioInput = document.getElementById('fecha_inicio');
-            const fechaFinInput = document.getElementById('fecha_fin');
-            const tiposMembresia = {{{json tiposMembresia}}};
-
-            function calcularFechaFin() {
-                const selectedTipo = tiposMembresia.find(tipo => tipo.id_tipo_membresia == tipoMembresiaSelect.value);
-                if (selectedTipo) {
-                    const fechaInicio = new Date(fechaInicioInput.value);
-                    let duracion = selectedTipo.duracion_dias || 30; // Asumir 30 días si no está definido
-
-                    // Lógica de duración (meses, años)
-                    if (selectedTipo.nombre.toLowerCase().includes('anual')) {
-                        fechaInicio.setFullYear(fechaInicio.getFullYear() + 1);
-                    } else if (selectedTipo.nombre.toLowerCase().includes('mensual')) {
-                        fechaInicio.setMonth(fechaInicio.getMonth() + 1);
-                    } else {
-                        fechaInicio.setDate(fechaInicio.getDate() + duracion);
-                    }
-
-                    fechaFinInput.value = fechaInicio.toISOString().split('T')[0];
-                }
-            }
-
-            tipoMembresiaSelect.addEventListener('change', calcularFechaFin);
-
-            // Calcular la fecha de fin inicial
-            calcularFechaFin();
-        });
-    </script>
+    <script src="/js/moduleMembershipJs/renewal.js"></script>
 </body>
