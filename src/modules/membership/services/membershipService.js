@@ -1,10 +1,84 @@
 // services/membershipService.js
 import { MembershipModel } from "../models/modelMembership.js";
+import { modelList } from "../models/modelList.js";
+import { deleteMembershipById } from "../models/modelDelete.js";
+import { updateMembershipById } from "../models/modelEdit.js";
 import { generarQRArchivo } from "../utils/qrGenerator.js";
 import { sendReceiptEmail } from "../utils/nodeMailer.js";
 import QRCode from "qrcode";
 import path from "path";
-import fs from "fs";
+import { promises as fs } from "fs";
+import puppeteer from "puppeteer";
+import hbs from "handlebars";
+
+const _validateReportParams = (period, date) => {
+  if (!period || !date) {
+    return "El período y la fecha son obligatorios.";
+  }
+
+  const validPeriods = ["monthly", "biweekly", "weekly"];
+  if (!validPeriods.includes(period)) {
+    return "El período especificado no es válido.";
+  }
+
+  let dateRegex;
+  switch (period) {
+    case "monthly":
+      dateRegex = /^\d{4}-\d{2}$/; // YYYY-MM
+      break;
+    case "biweekly":
+      dateRegex = /^\d{4}-\d{2}-(first|second)$/; // YYYY-MM-first/second
+      break;
+    case "weekly":
+      dateRegex = /^\d{4}W\d{2}$/; // YYYYWww
+      break;
+  }
+
+  if (!dateRegex.test(date)) {
+    return `El formato de fecha para el período '${period}' no es válido.`;
+  }
+
+  return null; // No hay errores
+};
+
+const _getReportDateRange = (period, date) => {
+  const year = parseInt(date.substring(0, 4));
+  let startDate, endDate;
+
+  switch (period) {
+    case "monthly": {
+      const month = parseInt(date.substring(5, 7)) - 1;
+      startDate = new Date(year, month, 1);
+      endDate = new Date(year, month + 1, 0);
+      break;
+    }
+    case "biweekly": {
+      const month = parseInt(date.substring(5, 7)) - 1;
+      const fortnight = date.endsWith("first") ? 1 : 16;
+      if (fortnight === 1) {
+        startDate = new Date(year, month, 1);
+        endDate = new Date(year, month, 15);
+      } else {
+        startDate = new Date(year, month, 16);
+        endDate = new Date(year, month + 1, 0);
+      }
+      break;
+    }
+    case "weekly": {
+      const week = parseInt(date.substring(5));
+      const firstDay = new Date(year, 0, 1 + (week - 1) * 7);
+      const dayOfWeek = firstDay.getDay();
+      const adjustment = dayOfWeek <= 4 ? 1 - dayOfWeek : 8 - dayOfWeek; // Adjust to start of the week (Monday)
+      startDate = new Date(year, 0, firstDay.getDate() + adjustment);
+      endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6);
+      break;
+    }
+    default:
+      throw new Error("Invalid period specified");
+  }
+
+  return { startDate, endDate };
+};
 
 export const MembershipService = {
   async createMembershipContract(membershipData) {
@@ -383,5 +457,318 @@ export const MembershipService = {
     }
     
     return resultado + ' pesos';
+  },
+
+  async getReportPreviewData(period, date) {
+    const validationError = _validateReportParams(period, date);
+    if (validationError) {
+      const error = new Error(validationError);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const { startDate, endDate } = _getReportDateRange(period, date);
+    const incomeData = await MembershipModel.getIncomeByPaymentMethod(
+      startDate,
+      endDate
+    );
+
+    if (incomeData.total === 0) {
+      return {
+        noData: true,
+        message: "No se encontraron datos para el reporte en esta fecha, elija una fecha correcta.",
+      };
+    }
+
+    return incomeData;
+  },
+
+  async generateReportPDF(period, date) {
+    const validationError = _validateReportParams(period, date);
+    if (validationError) {
+      const error = new Error(validationError);
+      error.isValidationError = true;
+      throw error;
+    }
+
+    const { startDate, endDate } = _getReportDateRange(period, date);
+    const incomeData = await MembershipModel.getIncomeByPaymentMethod(
+      startDate,
+      endDate
+    );
+
+    if (incomeData.total === 0) {
+      const error = new Error("No se encontraron datos para el reporte en esta fecha, no se puede generar el PDF.");
+      error.isNoDataError = true;
+      throw error;
+    }
+
+    const templatePath = path.resolve("src", "views", "partials", "report-template.hbs");
+    const templateFile = await fs.readFile(templatePath, "utf8");
+    const template = hbs.compile(templateFile);
+    const reportHtml = template(incomeData);
+
+    const cssPath = path.resolve("public", "styles.css");
+    const tailwindCss = await fs.readFile(cssPath, "utf8");
+
+    const fontCss = `
+      @font-face {
+        font-family: 'Lato'; font-style: normal; font-weight: 400;
+        src: url(file://${path.resolve("public", "fonts", "lato-v25-latin-regular.ttf")}) format('truetype');
+      }
+      @font-face {
+        font-family: 'Lato'; font-style: italic; font-weight: 400;
+        src: url(file://${path.resolve("public", "fonts", "lato-v25-latin-italic.ttf")}) format('truetype');
+      }
+      @font-face {
+        font-family: 'Lato'; font-style: normal; font-weight: 700;
+        src: url(file://${path.resolve("public", "fonts", "lato-v25-latin-700.ttf")}) format('truetype');
+      }
+      @font-face {
+        font-family: 'Lato'; font-style: italic; font-weight: 700;
+        src: url(file://${path.resolve("public", "fonts", "lato-v25-latin-700italic.ttf")}) format('truetype');
+      }
+      body { font-family: 'Lato', sans-serif; }
+    `;
+
+    const finalHtml = `
+      <!DOCTYPE html><html><head><meta charset="UTF-8"><style>${tailwindCss}${fontCss}</style></head>
+      <body>${reportHtml}</body></html>`;
+
+    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const page = await browser.newPage();
+    await page.setContent(finalHtml, { waitUntil: "networkidle0" });
+    const pdf = await page.pdf({ format: "A4", printBackground: true });
+    await browser.close();
+
+    const formatDate = (d) => d.toISOString().split("T")[0];
+    const filename = `Reporte-${period}-${formatDate(startDate)}-a-${formatDate(endDate)}.pdf`;
+
+    return { pdf, filename };
+  },
+
+  async getMembershipListData(queryParams) {
+    const { search, type, status } = queryParams;
+
+    // 1. Obtener estadísticas
+    const estadisticas = await modelList.getEstadisticasMembresias();
+
+    // 2. Obtener la lista de membresías según los filtros
+    let membresias;
+    if (search) {
+      membresias = await modelList.buscarMembresias(search);
+    } else if (type) {
+      membresias = await modelList.getMembresiasPorTipo(type);
+    } else if (status) {
+      membresias = await modelList.getMembresiasPorEstado(status);
+    } else {
+      membresias = await modelList.getMembresiasActivas();
+    }
+
+    // 3. Formatear los datos (lógica de negocio)
+    const membresiasFormateadas = membresias.map((membresia) => {
+      const diasRestantes = membresia.dias_restantes;
+
+      let estadoReal = "Activa";
+      if (diasRestantes <= 0) {
+        estadoReal = "Vencida";
+      } else if (diasRestantes <= 7) {
+        estadoReal = "Por_Vencer";
+      }
+
+      return {
+        id: membresia.id_activa,
+        id_activa: membresia.id_activa,
+        fullName: membresia.nombre_completo,
+        phone: membresia.telefono,
+        email: membresia.correo,
+        type: membresia.tipo,
+        startDate: membresia.fecha_inicio,
+        endDate: membresia.fecha_fin,
+        status: membresia.estado,
+        daysUntilExpiry: diasRestantes,
+        members: membresia.total_integrantes + 1,
+        amount: membresia.precio_final,
+        isFamily: membresia.tipo === "Familiar",
+        isActive: diasRestantes > 0,
+        isExpired: diasRestantes <= 0,
+        statusType: estadoReal,
+        integrantes: membresia.integrantes || [],
+      };
+    });
+
+    return {
+      memberships: membresiasFormateadas,
+      estadisticas,
+    };
+  },
+
+  async getFormattedMembresiasAPI(queryParams) {
+    const { memberships } = await this.getMembershipListData(queryParams);
+
+    // Formato adicional específico para la API (ej. fechas)
+    return memberships.map(membresia => {
+      const formatDate = (dateString) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return date.toLocaleDateString("es-ES", {
+          year: "numeric", month: "short", day: "numeric",
+        });
+      };
+      return {
+        ...membresia,
+        startDate: formatDate(membresia.startDate),
+        endDate: formatDate(membresia.endDate),
+      };
+    });
+  },
+
+  async getEstadisticas() {
+    return await modelList.getEstadisticasMembresias();
+  },
+
+  async getIntegrantes(id_activa) {
+    if (!id_activa) {
+      const error = new Error("El parámetro id_activa es requerido");
+      error.statusCode = 400;
+      throw error;
+    }
+    return await modelList.getIntegrantesByMembresia(id_activa);
+  },
+
+  async getMembershipDetailsForAPI(id) {
+    if (!id) {
+      const error = new Error("El parámetro id es requerido");
+      error.statusCode = 400;
+      throw error;
+    }
+    const details = await modelList.getMembresiaDetalles(id);
+    if (!details) {
+      const error = new Error("Membresía no encontrada");
+      error.statusCode = 404;
+      throw error;
+    }
+    return details;
+  },
+
+  async deleteMembership(id) {
+    if (!id) {
+      const error = new Error("El ID de la membresía es requerido.");
+      error.statusCode = 400;
+      throw error;
+    }
+    const result = await deleteMembershipById(id);
+    if (result.affectedRows === 0) {
+      const error = new Error("Membresía no encontrada.");
+      error.statusCode = 404;
+      throw error;
+    }
+    return result;
+  },
+
+  async getMembershipForEdit(id) {
+    if (!id) {
+      const error = new Error("El ID de la membresía es requerido.");
+      error.statusCode = 400;
+      throw error;
+    }
+    const membresia = await MembershipModel.getMembresiaById(id);
+    if (!membresia) {
+      const error = new Error("Membresía no encontrada.");
+      error.statusCode = 404;
+      throw error;
+    }
+    return membresia;
+  },
+
+  async updateCompleteMembership(id, data) {
+    const {
+      nombre_completo,
+      telefono,
+      correo,
+      estado,
+      fecha_inicio,
+      fecha_fin,
+      precio_final,
+      integrantes
+    } = data;
+
+    // Validar que la membresía a actualizar existe
+    const membresia = await this.getMembershipForEdit(id);
+    const tipo = membresia.tipo || 'Individual';
+
+    const membershipData = {
+      nombre_completo,
+      telefono,
+      correo,
+      estado,
+      fecha_inicio,
+      fecha_fin,
+      precio_final: parseFloat(precio_final)
+    };
+
+    const updateData = {
+      membershipData,
+      tipo: tipo,
+      integrantes: integrantes || []
+    };
+
+    return await updateMembershipById(id, updateData);
+  },
+
+  async getQRPath(id_activa) {
+    if (!id_activa) {
+      const error = new Error("El ID de la membresía es requerido.");
+      error.statusCode = 400;
+      throw error;
+    }
+    const membresia = await MembershipModel.getMembresiaById(id_activa);
+    if (!membresia || !membresia.qr_path) {
+      const error = new Error("QR no encontrado para esta membresía.");
+      error.statusCode = 404;
+      throw error;
+    }
+    return membresia.qr_path;
+  },
+
+  async getMembershipTypeById(id) {
+    if (!id) {
+      const error = new Error("El ID del tipo de membresía es requerido.");
+      error.statusCode = 400;
+      throw error;
+    }
+    const tipo = await MembershipModel.getTipoMembresiaById(id);
+    if (!tipo) {
+      const error = new Error("Tipo de membresía no encontrado.");
+      error.statusCode = 404;
+      throw error;
+    }
+    return tipo;
+  },
+
+  async getDataForCreatePage() {
+    const [tiposMembresia, tiposPago, precioFamiliar] = await Promise.all([
+      MembershipModel.getTiposMembresia(),
+      MembershipModel.getMetodosPago(),
+      MembershipModel.getPrecioFamiliar ? MembershipModel.getPrecioFamiliar() : Promise.resolve(null),
+    ]);
+    return { tiposMembresia, tiposPago, precioFamiliar };
+  },
+
+  async getDataForRenewPage(id) {
+    const [membresia, tiposMembresia, tiposPago] = await Promise.all([
+      this.getMembershipForEdit(id), // Reutiliza el método existente que ya tiene validación
+      MembershipModel.getTiposMembresia(),
+      MembershipModel.getMetodosPago(),
+    ]);
+    return { membresia, tiposMembresia, tiposPago };
+  },
+
+  async getDataForEditPage(id) {
+    const [membresia, tiposMembresia] = await Promise.all([
+      this.getMembershipForEdit(id), // Reutiliza el método existente
+      MembershipModel.getTiposMembresia(),
+    ]);
+    return { membresia, tiposMembresia };
   }
 };

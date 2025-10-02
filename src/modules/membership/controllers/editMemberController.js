@@ -1,124 +1,53 @@
-import { MembershipModel } from "../models/modelMembership.js";
-import { updateMembershipById } from "../models/modelEdit.js";
 import { MembershipService } from "../services/membershipService.js";
 
 export const editMemberController = {
-  // Editar membresia - GET
+  // GET: Renderiza el formulario de edición
   async editMembership(req, res) {
     try {
       const { id } = req.params;
-      const membresia = await MembershipModel.getMembresiaById(id);
-      if (!membresia)
-        return res.status(404).json({ error: "Membresía no encontrada" });
-      
+      const membresia = await MembershipService.getMembershipForEdit(id);
       res.render('editMembership', { membership: membresia });
-    } catch (err) {
-      console.error("Error obteniendo membresía:", err);
-      res.status(500).json({ error: "Error del servidor" });
+    } catch (error) {
+      console.error("Error obteniendo membresía para editar:", error);
+      const statusCode = error.statusCode || 500;
+      res.status(statusCode).json({ error: error.message || "Error del servidor" });
     }
   },
 
-  // Actualizar membresia - POST
+  // POST: Actualiza la membresía
   async updateMembership(req, res) {
     try {
       const { id } = req.params;
-      const {
-        nombre_completo,
-        telefono,
-        correo,
-        estado,
-        fecha_inicio,
-        fecha_fin,
-        precio_final,
-        integrantes
-      } = req.body;
-
-      // Obtener información completa de la membresía para saber el tipo
-      const membresia = await MembershipModel.getMembresiaById(id);
-      if (!membresia) {
-        return res.redirect("/memberships?error=Membresía no encontrada");
-      }
-
-      const tipo = membresia.tipo || 'Individual';
-
-      // Datos para actualizar (campos de cliente y membresía)
-      const membershipData = {
-        nombre_completo,
-        telefono,
-        correo,
-        estado,
-        fecha_inicio,
-        fecha_fin,
-        precio_final: parseFloat(precio_final)
-      };
-
-      // Datos completos para el modelo
-      const updateData = {
-        membershipData,
-        tipo: tipo,
-        integrantes: integrantes || []
-      };
-
-      const result = await updateMembershipById(id, updateData);
-
+      await MembershipService.updateCompleteMembership(id, req.body);
       res.redirect("/memberships/listMembership?success=Membresía actualizada correctamente");
-      console.log(result);
     } catch (error) {
       console.error("Error updating membership:", error);
-      res.redirect("/memberships/listMembership?error=Error al actualizar la membresía");
+      res.redirect(`/memberships/listMembership?error=${encodeURIComponent(error.message)}`);
     }
   },
+
+  // DELETE: Elimina la membresía
   async deleteMembership(req, res) {
     try {
         const { id } = req.params;
-        
-        // Lógica para eliminar la membresía
-        const result = await MembershipModel.deleteMembershipById(id);
-        
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Membresía no encontrada' });
-        }
-        
+        await MembershipService.deleteMembership(id);
         res.json({ success: true, message: 'Membresía eliminada correctamente' });
     } catch (error) {
         console.error('Error deleting membership:', error);
-        res.status(500).json({ error: 'Error al eliminar la membresía' });
+        const statusCode = error.statusCode || 500;
+        res.status(statusCode).json({ error: error.message || 'Error al eliminar la membresía' });
     }
-},
+  },
 
-async renewMembership(req, res) {
+  // POST: Renueva la membresía (ya estaba bien, se mantiene con mejor manejo de errores)
+  async renewMembership(req, res) {
     try {
-      const { id } = req.params; // id_activa de la membresía a renovar
-
-      const {
-        id_cliente,
-        nombre_completo,
-        telefono,
-        correo,
-        id_tipo_membresia,
-        fecha_inicio,
-        fecha_fin,
-        id_metodo_pago,
-      } = req.body;
-
-      const renewalData = {
-        id_cliente,
-        nombre_completo,
-        telefono,
-        correo,
-        id_tipo_membresia,
-        fecha_inicio,
-        fecha_fin,
-        id_metodo_pago,
-      };
-
-      // Delegar toda la lógica de negocio al servicio
-      await MembershipService.renewMembership(id, renewalData);
-
+      const { id } = req.params;
+      await MembershipService.renewMembership(id, req.body);
       res.redirect("/memberships/listMembership?success=Membresía renovada correctamente");
     } catch (error) {
       console.error("Error renewing membership:", error);
-      res.redirect("/memberships/listMembership?error=Error al renovar la membresía");
+      res.redirect(`/memberships/listMembership?error=${encodeURIComponent(error.message)}`);
     }
   }
 };

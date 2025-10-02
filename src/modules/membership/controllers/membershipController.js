@@ -1,4 +1,4 @@
-import { MembershipModel } from "../models/modelMembership.js";
+import { MembershipService } from "../services/membershipService.js";
 
 // Controlador para renderizar la vista principal
 export const renderMembershipHome = (req, res) => {
@@ -26,53 +26,43 @@ export const renderMembershipList = (req, res) => {
   });
 };
 
-//Controlador para renderizar la vista de crear membresía
+// Controlador para renderizar la vista de crear membresía
 export const renderMembershipCreate = async (req, res) => {
   try {
     const userRole = req.session.user?.role || "Recepcionista";
     const isAdmin = userRole === "Administrador";
-
-    // Obtener los datos necesarios
-    const tiposMembresia = await MembershipModel.getTiposMembresia();
-    const tiposPago = await MembershipModel.getMetodosPago();
+    const pageData = await MembershipService.getDataForCreatePage();
 
     res.render("membershipCreate", {
       title: "Crear Membresía",
       isAdmin,
       userRole,
-      tiposMembresia,
-      tiposPago,
+      ...pageData,
     });
   } catch (error) {
     console.error("Error al cargar la página de creación de membresía:", error);
-    res.status(500).send("Error al cargar la página");
+    res.status(500).render('error', {
+        title: "Error",
+        message: "Error al cargar la página de creación de membresía."
+    });
   }
 };
 
+// Controlador para renderizar la vista de renovación de membresía
 export const renderRenewMembership = async (req, res) => {
   try {
     const userRole = req.session.user?.role || "Recepcionista";
     const isAdmin = userRole === "Administrador";
     const { id } = req.params;
-
-    // Obtener los datos de la membresía
-    const membresia = await MembershipModel.getMembresiaById(id);
-    if (!membresia) {
-      return res.status(404).send("Membresía no encontrada");
-    }
-
-    // Obtener los tipos de membresía para el select
-    const tiposMembresia = await MembershipModel.getTiposMembresia();
-    const tiposPago = await MembershipModel.getMetodosPago();
-
+    const pageData = await MembershipService.getDataForRenewPage(id);
 
     res.render("renewalMembership", {
       title: "Renovar Membresía",
       isAdmin,
       userRole,
-      membership: membresia,
-      tiposMembresia,
-      tiposPago,
+      membership: pageData.membresia,
+      tiposMembresia: pageData.tiposMembresia,
+      tiposPago: pageData.tiposPago,
       helpers: {
         formatDate: (date) => {
           if (!date) return '';
@@ -86,31 +76,28 @@ export const renderRenewMembership = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al cargar la página de renovación de membresía:", error);
-    res.status(500).send("Error al cargar la página");
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).render('error', {
+        title: "Error",
+        message: error.message || "Error al cargar la página de renovación."
+    });
   }
 }
 
+// Controlador para renderizar la vista de edición de membresía
 export const renderEditMembership = async (req, res) => {
   try {
     const userRole = req.session.user?.role || "Recepcionista";
     const isAdmin = userRole === "Administrador";
     const { id } = req.params;
-
-    // Obtener los datos de la membresía
-    const membresia = await MembershipModel.getMembresiaById(id);
-    if (!membresia) {
-      return res.status(404).send("Membresía no encontrada");
-    }
-
-    // Obtener los tipos de membresía para el select
-    const tiposMembresia = await MembershipModel.getTiposMembresia();
+    const pageData = await MembershipService.getDataForEditPage(id);
 
     res.render("editMembership", {
       title: "Editar Membresía",
       isAdmin,
       userRole,
-      membership: membresia,
-      tiposMembresia,
+      membership: pageData.membresia,
+      tiposMembresia: pageData.tiposMembresia,
       helpers: {
         formatDate: (date) => {
           if (!date) return '';
@@ -122,8 +109,10 @@ export const renderEditMembership = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al cargar la página de edición de membresía:", error);
-    res.status(500).send("Error al cargar la página");
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).render('error', {
+        title: "Error",
+        message: error.message || "Error al cargar la página de edición."
+    });
   }
 };
-
-
