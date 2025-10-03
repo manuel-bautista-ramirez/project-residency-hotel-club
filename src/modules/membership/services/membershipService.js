@@ -337,6 +337,7 @@ export const MembershipService = {
       fecha_inicio: fecha_inicio,
       fecha_fin: authoritative_end_date,
       precio_final: parseFloat(authoritative_price),
+      precioEnLetras: this.convertirNumeroALetras(parseFloat(authoritative_price)),
       metodo_pago: membresiaCompleta.metodo_pago || "No especificado",
       integrantes: integrantesDB,
       qr_path: qrPath,

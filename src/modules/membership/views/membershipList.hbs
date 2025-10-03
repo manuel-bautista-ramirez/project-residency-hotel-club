@@ -274,7 +274,7 @@
                     <tbody class="bg-white divide-y divide-green-100" id="membershipsTableBody">
                         {{#each memberships}}
                         <tr
-                            class="table-row bg-white hover:bg-green-50 transition-all duration-200 group membership-row">
+                            class="table-row bg-white hover:bg-green-50 transition-all duration-200 group membership-row" data-days-until-expiry="{{this.daysUntilExpiry}}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10">
@@ -492,29 +492,18 @@
             color: #dc2626;
         }
     </style>
-    {{!-- Modal de confirmación de eliminar --}}
-    <!-- Modal de Confirmación para Eliminar -->
-    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50  items-center justify-center z-50 hidden">
+    {{!-- Modal Genérico para Confirmación/Notificación --}}
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl p-6 w-11/12 md:w-1/3 max-w-md">
             <div class="flex items-center mb-4">
-                <div class="bg-red-100 p-3 rounded-full mr-4">
-                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                <div id="deleteModalIconContainer" class="p-3 rounded-full mr-4">
+                    <i id="deleteModalIcon" class="text-xl"></i>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-800">Confirmar Eliminación</h3>
+                <h3 id="deleteModalTitle" class="text-xl font-semibold text-gray-800"></h3>
             </div>
-
-            <p class="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar esta membresía? Esta acción no se puede
-                deshacer.</p>
-
-            <div class="flex justify-end space-x-3">
-                <button id="cancelDelete"
-                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                    Cancelar
-                </button>
-                <button id="confirmDelete"
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors">
-                    <i class="fas fa-trash-alt mr-2"></i> Eliminar
-                </button>
+            <p id="deleteModalMessage" class="text-gray-600 mb-6"></p>
+            <div id="deleteModalButtons" class="flex justify-end space-x-3">
+                <!-- Los botones se insertarán aquí dinámicamente -->
             </div>
         </div>
     </div>
@@ -541,4 +530,60 @@
             });
         });
     </script>
+
+    <!-- Templates para Modales -->
+    <template id="integrantes-modal-template">
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 integrantes-modal">
+            <div class="bg-white rounded-2xl p-6 w-11/12 md:w-96 max-w-90vw">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-users mr-2 text-purple-500"></i>Integrantes de la Membresía
+                </h3>
+                <div class="max-h-60 overflow-y-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th class="text-left text-sm font-medium text-purple-700 py-2">Nombre</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100" data-template-content="integrantes-list">
+                            <!-- Los integrantes se insertarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors close-integrantes-modal">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="details-modal-template">
+        <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 details-modal">
+            <div class="bg-white rounded-2xl p-8 w-11/12 md:w-1/2 max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-id-card-alt mr-3 text-green-500"></i>Detalles de la Membresía
+                    </h3>
+                    <button class="text-gray-500 hover:text-gray-800 transition-colors close-details-modal">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4" data-template-content="details-info">
+                        <!-- La información de detalles se insertará aquí -->
+                    </div>
+                    <div class="flex flex-col items-center justify-center bg-gray-50 p-6 rounded-xl" data-template-content="details-qr">
+                        <!-- El QR se insertará aquí -->
+                    </div>
+                </div>
+                <div class="mt-8 flex justify-end">
+                    <button class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors close-details-modal">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
 </body>

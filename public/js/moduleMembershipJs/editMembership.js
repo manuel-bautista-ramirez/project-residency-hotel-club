@@ -27,38 +27,31 @@ const MembershipUI = {
   },
 
   addIntegrante: function (container) {
-    const index = document.querySelectorAll(".integrante-item").length;
-    const newIntegrante = `
-      <div class="integrante-item bg-gray-50 p-4 rounded-lg border border-gray-200">
-        <input type="hidden" name="integrantes[${index}][id_integrante]" value="">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-gray-700 text-sm font-medium mb-1">Nombre Completo</label>
-            <input type="text" name="integrantes[${index}][nombre_completo]" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                   required>
-          </div>
-          <div class="flex items-end">
-            <button type="button" class="remove-integrante inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-              <i class="fas fa-trash mr-1"></i> Eliminar
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
+    const template = document.getElementById('integrante-template');
+    if (!template) {
+        console.error('Template "integrante-template" no encontrado.');
+        return;
+    }
 
-    const div = document.createElement("div");
-    div.innerHTML = newIntegrante;
-    container.appendChild(div.firstElementChild);
+    const index = document.querySelectorAll(".integrante-item").length;
+    const clone = template.content.cloneNode(true);
+
+    // Actualizar los índices en los atributos 'name'
+    const inputs = clone.querySelectorAll('[name*="__INDEX__"]');
+    inputs.forEach(input => {
+        input.name = input.name.replace('__INDEX__', index);
+    });
 
     // Agregar manejador de eventos al nuevo botón de eliminar
-    const removeBtn = div.querySelector(".remove-integrante");
+    const removeBtn = clone.querySelector(".remove-integrante");
     if (removeBtn) {
       removeBtn.addEventListener("click", function () {
         this.closest(".integrante-item").remove();
         MembershipUI.updateIntegrantesIndexes();
       });
     }
+
+    container.appendChild(clone);
   },
 
   updateIntegrantesIndexes: function () {

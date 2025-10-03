@@ -113,182 +113,84 @@ const MembershipUI = {
 
   
   showIntegrantesModal: function (integrantes) {
-    // Verificar si hay integrantes
     if (!integrantes || integrantes.length === 0) {
-      this.showMessage(
-        "Esta membresía no tiene integrantes registrados",
-        "info"
-      );
+      alert("Esta membresía no tiene integrantes registrados");
       return;
     }
 
-    const modalHtml = `
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 integrantes-modal">
-            <div class="bg-white rounded-2xl p-6 w-11/12 md:w-96 max-w-90vw">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                    <i class="fas fa-users mr-2 text-purple-500"></i>Integrantes de la Membresía
-                </h3>
-                <div class="max-h-60 overflow-y-auto">
-                    <table class="min-w-full">
-                        <thead>
-                            <tr>
-                                <th class="text-left text-sm font-medium text-purple-700 py-2">Nombre</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            ${integrantes
-                              .map(
-                                (int) => `
-                                <tr>
-                                    <td class="py-2">
-                                        <div class="flex items-center">
-                                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                                                <span class="text-purple-600 font-bold">${this.getFirstLetter(
-                                                  int.nombre_completo
-                                                )}</span>
-                                            </div>
-                                            <span class="text-sm text-gray-700">${
-                                              int.nombre_completo ||
-                                              "Sin nombre"
-                                            }</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `
-                              )
-                              .join("")}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mt-4 flex justify-end">
-                    <button class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors close-integrantes-modal">
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Remover modal existente si hay uno
-    const existingModal = document.querySelector(".integrantes-modal");
-    if (existingModal) {
-      existingModal.remove();
+    const template = document.getElementById('integrantes-modal-template');
+    if (!template) {
+        console.error('Template "integrantes-modal-template" no encontrado.');
+        return;
     }
+    const modalClone = template.content.cloneNode(true);
+    const listContainer = modalClone.querySelector('[data-template-content="integrantes-list"]');
 
-    // Insertar el modal en el documento
-    document.body.insertAdjacentHTML("beforeend", modalHtml);
+    integrantes.forEach(int => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="py-2">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-purple-600 font-bold">${this.getFirstLetter(int.nombre_completo)}</span>
+                    </div>
+                    <span class="text-sm text-gray-700">${int.nombre_completo || "Sin nombre"}</span>
+                </div>
+            </td>
+        `;
+        listContainer.appendChild(row);
+    });
 
-    // Cerrar modal al hacer clic en el botón de cerrar
-    document
-      .querySelector(".close-integrantes-modal")
-      .addEventListener("click", function () {
-        document.querySelector(".integrantes-modal").remove();
-      });
+    const modalElement = modalClone.firstElementChild;
+    document.body.appendChild(modalElement);
 
-    // Cerrar modal al hacer clic fuera del contenido
-    document
-      .querySelector(".integrantes-modal")
-      .addEventListener("click", function (e) {
-        if (e.target === this) {
-          this.remove();
-        }
-      });
-
-    // Cerrar modal con la tecla ESC
-    document.addEventListener("keydown", function handleEsc(e) {
-      if (e.key === "Escape") {
-        const modal = document.querySelector(".integrantes-modal");
-        if (modal) {
-          modal.remove();
-          document.removeEventListener("keydown", handleEsc);
-        }
-      }
+    const closeModal = () => modalElement.remove();
+    modalElement.querySelector('.close-integrantes-modal').addEventListener('click', closeModal);
+    modalElement.addEventListener('click', (e) => {
+        if (e.target === modalElement) closeModal();
     });
   },
 
   showDetailsModal: function (details) {
-    const modalHtml = `
-      <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 details-modal">
-        <div class="bg-white rounded-2xl p-8 w-11/12 md:w-1/2 max-w-2xl max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-gray-800">
-              <i class="fas fa-id-card-alt mr-3 text-green-500"></i>Detalles de la Membresía
-            </h3>
-            <button class="text-gray-500 hover:text-gray-800 transition-colors close-details-modal">
-              <i class="fas fa-times text-2xl"></i>
-            </button>
-          </div>
+    const template = document.getElementById('details-modal-template');
+    if (!template) {
+        console.error('Template "details-modal-template" no encontrado.');
+        return;
+    }
+    const modalClone = template.content.cloneNode(true);
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Columna de Información -->
-            <div class="space-y-4">
-              <div>
-                <p class="text-sm font-semibold text-gray-500">Titular</p>
-                <p class="text-lg font-medium text-gray-900">${details.nombre_completo}</p>
-              </div>
-              <div>
-                <p class="text-sm font-semibold text-gray-500">Tipo de Membresía</p>
-                <p class="text-lg font-medium text-gray-900">${details.tipo_membresia}</p>
-              </div>
-              <div>
-                <p class="text-sm font-semibold text-gray-500">Periodo</p>
-                <p class="text-lg font-medium text-gray-900">
-                  ${this.formatDate(details.fecha_inicio)} - ${this.formatDate(details.fecha_fin)}
-                </p>
-              </div>
-              ${details.integrantes && details.integrantes.length > 0 ? `
-                <div>
-                  <p class="text-sm font-semibold text-gray-500">Integrantes</p>
-                  <ul class="list-disc list-inside mt-1 space-y-1">
-                    ${details.integrantes.map(int => `<li class="text-gray-700">${int.nombre_completo}</li>`).join('')}
-                  </ul>
-                </div>
-              ` : ''}
-              ${details.pagos && details.pagos.length > 0 ? `
-                <div>
-                  <p class="text-sm font-semibold text-gray-500">Último Pago</p>
-                  <p class="text-lg font-medium text-gray-900">$${details.pagos[0].monto} (${details.pagos[0].metodo_pago})</p>
-                </div>
-              ` : ''}
-            </div>
+    const infoContainer = modalClone.querySelector('[data-template-content="details-info"]');
+    const qrContainer = modalClone.querySelector('[data-template-content="details-qr"]');
 
-            <!-- Columna de QR -->
-            <div class="flex flex-col items-center justify-center bg-gray-50 p-6 rounded-xl">
-              <img src="${details.qr_path}?t=${new Date().getTime()}" alt="Código QR" class="w-48 h-48">
-              ${details.isAdmin ? `
-                <a href="${details.qr_path}" download="qr-membresia-${details.id_activa}.png" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                  <i class="fas fa-download mr-2"></i>Descargar QR
-                </a>
-              ` : ''}
-            </div>
-          </div>
+    // Populate Info
+    let infoHtml = `
+        <div><p class="text-sm font-semibold text-gray-500">Titular</p><p class="text-lg font-medium text-gray-900">${details.nombre_completo}</p></div>
+        <div><p class="text-sm font-semibold text-gray-500">Tipo de Membresía</p><p class="text-lg font-medium text-gray-900">${details.tipo_membresia}</p></div>
+        <div><p class="text-sm font-semibold text-gray-500">Periodo</p><p class="text-lg font-medium text-gray-900">${this.formatDate(details.fecha_inicio)} - ${this.formatDate(details.fecha_fin)}</p></div>`;
 
-          <div class="mt-8 flex justify-end">
-            <button class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors close-details-modal">
-              Cerrar
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    const existingModal = document.querySelector(".details-modal");
-    if (existingModal) {
-      existingModal.remove();
+    if (details.integrantes && details.integrantes.length > 0) {
+        infoHtml += `<div><p class="text-sm font-semibold text-gray-500">Integrantes</p><ul class="list-disc list-inside mt-1 space-y-1">${details.integrantes.map(int => `<li class="text-gray-700">${int.nombre_completo}</li>`).join('')}</ul></div>`;
     }
 
-    document.body.insertAdjacentHTML("beforeend", modalHtml);
+    if (details.pagos && details.pagos.length > 0) {
+        infoHtml += `<div><p class="text-sm font-semibold text-gray-500">Último Pago</p><p class="text-lg font-medium text-gray-900">$${details.pagos[0].monto} (${details.pagos[0].metodo_pago})</p></div>`;
+    }
+    infoContainer.innerHTML = infoHtml;
 
-    document.querySelectorAll(".close-details-modal").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelector(".details-modal").remove();
-      });
-    });
+    // Populate QR
+    let qrHtml = `<img src="${details.qr_path}?t=${new Date().getTime()}" alt="Código QR" class="w-48 h-48">`;
+    if (details.isAdmin) {
+        qrHtml += `<a href="${details.qr_path}" download="qr-membresia-${details.id_activa}.png" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><i class="fas fa-download mr-2"></i>Descargar QR</a>`;
+    }
+    qrContainer.innerHTML = qrHtml;
 
-    document.querySelector(".details-modal").addEventListener("click", function (e) {
-      if (e.target === this) {
-        this.remove();
-      }
+    const modalElement = modalClone.firstElementChild;
+    document.body.appendChild(modalElement);
+
+    const closeModal = () => modalElement.remove();
+    modalElement.querySelectorAll('.close-details-modal').forEach(btn => btn.addEventListener('click', closeModal));
+    modalElement.addEventListener('click', (e) => {
+        if (e.target === modalElement) closeModal();
     });
   },
 
@@ -446,32 +348,14 @@ const MembershipUI = {
         return dateB - dateA;
       } else {
         // expiry por defecto
-        const statusBadgeA = a.querySelector(".status-badge");
-        const statusBadgeB = b.querySelector(".status-badge");
-        const daysA = this.extractDays(
-          statusBadgeA ? statusBadgeA.textContent : ""
-        );
-        const daysB = this.extractDays(
-          statusBadgeB ? statusBadgeB.textContent : ""
-        );
+        const daysA = parseInt(a.getAttribute('data-days-until-expiry'), 10);
+        const daysB = parseInt(b.getAttribute('data-days-until-expiry'), 10);
         return daysA - daysB;
       }
     });
 
     // Limpiar y reordenar la tabla
     rows.forEach((row) => tbody.appendChild(row));
-  },
-
-  extractDays: function (text) {
-    if (!text) return 999;
-
-    const match = text.match(/(\d+)\s*días/);
-    if (match) return parseInt(match[1]);
-
-    if (text.includes("Vencida")) return -1;
-    if (text.includes("Inactiva")) return -2;
-
-    return 999; // Para membresías activas sin contador específico
   },
 };
 
