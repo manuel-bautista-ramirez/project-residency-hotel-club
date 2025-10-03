@@ -2,4 +2,15 @@
 /node_modules/
 
 # Ignorar variables de entorno
+
 .env
+
+/whatsapp_session/*
+
+# Ignorar archivos subidos (PDFs/QRs)
+public/uploads/receipts/*
+public/uploads/qrs/*
+
+# Mantener placeholders
+!public/uploads/receipts/.gitkeep
+!public/uploads/qrs/.gitkeep
