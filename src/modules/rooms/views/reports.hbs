@@ -25,49 +25,70 @@
     <div class="container mx-auto px-4 mt-20 ">
         <div id="notification-area" class="mb-4"></div>
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Generador de Reportes</h1>
-            <p class="text-gray-600 mb-8">Selecciona el tipo de reporte y el período deseado para generar la
-                información.</p>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Generador de Reportes de Habitaciones</h1>
+            <p class="text-gray-600 mb-8">Genera reportes de rentas, reservaciones y envíalos por correo o WhatsApp.</p>
 
             <!-- Selector de tipo de reporte -->
             <div class="mb-8">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Tipo de Reporte</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md active-period"
-                        data-period="monthly">
-                        <i class="fas fa-calendar-month text-4xl text-blue-500 mb-2"></i>
-                        <h3 class="font-semibold">Reporte Mensual</h3>
-                        <p class="text-sm text-gray-500 mt-1">Resumen completo del mes seleccionado</p>
+                    <div class="report-type-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md active-report"
+                        data-type="rentas">
+                        <i class="fas fa-bed text-4xl text-blue-500 mb-2"></i>
+                        <h3 class="font-semibold">Reporte de Rentas</h3>
+                        <p class="text-sm text-gray-500 mt-1">Análisis de habitaciones rentadas</p>
                     </div>
-                    <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
-                        data-period="biweekly">
-                        <i class="fas fa-calendar-alt text-4xl text-green-500 mb-2"></i>
-                        <h3 class="font-semibold">Reporte Quincenal</h3>
-                        <p class="text-sm text-gray-500 mt-1">Primera o segunda quincena del mes</p>
+                    <div class="report-type-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
+                        data-type="reservaciones">
+                        <i class="fas fa-calendar-check text-4xl text-green-500 mb-2"></i>
+                        <h3 class="font-semibold">Reporte de Reservaciones</h3>
+                        <p class="text-sm text-gray-500 mt-1">Análisis de reservaciones</p>
                     </div>
-                    <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
-                        data-period="weekly">
-                        <i class="fas fa-calendar-week text-4xl text-purple-500 mb-2"></i>
-                        <h3 class="font-semibold">Reporte Semanal</h3>
-                        <p class="text-sm text-gray-500 mt-1">Una semana específica del año</p>
+                    <div class="report-type-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
+                        data-type="consolidado">
+                        <i class="fas fa-chart-bar text-4xl text-purple-500 mb-2"></i>
+                        <h3 class="font-semibold">Reporte Consolidado</h3>
+                        <p class="text-sm text-gray-500 mt-1">Rentas + Reservaciones</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Selector de fecha -->
+            <!-- Filtros y Fechas -->
             <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Selecciona la Fecha</h2>
-
-                <!-- Selector para reporte mensual -->
-                <div id="monthly-selector" class="date-selector">
-                    <label for="month-input" class="block text-gray-700 mb-2">Selecciona un mes y año:</label>
-                    <div class="flex space-x-2">
-                        <input type="month" id="month-input" class="border rounded-lg p-2 w-full md:w-64">
-                        <button class="generate-report-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                            Generar Reporte
-                        </button>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Filtros y Fechas</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Fechas -->
+                    <div>
+                        <label class="block text-gray-700 mb-2">Rango de Fechas:</label>
+                        <div class="flex space-x-2">
+                            <input type="date" id="fecha-inicio" class="border rounded-lg p-2 flex-1">
+                            <input type="date" id="fecha-fin" class="border rounded-lg p-2 flex-1">
+                        </div>
+                    </div>
+                    
+                    <!-- Filtros -->
+                    <div>
+                        <label class="block text-gray-700 mb-2">Filtros Opcionales:</label>
+                        <div class="space-y-2">
+                            <input type="text" id="filtro-habitacion" placeholder="Número de habitación" class="border rounded-lg p-2 w-full">
+                            <input type="text" id="filtro-cliente" placeholder="Nombre del cliente" class="border rounded-lg p-2 w-full">
+                            <select id="filtro-tipo-pago" class="border rounded-lg p-2 w-full">
+                                <option value="">Todos los tipos de pago</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="tarjeta">Tarjeta</option>
+                                <option value="transferencia">Transferencia</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+                
+                <div class="mt-4 flex space-x-2">
+                    <button id="generar-reporte-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                        <i class="fas fa-chart-bar mr-2"></i>Generar Reporte
+                    </button>
+                </div>
+            </div>
 
                 <!-- Selector para reporte quincenal -->
                 <div id="biweekly-selector" class="date-selector hidden">
@@ -103,10 +124,50 @@
             </div>
 
             <!-- Vista previa del reporte -->
-            <div class="bg-gray-50 rounded-lg p-6 mt-8 mb-20">
+            <div id="reporte-container" class="bg-gray-50 rounded-lg p-6 mt-8 mb-8">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
                 <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                    <p class="text-gray-500">Selecciona un tipo de reporte y una fecha para generar la vista previa</p>
+                    <p class="text-gray-500">Selecciona un tipo de reporte y genera la vista previa</p>
+                </div>
+            </div>
+
+            <!-- Opciones de envío -->
+            <div id="envio-opciones" class="bg-white border rounded-lg p-6 mb-20 hidden">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar Reporte
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Envío por correo -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-800 mb-3">
+                            <i class="fas fa-envelope text-blue-500 mr-2"></i>Enviar por Correo
+                        </h3>
+                        <div class="space-y-3">
+                            <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com" 
+                                   class="border rounded-lg p-2 w-full" required>
+                            <input type="text" id="email-asunto" placeholder="Asunto del correo" 
+                                   class="border rounded-lg p-2 w-full">
+                            <button id="enviar-email-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+                                <i class="fas fa-envelope mr-2"></i>Enviar por Correo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Envío por WhatsApp -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-800 mb-3">
+                            <i class="fab fa-whatsapp text-green-500 mr-2"></i>Enviar por WhatsApp
+                        </h3>
+                        <div class="space-y-3">
+                            <input type="tel" id="whatsapp-telefono" placeholder="5512345678" 
+                                   class="border rounded-lg p-2 w-full" required>
+                            <small class="text-gray-500">Formato: 10 dígitos sin espacios</small>
+                            <button id="enviar-whatsapp-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full">
+                                <i class="fab fa-whatsapp mr-2"></i>Enviar por WhatsApp
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -115,29 +176,26 @@
   </header>
    </div>
      <script>
+        let reporteActual = null;
+        let tipoReporteSeleccionado = 'rentas';
+
         // Funcionalidad para cambiar entre tipos de reporte
-        document.querySelectorAll('.period-option').forEach(option => {
+        document.querySelectorAll('.report-type-option').forEach(option => {
             option.addEventListener('click', function () {
                 // Remover clase active de todas las opciones
-                document.querySelectorAll('.period-option').forEach(opt => {
-                    opt.classList.remove('active-period');
+                document.querySelectorAll('.report-type-option').forEach(opt => {
+                    opt.classList.remove('active-report');
                     opt.classList.add('border-gray-200');
                     opt.classList.remove('border-blue-500');
                 });
 
                 // Añadir clase active a la opción seleccionada
-                this.classList.add('active-period');
+                this.classList.add('active-report');
                 this.classList.remove('border-gray-200');
                 this.classList.add('border-blue-500');
 
-                // Ocultar todos los selectores de fecha
-                document.querySelectorAll('.date-selector').forEach(selector => {
-                    selector.classList.add('hidden');
-                });
-
-                // Mostrar el selector correspondiente
-                const period = this.getAttribute('data-period');
-                document.getElementById(`${period}-selector`).classList.remove('hidden');
+                // Guardar tipo seleccionado
+                tipoReporteSeleccionado = this.getAttribute('data-type');
             });
         });
 
@@ -145,9 +203,15 @@
         const today = new Date();
         const year = today.getFullYear();
         const month = (today.getMonth() + 1).toString().padStart(2, '0');
+        const day = today.getDate().toString().padStart(2, '0');
 
-        document.getElementById('month-input').value = `${year}-${month}`;
-        document.getElementById('biweekly-month-input').value = `${year}-${month}`;
+        // Establecer fecha de fin como hoy y fecha de inicio como hace 30 días
+        const fechaFin = `${year}-${month}-${day}`;
+        const fechaInicio = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const inicioFormatted = `${fechaInicio.getFullYear()}-${(fechaInicio.getMonth() + 1).toString().padStart(2, '0')}-${fechaInicio.getDate().toString().padStart(2, '0')}`;
+
+        document.getElementById('fecha-inicio').value = inicioFormatted;
+        document.getElementById('fecha-fin').value = fechaFin;
 
         // Calcular la semana actual para el input de tipo week
         const firstDayOfYear = new Date(year, 0, 1);
@@ -156,77 +220,288 @@
         document.getElementById('week-input').value = `${year}-W${week.toString().padStart(2, '0')}`;
 
         // --- Lógica para generar reportes ---
-        const previewContainer = document.querySelector('.bg-gray-50');
+        const reporteContainer = document.getElementById('reporte-container');
+        const envioOpciones = document.getElementById('envio-opciones');
 
-        async function generateReportPreview(period, date) {
-            const url = `/api/memberships/reports/preview?period=${period}&date=${date}`;
+        // Función para generar reporte
+        async function generarReporte() {
+            const fechaInicio = document.getElementById('fecha-inicio').value;
+            const fechaFin = document.getElementById('fecha-fin').value;
+            const habitacion = document.getElementById('filtro-habitacion').value;
+            const cliente = document.getElementById('filtro-cliente').value;
+            const tipoPago = document.getElementById('filtro-tipo-pago').value;
 
-            // Limpiar vista previa anterior
-            previewContainer.innerHTML = `
+            if (!fechaInicio || !fechaFin) {
+                mostrarNotificacion('Por favor selecciona las fechas de inicio y fin', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            reporteContainer.innerHTML = `
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
                 <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                    <p class="text-gray-500">Generando vista previa...</p>
+                    <p class="text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Generando reporte...</p>
                 </div>`;
 
             try {
-                const response = await fetch(url);
+                const params = new URLSearchParams({
+                    tipo: tipoReporteSeleccionado,
+                    fechaInicio,
+                    fechaFin
+                });
+
+                if (habitacion) params.append('habitacion', habitacion);
+                if (cliente) params.append('cliente', cliente);
+                if (tipoPago) params.append('tipoPago', tipoPago);
+
+                const response = await fetch(`/api/rooms/reports/generate?${params}`);
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.error || 'No se pudo obtener la vista previa.');
+                    throw new Error(data.error || 'Error al generar el reporte');
                 }
 
-                if (data.noData) {
-                    previewContainer.innerHTML = `
-                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-                        <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                            <p class="text-yellow-600">${data.message}</p>
-                        </div>`;
-                    return;
-                }
-
-                const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
-
-                const previewHtml = `
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-                    <table class="w-full border-collapse border border-gray-300">
-                        <thead class="bg-gray-100">
-                            <tr><th class="border border-gray-300 px-4 py-2 text-left">Método de Pago</th><th class="border border-gray-300 px-4 py-2 text-right">Monto Acumulado</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td class="border border-gray-300 px-4 py-2">Efectivo</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.efectivo)}</td></tr>
-                            <tr><td class="border border-gray-300 px-4 py-2">Tarjeta Débito</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.debito)}</td></tr>
-                            <tr><td class="border border-gray-300 px-4 py-2">Tarjeta Crédito</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.credito)}</td></tr>
-                            <tr><td class="border border-gray-300 px-4 py-2">Transferencia</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.transferencia)}</td></tr>
-                        </tbody>
-                        <tfoot class="bg-gray-200 font-semibold">
-                            <tr><td class="border border-gray-300 px-4 py-2 text-left">Total Neto</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.total)}</td></tr>
-                        </tfoot>
-                    </table>
-                    <div class="mt-6 flex justify-end">
-                        <a href="/api/memberships/reports/download?period=${period}&date=${date}" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg" download>
-                            <i class="fas fa-file-pdf mr-2"></i>Descargar PDF
-                        </a>
-                    </div>
-                `;
-
-                previewContainer.innerHTML = previewHtml;
+                reporteActual = data.reporte;
+                mostrarReporte(data.reporte);
+                envioOpciones.classList.remove('hidden');
 
             } catch (error) {
-                previewContainer.innerHTML = `
+                reporteContainer.innerHTML = `
                     <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
                     <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
                         <p class="text-red-500">Error: ${error.message}</p>
                     </div>`;
+                envioOpciones.classList.add('hidden');
             }
         }
 
-        // Listener para el botón de reporte Mensual
-        document.querySelector('#monthly-selector .generate-report-btn').addEventListener('click', () => {
-            const period = 'monthly';
-            const date = document.getElementById('month-input').value;
-            if (date) {
-                generateReportPreview(period, date);
+        // Función para mostrar el reporte
+        function mostrarReporte(reporte) {
+            const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
+            
+            let contenidoHTML = `
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">
+                    <i class="fas fa-chart-bar mr-2"></i>Reporte de ${reporte.tipo.charAt(0).toUpperCase() + reporte.tipo.slice(1)}
+                </h2>
+            `;
+
+            if (reporte.tipo === 'rentas') {
+                contenidoHTML += `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-blue-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-blue-800">Total Rentas</h3>
+                            <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalRentas}</p>
+                        </div>
+                        <div class="bg-green-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-green-800">Ingreso Total</h3>
+                            <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.ingresoTotal)}</p>
+                        </div>
+                        <div class="bg-purple-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-purple-800">Promedio</h3>
+                            <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.promedioIngreso)}</p>
+                        </div>
+                    </div>
+                `;
+            } else if (reporte.tipo === 'reservaciones') {
+                contenidoHTML += `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-green-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-green-800">Total Reservaciones</h3>
+                            <p class="text-2xl font-bold text-green-900">${reporte.estadisticas.totalReservaciones}</p>
+                        </div>
+                        <div class="bg-blue-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-blue-800">Monto Total</h3>
+                            <p class="text-2xl font-bold text-blue-900">${formatCurrency(reporte.estadisticas.montoTotal)}</p>
+                        </div>
+                        <div class="bg-purple-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-purple-800">Promedio</h3>
+                            <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.promedioMonto)}</p>
+                        </div>
+                    </div>
+                `;
+            } else if (reporte.tipo === 'consolidado') {
+                contenidoHTML += `
+                    <div class="grid grid-cols-1 md:grid-4 gap-4 mb-6">
+                        <div class="bg-blue-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-blue-800">Rentas</h3>
+                            <p class="text-2xl font-bold text-blue-900">${reporte.resumenConsolidado.totalRentas}</p>
+                        </div>
+                        <div class="bg-green-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-green-800">Reservaciones</h3>
+                            <p class="text-2xl font-bold text-green-900">${reporte.resumenConsolidado.totalReservaciones}</p>
+                        </div>
+                        <div class="bg-purple-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-purple-800">Ingreso Total</h3>
+                            <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.resumenConsolidado.ingresoTotalConsolidado)}</p>
+                        </div>
+                        <div class="bg-yellow-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-yellow-800">Ocupación</h3>
+                            <p class="text-2xl font-bold text-yellow-900">${reporte.resumenConsolidado.ocupacionTotal}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Agregar QR si está disponible
+            if (reporte.qrPath) {
+                contenidoHTML += `
+                    <div class="text-center mt-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="font-semibold text-gray-800 mb-3">
+                            <i class="fas fa-qrcode mr-2"></i>Código QR del Reporte
+                        </h4>
+                        <img src="${reporte.qrPath}" alt="QR del Reporte" 
+                             class="mx-auto max-w-48 border border-gray-300 rounded-lg shadow-sm">
+                        <p class="text-xs text-gray-500 mt-2">
+                            Escanea este código para acceder a los datos del reporte
+                        </p>
+                    </div>
+                `;
+            }
+
+            contenidoHTML += `
+                <div class="text-sm text-gray-500 mt-4">
+                    <p><strong>Período:</strong> ${reporte.fechaInicio || 'Inicio'} - ${reporte.fechaFin || 'Fin'}</p>
+                    <p><strong>Generado:</strong> ${new Date(reporte.fechaGeneracion).toLocaleString('es-MX')}</p>
+                </div>
+            `;
+
+            reporteContainer.innerHTML = contenidoHTML;
+        }
+
+        // Función para mostrar notificaciones
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            const notificationArea = document.getElementById('notification-area');
+            const colorClass = tipo === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 
+                              tipo === 'success' ? 'bg-green-100 border-green-400 text-green-700' :
+                              'bg-blue-100 border-blue-400 text-blue-700';
+            
+            notificationArea.innerHTML = `
+                <div class="${colorClass} px-4 py-3 rounded relative border" role="alert">
+                    <span class="block sm:inline">${mensaje}</span>
+                    <span class="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+            `;
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                if (notificationArea.firstElementChild) {
+                    notificationArea.firstElementChild.remove();
+                }
+            }, 5000);
+        }
+
+        // Event listeners
+        document.getElementById('generar-reporte-btn').addEventListener('click', generarReporte);
+
+        // Envío por correo
+        document.getElementById('enviar-email-btn').addEventListener('click', async () => {
+            const destinatario = document.getElementById('email-destinatario').value;
+            const asunto = document.getElementById('email-asunto').value || `Reporte de ${tipoReporteSeleccionado} - Hotel Club`;
+
+            if (!destinatario) {
+                mostrarNotificacion('Por favor ingresa un correo electrónico', 'error');
+                return;
+            }
+
+            if (!reporteActual) {
+                mostrarNotificacion('Primero genera un reporte', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('enviar-email-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/rooms/reports/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        tipo: reporteActual.tipo,
+                        fechaInicio: reporteActual.fechaInicio,
+                        fechaFin: reporteActual.fechaFin,
+                        destinatario,
+                        asunto,
+                        filtros: reporteActual.filtros || {}
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    mostrarNotificacion('Reporte enviado por correo exitosamente', 'success');
+                    document.getElementById('email-destinatario').value = '';
+                    document.getElementById('email-asunto').value = '';
+                } else {
+                    throw new Error(data.error || 'Error al enviar el correo');
+                }
+
+            } catch (error) {
+                mostrarNotificacion(`Error: ${error.message}`, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Envío por WhatsApp
+        document.getElementById('enviar-whatsapp-btn').addEventListener('click', async () => {
+            const telefono = document.getElementById('whatsapp-telefono').value;
+
+            if (!telefono) {
+                mostrarNotificacion('Por favor ingresa un número de teléfono', 'error');
+                return;
+            }
+
+            if (!reporteActual) {
+                mostrarNotificacion('Primero genera un reporte', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('enviar-whatsapp-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/rooms/reports/send-whatsapp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        tipo: reporteActual.tipo,
+                        fechaInicio: reporteActual.fechaInicio,
+                        fechaFin: reporteActual.fechaFin,
+                        telefono,
+                        filtros: reporteActual.filtros || {}
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    mostrarNotificacion('Reporte enviado por WhatsApp exitosamente', 'success');
+                    document.getElementById('whatsapp-telefono').value = '';
+                    
+                    // Abrir WhatsApp Web si hay URL
+                    if (data.whatsappURL) {
+                        window.open(data.whatsappURL, '_blank');
+                    }
+                } else {
+                    throw new Error(data.error || 'Error al enviar por WhatsApp');
+                }
+
+            } catch (error) {
+                mostrarNotificacion(`Error: ${error.message}`, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         });
 

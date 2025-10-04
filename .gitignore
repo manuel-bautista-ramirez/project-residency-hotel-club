@@ -10,7 +10,15 @@
 # Ignorar archivos subidos (PDFs/QRs)
 public/uploads/receipts/*
 public/uploads/qrs/*
+public/uploads/rooms/qr/rentas/*
+public/uploads/rooms/qr/reservaciones/*
+public/uploads/rooms/pdf/rentas/*
+public/uploads/rooms/pdf/reservaciones/*
 
 # Mantener placeholders
 !public/uploads/receipts/.gitkeep
 !public/uploads/qrs/.gitkeep
+!public/uploads/rooms/qr/rentas/.gitkeep
+!public/uploads/rooms/qr/reservaciones/.gitkeep
+!public/uploads/rooms/pdf/rentas/.gitkeep
+!public/uploads/rooms/pdf/reservaciones/.gitkeep

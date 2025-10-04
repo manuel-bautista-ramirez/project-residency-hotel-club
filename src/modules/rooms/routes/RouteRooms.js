@@ -24,6 +24,15 @@ import {
   apiUpdatePrice,
   apiUpdatePricesBulk,
   renderRentForm,
+  // Nuevas funciones para reportes y mensajería
+  generateReport,
+  sendReportByEmail,
+  sendReportByWhatsApp,
+  sendRentReceiptByEmail,
+  sendRentReceiptByWhatsApp,
+  sendReservationReceiptByEmail,
+  sendReservationReceiptByWhatsApp,
+  sendCheckInReminder,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -64,5 +73,19 @@ routerRoom.post("/api/rooms/update-precio", apiUpdatePrice);
 routerRoom.post("/api/rooms/update-precios-bulk", apiUpdatePricesBulk);
 
 routerRoom.get("/rooms/rent/:id", renderRentForm);
+
+// ----- RUTAS PARA REPORTES -----
+routerRoom.get("/api/rooms/reports/generate", generateReport);
+routerRoom.post("/api/rooms/reports/send-email", sendReportByEmail);
+routerRoom.post("/api/rooms/reports/send-whatsapp", sendReportByWhatsApp);
+
+// ----- RUTAS PARA ENVÍO DE COMPROBANTES -----
+routerRoom.post("/api/rooms/rentas/:rentaId/send-email", sendRentReceiptByEmail);
+routerRoom.post("/api/rooms/rentas/:rentaId/send-whatsapp", sendRentReceiptByWhatsApp);
+routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-email", sendReservationReceiptByEmail);
+routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-whatsapp", sendReservationReceiptByWhatsApp);
+
+// ----- RUTAS PARA RECORDATORIOS -----
+routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-reminder", sendCheckInReminder);
 
 export { routerRoom };

@@ -52,5 +52,16 @@ async function connectDB() {
   });
 }
 
+// Función helper para ejecutar queries
+export async function executeQuery(query, params = []) {
+  try {
+    const [rows] = await pool.execute(query, params);
+    return rows;
+  } catch (error) {
+    console.error('Error ejecutando query:', error);
+    throw error;
+  }
+}
+
 // Llamar a la función para iniciar la conexión
 connectDB();

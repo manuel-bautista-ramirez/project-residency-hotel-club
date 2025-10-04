@@ -171,6 +171,29 @@
                 </svg>
               </div>
             </section>
+
+            <!-- Información de Envío Automático -->
+            <section aria-labelledby="envio-title" class="space-y-2 md:space-y-3">
+              <h3 id="envio-title" class="text-sm md:text-lg font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4" viewBox="0 0 24 24">
+                  <path d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z"/>
+                </svg>
+                Envío Automático
+              </h3>
+              <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                <div class="flex items-center gap-2 text-green-800">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 24 24">
+                    <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="font-medium">Comprobante automático por WhatsApp</span>
+                </div>
+                <p class="text-sm text-green-700 mt-1">
+                  Se enviará automáticamente al número de teléfono proporcionado una vez creada la renta.
+                </p>
+              </div>
+              <!-- Campos ocultos para mantener compatibilidad -->
+              <input type="hidden" name="send_whatsapp" value="on">
+            </section>
           </div>
 
 

@@ -1,0 +1,14 @@
+{
+  "watch": ["src", "index.js"],
+  "ignore": [
+    "public/whatsapp-qr.png",
+    "whatsapp_session/**/*",
+    "public/uploads/**/*",
+    "public/qrs/**/*",
+    "*.log",
+    "*.tmp",
+    "node_modules/**/*"
+  ],
+  "ext": "js,json",
+  "delay": 2000
+}

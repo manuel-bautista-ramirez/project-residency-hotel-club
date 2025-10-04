@@ -6,16 +6,24 @@ import {
   getAllRentas,
   deletebyReservation,
   updateRoomStatus,
-  deleteByIdRenta,
   createReservation,
   setNewPrice,
   getAllPrices,
-  createRent,
   getPrecioPorTipoYMes,
   getRoomPriceByTypeAndMonth,
   createMessageMethod,
   checkRoomAvailability,
+  createRent,
+  deleteByIdRenta,
+  getRoomNumberById
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+
+import { ReportService } from "../utils/reportService.js";
+import { sendRentReceiptEmail, sendReservationReceiptEmail } from "../../../services/emailService.js";
+// Importar el servicio centralizado de WhatsApp
+import whatsappService from '../../../services/whatsappService.js';
+import { generateAndSendRentPDF, generateAndSendReservationPDF } from '../utils/pdfService.js';
+import pdfRegistry from '../models/pdfRegistry.js';
 
 /*** --- VISTAS PRINCIPALES --- ***/
 export const renderHabitacionesView = async (req, res) => {
@@ -112,11 +120,11 @@ export const handleCreateReservation = async (req, res) => {
     // 4. Convertir fechas para que se guarden correctamente con hora 12:00 local
     const fechaIngresoDate = new Date(fecha_ingreso);
     const fechaSalidaDate = new Date(fecha_salida);
-    
+
     // Ajustar a 18:00 UTC para que al leer sea 12:00 local (GMT-6)
     fechaIngresoDate.setUTCHours(18, 0, 0, 0);
     fechaSalidaDate.setUTCHours(18, 0, 0, 0);
-    
+
     // Formatear manualmente usando valores UTC para evitar cualquier conversión del driver
     const formatUTCForMySQL = (date) => {
       const year = date.getUTCFullYear();
@@ -127,7 +135,7 @@ export const handleCreateReservation = async (req, res) => {
       const seconds = String(date.getUTCSeconds()).padStart(2, '0');
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     };
-    
+
     const fecha_ingreso_formatted = formatUTCForMySQL(fechaIngresoDate);
     const fecha_salida_formatted = formatUTCForMySQL(fechaSalidaDate);
 
@@ -150,20 +158,117 @@ export const handleCreateReservation = async (req, res) => {
     // 6. Crear la reservación en la base de datos
     const result = await createReservation(reservationData);
 
-    // 7. Redireccionar o mostrar error
+    // 7. Envío automático de comprobante por WhatsApp después de crear la reservación
     if (result) {
+      try {
+        console.log("🔍 Datos recibidos para reservación:");
+        console.log("- nombre_cliente:", nombre_cliente);
+        console.log("- correo:", correo);
+        console.log("- telefono:", telefono);
+        console.log("- habitacion_id:", habitacion_id);
+        console.log("- result:", result);
+
+        // Obtener todas las reservaciones para encontrar la recién creada
+        const reservaciones = await getAllReservationes();
+        console.log("📋 Total de reservaciones encontradas:", reservaciones.length);
+
+        // Buscar la reservación más reciente que coincida con los datos
+        console.log("🔍 Buscando reservación con criterios:");
+        console.log("  - nombre_cliente:", nombre_cliente);
+        console.log("  - correo:", correo);
+        console.log("  - telefono:", telefono);
+        console.log("  - habitacion_id:", habitacion_id);
+
+        const reservacionCreada = reservaciones
+          .filter(r => {
+            console.log(`🔍 Comparando reservación ID ${r.id_reservacion}:`);
+            console.log(`  - r.nombre_cliente: "${r.nombre_cliente}" vs "${nombre_cliente}" = ${r.nombre_cliente === nombre_cliente}`);
+            console.log(`  - r.correo: "${r.correo}" vs "${correo}" = ${r.correo === correo}`);
+            console.log(`  - r.telefono: "${r.telefono}" vs "${telefono}" = ${r.telefono === telefono}`);
+            console.log(`  - r.habitacion_id: ${r.habitacion_id} vs ${habitacion_id} = ${r.habitacion_id == habitacion_id}`);
+
+            return r.nombre_cliente === nombre_cliente &&
+                   r.correo === correo &&
+                   r.telefono === telefono &&
+                   r.habitacion_id == habitacion_id;
+          })
+          .sort((a, b) => new Date(b.fecha_creacion || b.id_reservacion) - new Date(a.fecha_creacion || a.id_reservacion))[0];
+
+        console.log("🔍 Reservación encontrada:", reservacionCreada ? "SÍ" : "NO");
+        if (reservacionCreada) {
+          console.log("📄 ID de reservación:", reservacionCreada.id_reservacion);
+          console.log("📄 Datos completos de la reservación:", JSON.stringify(reservacionCreada, null, 2));
+        } else {
+          console.log("❌ No se encontró reservación. Reservaciones disponibles:");
+          reservaciones.slice(-3).forEach((r, i) => {
+            console.log(`  ${i + 1}. ID: ${r.id_reservacion}, Cliente: "${r.nombre_cliente}", Correo: "${r.correo}", Teléfono: "${r.telefono}", Habitación: ${r.habitacion_id}`);
+          });
+        }
+        console.log("📞 Teléfono proporcionado:", telefono ? "SÍ" : "NO");
+
+        if (reservacionCreada && telefono) {
+          console.log("📱 Enviando comprobante de reservación automáticamente por WhatsApp...");
+
+          // Obtener datos de la habitación para el número
+          const habitaciones = await getHabitaciones();
+          const habitacion = habitaciones.find(h => h.id === reservacionCreada.habitacion_id);
+          const numeroHabitacion = habitacion ? habitacion.numero : reservacionCreada.habitacion_id;
+
+          // Centralizado: generar y enviar PDF de reservación
+          console.log('🔄 Generando y enviando PDF (centralizado) de reservación...');
+          const reservationSend = await generateAndSendReservationPDF({
+            telefono,
+            reservacion: {
+              id_reservacion: reservacionCreada.id_reservacion,
+              nombre_cliente: reservacionCreada.nombre_cliente,
+              telefono,
+              habitacion_id: reservacionCreada.habitacion_id,
+              fecha_ingreso: reservacionCreada.fecha_ingreso,
+              fecha_salida: reservacionCreada.fecha_salida,
+              precio_total: reservacionCreada.precio_total,
+              tipo_pago: reservacionCreada.tipo_pago,
+              fecha_reserva: reservacionCreada.fecha_reserva
+            }
+          });
+
+          const whatsappResult = reservationSend.success
+            ? { success: true, mode: 'pdf' , message: reservationSend.fileName }
+            : { success: false, message: reservationSend.error };
+
+          if (whatsappResult.success) {
+            console.log(`✅ Comprobante de reservación enviado por WhatsApp (${whatsappResult.mode}):`, whatsappResult.message);
+          } else {
+            console.log(`⚠️ Error en envío de WhatsApp:`, whatsappResult.message);
+          }
+        } else {
+          console.log("⚠️ No se pudo enviar el comprobante automáticamente:");
+          console.log("  - Reservación encontrada:", reservacionCreada ? "SÍ" : "NO");
+          console.log("  - Teléfono proporcionado:", telefono ? "SÍ" : "NO");
+
+          if (!reservacionCreada) {
+            console.log("🔍 Reservaciones disponibles para comparar:");
+            reservaciones.slice(-3).forEach((r, i) => {
+              console.log(`  ${i + 1}. ID: ${r.id_reservacion}, Cliente: ${r.nombre_cliente}, Correo: ${r.correo}, Teléfono: ${r.telefono}, Habitación: ${r.habitacion_id}`);
+            });
+          }
+        }
+      } catch (sendError) {
+        console.error("❌ Error en el envío automático de comprobante de reservación por WhatsApp:", sendError);
+        // No interrumpir el flujo principal, solo registrar el error
+      }
+
       return res.redirect("/rooms");
     } else {
       return res.status(500).send("Error al crear la reservación...");
     }
   } catch (err) {
     console.error("Error handleCreateReservation:", err);
-    
+
     // Verificar si el error es por disponibilidad
     if (err.message && err.message.includes('no está disponible')) {
       return res.status(409).send(`<script>alert('${err.message}'); window.location.href='/rooms';</script>`);
     }
-    
+
     return res.status(500).send("Error al crear la reservación...");
   }
 };
@@ -191,8 +296,9 @@ export const renderAllRervationes = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error al renderrizar las reservaciones");
-    res.status(500).send("Errror al cargar las reservaciones loco..");
+    console.error("Error al renderrizar las reservaciones:", error?.message || error);
+    console.error("Stack:", error?.stack);
+    res.status(500).send("Error al cargar las reservaciones");
   }
 };
 
@@ -220,14 +326,14 @@ export const renderAllRentas = async (req, res) => {
   try {
     const user = req.session.user || { role: "Administrador" };
     const allRentas = await getAllRentas();
-    
+
     // Convertir fechas a formato ISO string para preservar la hora en los atributos HTML
     const rentasFormateadas = allRentas.map(renta => ({
       ...renta,
       fecha_ingreso: renta.fecha_ingreso ? new Date(renta.fecha_ingreso).toISOString() : null,
       fecha_salida: renta.fecha_salida ? new Date(renta.fecha_salida).toISOString() : null,
     }));
-    
+
     console.log(rentasFormateadas);
     res.render("showRent", {
       title: "Listado de habitaciones rentadas",
@@ -394,27 +500,27 @@ export const handleCreateRenta = async (req, res) => {
   console.log('\n🔍 === DEPURACIÓN DE FECHAS (BACKEND) ===');
   console.log('📥 Fecha recibida del frontend (check_in):', check_in);
   console.log('📥 Fecha recibida del frontend (check_out):', check_out);
-  
+
   const checkInDate = new Date(check_in);
   const checkOutDate = new Date(check_out);
-  
+
   console.log('📅 Date object ANTES de ajustar:');
   console.log('  - checkInDate:', checkInDate.toString());
   console.log('  - checkInDate UTC:', checkInDate.toUTCString());
   console.log('  - checkInDate ISO:', checkInDate.toISOString());
-  
+
   // Ajustar para que UTC sea 18:00 (no hora local)
   // Si queremos 12:00 local (GMT-6), necesitamos 18:00 UTC
   checkInDate.setUTCHours(18, 0, 0, 0);
   checkOutDate.setUTCHours(18, 0, 0, 0);
-  
+
   console.log('📅 Date object DESPUÉS de ajustar a 18:00 UTC:');
   console.log('  - checkInDate:', checkInDate.toString());
   console.log('  - checkInDate UTC:', checkInDate.toUTCString());
   console.log('  - checkInDate ISO:', checkInDate.toISOString());
   console.log('  - UTC Hours:', checkInDate.getUTCHours());
   console.log('  - Local Hours:', checkInDate.getHours());
-  
+
   // Formatear manualmente usando valores UTC para evitar cualquier conversión del driver
   const formatUTCForMySQL = (date) => {
     const year = date.getUTCFullYear();
@@ -426,16 +532,16 @@ export const handleCreateRenta = async (req, res) => {
     // Devolver string puro sin zona horaria para que MySQL lo guarde tal cual
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   };
-  
+
   const check_in_formatted = formatUTCForMySQL(checkInDate);
   const check_out_formatted = formatUTCForMySQL(checkOutDate);
-  
+
   console.log('💾 Fecha que se enviará a MySQL (string puro):');
   console.log('  - check_in_formatted:', check_in_formatted);
   console.log('  - check_out_formatted:', check_out_formatted);
   console.log('  - Tipo:', typeof check_in_formatted);
   console.log('=== FIN DEPURACIÓN DE FECHAS ===\n');
-  
+
   // Depuración: mostrar todos los datos recibidos
   console.log("=== Depuración de datos del formulario ===");
   console.log({
@@ -487,15 +593,79 @@ export const handleCreateRenta = async (req, res) => {
 
     console.log("Renta creada con ID:", rent_id);
 
+    // Obtener las opciones de envío del formulario
+    const { send_email, send_whatsapp } = req.body;
+
+    // Enviar comprobantes automáticamente si están seleccionados
+    if (send_email || send_whatsapp) {
+      try {
+        // Obtener los datos de la renta recién creada para envío
+        const rentas = await getAllRentas();
+        const rentaCreada = rentas.find(r => r.id_renta === rent_id);
+
+        if (rentaCreada) {
+          // Enviar por correo si está seleccionado
+          if (send_email) {
+            try {
+              await sendRentReceiptEmail({
+                to: email,
+                clienteNombre: client_name,
+                numeroHabitacion: rentaCreada.numero_habitacion,
+                fechaIngreso: rentaCreada.fecha_ingreso,
+                fechaSalida: rentaCreada.fecha_salida,
+                tipoPago: tipo_pago,
+                monto: price,
+                montoLetras: price_text
+              });
+              console.log("✅ Comprobante enviado por correo exitosamente");
+            } catch (emailError) {
+              console.error("❌ Error enviando comprobante por correo:", emailError);
+            }
+          }
+        }
+
+        // Enviar por WhatsApp si está seleccionado
+        if (send_whatsapp) {
+          try {
+            const rentSend = await generateAndSendRentPDF({
+              telefono: phone,
+              renta: {
+                id: rentaCreada.id_renta || rent_id,
+                client_name,
+                phone,
+                room_id: habitacion_id,
+                check_in: check_in_formatted,
+                check_out: check_out_formatted,
+                total: price,
+                payment_method: payment_type === 'Transfer' ? 'Transferencia' : payment_type
+              }
+            });
+
+            if (rentSend.success) {
+              console.log('✅ PDF de renta enviado por WhatsApp:', rentSend.fileName);
+              await pdfRegistry.updateWhatsAppStatus(rentaCreada.id_renta || rent_id, true);
+            } else {
+              console.log('⚠️ Error en envío de WhatsApp:', rentSend.error);
+              await pdfRegistry.updateWhatsAppStatus(rentaCreada.id_renta || rent_id, false);
+            }
+          } catch (whatsappError) {
+            console.error("❌ Error enviando comprobante por WhatsApp:", whatsappError);
+          }
+        }
+      } catch (sendError) {
+        console.error("❌ Error en el proceso de envío automático:", sendError);
+      }
+    }
+
     res.redirect("/rooms"); // redirigir o mostrar mensaje de éxito
   } catch (err) {
     console.error("Error creando la renta:", err);
-    
+
     // Verificar si el error es por disponibilidad
     if (err.message && err.message.includes('no está disponible')) {
       return res.status(409).send(`<script>alert('${err.message}'); window.location.href='/rooms';</script>`);
     }
-    
+
     return res.status(500).send("Error creando la renta");
   }
 };
@@ -642,14 +812,14 @@ export const apiUpdatePricesBulk = async (req, res) => {
     }
 
     if (errorCount === 0) {
-      res.json({ 
-        success: true, 
-        message: `${successCount} precios actualizados correctamente` 
+      res.json({
+        success: true,
+        message: `${successCount} precios actualizados correctamente`
       });
     } else {
-      res.json({ 
-        success: false, 
-        error: `${errorCount} errores, ${successCount} éxitos` 
+      res.json({
+        success: false,
+        error: `${errorCount} errores, ${successCount} éxitos`
       });
     }
   } catch (err) {
@@ -686,4 +856,339 @@ export const renderRentForm = async (req, res) => {
   }
 };
 
+// ===== NUEVAS FUNCIONES PARA REPORTES Y MENSAJERÍA =====
 
+/**
+ * Genera y renderiza reportes
+ */
+export const generateReport = async (req, res) => {
+  try {
+    const { tipo, fechaInicio, fechaFin, habitacion, cliente, tipoPago } = req.query;
+
+    const filtros = {};
+    if (habitacion) filtros.habitacion = habitacion;
+    if (cliente) filtros.cliente = cliente;
+    if (tipoPago) filtros.tipoPago = tipoPago;
+
+    let reporte;
+
+    switch (tipo) {
+      case 'rentas':
+        reporte = await ReportService.generateRentReport(fechaInicio, fechaFin, filtros);
+        break;
+      case 'reservaciones':
+        reporte = await ReportService.generateReservationReport(fechaInicio, fechaFin, filtros);
+        break;
+      case 'consolidado':
+        reporte = await ReportService.generateConsolidatedReport(fechaInicio, fechaFin, filtros);
+        break;
+      default:
+        return res.status(400).json({ error: 'Tipo de reporte no válido' });
+    }
+
+    res.json({
+      success: true,
+      reporte
+    });
+
+  } catch (error) {
+    console.error('Error generando reporte:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al generar el reporte',
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Envía reporte por correo electrónico
+ */
+export const sendReportByEmail = async (req, res) => {
+  try {
+    const { tipo, fechaInicio, fechaFin, destinatario, asunto, filtros = {} } = req.body;
+
+    // Generar el reporte
+    let reporte;
+    switch (tipo) {
+      case 'rentas':
+        reporte = await ReportService.generateRentReport(fechaInicio, fechaFin, filtros);
+        break;
+      case 'reservaciones':
+        reporte = await ReportService.generateReservationReport(fechaInicio, fechaFin, filtros);
+        break;
+      case 'consolidado':
+        reporte = await ReportService.generateConsolidatedReport(fechaInicio, fechaFin, filtros);
+        break;
+      default:
+        return res.status(400).json({ error: 'Tipo de reporte no válido' });
+    }
+
+    // Enviar por correo
+    await ReportService.sendReportByEmail(reporte, destinatario, asunto);
+
+    res.json({
+      success: true,
+      message: 'Reporte enviado por correo exitosamente'
+    });
+
+  } catch (error) {
+    console.error('Error enviando reporte por correo:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al enviar el reporte por correo',
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Envía reporte por WhatsApp
+ */
+export const sendReportByWhatsApp = async (req, res) => {
+  try {
+    const { tipo, fechaInicio, fechaFin, telefono, filtros = {} } = req.body;
+
+    // Generar el reporte
+    let reporte;
+    switch (tipo) {
+      case 'rentas':
+        reporte = await ReportService.generateRentReport(fechaInicio, fechaFin, filtros);
+        break;
+      case 'reservaciones':
+        reporte = await ReportService.generateReservationReport(fechaInicio, fechaFin, filtros);
+        break;
+      case 'consolidado':
+        reporte = await ReportService.generateConsolidatedReport(fechaInicio, fechaFin, filtros);
+        break;
+      default:
+        return res.status(400).json({ error: 'Tipo de reporte no válido' });
+    }
+
+    // Enviar por WhatsApp
+    const result = await ReportService.sendReportByWhatsApp(reporte, telefono);
+
+    res.json({
+      success: true,
+      message: 'Reporte enviado por WhatsApp exitosamente',
+      whatsappURL: result.whatsappURL
+    });
+
+  } catch (error) {
+    console.error('Error enviando reporte por WhatsApp:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al enviar el reporte por WhatsApp',
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Envía comprobante de renta por correo
+ */
+export const sendRentReceiptByEmail = async (req, res) => {
+  try {
+    const { rentaId } = req.params;
+    const { destinatario } = req.body;
+
+    // Obtener datos de la renta
+    const rentas = await getAllRentas();
+    const renta = rentas.find(r => r.id_renta.toString() === rentaId);
+
+    if (!renta) {
+      return res.status(404).json({ error: 'Renta no encontrada' });
+    }
+
+    await sendRentReceiptEmail({
+      to: destinatario,
+      subject: `Comprobante de Renta - Habitación ${renta.numero_habitacion}`,
+      clienteNombre: renta.nombre_cliente,
+      numeroHabitacion: renta.numero_habitacion,
+      fechaIngreso: renta.fecha_ingreso,
+      fechaSalida: renta.fecha_salida,
+      tipoPago: renta.tipo_pago,
+      monto: renta.monto,
+      montoLetras: renta.monto_letras
+    });
+
+    res.json({
+      success: true,
+      message: 'Comprobante de renta enviado por correo exitosamente'
+    });
+
+  } catch (error) {
+    console.error('Error enviando comprobante por correo:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al enviar el comprobante por correo',
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Envía comprobante de renta por WhatsApp
+ */
+export const sendRentReceiptByWhatsApp = async (req, res) => {
+  try {
+    const { rentaId } = req.params;
+    const { telefono } = req.body;
+
+    // Obtener datos de la renta
+    const rentas = await getAllRentas();
+    const renta = rentas.find(r => r.id_renta.toString() === rentaId);
+
+    if (!renta) {
+      return res.status(404).json({ error: 'Renta no encontrada' });
+    }
+
+    const result = await sendRentReceiptWhatsApp({
+      phoneNumber: telefono,
+      clienteNombre: renta.nombre_cliente,
+      numeroHabitacion: renta.numero_habitacion,
+      fechaIngreso: renta.fecha_ingreso,
+      fechaSalida: renta.fecha_salida,
+      tipoPago: renta.tipo_pago,
+      monto: renta.monto,
+      montoLetras: renta.monto_letras
+    });
+
+    res.json({
+      success: true,
+      message: 'Comprobante de renta enviado por WhatsApp exitosamente',
+      whatsappURL: result.whatsappURL
+    });
+
+  } catch (error) {
+    console.error('Error enviando comprobante por WhatsApp:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al enviar el comprobante por WhatsApp',
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Envía comprobante de reservación por correo
+ */
+export const sendReservationReceiptByEmail = async (req, res) => {
+  try {
+    const { reservacionId } = req.params;
+    const { destinatario } = req.body;
+
+    // Obtener datos de la reservación
+    const reservaciones = await getAllReservationes();
+    const reservacion = reservaciones.find(r => r.id_reservacion.toString() === reservacionId);
+
+    if (!reservacion) {
+      return res.status(404).json({ error: 'Reservación no encontrada' });
+    }
+
+    await sendReservationReceiptEmail({
+      to: destinatario,
+      subject: `Comprobante de Reservación - Habitación ${reservacion.numero_habitacion}`,
+      clienteNombre: reservacion.nombre_cliente,
+      numeroHabitacion: reservacion.numero_habitacion,
+      fechaReserva: reservacion.fecha_reserva,
+      fechaIngreso: reservacion.fecha_ingreso,
+      fechaSalida: reservacion.fecha_salida,
+      monto: reservacion.monto
+    });
+
+    res.json({
+      success: true,
+      message: 'Comprobante de reservación enviado por correo exitosamente'
+    });
+
+  } catch (error) {
+    console.error('Error enviando comprobante por correo:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al enviar el comprobante por correo',
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Envía comprobante de reservación por WhatsApp
+ */
+export const sendReservationReceiptByWhatsApp = async (req, res) => {
+  try {
+    const { reservacionId } = req.params;
+    const { telefono } = req.body;
+
+    // Obtener datos de la reservación
+    const reservaciones = await getAllReservationes();
+    const reservacion = reservaciones.find(r => r.id_reservacion.toString() === reservacionId);
+
+    if (!reservacion) {
+      return res.status(404).json({ error: 'Reservación no encontrada' });
+    }
+
+    const result = await sendReservationReceiptWhatsApp({
+      phoneNumber: telefono,
+      clienteNombre: reservacion.nombre_cliente,
+      numeroHabitacion: reservacion.numero_habitacion,
+      fechaReserva: reservacion.fecha_reserva,
+      fechaIngreso: reservacion.fecha_ingreso,
+      fechaSalida: reservacion.fecha_salida,
+      monto: reservacion.monto
+    });
+
+    res.json({
+      success: true,
+      message: 'Comprobante de reservación enviado por WhatsApp exitosamente',
+      whatsappURL: result.whatsappURL
+    });
+
+  } catch (error) {
+    console.error('Error enviando comprobante por WhatsApp:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al enviar el comprobante por WhatsApp',
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Envía recordatorio de check-in por WhatsApp
+ */
+export const sendCheckInReminder = async (req, res) => {
+  try {
+    const { reservacionId } = req.params;
+    const { telefono } = req.body;
+
+    // Obtener datos de la reservación
+    const reservaciones = await getAllReservationes();
+    const reservacion = reservaciones.find(r => r.id_reservacion.toString() === reservacionId);
+
+    if (!reservacion) {
+      return res.status(404).json({ error: 'Reservación no encontrada' });
+    }
+
+    const result = await sendCheckInReminderWhatsApp({
+      phoneNumber: telefono,
+      clienteNombre: reservacion.nombre_cliente,
+      numeroHabitacion: reservacion.numero_habitacion,
+      fechaIngreso: reservacion.fecha_ingreso
+    });
+
+    res.json({
+      success: true,
+      message: 'Recordatorio de check-in enviado por WhatsApp exitosamente',
+      whatsappURL: result.whatsappURL
+    });
+
+  } catch (error) {
+    console.error('Error enviando recordatorio por WhatsApp:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al enviar el recordatorio por WhatsApp',
+      details: error.message
+    });
+  }
+};

@@ -5,49 +5,49 @@ import { pool } from "../../../dataBase/connectionDataBase.js"; // conexión MyS
 export const getHabitaciones = async () => {
   try {
     const [rows] = await pool.query(`
-      SELECT 
+      SELECT
         h.*,
         CASE
           -- Si hay una renta activa HOY, está ocupada
           WHEN EXISTS (
-            SELECT 1 FROM rentas re 
-            WHERE re.habitacion_id = h.id 
+            SELECT 1 FROM rentas re
+            WHERE re.habitacion_id = h.id
             AND CURDATE() BETWEEN DATE(re.fecha_ingreso) AND DATE(re.fecha_salida)
           ) THEN 'ocupado'
-          
+
           -- Si hay una reservación activa HOY, está ocupada
           WHEN EXISTS (
-            SELECT 1 FROM reservaciones r 
-            WHERE r.habitacion_id = h.id 
+            SELECT 1 FROM reservaciones r
+            WHERE r.habitacion_id = h.id
             AND CURDATE() BETWEEN DATE(r.fecha_ingreso) AND DATE(r.fecha_salida)
           ) THEN 'ocupado'
-          
+
           -- Si el estado fue cambiado manualmente a disponible, respetarlo
           WHEN h.estado = 'disponible' THEN 'disponible'
-          
+
           -- Si una renta ya venció (fecha_salida pasó), automáticamente pasa a limpieza
           WHEN EXISTS (
-            SELECT 1 FROM rentas re 
-            WHERE re.habitacion_id = h.id 
+            SELECT 1 FROM rentas re
+            WHERE re.habitacion_id = h.id
             AND DATE(re.fecha_salida) < CURDATE()
           ) THEN 'limpieza'
-          
+
           -- Si una reservación ya venció (fecha_salida pasó), automáticamente pasa a limpieza
           WHEN EXISTS (
-            SELECT 1 FROM reservaciones r 
-            WHERE r.habitacion_id = h.id 
+            SELECT 1 FROM reservaciones r
+            WHERE r.habitacion_id = h.id
             AND DATE(r.fecha_salida) < CURDATE()
           ) THEN 'limpieza'
-          
+
           -- Si el estado manual es limpieza, mantener limpieza
           WHEN h.estado = 'limpieza' THEN 'limpieza'
-          
+
           -- De lo contrario, está disponible
           ELSE 'disponible'
         END AS estado_real
       FROM habitaciones h
     `);
-    
+
     // Mapear el estado_real al campo estado para mantener compatibilidad
     return rows.map(row => ({
       ...row,
@@ -63,30 +63,30 @@ export const getHabitaciones = async () => {
 export const checkRoomAvailability = async (roomId, fechaIngreso, fechaSalida, excludeReservationId = null, excludeRentId = null) => {
   try {
     const query = `
-      SELECT 
+      SELECT
         (
           -- Verificar si hay rentas en conflicto
-          (SELECT COUNT(*) 
-           FROM rentas 
-           WHERE habitacion_id = ? 
+          (SELECT COUNT(*)
+           FROM rentas
+           WHERE habitacion_id = ?
            AND (? < fecha_salida AND ? > fecha_ingreso)
            ${excludeRentId ? 'AND id != ?' : ''}
           ) +
           -- Verificar si hay reservaciones en conflicto
-          (SELECT COUNT(*) 
-           FROM reservaciones 
-           WHERE habitacion_id = ? 
+          (SELECT COUNT(*)
+           FROM reservaciones
+           WHERE habitacion_id = ?
            AND (? < fecha_salida AND ? > fecha_ingreso)
            ${excludeReservationId ? 'AND id != ?' : ''}
           )
         ) AS conflicts
     `;
-    
+
     const params = [roomId, fechaIngreso, fechaSalida];
     if (excludeRentId) params.push(excludeRentId);
     params.push(roomId, fechaIngreso, fechaSalida);
     if (excludeReservationId) params.push(excludeReservationId);
-    
+
     const [rows] = await pool.query(query, params);
     return rows[0].conflicts === 0; // true si está disponible, false si hay conflictos
   } catch (err) {
@@ -174,12 +174,18 @@ export const getAllReservationes = async () => {
         h.numero AS numero_habitacion,
         h.estado,
         r.nombre_cliente,
+        mm.correo_cliente AS correo,
+        mm.telefono_cliente AS telefono,
+        r.habitacion_id,
         r.fecha_registro AS fecha_reserva,
         r.fecha_ingreso,
         r.fecha_salida,
-        r.monto
+        r.monto AS precio_total,
+        'Pendiente' AS tipo_pago,
+        r.fecha_registro AS fecha_creacion
     FROM reservaciones r
     INNER JOIN habitaciones h ON r.habitacion_id = h.id
+    INNER JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
     ORDER BY r.fecha_ingreso DESC
   `);
   return rows;
@@ -203,19 +209,32 @@ export const deletebyReservation = async (id) => {
 export const getAllRentas = async () => {
   const [rows] = await pool.query(`
     SELECT re.id AS id_renta,
-           h.numero AS numero_habitacion,
-           h.estado,
-           re.nombre_cliente,
-           re.fecha_ingreso,
-           re.fecha_salida,
-           re.tipo_pago,
-           re.monto,
-           re.monto_letras
+          h.numero AS numero_habitacion,
+          h.estado,
+          re.nombre_cliente,
+          re.fecha_ingreso,
+          re.fecha_salida,
+          re.tipo_pago,
+          re.monto,
+          re.monto_letras
     FROM rentas re
     INNER JOIN habitaciones h ON re.habitacion_id = h.id
     ORDER BY re.fecha_ingreso DESC
   `);
   return rows;
+};
+
+// get room number by room id
+export const getRoomNumberById = async (roomId) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT numero FROM habitaciones WHERE id = ?
+    `, [roomId]);
+    return rows.length > 0 ? rows[0].numero : null;
+  } catch (error) {
+    console.error('Error getting room number:', error);
+    return null;
+  }
 };
 
 // delete by id renta
@@ -411,13 +430,13 @@ export const createRent = async ({
   console.log('📥 Fechas recibidas en el modelo:');
   console.log('  - check_in_date:', check_in_date, typeof check_in_date);
   console.log('  - check_out_date:', check_out_date, typeof check_out_date);
-  
+
   // 0. Verificar disponibilidad de la habitación
   const isAvailable = await checkRoomAvailability(room_id, check_in_date, check_out_date);
   if (!isAvailable) {
     throw new Error('La habitación no está disponible para las fechas seleccionadas');
   }
-  
+
   const params = [
     room_id,
     user_id,
@@ -429,10 +448,10 @@ export const createRent = async ({
     amount,
     amount_text,
   ];
-  
+
   console.log('📤 Parámetros que se enviarán a MySQL:', params);
   console.log('=== FIN DEPURACIÓN createRent ===\n');
-  
+
   const [result] = await pool.query(
     `INSERT INTO rentas (
       habitacion_id, usuario_id, id_medio_mensaje,
