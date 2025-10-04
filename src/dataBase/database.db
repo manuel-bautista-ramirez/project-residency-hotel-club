@@ -227,104 +227,104 @@ WHERE MONTH(fecha_ingreso) = MONTH(CURDATE())
 -- MÓDULO DE MEMBRESÍAS
 -- =====================================================
 --Tabla de clientes
-CREATE TABLE `clientes` (
-    `id_cliente` bigint unsigned NOT NULL AUTO_INCREMENT,
-    `nombre_completo` varchar(150) NOT NULL,
-    `telefono` varchar(20) DEFAULT NULL,
-    `correo` varchar(100) DEFAULT NULL,
-    `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id_cliente`),
-    UNIQUE KEY `id_cliente` (`id_cliente`)
+CREATE TABLE clientes (
+    id_cliente bigint unsigned NOT NULL AUTO_INCREMENT,
+    nombre_completo varchar(150) NOT NULL,
+    telefono varchar(20) DEFAULT NULL,
+    correo varchar(100) DEFAULT NULL,
+    fecha_registro timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_cliente),
+    UNIQUE KEY id_cliente (id_cliente)
 ) ENGINE = InnoDB AUTO_INCREMENT = 115 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 
 
 --Tabla de integrantes_membresia
-CREATE TABLE `integrantes_membresia` (
-    `id_integrante` bigint unsigned NOT NULL AUTO_INCREMENT,
-    `id_activa` int NOT NULL,
-    `nombre_completo` varchar(150) NOT NULL,
-    `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id_integrante`),
-    UNIQUE KEY `id_integrante` (`id_integrante`)
+CREATE TABLE integrantes_membresia (
+    id_integrante bigint unsigned NOT NULL AUTO_INCREMENT,
+    id_activa int NOT NULL,
+    nombre_completo varchar(150) NOT NULL,
+    fecha_registro timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_integrante),
+    UNIQUE KEY id_integrante (id_integrante)
 ) ENGINE = InnoDB AUTO_INCREMENT = 10 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 --Tabla de membresias
-CREATE TABLE `membresias` (
-    `id_membresia` bigint unsigned NOT NULL AUTO_INCREMENT,
-    `id_cliente` int NOT NULL,
-    `id_tipo_membresia` int NOT NULL,
-    `fecha_inicio` date NOT NULL,
-    `fecha_fin` date NOT NULL,
-    `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id_membresia`),
-    UNIQUE KEY `id_membresia` (`id_membresia`)
+CREATE TABLE membresias (
+    id_membresia bigint unsigned NOT NULL AUTO_INCREMENT,
+    id_cliente int NOT NULL,
+    id_tipo_membresia int NOT NULL,
+    fecha_inicio date NOT NULL,
+    fecha_fin date NOT NULL,
+    fecha_creacion timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_membresia),
+    UNIQUE KEY id_membresia (id_membresia)
 ) ENGINE = InnoDB AUTO_INCREMENT = 43 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 
 --Tabla de membresias_activas
-CREATE TABLE `membresias_activas` (
-    `id_activa` bigint unsigned NOT NULL AUTO_INCREMENT,
-    `id_cliente` int NOT NULL,
-    `id_membresia` int NOT NULL,
-    `fecha_inicio` date NOT NULL,
-    `fecha_fin` date NOT NULL,
-    `precio_final` decimal(10, 2) NOT NULL,
-    `qr_path` varchar(255) DEFAULT NULL,
-    `estado` varchar(20) DEFAULT 'Activa',
-    PRIMARY KEY (`id_activa`),
-    UNIQUE KEY `id_activa` (`id_activa`),
-    KEY `idx_qr_path` (`qr_path`),
-    CONSTRAINT `membresias_activas_chk_1` CHECK ((`precio_final` > 0)),
-    CONSTRAINT `membresias_activas_chk_2` CHECK (
+CREATE TABLE membresias_activas (
+    id_activa bigint unsigned NOT NULL AUTO_INCREMENT,
+    id_cliente int NOT NULL,
+    id_membresia int NOT NULL,
+    fecha_inicio date NOT NULL,
+    fecha_fin date NOT NULL,
+    precio_final decimal(10, 2) NOT NULL,
+    qr_path varchar(255) DEFAULT NULL,
+    estado varchar(20) DEFAULT 'Activa',
+    PRIMARY KEY (id_activa),
+    UNIQUE KEY id_activa (id_activa),
+    KEY idx_qr_path (qr_path),
+    CONSTRAINT membresias_activas_chk_1 CHECK ((precio_final > 0)),
+    CONSTRAINT membresias_activas_chk_2 CHECK (
         (
-            `estado` in (
+            estado in (
                 _utf8mb4 'Activa',
                 _utf8mb4 'Vencida',
                 _utf8mb4 'Cancelada'
             )
         )
     ),
-    CONSTRAINT `membresias_activas_chk_3` CHECK (
-        (`fecha_fin` > `fecha_inicio`)
+    CONSTRAINT membresias_activas_chk_3 CHECK (
+        (fecha_fin > fecha_inicio)
     )
 ) ENGINE = InnoDB AUTO_INCREMENT = 43 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 
 --Tabla de metodos_pago
-CREATE TABLE `metodos_pago` (
-    `id_metodo_pago` bigint unsigned NOT NULL AUTO_INCREMENT,
-    `nombre` varchar(50) NOT NULL,
-    PRIMARY KEY (`id_metodo_pago`),
-    UNIQUE KEY `id_metodo_pago` (`id_metodo_pago`),
-    UNIQUE KEY `nombre` (`nombre`)
+CREATE TABLE metodos_pago (
+    id_metodo_pago bigint unsigned NOT NULL AUTO_INCREMENT,
+    nombre varchar(50) NOT NULL,
+    PRIMARY KEY (id_metodo_pago),
+    UNIQUE KEY id_metodo_pago (id_metodo_pago),
+    UNIQUE KEY nombre (nombre)
 ) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 
 --Tabla de pagos
-CREATE TABLE `pagos` (
-    `id_pago` bigint unsigned NOT NULL AUTO_INCREMENT,
-    `id_activa` int NOT NULL,
-    `id_metodo_pago` int NOT NULL,
-    `monto` decimal(10, 2) NOT NULL,
-    `fecha_pago` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id_pago`),
-    UNIQUE KEY `id_pago` (`id_pago`),
-    CONSTRAINT `pagos_chk_1` CHECK ((`monto` > 0))
+CREATE TABLE pagos (
+    id_pago bigint unsigned NOT NULL AUTO_INCREMENT,
+    id_activa int NOT NULL,
+    id_metodo_pago int NOT NULL,
+    monto decimal(10, 2) NOT NULL,
+    fecha_pago timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_pago),
+    UNIQUE KEY id_pago (id_pago),
+    CONSTRAINT pagos_chk_1 CHECK ((monto > 0))
 ) ENGINE = InnoDB AUTO_INCREMENT = 15 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 
 --Tabla de tipos_membresia
-CREATE TABLE `tipos_membresia` (
-    `id_tipo_membresia` bigint unsigned NOT NULL AUTO_INCREMENT,
-    `nombre` varchar(50) NOT NULL,
-    `descripcion` text,
-    `max_integrantes` int DEFAULT '1',
-    `precio` decimal(10, 2) NOT NULL,
-    PRIMARY KEY (`id_tipo_membresia`),
-    UNIQUE KEY `id_tipo_membresia` (`id_tipo_membresia`),
-    UNIQUE KEY `nombre` (`nombre`),
-    CONSTRAINT `tipos_membresia_chk_1` CHECK ((`max_integrantes` >= 1))
+CREATE TABLE tipos_membresia (
+    id_tipo_membresia bigint unsigned NOT NULL AUTO_INCREMENT,
+    nombre varchar(50) NOT NULL,
+    descripcion text,
+    max_integrantes int DEFAULT '1',
+    precio decimal(10, 2) NOT NULL,
+    PRIMARY KEY (id_tipo_membresia),
+    UNIQUE KEY id_tipo_membresia (id_tipo_membresia),
+    UNIQUE KEY nombre (nombre),
+    CONSTRAINT tipos_membresia_chk_1 CHECK ((max_integrantes >= 1))
 ) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 -- Insertar métodos de pago básicos
