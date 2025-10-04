@@ -1,6 +1,4 @@
 {{>navbar}}
-
-<body class="bg-green-50 min-h-screen p-6">
     <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden mt-20 border border-green-200">
         <div class="p-6 border-b border-green-200">
             <h1 class="text-2xl font-bold text-green-800">Crear Cliente</h1>
@@ -156,4 +154,58 @@
     <script src="/js/moduleMembershipJs/createMembership.js"></script>
     <script src="/js/moduleMembershipJs/validator.js"></script>
 
+    <!-- Template para el modal de éxito -->
+    <template id="success-modal-template">
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div class="text-center mb-6">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                        <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-green-800">¡Membresía Creada Exitosamente!</h3>
+                </div>
+
+                <div class="border border-green-200 rounded-lg p-4 mb-4">
+                    <h4 class="font-medium text-green-700 mb-3">Información de la Membresía:</h4>
+                    <div class="space-y-2 text-sm" data-template-content="info">
+                        <!-- La información se insertará aquí -->
+                    </div>
+                    <div class="mt-4" data-template-content="integrantes">
+                        <!-- Los integrantes se insertarán aquí -->
+                    </div>
+                </div>
+
+                <div class="border border-green-200 rounded-lg p-4 mb-4">
+                    <h4 class="font-medium text-green-700 mb-3 text-center">Código QR de Acceso:</h4>
+                    <div class="flex justify-center mb-3">
+                        <img id="qrImage" src="" alt="QR de membresía" class="w-48 h-48 border border-gray-300 rounded object-contain bg-white">
+                    </div>
+                    <div id="qrError" class="text-center text-yellow-600 mb-3 hidden">
+                        <i class="fas fa-exclamation-triangle"></i> El QR se está generando...
+                    </div>
+                    <div class="text-center" data-template-content="qr-download">
+                        <!-- El botón de descarga se insertará aquí -->
+                    </div>
+                </div>
+
+                <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                    <p class="text-sm text-green-700 text-center">
+                        <strong>¡Importante!</strong> Se ha enviado un comprobante a su correo electrónico.
+                        Presente este QR en recepción para acceder a las instalaciones.
+                    </p>
+                </div>
+
+                <div class="flex justify-center space-x-3">
+                    <button data-action="close" class="px-6 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                        Cerrar
+                    </button>
+                    <button data-action="view-list" class="px-6 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">
+                        Ver Lista de Membresías
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
 </body>

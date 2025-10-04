@@ -1,18 +1,9 @@
-// controllers/createMemberController.js
 import { ClientService } from "../services/clientService.js";
 import { MembershipService } from "../services/membershipService.js";
-import { MembershipModel } from "../models/modelMembership.js";
 import path from "path";
 import fs from "fs";
-import { generarQRArchivo } from "../utils/qrGenerator.js";
-import { fileURLToPath } from "url";
-
-// Para usar __dirname en ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const MembershipController = {
-  // Crear cliente principal
   async createClient(req, res) {
     try {
       const { nombre_completo, correo, telefono } = req.body;
@@ -24,37 +15,13 @@ const MembershipController = {
       res.json(result);
     } catch (err) {
       console.error("Error en createClient:", err);
-      res
-        .status(500)
-        .json({ error: "Error al crear el cliente", details: err.message });
+      res.status(500).json({ error: "Error al crear el cliente", details: err.message });
     }
   },
 
-  // Crear membresía (familiar o individual)
   async createMembership(req, res) {
     try {
-      // Construir explícitamente el objeto para el servicio por seguridad
-      const {
-        id_cliente,
-        id_tipo_membresia,
-        fecha_inicio,
-        integrantes,
-        metodo_pago,
-        descuento,
-      } = req.body;
-
-      const membershipData = {
-        id_cliente,
-        id_tipo_membresia,
-        fecha_inicio,
-        integrantes,
-        metodo_pago,
-        descuento: descuento || 0, // Asegurar que el descuento sea un número
-      };
-
-      const newMembershipData = await MembershipService.createCompleteMembership(membershipData);
-
-      // Responder con la información completa que devuelve el servicio
+      const newMembershipData = await MembershipService.createCompleteMembership(req.body);
       res.json({
         success: true,
         message: "Membresía creada exitosamente",
@@ -88,83 +55,53 @@ const MembershipController = {
   async serveQRCode(req, res) {
     try {
       const { id_activa } = req.params;
-      const membresia = await MembershipModel.getMembresiaById(id_activa);
-
-      if (!membresia || !membresia.qr_path) {
-        return res.status(404).json({ error: "QR no encontrado" });
-      }
-
-      // La ruta en la BD es relativa (ej: "/uploads/qrs/qr_31_nombre.png")
-      // Construir la ruta absoluta: public + ruta_relativa
-      const qrFullPath = path.join(process.cwd(), "public", membresia.qr_path);
+      const qrRelativePath = await MembershipService.getQRPath(id_activa);
+      const qrFullPath = path.join(process.cwd(), "public", qrRelativePath);
 
       if (!fs.existsSync(qrFullPath)) {
-        return res.status(404).json({ error: "Archivo QR no encontrado" });
+        return res.status(404).json({ error: "Archivo QR no encontrado en el servidor" });
       }
 
-      // Servir el archivo directamente
       res.sendFile(qrFullPath);
-
     } catch (error) {
       console.error("Error al servir QR:", error);
-      res.status(500).json({ error: "Error al obtener el QR" });
+      const statusCode = error.statusCode || 500;
+      res.status(statusCode).json({ error: error.message || "Error al obtener el QR" });
     }
   },
 
-  // Método para descargar el QR - CORREGIDO para usar uploads/qrs/
-  // Método para descargar el QR - CORREGIDO para usar public/uploads/qrs/
   async downloadQR(req, res) {
     try {
       const { id_activa } = req.params;
-      const membresia = await MembershipModel.getMembresiaById(id_activa);
-
-      if (!membresia || !membresia.qr_path) {
-        return res
-          .status(404)
-          .json({ error: "QR no encontrado en la base de datos" });
-      }
-
-      // La ruta en la BD es relativa (ej: "/uploads/qrs/qr_31_nombre.png")
-      // Construir la ruta absoluta: public + ruta_relativa
-      const qrFullPath = path.join(process.cwd(), "public", membresia.qr_path);
-
-      console.log("Buscando QR en:", qrFullPath);
+      const qrRelativePath = await MembershipService.getQRPath(id_activa);
+      const qrFullPath = path.join(process.cwd(), "public", qrRelativePath);
 
       if (!fs.existsSync(qrFullPath)) {
-        console.error("Archivo no encontrado en:", qrFullPath);
-        return res
-          .status(404)
-          .json({ error: "Archivo QR no encontrado en el servidor" });
+        return res.status(404).json({ error: "Archivo QR no encontrado en el servidor" });
       }
 
       const filename = `membresia_${id_activa}_qr.png`;
-
-      // Configurar headers para descarga
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${filename}"`
-      );
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
       res.setHeader("Content-Type", "image/png");
 
-      // Enviar el archivo
       const fileStream = fs.createReadStream(qrFullPath);
       fileStream.pipe(res);
     } catch (error) {
       console.error("Error al descargar QR:", error);
-      res.status(500).json({ error: "Error al descargar el QR" });
+      const statusCode = error.statusCode || 500;
+      res.status(statusCode).json({ error: error.message || "Error al descargar el QR" });
     }
   },
 
   async getTipoMembresiaById(req, res) {
     try {
       const { id } = req.params;
-      const tipo = await MembershipModel.getTipoMembresiaById(id);
-      if (!tipo)
-        return res.status(404).json({ error: "Membresía no encontrada" });
+      const tipo = await MembershipService.getMembershipTypeById(id);
       res.json(tipo);
-    } catch (err) {
-      console.error("Error obteniendo tipo de membresía:", err);
-      res.status(500).json({ error: "Error del servidor" });
+    } catch (error) {
+      console.error("Error obteniendo tipo de membresía:", error);
+      const statusCode = error.statusCode || 500;
+      res.status(statusCode).json({ error: error.message || "Error del servidor" });
     }
   },
 
@@ -172,23 +109,22 @@ const MembershipController = {
     try {
       const userRole = req.session.user?.role || "Recepcionista";
       const isAdmin = userRole === "Administrador";
-      const tiposMembresia = await MembershipModel.getTiposMembresia();
-      const tiposPago = await MembershipModel.getMetodosPago();
-      const precioFamiliar = await MembershipModel.getPrecioFamiliar?.();
+      const pageData = await MembershipService.getDataForCreatePage();
 
       res.render("membershipCreate", {
         title: "Crear Membresía",
         showFooter: true,
         isAdmin,
         userRole,
-        tiposMembresia,
-        tiposPago,
-        precioFamiliar,
+        ...pageData,
         apiBase: "/memberships",
       });
     } catch (error) {
       console.error("Error al cargar tipos de membresía:", error);
-      res.status(500).send("Error al cargar tipos de membresía");
+      res.status(500).render('error', {
+          title: "Error",
+          message: "Error al cargar la página de creación de membresía."
+      });
     }
   },
 };

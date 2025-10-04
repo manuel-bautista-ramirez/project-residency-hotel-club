@@ -1,18 +1,14 @@
-<title>{{title}}</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     .active-period {
         background-color: #3B82F6;
         color: white;
     }
-
     #calendar {
         transition: all 0.3s ease;
     }
 </style>
 
-<body class="bg-gray-100 min-h-screen">
+
     {{>navbar}}
 
     <!-- Contenido principal -->
@@ -51,56 +47,58 @@
             <!-- Selector de fecha -->
             <div class="mb-8">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Selecciona la Fecha</h2>
-
-                <!-- Selector para reporte mensual -->
                 <div id="monthly-selector" class="date-selector">
-                    <label for="month-input" class="block text-gray-700 mb-2">Selecciona un mes y año:</label>
                     <div class="flex space-x-2">
                         <input type="month" id="month-input" class="border rounded-lg p-2 w-full md:w-64">
-                        <button class="generate-report-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                            Generar Reporte
-                        </button>
                     </div>
                 </div>
-
-                <!-- Selector para reporte quincenal -->
                 <div id="biweekly-selector" class="date-selector hidden">
-                    <label class="block text-gray-700 mb-2">Selecciona la quincena:</label>
-                    <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                        <div class="flex items-center space-x-2">
-                            <input type="radio" id="first-fortnight" name="fortnight" value="first" checked>
-                            <label for="first-fortnight">Primera quincena (días 1-15)</label>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <input type="radio" id="second-fortnight" name="fortnight" value="second">
-                            <label for="second-fortnight">Segunda quincena (días 16-fin de mes)</label>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex space-x-2">
+                    <div class="flex items-center space-x-4 mb-2">
                         <input type="month" id="biweekly-month-input" class="border rounded-lg p-2 w-full md:w-64">
-                        <button class="generate-report-btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-                            Generar Reporte
-                        </button>
+                        <select id="fortnight-select" class="border rounded-lg p-2">
+                            <option value="first">Primera quincena</option>
+                            <option value="second">Segunda quincena</option>
+                        </select>
                     </div>
                 </div>
-
-                <!-- Selector para reporte semanal -->
                 <div id="weekly-selector" class="date-selector hidden">
-                    <label for="week-input" class="block text-gray-700 mb-2">Selecciona una semana:</label>
                     <div class="flex space-x-2">
                         <input type="week" id="week-input" class="border rounded-lg p-2 w-full md:w-64">
-                        <button class="generate-report-btn bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg">
-                            Generar Reporte
-                        </button>
                     </div>
                 </div>
+                <button id="generate-report-btn" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                    Generar Reporte
+                </button>
             </div>
 
             <!-- Vista previa del reporte -->
-            <div class="bg-gray-50 rounded-lg p-6 mt-8 mb-20">
+            <div id="preview-container" class="bg-gray-50 rounded-lg p-6 mt-8 mb-20">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-                <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                    <p class="text-gray-500">Selecciona un tipo de reporte y una fecha para generar la vista previa</p>
+
+                <div id="message-area" class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
+                    <p id="message-text" class="text-gray-500">Selecciona un tipo de reporte y una fecha para generar la vista previa</p>
+                </div>
+
+                <div id="results-table" class="hidden">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead class="bg-gray-100">
+                            <tr><th class="border border-gray-300 px-4 py-2 text-left">Método de Pago</th><th class="border border-gray-300 px-4 py-2 text-right">Monto Acumulado</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="border border-gray-300 px-4 py-2">Efectivo</td><td id="monto-efectivo" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
+                            <tr><td class="border border-gray-300 px-4 py-2">Tarjeta Débito</td><td id="monto-debito" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
+                            <tr><td class="border border-gray-300 px-4 py-2">Tarjeta Crédito</td><td id="monto-credito" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
+                            <tr><td class="border border-gray-300 px-4 py-2">Transferencia</td><td id="monto-transferencia" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
+                        </tbody>
+                        <tfoot class="bg-gray-200 font-semibold">
+                            <tr><td class="border border-gray-300 px-4 py-2 text-left">Total Neto</td><td id="monto-total" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
+                        </tfoot>
+                    </table>
+                    <div class="mt-6 flex justify-end">
+                        <a id="download-pdf-btn" href="#" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg" download>
+                            <i class="fas fa-file-pdf mr-2"></i>Descargar PDF
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -109,159 +107,121 @@
    {{>footer}}
 
     <script>
-        // Funcionalidad para cambiar entre tipos de reporte
-        document.querySelectorAll('.period-option').forEach(option => {
-            option.addEventListener('click', function () {
-                // Remover clase active de todas las opciones
-                document.querySelectorAll('.period-option').forEach(opt => {
-                    opt.classList.remove('active-period');
-                    opt.classList.add('border-gray-200');
-                    opt.classList.remove('border-blue-500');
-                });
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Elements ---
+            const periodOptions = document.querySelectorAll('.period-option');
+            const generateBtn = document.getElementById('generate-report-btn');
+            const messageArea = document.getElementById('message-area');
+            const messageText = document.getElementById('message-text');
+            const resultsTable = document.getElementById('results-table');
+            const notificationArea = document.getElementById('notification-area');
 
-                // Añadir clase active a la opción seleccionada
-                this.classList.add('active-period');
-                this.classList.remove('border-gray-200');
-                this.classList.add('border-blue-500');
+            // --- State ---
+            let currentPeriod = 'monthly';
 
-                // Ocultar todos los selectores de fecha
-                document.querySelectorAll('.date-selector').forEach(selector => {
-                    selector.classList.add('hidden');
-                });
+            // --- Functions ---
+            function showMessage(text, type = 'info') {
+                messageText.textContent = text;
+                messageText.className = type === 'error' ? 'text-red-500' : (type === 'warning' ? 'text-yellow-600' : 'text-gray-500');
+                messageArea.classList.remove('hidden');
+                resultsTable.classList.add('hidden');
+            }
 
-                // Mostrar el selector correspondiente
-                const period = this.getAttribute('data-period');
-                document.getElementById(`${period}-selector`).classList.remove('hidden');
-            });
-        });
+            function showResults(data) {
+                const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
+                document.getElementById('monto-efectivo').textContent = formatCurrency(data.ingresos.efectivo);
+                document.getElementById('monto-debito').textContent = formatCurrency(data.ingresos.debito);
+                document.getElementById('monto-credito').textContent = formatCurrency(data.ingresos.credito);
+                document.getElementById('monto-transferencia').textContent = formatCurrency(data.ingresos.transferencia);
+                document.getElementById('monto-total').textContent = formatCurrency(data.total);
 
-        // Establecer valores por defecto en los inputs de fecha
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = (today.getMonth() + 1).toString().padStart(2, '0');
+                const { period, date } = getReportParams();
+                document.getElementById('download-pdf-btn').href = `/api/memberships/reports/download?period=${period}&date=${date}`;
 
-        document.getElementById('month-input').value = `${year}-${month}`;
-        document.getElementById('biweekly-month-input').value = `${year}-${month}`;
+                messageArea.classList.add('hidden');
+                resultsTable.classList.remove('hidden');
+            }
 
-        // Calcular la semana actual para el input de tipo week
-        const firstDayOfYear = new Date(year, 0, 1);
-        const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
-        const week = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-        document.getElementById('week-input').value = `${year}-W${week.toString().padStart(2, '0')}`;
-
-        // --- Lógica para generar reportes ---
-        const previewContainer = document.querySelector('.bg-gray-50');
-
-        async function generateReportPreview(period, date) {
-            const url = `/api/memberships/reports/preview?period=${period}&date=${date}`;
-
-            // Limpiar vista previa anterior
-            previewContainer.innerHTML = `
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-                <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                    <p class="text-gray-500">Generando vista previa...</p>
-                </div>`;
-
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'No se pudo obtener la vista previa.');
+            function getReportParams() {
+                let date;
+                switch (currentPeriod) {
+                    case 'monthly':
+                        date = document.getElementById('month-input').value;
+                        break;
+                    case 'biweekly':
+                        const month = document.getElementById('biweekly-month-input').value;
+                        const fortnight = document.getElementById('fortnight-select').value;
+                        date = `${month}-${fortnight}`;
+                        break;
+                    case 'weekly':
+                        const rawDate = document.getElementById('week-input').value;
+                        date = rawDate.replace('-W', 'W');
+                        break;
                 }
+                return { period: currentPeriod, date };
+            }
 
-                if (data.noData) {
-                    previewContainer.innerHTML = `
-                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-                        <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                            <p class="text-yellow-600">${data.message}</p>
-                        </div>`;
+            async function generateReportPreview() {
+                const { period, date } = getReportParams();
+                if (!date) {
+                    showMessage('Por favor, selecciona una fecha válida.', 'error');
                     return;
                 }
 
-                const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
+                showMessage('Generando vista previa...', 'info');
 
-                const previewHtml = `
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-                    <table class="w-full border-collapse border border-gray-300">
-                        <thead class="bg-gray-100">
-                            <tr><th class="border border-gray-300 px-4 py-2 text-left">Método de Pago</th><th class="border border-gray-300 px-4 py-2 text-right">Monto Acumulado</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td class="border border-gray-300 px-4 py-2">Efectivo</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.efectivo)}</td></tr>
-                            <tr><td class="border border-gray-300 px-4 py-2">Tarjeta Débito</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.debito)}</td></tr>
-                            <tr><td class="border border-gray-300 px-4 py-2">Tarjeta Crédito</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.credito)}</td></tr>
-                            <tr><td class="border border-gray-300 px-4 py-2">Transferencia</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.ingresos.transferencia)}</td></tr>
-                        </tbody>
-                        <tfoot class="bg-gray-200 font-semibold">
-                            <tr><td class="border border-gray-300 px-4 py-2 text-left">Total Neto</td><td class="border border-gray-300 px-4 py-2 text-right">${formatCurrency(data.total)}</td></tr>
-                        </tfoot>
-                    </table>
-                    <div class="mt-6 flex justify-end">
-                        <a href="/api/memberships/reports/download?period=${period}&date=${date}" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg" download>
-                            <i class="fas fa-file-pdf mr-2"></i>Descargar PDF
-                        </a>
-                    </div>
-                `;
+                try {
+                    const url = `/api/memberships/reports/preview?period=${period}&date=${date}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
 
-                previewContainer.innerHTML = previewHtml;
-
-            } catch (error) {
-                previewContainer.innerHTML = `
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-                    <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                        <p class="text-red-500">Error: ${error.message}</p>
-                    </div>`;
+                    if (!response.ok) throw new Error(data.error || 'No se pudo obtener la vista previa.');
+                    if (data.noData) {
+                        showMessage(data.message, 'warning');
+                        return;
+                    }
+                    showResults(data);
+                } catch (error) {
+                    showMessage(`Error: ${error.message}`, 'error');
+                }
             }
-        }
 
-        // Listener para el botón de reporte Mensual
-        document.querySelector('#monthly-selector .generate-report-btn').addEventListener('click', () => {
-            const period = 'monthly';
-            const date = document.getElementById('month-input').value;
-            if (date) {
-                generateReportPreview(period, date);
-            }
-        });
+            // --- Event Listeners ---
+            periodOptions.forEach(option => {
+                option.addEventListener('click', function () {
+                    currentPeriod = this.getAttribute('data-period');
+                    periodOptions.forEach(opt => opt.classList.remove('active-period'));
+                    this.classList.add('active-period');
 
-        // Listener para el botón de reporte Quincenal
-        document.querySelector('#biweekly-selector .generate-report-btn').addEventListener('click', () => {
-            const period = 'biweekly';
-            const month = document.getElementById('biweekly-month-input').value;
-            const fortnight = document.querySelector('input[name="fortnight"]:checked').value;
-            const date = `${month}-${fortnight}`;
-            if (date) {
-                generateReportPreview(period, date);
-            }
-        });
+                    document.querySelectorAll('.date-selector').forEach(s => s.classList.add('hidden'));
+                    document.getElementById(`${currentPeriod}-selector`).classList.remove('hidden');
+                });
+            });
 
-        // Listener para el botón de reporte Semanal
-        document.querySelector('#weekly-selector .generate-report-btn').addEventListener('click', () => {
-            const period = 'weekly';
-            const rawDate = document.getElementById('week-input').value; // e.g., 2023-W42
-            const date = rawDate.replace('-W', 'W'); // e.g., 2023W42
-            if (date) {
-                generateReportPreview(period, date);
-            }
-        });
+            generateBtn.addEventListener('click', generateReportPreview);
 
-        // Manejar errores de la URL al cargar la página
-        document.addEventListener('DOMContentLoaded', () => {
+            // --- Initialization ---
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('month-input').value = `${year}-${month}`;
+            document.getElementById('biweekly-month-input').value = `${year}-${month}`;
+            const firstDayOfYear = new Date(year, 0, 1);
+            const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
+            const week = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+            document.getElementById('week-input').value = `${year}-W${week.toString().padStart(2, '0')}`;
+
             const urlParams = new URLSearchParams(window.location.search);
             const error = urlParams.get('error');
             if (error) {
-                const notificationArea = document.getElementById('notification-area');
                 notificationArea.innerHTML = `
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                         <strong class="font-bold">Error: </strong>
                         <span class="block sm:inline">${decodeURIComponent(error)}</span>
-                    </div>
-                `;
-                // Limpiar la URL para que el error no se muestre si se recarga la página
+                    </div>`;
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         });
     </script>
 </body>
-
 </html>
