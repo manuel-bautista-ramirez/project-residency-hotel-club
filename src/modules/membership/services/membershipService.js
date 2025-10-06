@@ -8,7 +8,7 @@ import emailService from "../../../services/emailService.js";
 import { createMembershipReceiptEmail } from "../membershipEmailTemplates.js";
 import QRCode from "qrcode";
 import path from "path";
-import { promises as fs } from "fs";
+import fs from "fs";
 import puppeteer from "puppeteer";
 import hbs from "handlebars";
 
@@ -508,12 +508,12 @@ export const MembershipService = {
     }
 
     const templatePath = path.resolve("src", "views", "partials", "report-template.hbs");
-    const templateFile = await fs.readFile(templatePath, "utf8");
+    const templateFile = await fs.promises.readFile(templatePath, "utf8");
     const template = hbs.compile(templateFile);
     const reportHtml = template(incomeData);
 
     const cssPath = path.resolve("public", "styles.css");
-    const tailwindCss = await fs.readFile(cssPath, "utf8");
+    const tailwindCss = await fs.promises.readFile(cssPath, "utf8");
 
     const fontCss = `
       @font-face {
