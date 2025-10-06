@@ -10,6 +10,10 @@ import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
 // Importar el servicio centralizado de WhatsApp
 import whatsappService from '../services/whatsappService.js';
 
+// Importar y habilitar el servicio de correo electrónico
+import emailService from '../services/emailService.js';
+emailService.enable();
+
 const routerGlobal = express.Router();
 
 // Rutas de módulos

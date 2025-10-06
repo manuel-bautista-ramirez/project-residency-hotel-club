@@ -4,7 +4,8 @@ import { modelList } from "../models/modelList.js";
 import { deleteMembershipById } from "../models/modelDelete.js";
 import { updateMembershipById } from "../models/modelEdit.js";
 import { generarQRArchivo } from "../utils/qrGenerator.js";
-import { sendReceiptEmail } from "../utils/nodeMailer.js";
+import emailService from "../../../services/emailService.js";
+import { createMembershipReceiptEmail } from "../membershipEmailTemplates.js";
 import QRCode from "qrcode";
 import path from "path";
 import { promises as fs } from "fs";
@@ -228,9 +229,8 @@ export const MembershipService = {
     precio_final
   ) {
     if (cliente?.correo) {
-      await sendReceiptEmail({
-        to: cliente.correo,
-        subject: "Comprobante de Membresía - Hotel Club",
+      // 1. Crear el contenido del correo (asunto y cuerpo HTML)
+      const { subject, html } = createMembershipReceiptEmail({
         titularNombre: cliente.nombre_completo,
         tipoMembresia: tipo?.nombre || "N/D",
         fechaInicio: fecha_inicio,
@@ -239,6 +239,9 @@ export const MembershipService = {
         precioFinal: precio_final,
         integrantes: integrantesDB,
       });
+
+      // 2. Enviar el correo usando el nuevo método para HTML del servicio global
+      await emailService.sendHtmlEmail(cliente.correo, subject, html);
     }
   },
 
