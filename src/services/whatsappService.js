@@ -19,6 +19,15 @@ class WhatsAppService {
     setTimeout(() => this.initializeConnection(), 3000);
   }
 
+  /**
+   * Verifica si existe un archivo de credenciales de sesión.
+   * @returns {boolean} - True si la sesión existe, false en caso contrario.
+   */
+  sessionExists() {
+    const credsPath = path.join(this.sessionPath, 'creds.json');
+    return fs.existsSync(credsPath);
+  }
+
   async initializeConnection() {
     if (this.isInitializing) {
       console.log('⚠️ Conexión ya en proceso, evitando duplicados...');
@@ -28,6 +37,15 @@ class WhatsAppService {
     this.isInitializing = true;
     
     try {
+      console.log('🔍 Verificando estado de la sesión de WhatsApp...');
+
+      // Notificar si no hay sesión guardada y luego iniciar la conexión
+      if (!this.sessionExists()) {
+        console.log('🟡 No se encontró una sesión de WhatsApp guardada. Se generará un código QR.');
+      } else {
+        console.log('✅ Sesión de WhatsApp encontrada. Intentando conectar...');
+      }
+
       console.log('🔄 Iniciando conexión a WhatsApp...');
       
       // Crear directorio de sesión si no existe
@@ -88,7 +106,7 @@ class WhatsAppService {
           const statusCode = (lastDisconnect?.error)?.output?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
           
-          console.log('📱 Conexión cerrada debido a:', lastDisconnect?.error, ', reconectando:', shouldReconnect);
+         // console.log('📱 Conexión cerrada debido a:', lastDisconnect?.error, ', reconectando:', shouldReconnect);
           
           // Si es error 401 (Unauthorized), limpiar sesión
           if (statusCode === 401) {
@@ -96,7 +114,7 @@ class WhatsAppService {
             try {
               if (fs.existsSync(this.sessionPath)) {
                 fs.rmSync(this.sessionPath, { recursive: true, force: true });
-                console.log('✅ Sesión limpiada, reiniciando autenticación...');
+                console.log('✅ Sesión limpiada, reiniJciando autenticación...');
               }
             } catch (cleanError) {
               console.error('❌ Error limpiando sesión:', cleanError);
@@ -141,46 +159,48 @@ class WhatsAppService {
     try {
       this.qrCode = qr;
       this.qrRetryCount++;
-      
-      console.log(`\n📱 CÓDIGO QR GENERADO PARA WHATSAPP (Intento ${this.qrRetryCount}/${this.maxQrRetries})`);
-      
-      // Generar QR en terminal (ASCII)
-      const qrTerminal = await QRCode.toString(qr, { type: 'terminal', small: true });
-      console.log(qrTerminal);
-      
-      // Generar QR como imagen PNG para el navegador
+
+      // 1. Generar la imagen del QR para la web
       const qrImagePath = path.join('./public', 'whatsapp-qr.png');
       await QRCode.toFile(qrImagePath, qr, {
         width: 300,
         margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
+        color: { dark: '#000000', light: '#FFFFFF' }
       });
-      
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('📱 INSTRUCCIONES PARA CONECTAR WHATSAPP:');
-      console.log('1. Abre WhatsApp en tu teléfono');
-      console.log('2. Ve a Configuración > Dispositivos vinculados');
-      console.log('3. Toca "Vincular un dispositivo"');
-      console.log('4. Escanea el código QR de arriba');
-      console.log('5. O visita: http://localhost:3000/whatsapp-qr');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-      
-      // Configurar timeout para QR (30 segundos)
+
+      // 2. Construir el mensaje para la consola (sin QR de texto)
+      const output = [
+        '📱 CÓDIGO QR REQUERIDO PARA VINCULAR WHATSAPP (Intento ' + this.qrRetryCount + '/' + this.maxQrRetries + ')',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        'El código QR ya no se muestra en la terminal.',
+        'Por favor, abre tu navegador y ve a la siguiente dirección para escanearlo:',
+        '',
+        '    http://localhost:3000/whatsapp-qr',
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+        'INSTRUCCIONES:',
+        '1. Abre la URL de arriba en tu navegador.',
+        '2. Abre WhatsApp en tu teléfono.',
+        '3. Ve a Configuración > Dispositivos vinculados.',
+        '4. Toca "Vincular un dispositivo" y escanea el QR que aparece en el navegador.',
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
+      ].join('\n');
+
+      // 3. Limpiar la consola y mostrar el mensaje
+      console.clear();
+      console.log(output);
+
+      // 4. Configurar timeout para reintentos
       setTimeout(() => {
         if (this.qrCode === qr && !this.isConnected) {
-          console.log('⏰ Código QR expirado. Generando nuevo código...');
-          
           if (this.qrRetryCount >= this.maxQrRetries) {
-            console.log(`❌ Máximo de intentos alcanzado (${this.maxQrRetries}). Reiniciando conexión...`);
-            this.qrRetryCount = 0;
-            setTimeout(() => this.initializeConnection(), 3000);
+            console.log(`❌ Máximo de intentos (${this.maxQrRetries}) alcanzado. Reiniciando el ciclo de conexión...`);
+            this.qrRetryCount = 0; // Reiniciar contador para el nuevo ciclo
+            this.socket.end(new Error('QR Max Retries')); // Forzar cierre y reconexión completa
           }
         }
-      }, 30000);
-      
+      }, 30000); // 30 segundos de vida para el QR
+
     } catch (error) {
       console.error('❌ Error manejando QR:', error);
     }

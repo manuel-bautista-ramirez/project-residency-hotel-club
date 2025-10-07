@@ -228,7 +228,7 @@ class QRScanner {
     };
 
     const fileName = `validations_export_${Date.now()}.json`;
-    const filePath = path.join('./public/uploads/qrs', fileName);
+    const filePath = path.join('./public/uploads/', fileName);
 
     try {
       fs.writeFileSync(filePath, JSON.stringify(data, null, 2));

@@ -29,6 +29,8 @@ class PDFGenerator {
       };
 
       const qrString = JSON.stringify(qrData);
+
+
       const qrCodeDataURL = await QRCode.toDataURL(qrString, {
         width: 200,
         margin: 2,
@@ -37,7 +39,12 @@ class PDFGenerator {
           light: '#FFFFFF'
         }
       });
-
+      console.log("Qr gerenerado exitoasamente.")
+       // Guardar en public/uploads/qrs/
+            const qrDir = path.join(process.cwd(), 'public', 'uploads', 'qrs');
+            if (!fs.existsSync(qrDir)) {
+              fs.mkdirSync(qrCodeDataURL, { recursive: true });
+            }
       return qrCodeDataURL;
     } catch (error) {
       console.error('Error generando QR:', error);
@@ -462,22 +469,10 @@ class PDFGenerator {
       // Registrar PDF en la base de datos
       const qrData = await this.generateQRCode(rentData);
       const registryResult = await pdfRegistry.registerPDF({
-        rent_id: rentData.id,
-        client_name: rentData.client_name,
-        phone: rentData.phone,
-        room_number: rentData.room_number,
+        ...rentData, // Pasar todos los datos de la renta
         file_name: fileName,
         file_path: filePath,
-        qr_data: {
-          type: rentData.type === 'reservation' ? 'reservation_receipt' : 'rent_receipt',
-          id: rentData.id,
-          client: rentData.client_name,
-          room: rentData.room_number,
-          checkIn: rentData.check_in,
-          checkOut: rentData.check_out,
-          total: rentData.total,
-          timestamp: new Date().toISOString()
-        }
+        qr_data: qrData // El QR ya generado
       });
 
       if (registryResult.success) {

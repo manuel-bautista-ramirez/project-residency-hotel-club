@@ -19,7 +19,8 @@ import {
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 import { ReportService } from "../utils/reportService.js";
-import { sendRentReceiptEmail, sendReservationReceiptEmail } from "../../../services/emailService.js";
+import emailService from "../../../services/emailService.js";
+import jobQueueService from '../../../services/jobQueueService.js';
 // Importar el servicio centralizado de WhatsApp
 import whatsappService from '../../../services/whatsappService.js';
 import { generateAndSendRentPDF, generateAndSendReservationPDF } from '../utils/pdfService.js';
@@ -604,23 +605,23 @@ export const handleCreateRenta = async (req, res) => {
         const rentaCreada = rentas.find(r => r.id_renta === rent_id);
 
         if (rentaCreada) {
-          // Enviar por correo si está seleccionado
-          if (send_email) {
-            try {
-              await sendRentReceiptEmail({
-                to: email,
-                clienteNombre: client_name,
-                numeroHabitacion: rentaCreada.numero_habitacion,
-                fechaIngreso: rentaCreada.fecha_ingreso,
-                fechaSalida: rentaCreada.fecha_salida,
-                tipoPago: tipo_pago,
-                monto: price,
-                montoLetras: price_text
-              });
-              console.log("✅ Comprobante enviado por correo exitosamente");
-            } catch (emailError) {
-              console.error("❌ Error enviando comprobante por correo:", emailError);
-            }
+          // Encolar correo si está seleccionado
+          if (send_email && email) {
+            const mailOptions = {
+              to: email,
+              subject: `Comprobante de Renta - Habitación ${rentaCreada.numero_habitacion}`,
+              html: `
+                <h1>Comprobante de Renta</h1>
+                <p><strong>Cliente:</strong> ${client_name}</p>
+                <p><strong>Habitación:</strong> ${rentaCreada.numero_habitacion}</p>
+                <p><strong>Check-in:</strong> ${new Date(rentaCreada.fecha_ingreso).toLocaleString('es-MX')}</p>
+                <p><strong>Check-out:</strong> ${new Date(rentaCreada.fecha_salida).toLocaleString('es-MX')}</p>
+                <p><strong>Total:</strong> $${price}</p>
+                <p>Gracias por su preferencia.</p>
+              `
+            };
+            await jobQueueService.addJob('email', mailOptions);
+            console.log("📧 Tarea de envío de correo para la renta encolada.");
           }
         }
 

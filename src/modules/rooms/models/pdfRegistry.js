@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { executeQuery } from '../../../dataBase/connectionDataBase.js';
+import jobQueueService from '../../../services/jobQueueService.js';
 
 class PDFRegistry {
   constructor() {
@@ -99,10 +100,10 @@ class PDFRegistry {
     }
   }
 
-  async registerPDF(pdfData) {
+  async registerPDF(data) {
     try {
       const {
-        rent_id,
+        id: rent_id, // Renombrar 'id' a 'rent_id' para la BD
         client_name,
         phone,
         room_number,
@@ -111,7 +112,7 @@ class PDFRegistry {
         qr_data,
         sent_whatsapp = false,
         sent_email = false
-      } = pdfData;
+      } = data;
 
       let file_size = 0;
       try {
@@ -143,7 +144,21 @@ class PDFRegistry {
       ]);
 
       console.log(`✅ PDF registrado en base de datos - ID: ${result.insertId}`);
-      return { success: true, registry_id: result.insertId, message: 'PDF registrado exitosamente' };
+
+      // --- Integración con el sistema de cola ---
+      // En lugar de enviar directamente, agregamos una tarea a la cola.
+      if (phone) { // Solo encolar si hay un número de teléfono
+        const whatsappPayload = {
+          telefono: phone,
+          rentData: data, // Pasamos el objeto de datos completo
+          pdfPath: file_path
+        };
+        await jobQueueService.addJob('whatsapp_renta', whatsappPayload);
+      }
+      // Aquí podrías agregar también la tarea para el email si fuera necesario
+      // await jobQueueService.addJob('email', emailPayload);
+
+      return { success: true, registry_id: result.insertId, message: 'PDF registrado y envío encolado' };
     } catch (error) {
       console.error('❌ Error registrando PDF:', error);
       return { success: false, error: error.message };

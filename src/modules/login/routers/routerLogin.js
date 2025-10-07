@@ -30,12 +30,17 @@ router.post("/password-reset/reset/:token", resetPassword);
 // =====================
 // Rutas de login/logout (PÚBLICAS)
 // =====================
-router.get("/login", (req, res) =>
+router.get("/login", (req, res) => {
+  // Si el usuario ya tiene una sesión, redirigirlo a la página principal
+  if (req.session.user) {
+    return res.redirect('/rooms');
+  }
+  // Si no, mostrar la página de login
   res.render("login", {
     layout: "main",
     title: "Inicio"
-  })
-);
+  });
+});
 
 router.post("/login", loginUser);
 
