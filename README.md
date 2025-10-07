@@ -89,7 +89,7 @@ Terminal 2:
 
 # Nota: Asegurarse de que el servidor de MySQL esté corriendo.
 
-# Crea el archivo 📂`.env`, agrega las variables para la conexión DB `.env`.
+# Crea el archivo 📂`.env`, al mismo  nivel del archivo de ejemplo `.env.example` agrega las variables para la conexión DB y los servicios como se muestra`.env.example`, en el `.env`
 
 Notas adicionales:
 - Si no creas/configuras la base de datos, el proyecto no podrá iniciar. Usa los scripts de BD provistos arriba.
