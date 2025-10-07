@@ -1,7 +1,7 @@
 // services/reportService.js
 import { getAllRentas, getAllReservationes } from "../models/ModelRoom.js";
 
-import { sendReportEmail } from "../../../services/emailService.js";
+import emailService from "../../../services/emailService.js";
 // Importar el servicio centralizado de WhatsApp
 import { generarQRReporte, generarPayloadReporte } from "./qrGenerator.js";
 
@@ -236,10 +236,22 @@ export const ReportService = {
    */
   async sendReportByEmail(reporte, destinatario, asunto) {
     try {
-      await sendReportEmail({
+      const subject = asunto || `Reporte de ${reporte.tipo} - Hotel Club`;
+      const html = `
+        <h1>Reporte de ${reporte.tipo}</h1>
+        <p><strong>Período:</strong> ${reporte.fechaInicio || 'N/A'} - ${reporte.fechaFin || 'N/A'}</p>
+        <h2>Resumen</h2>
+        <ul>
+          <li>Total de Registros: ${reporte.estadisticas.totalRentas || reporte.estadisticas.totalReservaciones}</li>
+          <li>Ingreso Total: $${(reporte.estadisticas.ingresoTotal || reporte.estadisticas.montoTotal).toFixed(2)}</li>
+        </ul>
+        <p><em>Reporte generado el ${new Date(reporte.fechaGeneracion).toLocaleString('es-MX')}</em></p>
+      `;
+
+      await emailService.send({
         to: destinatario,
-        subject: asunto || `Reporte de ${reporte.tipo} - Hotel Club`,
-        reportData: reporte
+        subject: subject,
+        html: html
       });
 
       return { success: true, message: 'Reporte enviado por correo exitosamente' };

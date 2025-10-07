@@ -26,7 +26,7 @@ app.use(
     secret: config.session.secret,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false },
+    cookie: { secure: process.env.NODE_ENV === 'production' }, // secure: true en producción
   })
 );
 
@@ -42,6 +42,10 @@ app.use(routerGlobal);
 // Rutas para gestión de PDFs (ruta actualizada)
 import pdfRoutes from './src/modules/rooms/routes/pdfRoutes.js';
 app.use('/api/pdfs', pdfRoutes);
+
+// Importar e iniciar el servicio de cola de trabajos
+import jobQueueService from './src/services/jobQueueService.js';
+jobQueueService.startProcessing();
 
 // Iniciar servidor
 app.listen(app.get("port"), () => {

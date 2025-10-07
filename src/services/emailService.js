@@ -1,105 +1,60 @@
-
+import nodemailer from 'nodemailer';
+import { config } from '../config/configuration.js';
 
 class EmailService {
   constructor() {
-    this.isEnabled = false; // Por defecto deshabilitado
+    // La configuración del transporter debe usar las variables de entorno
+    // Asegúrate de que estén definidas en tu archivo .env y cargadas en 'config'
+    this.transporter = nodemailer.createTransport({
+      host: config.email.host,
+      port: config.email.port,
+      secure: config.email.port === 465, // True para 465, false para otros puertos
+      auth: {
+        user: config.email.user,
+        pass: config.email.pass,
+      },
+    });
+    console.log('📧 Email service inicializado.');
+    this.verifyConnection();
   }
 
-  async sendEmail(to, subject, body) {
+  /**
+   * Verifica la conexión con el servidor SMTP.
+   */
+  async verifyConnection() {
     try {
-      if (!this.isEnabled) {
-        console.log('📧 Email service deshabilitado - Email no enviado');
-        console.log(`Para: ${to}`);
-        console.log(`Asunto: ${subject}`);
-        console.log(`Cuerpo: ${body}`);
-        return { success: false, message: 'Email service deshabilitado' };
-      }
-
-      // Aquí iría la lógica real de envío de email
-      // Por ejemplo: nodemailer, sendgrid, etc.
-
-      console.log('📧 Enviando email...');
-      console.log(`Para: ${to}`);
-      console.log(`Asunto: ${subject}`);
-
-      return { success: true, message: 'Email enviado exitosamente' };
+      await this.transporter.verify();
+      console.log('✅ Conexión con el servidor de email establecida correctamente.');
     } catch (error) {
-      console.error('❌ Error enviando email:', error);
-      return { success: false, error: error.message };
+      console.error('❌ Error al conectar con el servidor de email:', error.message);
+      console.log('   Por favor, verifica las credenciales en tu archivo .env (EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS).');
     }
   }
 
-  async sendReservationConfirmation(email, reservationData) {
-    const subject = `Confirmación de Reservación #${reservationData.numero}`;
-    const body = `
-      Estimado/a ${reservationData.clienteNombre},
+  /**
+   * Envía un correo electrónico.
+   * @param {object} mailOptions - Opciones para nodemailer (from, to, subject, html, attachments).
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async send(mailOptions) {
+    try {
+      // Asignar un 'from' por defecto si no se provee
+      const options = {
+        from: `"Hotel Club" <${config.email.user}>`,
+        ...mailOptions,
+      };
 
-      Su reservación ha sido confirmada:
-      - Número: ${reservationData.numero}
-      - Fecha entrada: ${reservationData.fechaEntrada}
-      - Fecha salida: ${reservationData.fechaSalida}
-      - Total: $${reservationData.total}
-
-      Gracias por elegirnos.
-    `;
-
-    return await this.sendEmail(email, subject, body);
-  }
-
-  async sendCheckInReminder(email, reservationData) {
-    const subject = `Recordatorio de Check-in - Reservación #${reservationData.numero}`;
-    const body = `
-      Estimado/a ${reservationData.clienteNombre},
-
-      Le recordamos su reservación para mañana:
-      - Número: ${reservationData.numero}
-      - Fecha entrada: ${reservationData.fechaEntrada}
-      - Habitación: ${reservationData.habitacion}
-
-      Esperamos su llegada.
-    `;
-
-    return await this.sendEmail(email, subject, body);
-  }
-
-  // Método para habilitar el servicio de email
-  enable() {
-    this.isEnabled = true;
-    console.log('📧 Email service habilitado');
-  }
-
-  // Método para deshabilitar el servicio de email
-  disable() {
-    this.isEnabled = false;
-    console.log('📧 Email service deshabilitado');
+      await this.transporter.sendMail(options);
+      console.log(`📧 Email enviado exitosamente a ${options.to}`);
+      return { success: true, message: 'Email enviado exitosamente' };
+    } catch (error) {
+      console.error(`❌ Error al enviar email a ${mailOptions.to}:`, error);
+      // Devolvemos el error para que la cola de trabajos pueda manejarlo
+      throw new Error(`Fallo al enviar email: ${error.message}`);
+    }
   }
 }
 
-// Crear instancia única
 const emailService = new EmailService();
-
-// Funciones específicas para reportes
-export const sendReportEmail = async (to, reportData) => {
-  const subject = `Reporte ${reportData.tipo} - ${new Date().toLocaleDateString()}`;
-  const body = `
-    Reporte generado:
-    - Tipo: ${reportData.tipo}
-    - Período: ${reportData.periodo?.inicio || 'N/A'} - ${reportData.periodo?.fin || 'N/A'}
-    - Total registros: ${reportData.resumen?.total_registros || 0}
-    - Total ingresos: $${reportData.resumen?.total_ingresos || 0}
-  `;
-
-  return await emailService.sendEmail(to, subject, body);
-};
-
-// Funciones específicas para rentas
-export const sendRentReceiptEmail = async (to, rentData) => {
-  return await emailService.sendReservationConfirmation(to, rentData);
-};
-
-// Funciones específicas para reservaciones
-export const sendReservationReceiptEmail = async (to, reservationData) => {
-  return await emailService.sendReservationConfirmation(to, reservationData);
-};
 
 export default emailService;

@@ -13,5 +13,11 @@ export const config={
   },
   session: {
     secret: process.env.SESSION_SECRET || 'fallback_secret_change_in_production'
+  },
+  email: {
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 };

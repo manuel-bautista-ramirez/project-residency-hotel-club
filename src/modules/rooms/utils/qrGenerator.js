@@ -7,7 +7,7 @@ import path from 'path';
 
 export const generarQRReporte = async (data, filename = 'reporte-qr.png') => {
   try {
-    const qrPath = path.join('./public/qrs', filename);
+    const qrPath = path.join('./public/', filename);
     
     // Crear directorio si no existe
     const qrDir = path.dirname(qrPath);
