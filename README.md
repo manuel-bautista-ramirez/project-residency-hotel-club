@@ -87,7 +87,9 @@ Terminal 2:
     npm run build
 ```
 
-# Nota: Asegurarse de que el servidor de MySQL esté corriendo y que las credenciales de conexión estén correctamente configuradas en el archivo `.env`.
+# Nota: Asegurarse de que el servidor de MySQL esté corriendo.
+
+# Crea el archivo 📂`.env`, agrega las variables para la conexión DB `.env`.
 
 Notas adicionales:
 - Si no creas/configuras la base de datos, el proyecto no podrá iniciar. Usa los scripts de BD provistos arriba.
