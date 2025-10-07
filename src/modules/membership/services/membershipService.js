@@ -280,7 +280,7 @@ export const MembershipService = {
     // 2. Generar el PDF en memoria
     const pdfBuffer = await this._generateReceiptPDF(pdfData);
 
-    // 3. Enviar por correo electrónico
+    // 3. Enviar por correo electrónico (funciona con buffer)
     if (cliente?.correo) {
       try {
         const subject = `Comprobante de Membresía - Hotel Club`;
@@ -295,9 +295,17 @@ export const MembershipService = {
       }
     }
 
-    // 4. Enviar por WhatsApp
+    // 4. Enviar por WhatsApp (requiere guardado temporal)
     if (cliente?.telefono) {
+      const tempDir = path.join(process.cwd(), 'public', 'temp');
+      const tempFilePath = path.join(tempDir, `comprobante_${id_activa}_${Date.now()}.pdf`);
+
       try {
+        // Asegurarse de que el directorio temporal exista
+        await fs.promises.mkdir(tempDir, { recursive: true });
+        // Escribir el PDF temporalmente
+        await fs.promises.writeFile(tempFilePath, pdfBuffer);
+
         const whatsappData = {
           clienteNombre: cliente.nombre_completo,
           numeroMembresia: id_activa,
@@ -305,9 +313,17 @@ export const MembershipService = {
           fechaVencimiento: fecha_fin,
           total: parseFloat(precio_final).toFixed(2),
         };
-        await whatsappService.enviarComprobanteMembresía(cliente.telefono, whatsappData, pdfBuffer);
+        // Enviar usando la ruta del archivo
+        await whatsappService.enviarComprobanteMembresía(cliente.telefono, whatsappData, tempFilePath);
       } catch (error) {
         console.error("❌ Error enviando comprobante por WhatsApp:", error.message);
+      } finally {
+        // Limpiar el archivo temporal después del envío
+        try {
+          await fs.promises.unlink(tempFilePath);
+        } catch (cleanupError) {
+          console.error("❌ Error limpiando archivo PDF temporal:", cleanupError.message);
+        }
       }
     }
   },
