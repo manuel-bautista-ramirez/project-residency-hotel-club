@@ -96,34 +96,6 @@ export const loginUser = async (username, password) => {
   }
 };
 
-// // Seed inicial de usuarios
-// const seedUsers = async () => {
-//   const users = [
-//     { username: "manuel", password: "manuel123", role: "Administrador" },
-//     { username: "daniela", password: "dani1234", role: "Usuario" },
-//   ];
-// 
-//   try {
-//     for (const user of users) {
-//       const existingUser = await findUserByUsername(user.username);
-//       if (!existingUser) {
-//         await addUser(user.username, user.password, user.role);
-//         console.log(`Usuario ${user.username} agregado correctamente.`);
-//       } else {
-//         console.log(
-//           `Usuario ${user.username} ya existe. No se agregó nuevamente.`
-//         );
-//       }
-//     }
-//   } catch (error) {
-//     console.error("Error al agregar usuarios iniciales:", error);
-//   }
-// };
-// 
-// // Descomenta si quieres ejecutar el seed automáticamente
-// //seedUsers();
-
-
 // Guardar token de recuperación
 export const savePasswordResetToken = async (userId, token, expiresAt) => {
   try {
@@ -181,4 +153,4 @@ export const resetPassword = async (userId, newPassword) => {
     throw error;
   }
 };
- //seedUsers();
+

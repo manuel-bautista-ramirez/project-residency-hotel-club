@@ -1,179 +1,25 @@
 import nodemailer from 'nodemailer';
-class EmailService {
-  constructor() {
-    this.isEnabled = false; // Por defecto deshabilitado
-    this.transporter = null;
-  }
-
-  _createTransporter() {
-    if (!this.transporter) {
-      this.transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: Number(process.env.EMAIL_PORT),
-        secure: true,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-    }
-  }
-
-  /**
-   * Envía un correo electrónico de texto plano.
-   * Mantiene la firma original para no romper la compatibilidad.
-   */
-  async sendEmail(to, subject, body) {
-    try {
-      if (!this.isEnabled) {
-        console.log('📧 Email service (Plain Text) deshabilitado - Email no enviado');
-        console.log(`Para: ${to}`);
-        console.log(`Asunto: ${subject}`);
-        console.log(`Cuerpo: ${body}`);
-        return { success: false, message: 'Email service deshabilitado' };
-      }
-
-      this._createTransporter();
-      const mailOptions = {
-        from: `"Hotel Club" <${process.env.EMAIL_USER}>`,
-        to,
-        subject,
-        text: body, // Se envía como texto plano
-      };
-
-      await this.transporter.sendMail(mailOptions);
-      console.log(`📧 Email de texto plano enviado exitosamente a: ${to}`);
-      return { success: true, message: 'Email enviado exitosamente' };
-    } catch (error) {
-      console.error('❌ Error enviando email de texto plano:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  /**
-   * Nuevo método para enviar correos en formato HTML.
-   */
-  async sendHtmlEmail(to, subject, html) {
-    try {
-      if (!this.isEnabled) {
-        console.log('📧 Email service (HTML) deshabilitado - Email no enviado');
-        console.log(`Para: ${to}`);
-        console.log(`Asunto: ${subject}`);
-        console.log(`Cuerpo HTML: ${html}`);
-        return { success: false, message: 'Email service deshabilitado' };
-      }
-
-      this._createTransporter();
-      const mailOptions = {
-        from: `"Hotel Club" <${process.env.EMAIL_USER}>`,
-        to,
-        subject,
-        html: html, // Se envía como HTML
-      };
-
-      await this.transporter.sendMail(mailOptions);
-      console.log(`📧 Email HTML enviado exitosamente a: ${to}`);
-      return { success: true, message: 'Email enviado exitosamente' };
-    } catch (error) {
-      console.error('❌ Error enviando email HTML:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  /**
-   * Envía un correo con un archivo adjunto.
-   * @param {string} to
-   * @param {string} subject
-   * @param {string} body - Cuerpo del correo en texto plano.
-   * @param {{filename: string, content: Buffer}} attachment - El archivo a adjuntar.
-   */
-  async sendEmailWithAttachment(to, subject, body, attachment) {
-    try {
-      if (!this.isEnabled) {
-        console.log('📧 Email service (Attachment) deshabilitado - Email no enviado');
-        console.log(`Para: ${to}`);
-        console.log(`Asunto: ${subject}`);
-        console.log(`Adjunto: ${attachment.filename}`);
-        return { success: false, message: 'Email service deshabilitado' };
-      }
-
-      this._createTransporter();
-      const mailOptions = {
-        from: `"Hotel Club" <${process.env.EMAIL_USER}>`,
-        to,
-        subject,
-        text: body,
-        attachments: [
-          {
-            filename: attachment.filename,
-            content: attachment.content,
-            contentType: 'application/pdf',
-          },
-        ],
-      };
-
-      await this.transporter.sendMail(mailOptions);
-      console.log(`📧 Email con adjunto enviado exitosamente a: ${to}`);
-      return { success: true, message: 'Email con adjunto enviado' };
-    } catch (error) {
-      console.error('❌ Error enviando email con adjunto:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async sendReservationConfirmation(email, reservationData) {
-    const subject = `Confirmación de Reservación #${reservationData.numero}`;
-    const body = `
-      Estimado/a ${reservationData.clienteNombre},
-      Su reservación ha sido confirmada:
-      - Número: ${reservationData.numero}
-      - Fecha entrada: ${reservationData.fechaEntrada}
-      - Fecha salida: ${reservationData.fechaSalida}
-      - Total: $${reservationData.total}
-      Gracias por elegirnos.
-    `;
-    // Llama al método original de texto plano.
-    return await this.sendEmail(email, subject, body);
-  }
-
-  async sendCheckInReminder(email, reservationData) {
-    const subject = `Recordatorio de Check-in - Reservación #${reservationData.numero}`;
-    const body = `
-      Estimado/a ${reservationData.clienteNombre},
-      Le recordamos su reservación para mañana:
-      - Número: ${reservationData.numero}
-      - Fecha entrada: ${reservationData.fechaEntrada}
-      - Habitación: ${reservationData.habitacion}
-      Esperamos su llegada.
-    `;
-    // Llama al método original de texto plano.
-    return await this.sendEmail(email, subject, body);
-  }
-
-  enable() {
-    this.isEnabled = true;
-    console.log('📧 Email service habilitado');
-  }
-
-  disable() {
-    this.isEnabled = false;
-    console.log('📧 Email service deshabilitado');
-=======
 import { config } from '../config/configuration.js';
 
 class EmailService {
   constructor() {
-    // La configuración del transporter debe usar las variables de entorno
-    // Asegúrate de que estén definidas en tu archivo .env y cargadas en 'config'
+    // Asegurarse de que las credenciales existen antes de crear el transporter
+    if (!config.email.host || !config.email.user || !config.email.pass) {
+      console.warn('⚠️  Advertencia: Faltan credenciales de correo en .env. El servicio de email estará deshabilitado.');
+      this.transporter = null;
+      return;
+    }
+
     this.transporter = nodemailer.createTransport({
       host: config.email.host,
-      port: config.email.port,
-      secure: config.email.port === 465, // True para 465, false para otros puertos
+      port: Number(config.email.port) || 465,
+      secure: (Number(config.email.port) || 465) === 465, // True para 465, false para otros puertos
       auth: {
         user: config.email.user,
         pass: config.email.pass,
       },
     });
+
     console.log('📧 Email service inicializado.');
     this.verifyConnection();
   }
@@ -182,6 +28,9 @@ class EmailService {
    * Verifica la conexión con el servidor SMTP.
    */
   async verifyConnection() {
+    if (!this.transporter) {
+      return; // No verificar si no hay transporter
+    }
     try {
       await this.transporter.verify();
       console.log('✅ Conexión con el servidor de email establecida correctamente.');
@@ -197,8 +46,12 @@ class EmailService {
    * @returns {Promise<{success: boolean, message: string}>}
    */
   async send(mailOptions) {
+    if (!this.transporter) {
+      console.error('❌ No se puede enviar el correo, el servicio de email no está configurado.');
+      throw new Error('El servicio de email no está configurado.');
+    }
+
     try {
-      // Asignar un 'from' por defecto si no se provee
       const options = {
         from: `"Hotel Club" <${config.email.user}>`,
         ...mailOptions,
@@ -209,36 +62,11 @@ class EmailService {
       return { success: true, message: 'Email enviado exitosamente' };
     } catch (error) {
       console.error(`❌ Error al enviar email a ${mailOptions.to}:`, error);
-      // Devolvemos el error para que la cola de trabajos pueda manejarlo
       throw new Error(`Fallo al enviar email: ${error.message}`);
     }
-
   }
 }
 
 const emailService = new EmailService();
 
-
-export const sendReportEmail = async (to, reportData) => {
-  const subject = `Reporte ${reportData.tipo} - ${new Date().toLocaleDateString()}`;
-  const body = `
-    Reporte generado:
-    - Tipo: ${reportData.tipo}
-    - Período: ${reportData.periodo?.inicio || 'N/A'} - ${reportData.periodo?.fin || 'N/A'}
-    - Total registros: ${reportData.resumen?.total_registros || 0}
-    - Total ingresos: $${reportData.resumen?.total_ingresos || 0}
-  `;
-  // Llama al método original de texto plano.
-  return await emailService.sendEmail(to, subject, body);
-};
-
-export const sendRentReceiptEmail = async (to, rentData) => {
-  return await emailService.sendReservationConfirmation(to, rentData);
-};
-
-export const sendReservationReceiptEmail = async (to, reservationData) => {
-  return await emailService.sendReservationConfirmation(to, reservationData);
-};
-
-export default Email Services 
 export default emailService;

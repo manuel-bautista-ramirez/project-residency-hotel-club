@@ -6,28 +6,32 @@ CREATE DATABASE IF NOT EXISTS hotel_club;
 USE hotel_club;
 
 
--- ======================================================
 --               MODULE LOGIN                          --
 -- ======================================================
 -- Tabla de usuarios del hotel para la admistracion de hotel y club.
 
-CREATE TABLE IF NOT EXISTS
-users_hotel (
+USE hotel_club;
+
+CREATE TABLE IF NOT EXISTS users_hotel (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(50) NOT NULL UNIQUE, -- Nombre de usuario único
-  password VARCHAR(255) NOT NULL, -- Contraseña cifrada
-  role ENUM ('Administrador', 'Usuario') NOT NULL -- Rol del usuario
-);
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role ENUM ('Administrador', 'Usuario') NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE IF NOT EXISTS   -- Tabla para almacenar tokens de recuperación de contraseña
-password_resets (
+
+CREATE TABLE IF NOT EXISTS password_resets (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL, -- ID del usuario que solicita la recuperación
-  token VARCHAR(255) NOT NULL UNIQUE, -- Token único para la recuperación
-  expires_at DATETIME NOT NULL, -- Fecha y hora de expiración del token
+  user_id INT NOT NULL,
+  token VARCHAR(255) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_password_resets_user (user_id),
+  KEY idx_password_resets_expires (expires_at),
   FOREIGN KEY (user_id) REFERENCES users_hotel (id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- =====================================================
 -- MÓDULO DE HABITACIONES
@@ -39,7 +43,7 @@ CREATE TABLE IF NOT EXISTS habitaciones (
   numero VARCHAR(10) NOT NULL UNIQUE,
   tipo ENUM('sencilla', 'suite') NOT NULL,
   estado ENUM('disponible', 'ocupado', 'limpieza') DEFAULT 'disponible'
-);
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Insertar habitaciones fijas (idempotente)
 INSERT IGNORE INTO habitaciones (numero, tipo) VALUES
@@ -55,7 +59,6 @@ INSERT IGNORE INTO habitaciones (numero, tipo) VALUES
   ('110', 'suite');
 
 -- 2) Tabla de Precios
--- Precio definido por mes y tipo de habitación
 CREATE TABLE IF NOT EXISTS precios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   tipo_habitacion ENUM('sencilla', 'suite') NOT NULL,
@@ -63,9 +66,10 @@ CREATE TABLE IF NOT EXISTS precios (
   monto DECIMAL(10, 2) NOT NULL,
   fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (tipo_habitacion, mes)
-);
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
--- Insertar precios (idempotente)
+
+-- Insertar precios (idempotente) para todos los meses
 INSERT IGNORE INTO precios (tipo_habitacion, mes, monto) VALUES
   ('sencilla', 1, 100.00),
   ('sencilla', 2, 100.00),
@@ -92,15 +96,15 @@ INSERT IGNORE INTO precios (tipo_habitacion, mes, monto) VALUES
   ('suite', 11, 250.00),
   ('suite', 12, 250.00);
 
+
 -- Medios de mensajes (correo/teléfono)
 CREATE TABLE IF NOT EXISTS medios_mensajes (
   id_medio_mensaje INT AUTO_INCREMENT PRIMARY KEY,
   correo_cliente VARCHAR(100) NOT NULL,
   telefono_cliente VARCHAR(20) NOT NULL
-);
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- 3) Tabla de Reservaciones
--- NOTA: DATETIME guarda fecha y hora (12:00 PM)
 CREATE TABLE IF NOT EXISTS reservaciones (
   id INT AUTO_INCREMENT PRIMARY KEY,
   habitacion_id INT NOT NULL,
@@ -116,10 +120,9 @@ CREATE TABLE IF NOT EXISTS reservaciones (
   FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
   FOREIGN KEY (usuario_id) REFERENCES users_hotel (id),
   FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
-);
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- 4) Tabla de Rentas
--- NOTA: DATETIME guarda fecha y hora (12:00 PM)
 CREATE TABLE IF NOT EXISTS rentas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   habitacion_id INT NOT NULL,
@@ -135,7 +138,7 @@ CREATE TABLE IF NOT EXISTS rentas (
   FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
   FOREIGN KEY (usuario_id) REFERENCES users_hotel (id),
   FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
-);
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================
 -- Tabla: pdf_registry
@@ -218,8 +221,6 @@ WHERE MONTH(fecha_ingreso) = MONTH(CURDATE())
   AND YEAR(fecha_ingreso) = YEAR(CURDATE());
 
 
-
-
 -- =====================================================
 -- MÓDULO DE MEMBRESÍAS
 -- =====================================================
@@ -232,7 +233,7 @@ CREATE TABLE clientes (
     fecha_registro timestamp NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_cliente),
     UNIQUE KEY id_cliente (id_cliente)
-) ENGINE = InnoDB AUTO_INCREMENT = 115 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
+) ENGINE = InnoDB AUTO_INCREMENT = 115 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 
 
@@ -244,7 +245,7 @@ CREATE TABLE integrantes_membresia (
     fecha_registro timestamp NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_integrante),
     UNIQUE KEY id_integrante (id_integrante)
-) ENGINE = InnoDB AUTO_INCREMENT = 10 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
+) ENGINE = InnoDB AUTO_INCREMENT = 10 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 --Tabla de membresias
 CREATE TABLE membresias (
@@ -256,7 +257,7 @@ CREATE TABLE membresias (
     fecha_creacion timestamp NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_membresia),
     UNIQUE KEY id_membresia (id_membresia)
-) ENGINE = InnoDB AUTO_INCREMENT = 43 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
+) ENGINE = InnoDB AUTO_INCREMENT = 43 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 
 --Tabla de membresias_activas
@@ -285,21 +286,21 @@ CREATE TABLE membresias_activas (
     CONSTRAINT membresias_activas_chk_3 CHECK (
         (fecha_fin > fecha_inicio)
     )
-) ENGINE = InnoDB AUTO_INCREMENT = 43 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
+) ENGINE = InnoDB AUTO_INCREMENT = 43 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 
---Tabla de metodos_pago
-CREATE TABLE metodos_pago (
+-- Tabla de metodos_pago
+CREATE TABLE IF NOT EXISTS metodos_pago (
     id_metodo_pago bigint unsigned NOT NULL AUTO_INCREMENT,
     nombre varchar(50) NOT NULL,
     PRIMARY KEY (id_metodo_pago),
     UNIQUE KEY id_metodo_pago (id_metodo_pago),
     UNIQUE KEY nombre (nombre)
-) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
+) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 
---Tabla de pagos
-CREATE TABLE pagos (
+-- Tabla de pagos
+CREATE TABLE IF NOT EXISTS pagos (
     id_pago bigint unsigned NOT NULL AUTO_INCREMENT,
     id_activa int NOT NULL,
     id_metodo_pago int NOT NULL,
@@ -308,34 +309,18 @@ CREATE TABLE pagos (
     PRIMARY KEY (id_pago),
     UNIQUE KEY id_pago (id_pago),
     CONSTRAINT pagos_chk_1 CHECK ((monto > 0))
-) ENGINE = InnoDB AUTO_INCREMENT = 15 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
+) ENGINE = InnoDB AUTO_INCREMENT = 15 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
-
---Tabla de tipos_membresia
-CREATE TABLE tipos_membresia (
-    id_tipo_membresia bigint unsigned NOT NULL AUTO_INCREMENT,
-    nombre varchar(50) NOT NULL,
-    descripcion text,
-    max_integrantes int DEFAULT '1',
-    precio decimal(10, 2) NOT NULL,
-    PRIMARY KEY (id_tipo_membresia),
-    UNIQUE KEY id_tipo_membresia (id_tipo_membresia),
-    UNIQUE KEY nombre (nombre),
-    CONSTRAINT tipos_membresia_chk_1 CHECK ((max_integrantes >= 1))
-) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
 
 -- Insertar métodos de pago básicos
-INSERT INTO metodos_pago (nombre) VALUES
+INSERT IGNORE INTO metodos_pago (nombre) VALUES
 ('Efectivo'),
 ('Tarjeta de crédito'),
-('Tarjeta de débito'),
 ('Transferencia bancaria');
-ON CONFLICT (nombre) DO NOTHING;
 
 -- Insertar tipos de membresía básicos (si no existen)
-INSERT INTO tipos_membresia (nombre, descripcion, max_integrantes, precio) VALUES
+INSERT IGNORE INTO tipos_membresia (nombre, descripcion, max_integrantes, precio) VALUES
 ('Individual GYM', 'Membresía para una persona', 1, 500.00),
 ('Individual Alberca', 'Membresía para una persona', 1, 500.00),
 ('Individual General', 'Membresía para una persona', 1, 500.00),
 ('Familiar', 'Membresía para toda la familia', 4, 1200.00);
-ON CONFLICT (nombre) DO NOTHING;

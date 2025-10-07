@@ -1,6 +1,4 @@
 import express from "express";
-import fs from "fs";
-import path from "path";
 import routerLogin from "../modules/login/routers/routerLogin.js";
 import { membershipApiRoutes, membershipRoutes } from "../modules/membership/routes/index.js";
 import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
@@ -12,7 +10,6 @@ import whatsappService from '../services/whatsappService.js';
 
 // Importar y habilitar el servicio de correo electrónico
 import emailService from '../services/emailService.js';
-emailService.enable();
 
 const routerGlobal = express.Router();
 

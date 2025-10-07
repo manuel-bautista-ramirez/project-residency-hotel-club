@@ -7,6 +7,13 @@
     "build": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "db:reset": "set DB_FORCE_RECREATE=true&& node src/dataBase/setup.js",
+    "db:setup": "node src/dataBase/setup.js",
+    "db:reseed": "node src/dataBase/reseed.js",
+    "db:drop": "node src/dataBase/drop.js",
+    "db:health": "node src/dataBase/health.js",
+    "db:fix-constraints": "node src/dataBase/fix_constraints.js",
+    "db:seed-users": "node src/modules/login/scripts/seedUsers.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
