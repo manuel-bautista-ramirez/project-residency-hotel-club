@@ -284,16 +284,18 @@ ${estadoLinea}
 
       const jid = this.formatPhoneNumber(telefono);
       
-      // Enviar mensaje de texto
-      await this.socket.sendMessage(jid, { text: mensaje });
-      
-      // Enviar PDF si existe
+      // Enviar PDF con el mensaje como caption
       if (pdfBuffer) {
         await this.socket.sendMessage(jid, {
           document: pdfBuffer,
+          mimetype: 'application/pdf',
           fileName: `Comprobante_Membresia_${numeroMembresia}.pdf`,
-          mimetype: 'application/pdf'
+          caption: mensaje
         });
+      } else {
+        // Fallback: si no hay PDF, enviar solo el texto
+        await this.socket.sendMessage(jid, { text: mensaje });
+        console.log(`⚠️ PDF no generado para membresía #${numeroMembresia}, se envió solo texto.`);
       }
 
       console.log(`✅ Comprobante de membresía enviado a ${telefono}`);
