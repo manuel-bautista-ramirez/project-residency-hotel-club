@@ -5,7 +5,6 @@ import { deleteMembershipById } from "../models/modelDelete.js";
 import { updateMembershipById } from "../models/modelEdit.js";
 import { generarQRArchivo } from "../utils/qrGenerator.js";
 import emailService from "../../../services/emailService.js";
-import { createMembershipReceiptEmail } from "../membershipEmailTemplates.js";
 import QRCode from "qrcode";
 import path from "path";
 import fs from "fs";
@@ -218,7 +217,42 @@ export const MembershipService = {
     };
     return JSON.stringify(qrData);
   },
-  // Nuevo método para enviar comprobante por email (sin QR)
+
+  async _generateReceiptPDF(data) {
+    try {
+      const templatePath = path.resolve("src", "views", "partials", "membership-receipt-template.hbs");
+      const templateFile = await fs.promises.readFile(templatePath, "utf8");
+      const template = hbs.compile(templateFile);
+      const receiptHtml = template(data);
+
+      const cssPath = path.resolve("public", "styles.css");
+      const tailwindCss = await fs.promises.readFile(cssPath, "utf8");
+
+      const finalHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <style>${tailwindCss}</style>
+          </head>
+          <body>
+            ${receiptHtml}
+          </body>
+        </html>`;
+
+      const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+      const page = await browser.newPage();
+      await page.setContent(finalHtml, { waitUntil: "networkidle0" });
+      const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+      await browser.close();
+
+      return pdfBuffer;
+    } catch (error) {
+      console.error("❌ Error generando el PDF del comprobante:", error);
+      throw new Error("No se pudo generar el comprobante en PDF.");
+    }
+  },
+
   async sendMembershipReceiptEmail(
     cliente,
     tipo,
@@ -226,22 +260,36 @@ export const MembershipService = {
     fecha_fin,
     integrantesDB,
     metodo_pago,
-    precio_final
+    precio_final,
+    precioEnLetras
   ) {
     if (cliente?.correo) {
-      // 1. Crear el contenido del correo (asunto y cuerpo HTML)
-      const { subject, html } = createMembershipReceiptEmail({
+      // 1. Preparar datos para el PDF
+      const pdfData = {
         titularNombre: cliente.nombre_completo,
         tipoMembresia: tipo?.nombre || "N/D",
         fechaInicio: fecha_inicio,
         fechaFin: fecha_fin,
         metodoPago: metodo_pago || "No especificado",
-        precioFinal: precio_final,
+        precioFinal: parseFloat(precio_final).toFixed(2),
+        precioEnLetras: precioEnLetras,
         integrantes: integrantesDB,
-      });
+      };
 
-      // 2. Enviar el correo usando el nuevo método para HTML del servicio global
-      await emailService.sendHtmlEmail(cliente.correo, subject, html);
+      // 2. Generar el PDF en memoria
+      const pdfBuffer = await this._generateReceiptPDF(pdfData);
+
+      // 3. Preparar el contenido del correo
+      const subject = `Comprobante de Membresía - Hotel Club`;
+      const body = `Hola ${cliente.nombre_completo},\n\n¡Gracias por unirte a Hotel Club! Adjunto a este correo encontrarás el comprobante de tu membresía en formato PDF.\nTu Código Qr para entrar al club puedes pedirlo en recepción.\n\nSaludos.\n\nEste mensaje se genera automaticamente por el sistema, cualquier duda o aclaración comunicarse con nosotros.`;
+
+      const attachment = {
+        filename: `Comprobante-Membresia-${cliente.nombre_completo.replace(/\s/g, '_')}.pdf`,
+        content: pdfBuffer,
+      };
+
+      // 4. Enviar el correo con el adjunto
+      await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment);
     }
   },
 
@@ -321,6 +369,7 @@ export const MembershipService = {
     );
 
     // 🔟 Enviar email de comprobante
+    const precioEnLetras = this.convertirNumeroALetras(parseFloat(authoritative_price));
     await this.sendMembershipReceiptEmail(
       cliente,
       tipo,
@@ -328,7 +377,8 @@ export const MembershipService = {
       authoritative_end_date, // Usar valor calculado
       integrantesDB,
       membresiaCompleta.metodo_pago,
-      authoritative_price // Usar valor calculado
+      authoritative_price, // Usar valor calculado
+      precioEnLetras
     );
 
     // Devolver la información completa para la respuesta
@@ -340,7 +390,7 @@ export const MembershipService = {
       fecha_inicio: fecha_inicio,
       fecha_fin: authoritative_end_date,
       precio_final: parseFloat(authoritative_price),
-      precioEnLetras: this.convertirNumeroALetras(parseFloat(authoritative_price)),
+      precioEnLetras: precioEnLetras,
       metodo_pago: membresiaCompleta.metodo_pago || "No especificado",
       integrantes: integrantesDB,
       qr_path: qrPath,

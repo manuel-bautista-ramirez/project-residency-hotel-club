@@ -81,6 +81,47 @@ class EmailService {
     }
   }
 
+  /**
+   * Envía un correo con un archivo adjunto.
+   * @param {string} to
+   * @param {string} subject
+   * @param {string} body - Cuerpo del correo en texto plano.
+   * @param {{filename: string, content: Buffer}} attachment - El archivo a adjuntar.
+   */
+  async sendEmailWithAttachment(to, subject, body, attachment) {
+    try {
+      if (!this.isEnabled) {
+        console.log('📧 Email service (Attachment) deshabilitado - Email no enviado');
+        console.log(`Para: ${to}`);
+        console.log(`Asunto: ${subject}`);
+        console.log(`Adjunto: ${attachment.filename}`);
+        return { success: false, message: 'Email service deshabilitado' };
+      }
+
+      this._createTransporter();
+      const mailOptions = {
+        from: `"Hotel Club" <${process.env.EMAIL_USER}>`,
+        to,
+        subject,
+        text: body,
+        attachments: [
+          {
+            filename: attachment.filename,
+            content: attachment.content,
+            contentType: 'application/pdf',
+          },
+        ],
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      console.log(`📧 Email con adjunto enviado exitosamente a: ${to}`);
+      return { success: true, message: 'Email con adjunto enviado' };
+    } catch (error) {
+      console.error('❌ Error enviando email con adjunto:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
   async sendReservationConfirmation(email, reservationData) {
     const subject = `Confirmación de Reservación #${reservationData.numero}`;
     const body = `
