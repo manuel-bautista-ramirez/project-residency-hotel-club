@@ -286,11 +286,13 @@ ${estadoLinea}
   }
 
   // Método para enviar comprobante de membresía
-  async enviarComprobanteMembresía(telefono, clienteNombre, numeroMembresia, tipoMembresia, fechaVencimiento, total, pdfPath) {
+  async enviarComprobanteMembresía(telefono, membershipData, pdfPath) {
     try {
       if (!this.isConnected) {
         throw new Error('WhatsApp no está conectado');
       }
+
+      const { clienteNombre, numeroMembresia, tipoMembresia, fechaVencimiento, total } = membershipData;
 
       const mensaje = `🏆 *COMPROBANTE DE MEMBRESÍA*\n\n` +
                      `👤 Cliente: ${clienteNombre}\n` +
@@ -302,16 +304,16 @@ ${estadoLinea}
 
       const jid = this.formatPhoneNumber(telefono);
       
-      // Enviar mensaje de texto
-      await this.socket.sendMessage(jid, { text: mensaje });
-      
-      // Enviar PDF si existe
       if (pdfPath && fs.existsSync(pdfPath)) {
         await this.socket.sendMessage(jid, {
           document: fs.readFileSync(pdfPath),
+          mimetype: 'application/pdf',
           fileName: `Comprobante_Membresia_${numeroMembresia}.pdf`,
-          mimetype: 'application/pdf'
+          caption: mensaje
         });
+      } else {
+        await this.socket.sendMessage(jid, { text: mensaje });
+        console.log(`⚠️ PDF no encontrado en la ruta, se envió solo texto.`);
       }
 
       console.log(`✅ Comprobante de membresía enviado a ${telefono}`);
