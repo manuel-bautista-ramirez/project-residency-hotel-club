@@ -5,6 +5,7 @@ import { deleteMembershipById } from "../models/modelDelete.js";
 import { updateMembershipById } from "../models/modelEdit.js";
 import { generarQRArchivo } from "../utils/qrGenerator.js";
 import emailService from "../../../services/emailService.js";
+import whatsappService from "../../../services/whatsappService.js";
 import QRCode from "qrcode";
 import path from "path";
 import fs from "fs";
@@ -253,9 +254,10 @@ export const MembershipService = {
     }
   },
 
-  async sendMembershipReceiptEmail(
+  async sendMembershipReceipts(
     cliente,
     tipo,
+    id_activa,
     fecha_inicio,
     fecha_fin,
     integrantesDB,
@@ -263,33 +265,50 @@ export const MembershipService = {
     precio_final,
     precioEnLetras
   ) {
+    // 1. Preparar datos para el PDF
+    const pdfData = {
+      titularNombre: cliente.nombre_completo,
+      tipoMembresia: tipo?.nombre || "N/D",
+      fechaInicio: fecha_inicio,
+      fechaFin: fecha_fin,
+      metodoPago: metodo_pago || "No especificado",
+      precioFinal: parseFloat(precio_final).toFixed(2),
+      precioEnLetras: precioEnLetras,
+      integrantes: integrantesDB,
+    };
+
+    // 2. Generar el PDF en memoria
+    const pdfBuffer = await this._generateReceiptPDF(pdfData);
+
+    // 3. Enviar por correo electrónico
     if (cliente?.correo) {
-      // 1. Preparar datos para el PDF
-      const pdfData = {
-        titularNombre: cliente.nombre_completo,
-        tipoMembresia: tipo?.nombre || "N/D",
-        fechaInicio: fecha_inicio,
-        fechaFin: fecha_fin,
-        metodoPago: metodo_pago || "No especificado",
-        precioFinal: parseFloat(precio_final).toFixed(2),
-        precioEnLetras: precioEnLetras,
-        integrantes: integrantesDB,
-      };
+      try {
+        const subject = `Comprobante de Membresía - Hotel Club`;
+        const body = `Hola ${cliente.nombre_completo},\n\n¡Gracias por unirte a Hotel Club! Adjunto a este correo encontrarás el comprobante de tu membresía en formato PDF.\nTu Código Qr para entrar al club puedes pedirlo en recepción.\n\nSaludos.\n\nEste mensaje se genera automaticamente por el sistema, cualquier duda o aclaración comunicarse con nosotros.`;
+        const attachment = {
+          filename: `Comprobante-Membresia-${cliente.nombre_completo.replace(/\s/g, '_')}.pdf`,
+          content: pdfBuffer,
+        };
+        await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment);
+      } catch (error) {
+        console.error("❌ Error enviando comprobante por correo:", error.message);
+      }
+    }
 
-      // 2. Generar el PDF en memoria
-      const pdfBuffer = await this._generateReceiptPDF(pdfData);
-
-      // 3. Preparar el contenido del correo
-      const subject = `Comprobante de Membresía - Hotel Club`;
-      const body = `Hola ${cliente.nombre_completo},\n\n¡Gracias por unirte a Hotel Club! Adjunto a este correo encontrarás el comprobante de tu membresía en formato PDF.\nTu Código Qr para entrar al club puedes pedirlo en recepción.\n\nSaludos.\n\nEste mensaje se genera automaticamente por el sistema, cualquier duda o aclaración comunicarse con nosotros.`;
-
-      const attachment = {
-        filename: `Comprobante-Membresia-${cliente.nombre_completo.replace(/\s/g, '_')}.pdf`,
-        content: pdfBuffer,
-      };
-
-      // 4. Enviar el correo con el adjunto
-      await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment);
+    // 4. Enviar por WhatsApp
+    if (cliente?.telefono) {
+      try {
+        const whatsappData = {
+          clienteNombre: cliente.nombre_completo,
+          numeroMembresia: id_activa,
+          tipoMembresia: tipo?.nombre || "N/D",
+          fechaVencimiento: fecha_fin,
+          total: parseFloat(precio_final).toFixed(2),
+        };
+        await whatsappService.enviarComprobanteMembresía(cliente.telefono, whatsappData, pdfBuffer);
+      } catch (error) {
+        console.error("❌ Error enviando comprobante por WhatsApp:", error.message);
+      }
     }
   },
 
@@ -368,16 +387,17 @@ export const MembershipService = {
       id_activa
     );
 
-    // 🔟 Enviar email de comprobante
+    // 🔟 Enviar comprobantes
     const precioEnLetras = this.convertirNumeroALetras(parseFloat(authoritative_price));
-    await this.sendMembershipReceiptEmail(
+    await this.sendMembershipReceipts(
       cliente,
       tipo,
+      id_activa,
       fecha_inicio,
-      authoritative_end_date, // Usar valor calculado
+      authoritative_end_date,
       integrantesDB,
       membresiaCompleta.metodo_pago,
-      authoritative_price, // Usar valor calculado
+      authoritative_price,
       precioEnLetras
     );
 
