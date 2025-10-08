@@ -3,225 +3,245 @@
         background-color: #3B82F6;
         color: white;
     }
+
     #calendar {
         transition: all 0.3s ease;
     }
 </style>
 
 
-    {{>navbar}}
+{{>navbar}}
 
-    <!-- Contenido principal -->
-    <div class="container mx-auto px-4 mt-20 ">
-        <div id="notification-area" class="mb-4"></div>
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Generador de Reportes</h1>
-            <p class="text-gray-600 mb-8">Selecciona el tipo de reporte y el período deseado para generar la
-                información.</p>
+<!-- Contenido principal -->
+<div class="container mx-auto px-4 mt-20 ">
+    <div id="notification-area" class="mb-4"></div>
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Generador de Reportes</h1>
+        <p class="text-gray-600 mb-8">Selecciona el tipo de reporte y el período deseado para generar la
+            información.</p>
 
-            <!-- Selector de tipo de reporte -->
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Tipo de Reporte</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md active-period"
-                        data-period="monthly">
-                        <i class="fas fa-calendar-month text-4xl text-blue-500 mb-2"></i>
-                        <h3 class="font-semibold">Reporte Mensual</h3>
-                        <p class="text-sm text-gray-500 mt-1">Resumen completo del mes seleccionado</p>
-                    </div>
-                    <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
-                        data-period="biweekly">
-                        <i class="fas fa-calendar-alt text-4xl text-green-500 mb-2"></i>
-                        <h3 class="font-semibold">Reporte Quincenal</h3>
-                        <p class="text-sm text-gray-500 mt-1">Primera o segunda quincena del mes</p>
-                    </div>
-                    <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
-                        data-period="weekly">
-                        <i class="fas fa-calendar-week text-4xl text-purple-500 mb-2"></i>
-                        <h3 class="font-semibold">Reporte Semanal</h3>
-                        <p class="text-sm text-gray-500 mt-1">Una semana específica del año</p>
-                    </div>
+        <!-- Selector de tipo de reporte -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Tipo de Reporte</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md active-period"
+                    data-period="monthly">
+                    <i class="fas fa-calendar-month text-4xl text-blue-500 mb-2"></i>
+                    <h3 class="font-semibold">Reporte Mensual</h3>
+                    <p class="text-sm text-gray-500 mt-1">Resumen completo del mes seleccionado</p>
+                </div>
+                <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
+                    data-period="biweekly">
+                    <i class="fas fa-calendar-alt text-4xl text-green-500 mb-2"></i>
+                    <h3 class="font-semibold">Reporte Quincenal</h3>
+                    <p class="text-sm text-gray-500 mt-1">Primera o segunda quincena del mes</p>
+                </div>
+                <div class="period-option border rounded-lg p-4 text-center cursor-pointer transition-all hover:shadow-md"
+                    data-period="weekly">
+                    <i class="fas fa-calendar-week text-4xl text-purple-500 mb-2"></i>
+                    <h3 class="font-semibold">Reporte Semanal</h3>
+                    <p class="text-sm text-gray-500 mt-1">Una semana específica del año</p>
                 </div>
             </div>
+        </div>
 
-            <!-- Selector de fecha -->
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Selecciona la Fecha</h2>
-                <div id="monthly-selector" class="date-selector">
-                    <div class="flex space-x-2">
-                        <input type="month" id="month-input" class="border rounded-lg p-2 w-full md:w-64">
-                    </div>
+        <!-- Selector de fecha -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Selecciona la Fecha</h2>
+            <div id="monthly-selector" class="date-selector">
+                <div class="flex space-x-2">
+                    <input type="month" id="month-input" class="border rounded-lg p-2 w-full md:w-64">
                 </div>
-                <div id="biweekly-selector" class="date-selector hidden">
-                    <div class="flex items-center space-x-4 mb-2">
-                        <input type="month" id="biweekly-month-input" class="border rounded-lg p-2 w-full md:w-64">
-                        <select id="fortnight-select" class="border rounded-lg p-2">
-                            <option value="first">Primera quincena</option>
-                            <option value="second">Segunda quincena</option>
-                        </select>
-                    </div>
+            </div>
+            <div id="biweekly-selector" class="date-selector hidden">
+                <div class="flex items-center space-x-4 mb-2">
+                    <input type="month" id="biweekly-month-input" class="border rounded-lg p-2 w-full md:w-64">
+                    <select id="fortnight-select" class="border rounded-lg p-2">
+                        <option value="first">Primera quincena</option>
+                        <option value="second">Segunda quincena</option>
+                    </select>
                 </div>
-                <div id="weekly-selector" class="date-selector hidden">
-                    <div class="flex space-x-2">
-                        <input type="week" id="week-input" class="border rounded-lg p-2 w-full md:w-64">
-                    </div>
+            </div>
+            <div id="weekly-selector" class="date-selector hidden">
+                <div class="flex space-x-2">
+                    <input type="week" id="week-input" class="border rounded-lg p-2 w-full md:w-64">
                 </div>
-                <button id="generate-report-btn" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                    Generar Reporte
-                </button>
+            </div>
+            <button id="generate-report-btn" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                Generar Reporte
+            </button>
+        </div>
+
+        <!-- Vista previa del reporte -->
+        <div id="preview-container" class="bg-gray-50 rounded-lg p-6 mt-8 mb-20">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
+
+            <div id="message-area"
+                class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
+                <p id="message-text" class="text-gray-500">Selecciona un tipo de reporte y una fecha para generar la
+                    vista previa</p>
             </div>
 
-            <!-- Vista previa del reporte -->
-            <div id="preview-container" class="bg-gray-50 rounded-lg p-6 mt-8 mb-20">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-
-                <div id="message-area" class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                    <p id="message-text" class="text-gray-500">Selecciona un tipo de reporte y una fecha para generar la vista previa</p>
-                </div>
-
-                <div id="results-table" class="hidden">
-                    <table class="w-full border-collapse border border-gray-300">
-                        <thead class="bg-gray-100">
-                            <tr><th class="border border-gray-300 px-4 py-2 text-left">Método de Pago</th><th class="border border-gray-300 px-4 py-2 text-right">Monto Acumulado</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td class="border border-gray-300 px-4 py-2">Efectivo</td><td id="monto-efectivo" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
-                            <tr><td class="border border-gray-300 px-4 py-2">Tarjeta Débito</td><td id="monto-debito" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
-                            <tr><td class="border border-gray-300 px-4 py-2">Tarjeta Crédito</td><td id="monto-credito" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
-                            <tr><td class="border border-gray-300 px-4 py-2">Transferencia</td><td id="monto-transferencia" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
-                        </tbody>
-                        <tfoot class="bg-gray-200 font-semibold">
-                            <tr><td class="border border-gray-300 px-4 py-2 text-left">Total Neto</td><td id="monto-total" class="border border-gray-300 px-4 py-2 text-right"></td></tr>
-                        </tfoot>
-                    </table>
-                    <div class="mt-6 flex justify-end">
-                        <a id="download-pdf-btn" href="#" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg" download>
-                            <i class="fas fa-file-pdf mr-2"></i>Descargar PDF
-                        </a>
-                    </div>
+            <div id="results-table" class="hidden">
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border border-gray-300 px-4 py-2 text-left">Método de Pago</th>
+                            <th class="border border-gray-300 px-4 py-2 text-right">Monto Acumulado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2">Efectivo</td>
+                            <td id="monto-efectivo" class="border border-gray-300 px-4 py-2 text-right"></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2">Tarjeta Débito</td>
+                            <td id="monto-debito" class="border border-gray-300 px-4 py-2 text-right"></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2">Tarjeta Crédito</td>
+                            <td id="monto-credito" class="border border-gray-300 px-4 py-2 text-right"></td>
+                        </tr>
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2">Transferencia</td>
+                            <td id="monto-transferencia" class="border border-gray-300 px-4 py-2 text-right"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="bg-gray-200 font-semibold">
+                        <tr>
+                            <td class="border border-gray-300 px-4 py-2 text-left">Total Neto</td>
+                            <td id="monto-total" class="border border-gray-300 px-4 py-2 text-right"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <div class="mt-6 flex justify-end">
+                    <a id="download-pdf-btn" href="#"
+                        class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg" download>
+                        <i class="fas fa-file-pdf mr-2"></i>Descargar PDF
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-   {{>footer}}
+{{>footer}}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Elements ---
-            const periodOptions = document.querySelectorAll('.period-option');
-            const generateBtn = document.getElementById('generate-report-btn');
-            const messageArea = document.getElementById('message-area');
-            const messageText = document.getElementById('message-text');
-            const resultsTable = document.getElementById('results-table');
-            const notificationArea = document.getElementById('notification-area');
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Elements ---
+        const periodOptions = document.querySelectorAll('.period-option');
+        const generateBtn = document.getElementById('generate-report-btn');
+        const messageArea = document.getElementById('message-area');
+        const messageText = document.getElementById('message-text');
+        const resultsTable = document.getElementById('results-table');
+        const notificationArea = document.getElementById('notification-area');
 
-            // --- State ---
-            let currentPeriod = 'monthly';
+        // --- State ---
+        let currentPeriod = 'monthly';
 
-            // --- Functions ---
-            function showMessage(text, type = 'info') {
-                messageText.textContent = text;
-                messageText.className = type === 'error' ? 'text-red-500' : (type === 'warning' ? 'text-yellow-600' : 'text-gray-500');
-                messageArea.classList.remove('hidden');
-                resultsTable.classList.add('hidden');
+        // --- Functions ---
+        function showMessage(text, type = 'info') {
+            messageText.textContent = text;
+            messageText.className = type === 'error' ? 'text-red-500' : (type === 'warning' ? 'text-yellow-600' : 'text-gray-500');
+            messageArea.classList.remove('hidden');
+            resultsTable.classList.add('hidden');
+        }
+
+        function showResults(data) {
+            const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
+            document.getElementById('monto-efectivo').textContent = formatCurrency(data.ingresos.efectivo);
+            document.getElementById('monto-debito').textContent = formatCurrency(data.ingresos.debito);
+            document.getElementById('monto-credito').textContent = formatCurrency(data.ingresos.credito);
+            document.getElementById('monto-transferencia').textContent = formatCurrency(data.ingresos.transferencia);
+            document.getElementById('monto-total').textContent = formatCurrency(data.total);
+
+            const { period, date } = getReportParams();
+            document.getElementById('download-pdf-btn').href = `/api/memberships/reports/download?period=${period}&date=${date}`;
+
+            messageArea.classList.add('hidden');
+            resultsTable.classList.remove('hidden');
+        }
+
+        function getReportParams() {
+            let date;
+            switch (currentPeriod) {
+                case 'monthly':
+                    date = document.getElementById('month-input').value;
+                    break;
+                case 'biweekly':
+                    const month = document.getElementById('biweekly-month-input').value;
+                    const fortnight = document.getElementById('fortnight-select').value;
+                    date = `${month}-${fortnight}`;
+                    break;
+                case 'weekly':
+                    const rawDate = document.getElementById('week-input').value;
+                    date = rawDate.replace('-W', 'W');
+                    break;
+            }
+            return { period: currentPeriod, date };
+        }
+
+        async function generateReportPreview() {
+            const { period, date } = getReportParams();
+            if (!date) {
+                showMessage('Por favor, selecciona una fecha válida.', 'error');
+                return;
             }
 
-            function showResults(data) {
-                const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
-                document.getElementById('monto-efectivo').textContent = formatCurrency(data.ingresos.efectivo);
-                document.getElementById('monto-debito').textContent = formatCurrency(data.ingresos.debito);
-                document.getElementById('monto-credito').textContent = formatCurrency(data.ingresos.credito);
-                document.getElementById('monto-transferencia').textContent = formatCurrency(data.ingresos.transferencia);
-                document.getElementById('monto-total').textContent = formatCurrency(data.total);
+            showMessage('Generando vista previa...', 'info');
 
-                const { period, date } = getReportParams();
-                document.getElementById('download-pdf-btn').href = `/api/memberships/reports/download?period=${period}&date=${date}`;
+            try {
+                const url = `/api/memberships/reports/preview?period=${period}&date=${date}`;
+                const response = await fetch(url);
+                const data = await response.json();
 
-                messageArea.classList.add('hidden');
-                resultsTable.classList.remove('hidden');
-            }
-
-            function getReportParams() {
-                let date;
-                switch (currentPeriod) {
-                    case 'monthly':
-                        date = document.getElementById('month-input').value;
-                        break;
-                    case 'biweekly':
-                        const month = document.getElementById('biweekly-month-input').value;
-                        const fortnight = document.getElementById('fortnight-select').value;
-                        date = `${month}-${fortnight}`;
-                        break;
-                    case 'weekly':
-                        const rawDate = document.getElementById('week-input').value;
-                        date = rawDate.replace('-W', 'W');
-                        break;
-                }
-                return { period: currentPeriod, date };
-            }
-
-            async function generateReportPreview() {
-                const { period, date } = getReportParams();
-                if (!date) {
-                    showMessage('Por favor, selecciona una fecha válida.', 'error');
+                if (!response.ok) throw new Error(data.error || 'No se pudo obtener la vista previa.');
+                if (data.noData) {
+                    showMessage(data.message, 'warning');
                     return;
                 }
-
-                showMessage('Generando vista previa...', 'info');
-
-                try {
-                    const url = `/api/memberships/reports/preview?period=${period}&date=${date}`;
-                    const response = await fetch(url);
-                    const data = await response.json();
-
-                    if (!response.ok) throw new Error(data.error || 'No se pudo obtener la vista previa.');
-                    if (data.noData) {
-                        showMessage(data.message, 'warning');
-                        return;
-                    }
-                    showResults(data);
-                } catch (error) {
-                    showMessage(`Error: ${error.message}`, 'error');
-                }
+                showResults(data);
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
             }
+        }
 
-            // --- Event Listeners ---
-            periodOptions.forEach(option => {
-                option.addEventListener('click', function () {
-                    currentPeriod = this.getAttribute('data-period');
-                    periodOptions.forEach(opt => opt.classList.remove('active-period'));
-                    this.classList.add('active-period');
+        // --- Event Listeners ---
+        periodOptions.forEach(option => {
+            option.addEventListener('click', function () {
+                currentPeriod = this.getAttribute('data-period');
+                periodOptions.forEach(opt => opt.classList.remove('active-period'));
+                this.classList.add('active-period');
 
-                    document.querySelectorAll('.date-selector').forEach(s => s.classList.add('hidden'));
-                    document.getElementById(`${currentPeriod}-selector`).classList.remove('hidden');
-                });
+                document.querySelectorAll('.date-selector').forEach(s => s.classList.add('hidden'));
+                document.getElementById(`${currentPeriod}-selector`).classList.remove('hidden');
             });
+        });
 
-            generateBtn.addEventListener('click', generateReportPreview);
+        generateBtn.addEventListener('click', generateReportPreview);
 
-            // --- Initialization ---
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            document.getElementById('month-input').value = `${year}-${month}`;
-            document.getElementById('biweekly-month-input').value = `${year}-${month}`;
-            const firstDayOfYear = new Date(year, 0, 1);
-            const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
-            const week = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-            document.getElementById('week-input').value = `${year}-W${week.toString().padStart(2, '0')}`;
+        // --- Initialization ---
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        document.getElementById('month-input').value = `${year}-${month}`;
+        document.getElementById('biweekly-month-input').value = `${year}-${month}`;
+        const firstDayOfYear = new Date(year, 0, 1);
+        const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
+        const week = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        document.getElementById('week-input').value = `${year}-W${week.toString().padStart(2, '0')}`;
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const error = urlParams.get('error');
-            if (error) {
-                notificationArea.innerHTML = `
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        if (error) {
+            notificationArea.innerHTML = `
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                         <strong class="font-bold">Error: </strong>
                         <span class="block sm:inline">${decodeURIComponent(error)}</span>
                     </div>`;
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        });
-    </script>
-</body>
-</html>
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+</script>
