@@ -1,0 +1,80 @@
+<!-- views/listEntries.hbs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{title}}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+  {{>navbar}}
+
+  <!-- Espacio superior para evitar que el navbar tape contenido -->
+  <main class="pt-24 px-4 sm:px-8 max-w-screen-xl mx-auto">
+    <section class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
+      <h1 class="text-2xl font-bold text-center mb-8 text-gray-800">{{title}}</h1>
+
+      <!-- Botones de navegación -->
+      <div class="flex justify-center mb-6 space-x-4">
+        <a href="/entries" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Ir al Módulo Principal</a>
+        <a href="/entries/reports" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Ver Reportes</a>
+      </div>
+
+      <!-- Tabla -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full table-auto border-collapse">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-4 py-2 text-left">ID</th>
+              <th class="px-4 py-2 text-left">Nombre</th>
+              <th class="px-4 py-2 text-left">Apellido</th>
+              <th class="px-4 py-2 text-left">Área</th>
+              <th class="px-4 py-2 text-left">Costo</th>
+              <th class="px-4 py-2 text-left">Pago</th>
+              <th class="px-4 py-2 text-left">Fecha</th>
+              <th class="px-4 py-2 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each entries}}
+              <tr class="border-b hover:bg-gray-50">
+                <td class="px-4 py-3">{{this.id}}</td>
+                <td class="px-4 py-3">{{this.first_name}}</td>
+                <td class="px-4 py-3">{{this.last_name}}</td>
+                <td class="px-4 py-3">{{this.area}}</td>
+                <td class="px-4 py-3">${{this.cost}}</td>
+                <td class="px-4 py-3">{{this.payment_method}}</td>
+                <td class="px-4 py-3">{{this.entry_date}}</td>
+                <td class="px-4 py-3 text-center">
+                  {{#if (eq ../user.role "Administrador")}}
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-2">
+                      <form action="/api/entries/{{this.id}}/delete" method="POST" onsubmit="return confirm('¿Eliminar este registro?');">
+                        <button type="submit" class="text-red-600 hover:text-red-800 font-medium">Eliminar</button>
+                      </form>
+
+                      <form action="/api/entries/{{this.id}}/edit" method="POST" class="flex items-center gap-2">
+                        <input type="text" name="first_name" placeholder="Nombre" class="border px-2 py-1 rounded text-sm w-24" required>
+                        <input type="text" name="last_name" placeholder="Apellido" class="border px-2 py-1 rounded text-sm w-24" required>
+                        <button type="submit" class="text-blue-600 hover:text-blue-800 font-medium">Editar</button>
+                      </form>
+                    </div>
+                  {{else}}
+                    <span class="text-sm text-gray-400">—</span>
+                  {{/if}}
+                </td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+
+
+
+
+

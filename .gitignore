@@ -22,3 +22,4 @@ public/uploads/rooms/pdf/reservaciones/*
 !public/uploads/rooms/qr/reservaciones/.gitkeep
 !public/uploads/rooms/pdf/rentas/.gitkeep
 !public/uploads/rooms/pdf/reservaciones/.gitkeep
+*.css
