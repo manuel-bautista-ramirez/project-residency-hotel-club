@@ -2,6 +2,7 @@ import express from "express";
 import routerLogin from "../modules/login/routers/routerLogin.js";
 import { membershipApiRoutes, membershipRoutes } from "../modules/membership/routes/index.js";
 import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
+import { entriesRouter } from "../modules/entries/router/RouteDailyEntries.js";
 
 // Rutas de módulos
 
@@ -12,6 +13,7 @@ import whatsappService from '../services/whatsappService.js';
 import emailService from '../services/emailService.js';
 
 const routerGlobal = express.Router();
+
 
 // --- Nueva Ruta Raíz Inteligente ---
 routerGlobal.get('/', (req, res) => {
@@ -28,6 +30,8 @@ routerGlobal.get('/', (req, res) => {
     });
   }
 });
+
+
 
 // Rutas de módulos
 routerGlobal.use(routerLogin);
