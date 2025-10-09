@@ -1,0 +1,86 @@
+<!-- views/reportEntries.hbs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{title}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+  {{>navbar}}
+
+  <!-- Ajuste para que no tape el contenido -->
+  <main class="pt-24 px-4 sm:px-8">
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6">
+      <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">{{title}}</h1>
+
+      <!-- Botones de navegación -->
+      <div class="flex justify-center mb-6 space-x-4">
+        <a href="/entries" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Ir al Módulo Principal</a>
+        <a href="/entries/list" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Ver Lista de Registros</a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <!-- Diario -->
+        <div class="card border-t-4 border-blue-500 p-4 rounded-lg shadow">
+          <h2 class="text-xl font-semibold text-blue-600 mb-2">Reporte Diario</h2>
+          <ul class="space-y-2 text-sm">
+            {{#each reports.daily}}
+              <li class="flex justify-between border-b pb-1">
+                <span>{{this.date}}</span>
+                <span class="font-semibold text-blue-600">${{this.total}}</span>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+
+        <!-- Semanal -->
+        <div class="card border-t-4 border-green-500 p-4 rounded-lg shadow">
+          <h2 class="text-xl font-semibold text-green-600 mb-2">Reporte Semanal</h2>
+          <ul class="space-y-2 text-sm">
+            {{#each reports.weekly}}
+              <li class="flex justify-between border-b pb-1">
+                <span>Semana {{this.week}}</span>
+                <span class="font-semibold text-green-600">${{this.total}}</span>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+
+        <!-- Quincenal -->
+        <div class="card border-t-4 border-yellow-500 p-4 rounded-lg shadow">
+          <h2 class="text-xl font-semibold text-yellow-600 mb-2">Reporte Quincenal</h2>
+          <ul class="space-y-2 text-sm">
+            {{#each reports.biweekly}}
+              <li class="flex justify-between border-b pb-1">
+                <span>{{this.year}}/{{this.month}} - Quincena {{this.biweek}}</span>
+                <span class="font-semibold text-yellow-600">${{this.total}}</span>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+
+        <!-- Mensual -->
+        <div class="card border-t-4 border-red-500 p-4 rounded-lg shadow">
+          <h2 class="text-xl font-semibold text-red-600 mb-2">Reporte Mensual</h2>
+          <ul class="space-y-2 text-sm">
+            {{#each reports.monthly}}
+              <li class="flex justify-between border-b pb-1">
+                <span>{{this.year}}/{{this.month}}</span>
+                <span class="font-semibold text-red-600">${{this.total}}</span>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
+
+
+
+
