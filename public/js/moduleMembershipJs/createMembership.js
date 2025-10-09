@@ -12,6 +12,8 @@ const MembershipUI = {
   },
 
   cacheDOM: function () {
+    this.clientFormContainer = document.getElementById("client-form-container");
+    this.membershipFormContainer = document.getElementById("membership-form-container");
     this.formCliente = document.getElementById("form-cliente");
     this.formMembership = document.getElementById("createMemberForm");
     this.clienteMessage = document.getElementById("cliente-message");
@@ -153,12 +155,21 @@ const MembershipUI = {
       if (responseData.id_cliente) {
         this.idClienteInput.value = responseData.id_cliente;
         this.clienteRegistrado = true;
+
+        // Habilitar el botón de la membresía
         this.submitMembershipBtn.disabled = false;
         this.submitMembershipBtn.classList.remove("bg-gray-400", "hover:bg-gray-400", "focus:ring-gray-400");
         this.submitMembershipBtn.classList.add("bg-green-600", "hover:bg-green-700", "focus:ring-green-500");
         this.submitMembershipBtn.textContent = "Crear Membresía";
-        this.showMessage(this.clienteMessage, "Cliente registrado con éxito. Ahora puede crear la membresía.", "success");
-        if (this.formMembership) this.formMembership.scrollIntoView({ behavior: "smooth" });
+
+        // Ocultar formulario de cliente y mostrar el de membresía
+        if(this.clientFormContainer) this.clientFormContainer.classList.add("hidden");
+        if(this.membershipFormContainer) this.membershipFormContainer.classList.remove("hidden");
+
+        // Scroll hacia el formulario de membresía
+        if (this.membershipFormContainer) {
+            this.membershipFormContainer.scrollIntoView({ behavior: "smooth" });
+        }
       } else {
         throw new Error("No se recibió un ID de cliente válido");
       }
@@ -276,6 +287,10 @@ const MembershipUI = {
     this.submitMembershipBtn.classList.remove("bg-green-600", "hover:bg-green-700", "focus:ring-green-500");
     this.submitMembershipBtn.classList.add("bg-gray-400", "hover:bg-gray-400", "focus:ring-gray-400");
     this.submitMembershipBtn.textContent = "Crear Membresía (complete primero el cliente)";
+
+    // Restaurar la visibilidad de los formularios al estado inicial
+    if(this.clientFormContainer) this.clientFormContainer.classList.remove("hidden");
+    if(this.membershipFormContainer) this.membershipFormContainer.classList.add("hidden");
   },
 
   updateCalculatedDetails: async function () {
