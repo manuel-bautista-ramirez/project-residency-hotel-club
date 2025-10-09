@@ -1,5 +1,5 @@
 // ModelDailyEntries.js
-import { pool } from "../../../dataBase/conecctionDataBase.js";
+import { pool } from "../../../dataBase/connectionDataBase.js";
 
 /*** --- CRUD FUNCTIONS --- ***/
 
@@ -72,4 +72,3 @@ export const getMonthlyReport = async () => {
   `);
   return rows;
 };
-
