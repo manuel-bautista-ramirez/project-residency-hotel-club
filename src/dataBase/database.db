@@ -277,20 +277,13 @@ INSERT IGNORE INTO tipos_membresia (nombre, descripcion, max_integrantes, precio
 -- =====================================================
 --             MÓDULO ENTRADAS DIARIAS
 -- =====================================================
-
-CREATE TABLE IF NOT EXISTS daily_entries (
-  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  first_name VARCHAR(100) NOT NULL,
-  last_name  VARCHAR(100) NOT NULL,
-  area VARCHAR(100) DEFAULT NULL,
-  cost DECIMAL(12,2) NOT NULL,
-  payment_method ENUM('efectivo','tarjeta','transferencia'),
-  user_id INT DEFAULT NULL,
-  entry_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_entry_date (entry_date),
-  INDEX idx_user_id (user_id),
-  INDEX idx_payment_method (payment_method),
-  CONSTRAINT chk_daily_cost_positive CHECK (cost >= 0)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE daily_entries (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
+  area ENUM('Courts', 'Pool', 'Gym') NOT NULL,
+  cost DECIMAL(10,2) NOT NULL,
+  entry_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  user_id INT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users_hotel(id)
+);
