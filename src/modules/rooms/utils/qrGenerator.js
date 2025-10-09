@@ -8,13 +8,12 @@ import path from 'path';
 export const generarQRReporte = async (data, filename = 'reporte-qr.png') => {
   try {
     const qrPath = path.join('./public/', filename);
-    
+
     // Crear directorio si no existe
     const qrDir = path.dirname(qrPath);
     if (!fs.existsSync(qrDir)) {
       fs.mkdirSync(qrDir, { recursive: true });
     }
-
     // Generar QR
     await QRCode.toFile(qrPath, JSON.stringify(data), {
       width: 200,

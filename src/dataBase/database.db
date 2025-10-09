@@ -1,25 +1,16 @@
--- Nombre de la base de datos
-CREATE DATABASE IF NOT EXISTS hotel_club;
-
--- Si la base de datos ya existe, no se creará de nuevo
--- Usar la base de datos
+-- ======= Creación de la base y uso =======
+CREATE DATABASE IF NOT EXISTS hotel_club DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 USE hotel_club;
 
-
---               MODULE LOGIN                          --
--- ======================================================
--- Tabla de usuarios del hotel para la admistracion de hotel y club.
-
-USE hotel_club;
-
+-- =====================================================
+--               MODULE LOGIN
+-- =======================================================
 CREATE TABLE IF NOT EXISTS users_hotel (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(50) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  role ENUM ('Administrador', 'Usuario') NOT NULL
+  role ENUM('Administrador','Usuario') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
 
 CREATE TABLE IF NOT EXISTS password_resets (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -29,82 +20,55 @@ CREATE TABLE IF NOT EXISTS password_resets (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   KEY idx_password_resets_user (user_id),
   KEY idx_password_resets_expires (expires_at),
-  FOREIGN KEY (user_id) REFERENCES users_hotel (id) ON DELETE CASCADE
+  CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users_hotel (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 -- =====================================================
--- MÓDULO DE HABITACIONES
+--               MÓDULO DE HABITACIONES
 -- =====================================================
 
--- 1) Tabla de Habitaciones
 CREATE TABLE IF NOT EXISTS habitaciones (
   id INT AUTO_INCREMENT PRIMARY KEY,
   numero VARCHAR(10) NOT NULL UNIQUE,
-  tipo ENUM('sencilla', 'suite') NOT NULL,
-  estado ENUM('disponible', 'ocupado', 'limpieza') DEFAULT 'disponible'
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+  tipo ENUM('sencilla','suite') NOT NULL,
+  estado ENUM('disponible','ocupado','limpieza') DEFAULT 'disponible'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insertar habitaciones fijas (idempotente)
+-- Insertar habitaciones (idempotente)
 INSERT IGNORE INTO habitaciones (numero, tipo) VALUES
-  ('101', 'sencilla'),
-  ('102', 'sencilla'),
-  ('103', 'sencilla'),
-  ('104', 'sencilla'),
-  ('106', 'sencilla'),
-  ('107', 'sencilla'),
-  ('108', 'sencilla'),
-  ('109', 'sencilla'),
-  ('105', 'suite'),
-  ('110', 'suite');
+  ('101','sencilla'),('102','sencilla'),('103','sencilla'),('104','sencilla'),
+  ('106','sencilla'),('107','sencilla'),('108','sencilla'),('109','sencilla'),
+  ('105','suite'),('110','suite');
 
--- 2) Tabla de Precios
+
 CREATE TABLE IF NOT EXISTS precios (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  tipo_habitacion ENUM('sencilla', 'suite') NOT NULL,
-  mes INT NOT NULL CHECK (mes BETWEEN 1 AND 12),
-  monto DECIMAL(10, 2) NOT NULL,
+  tipo_habitacion ENUM('sencilla','suite') NOT NULL,
+  mes INT NOT NULL,
+  monto DECIMAL(10,2) NOT NULL,
   fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (tipo_habitacion, mes)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+  UNIQUE KEY uk_tipo_mes (tipo_habitacion, mes),
+  CONSTRAINT chk_precio_mes CHECK (mes BETWEEN 1 AND 12)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
--- Insertar precios (idempotente) para todos los meses
+-- Insertar precios (idempotente)
 INSERT IGNORE INTO precios (tipo_habitacion, mes, monto) VALUES
-  ('sencilla', 1, 100.00),
-  ('sencilla', 2, 100.00),
-  ('sencilla', 3, 120.00),
-  ('sencilla', 4, 120.00),
-  ('sencilla', 5, 150.00),
-  ('sencilla', 6, 150.00),
-  ('sencilla', 7, 200.00),
-  ('sencilla', 8, 200.00),
-  ('sencilla', 9, 150.00),
-  ('sencilla', 10, 150.00),
-  ('sencilla', 11, 120.00),
-  ('sencilla', 12, 120.00),
-  ('suite', 1, 200.00),
-  ('suite', 2, 200.00),
-  ('suite', 3, 250.00),
-  ('suite', 4, 250.00),
-  ('suite', 5, 300.00),
-  ('suite', 6, 300.00),
-  ('suite', 7, 400.00),
-  ('suite', 8, 400.00),
-  ('suite', 9, 300.00),
-  ('suite', 10, 300.00),
-  ('suite', 11, 250.00),
-  ('suite', 12, 250.00);
+  ('sencilla', 1, 100.00),('sencilla', 2, 100.00),('sencilla', 3, 120.00),('sencilla', 4, 120.00),
+  ('sencilla', 5, 150.00),('sencilla', 6, 150.00),('sencilla', 7, 200.00),('sencilla', 8, 200.00),
+  ('sencilla', 9, 150.00),('sencilla',10,150.00),('sencilla',11,120.00),('sencilla',12,120.00),
+  ('suite', 1, 200.00),('suite', 2, 200.00),('suite', 3, 250.00),('suite', 4, 250.00),
+  ('suite', 5, 300.00),('suite', 6, 300.00),('suite', 7, 400.00),('suite', 8, 400.00),
+  ('suite', 9, 300.00),('suite',10,300.00),('suite',11,250.00),('suite',12,250.00);
 
 
--- Medios de mensajes (correo/teléfono)
 CREATE TABLE IF NOT EXISTS medios_mensajes (
   id_medio_mensaje INT AUTO_INCREMENT PRIMARY KEY,
   correo_cliente VARCHAR(100) NOT NULL,
   telefono_cliente VARCHAR(20) NOT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3) Tabla de Reservaciones
+
 CREATE TABLE IF NOT EXISTS reservaciones (
   id INT AUTO_INCREMENT PRIMARY KEY,
   habitacion_id INT NOT NULL,
@@ -114,15 +78,15 @@ CREATE TABLE IF NOT EXISTS reservaciones (
   fecha_reserva DATETIME NOT NULL,
   fecha_ingreso DATETIME NOT NULL,
   fecha_salida DATETIME NOT NULL,
-  monto DECIMAL(10, 2) NOT NULL,
+  monto DECIMAL(10,2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
-  FOREIGN KEY (usuario_id) REFERENCES users_hotel (id),
-  FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+  CONSTRAINT fk_reservaciones_habitacion FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
+  CONSTRAINT fk_reservaciones_usuario FOREIGN KEY (usuario_id) REFERENCES users_hotel (id),
+  CONSTRAINT fk_reservaciones_medio FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4) Tabla de Rentas
+
 CREATE TABLE IF NOT EXISTS rentas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   habitacion_id INT NOT NULL,
@@ -131,19 +95,16 @@ CREATE TABLE IF NOT EXISTS rentas (
   nombre_cliente VARCHAR(100) NOT NULL,
   fecha_ingreso DATETIME NOT NULL,
   fecha_salida DATETIME NOT NULL,
-  tipo_pago ENUM('tarjeta', 'transferencia', 'efectivo') NOT NULL,
-  monto DECIMAL(10, 2) NOT NULL,
+  tipo_pago ENUM('tarjeta','transferencia','efectivo') NOT NULL,
+  monto DECIMAL(10,2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
-  FOREIGN KEY (usuario_id) REFERENCES users_hotel (id),
-  FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+  CONSTRAINT fk_rentas_habitacion FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
+  CONSTRAINT fk_rentas_usuario FOREIGN KEY (usuario_id) REFERENCES users_hotel (id),
+  CONSTRAINT fk_rentas_medio FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ===========================================
--- Tabla: pdf_registry
--- Registro de PDFs generados (rentas/reservaciones)
--- ===========================================
+
 CREATE TABLE IF NOT EXISTS pdf_registry (
   id INT AUTO_INCREMENT PRIMARY KEY,
   rent_id INT NOT NULL,
@@ -157,38 +118,44 @@ CREATE TABLE IF NOT EXISTS pdf_registry (
   generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   sent_whatsapp BOOLEAN DEFAULT FALSE,
   sent_email BOOLEAN DEFAULT FALSE,
-  status ENUM('generated', 'sent', 'error') DEFAULT 'generated',
+  status ENUM('generated','sent','error') DEFAULT 'generated',
   INDEX idx_rent_id (rent_id),
   INDEX idx_client_name (client_name),
   INDEX idx_generated_at (generated_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- =====================================================
--- EJEMPLO DE CONSULTA PARA EL CALENDARIO
--- Mostrar habitaciones ocupadas en los próximos días
--- =====================================================
+CREATE TABLE IF NOT EXISTS job_queue (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  service VARCHAR(100) NOT NULL,
+  payload TEXT NOT NULL,
+  status ENUM('pending','processing','completed','failed') DEFAULT 'pending',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  last_attempt_at DATETIME DEFAULT NULL,
+  attempts INT DEFAULT 0,
+  error_message TEXT DEFAULT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- =====================================================
+-- EJEMPLO DE CONSULTA CALENDARIO (habitaciones ocupadas)
+-- =====================================================
+-- (Consulta de ejemplo; no modifica DB)
 SELECT
   h.numero,
   h.tipo,
   r.fecha_ingreso,
   r.fecha_salida,
   r.nombre_cliente
-FROM
-  reservaciones r
-  INNER JOIN habitaciones h ON r.habitacion_id = h.id
-WHERE
-  r.fecha_salida >= CURDATE ()
-ORDER BY
-  r.fecha_ingreso;
+FROM reservaciones r
+INNER JOIN habitaciones h ON r.habitacion_id = h.id
+WHERE r.fecha_salida >= CURDATE()
+ORDER BY r.fecha_ingreso;
 
 
 -- =====================================================
--- GENERACIÓN DE REPORTES
+--            GENERACIÓN DE REPORTES (Ejemplos)
 -- =====================================================
-
--- Reporte de ingresos por rentas diarias
 SELECT
     DATE(fecha_ingreso) AS dia,
     COUNT(id) AS total_rentas,
@@ -197,22 +164,18 @@ FROM rentas
 GROUP BY DATE(fecha_ingreso)
 ORDER BY DATE(fecha_ingreso);
 
-
--- Reporte de ingresos por rentas en la última semana
 SELECT
     COUNT(id) AS total_rentas,
     SUM(monto) AS total_ingresos
 FROM rentas
 WHERE fecha_ingreso BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE();
 
--- Reporte de ingresos por rentas en los últimos 15 días
 SELECT
     COUNT(id) AS total_rentas,
     SUM(monto) AS total_ingresos
 FROM rentas
 WHERE fecha_ingreso BETWEEN CURDATE() - INTERVAL 15 DAY AND CURDATE();
 
--- Reporte de ingresos por rentas en el mes actual
 SELECT
     COUNT(id) AS total_rentas,
     SUM(monto) AS total_ingresos
@@ -224,103 +187,110 @@ WHERE MONTH(fecha_ingreso) = MONTH(CURDATE())
 -- =====================================================
 -- MÓDULO DE MEMBRESÍAS
 -- =====================================================
---Tabla de clientes
-CREATE TABLE clientes (
-    id_cliente bigint unsigned NOT NULL AUTO_INCREMENT,
-    nombre_completo varchar(150) NOT NULL,
-    telefono varchar(20) DEFAULT NULL,
-    correo varchar(100) DEFAULT NULL,
-    fecha_registro timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_cliente),
-    UNIQUE KEY id_cliente (id_cliente)
-) ENGINE = InnoDB AUTO_INCREMENT = 115 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS clientes (
+    id_cliente BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre_completo VARCHAR(150) NOT NULL,
+    telefono VARCHAR(20) DEFAULT NULL,
+    correo VARCHAR(100) DEFAULT NULL,
+    fecha_registro TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-
---Tabla de integrantes_membresia
-CREATE TABLE integrantes_membresia (
-    id_integrante bigint unsigned NOT NULL AUTO_INCREMENT,
-    id_activa int NOT NULL,
-    nombre_completo varchar(150) NOT NULL,
-    fecha_registro timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_integrante),
-    UNIQUE KEY id_integrante (id_integrante)
-) ENGINE = InnoDB AUTO_INCREMENT = 10 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
---Tabla de membresias
-CREATE TABLE membresias (
-    id_membresia bigint unsigned NOT NULL AUTO_INCREMENT,
-    id_cliente int NOT NULL,
-    id_tipo_membresia int NOT NULL,
-    fecha_inicio date NOT NULL,
-    fecha_fin date NOT NULL,
-    fecha_creacion timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_membresia),
-    UNIQUE KEY id_membresia (id_membresia)
-) ENGINE = InnoDB AUTO_INCREMENT = 43 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS tipos_membresia (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL UNIQUE,
+  descripcion TEXT,
+  max_integrantes INT DEFAULT 1,
+  precio DECIMAL(10,2) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
---Tabla de membresias_activas
-CREATE TABLE membresias_activas (
-    id_activa bigint unsigned NOT NULL AUTO_INCREMENT,
-    id_cliente int NOT NULL,
-    id_membresia int NOT NULL,
-    fecha_inicio date NOT NULL,
-    fecha_fin date NOT NULL,
-    precio_final decimal(10, 2) NOT NULL,
-    qr_path varchar(255) DEFAULT NULL,
-    estado varchar(20) DEFAULT 'Activa',
-    PRIMARY KEY (id_activa),
-    UNIQUE KEY id_activa (id_activa),
+CREATE TABLE IF NOT EXISTS integrantes_membresia (
+    id_integrante BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_activa INT NOT NULL,
+    nombre_completo VARCHAR(150) NOT NULL,
+    fecha_registro TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS membresias (
+    id_membresia BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_tipo_membresia INT NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    fecha_creacion TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE tipos_membresia RENAME COLUMN id TO id_tipo_membresia;
+
+CREATE TABLE IF NOT EXISTS membresias_activas (
+    id_activa BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    id_membresia INT NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    precio_final DECIMAL(10,2) NOT NULL,
+    qr_path VARCHAR(255) DEFAULT NULL,
+    estado VARCHAR(20) DEFAULT 'Activa',
     KEY idx_qr_path (qr_path),
-    CONSTRAINT membresias_activas_chk_1 CHECK ((precio_final > 0)),
-    CONSTRAINT membresias_activas_chk_2 CHECK (
-        (
-            estado in (
-                _utf8mb4 'Activa',
-                _utf8mb4 'Vencida',
-                _utf8mb4 'Cancelada'
-            )
-        )
-    ),
-    CONSTRAINT membresias_activas_chk_3 CHECK (
-        (fecha_fin > fecha_inicio)
-    )
-) ENGINE = InnoDB AUTO_INCREMENT = 43 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+    CONSTRAINT membresias_activas_chk_1 CHECK (precio_final > 0),
+    CONSTRAINT membresias_activas_chk_2 CHECK (estado IN ('Activa','Vencida','Cancelada')),
+    CONSTRAINT membresias_activas_chk_3 CHECK (fecha_fin > fecha_inicio)
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- Tabla de metodos_pago
 CREATE TABLE IF NOT EXISTS metodos_pago (
-    id_metodo_pago bigint unsigned NOT NULL AUTO_INCREMENT,
-    nombre varchar(50) NOT NULL,
-    PRIMARY KEY (id_metodo_pago),
-    UNIQUE KEY id_metodo_pago (id_metodo_pago),
-    UNIQUE KEY nombre (nombre)
-) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+    id_metodo_pago BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- Tabla de pagos
 CREATE TABLE IF NOT EXISTS pagos (
-    id_pago bigint unsigned NOT NULL AUTO_INCREMENT,
-    id_activa int NOT NULL,
-    id_metodo_pago int NOT NULL,
-    monto decimal(10, 2) NOT NULL,
-    fecha_pago timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_pago),
-    UNIQUE KEY id_pago (id_pago),
-    CONSTRAINT pagos_chk_1 CHECK ((monto > 0))
-) ENGINE = InnoDB AUTO_INCREMENT = 15 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+    id_pago BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id_activa INT NOT NULL,
+    id_metodo_pago INT NOT NULL,
+    monto DECIMAL(10,2) NOT NULL,
+    fecha_pago TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pagos_chk_1 CHECK (monto > 0)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- Insertar métodos de pago básicos
+-- Insertar métodos de pago
 INSERT IGNORE INTO metodos_pago (nombre) VALUES
-('Efectivo'),
-('Tarjeta de crédito'),
-('Transferencia bancaria');
+('Efectivo'),('Tarjeta de crédito'),('Transferencia bancaria');
 
--- Insertar tipos de membresía básicos (si no existen)
+-- Insertar tipos de membresía
 INSERT IGNORE INTO tipos_membresia (nombre, descripcion, max_integrantes, precio) VALUES
-('Individual GYM', 'Membresía para una persona', 1, 500.00),
-('Individual Alberca', 'Membresía para una persona', 1, 500.00),
-('Individual General', 'Membresía para una persona', 1, 500.00),
-('Familiar', 'Membresía para toda la familia', 4, 1200.00);
+('Individual GYM','Membresía para una persona',1,500.00),
+('Individual Alberca','Membresía para una persona',1,500.00),
+('Individual General','Membresía para una persona',1,500.00),
+('Familiar','Membresía para toda la familia',4,1200.00);
+
+
+
+
+
+-- =====================================================
+--             MÓDULO ENTRADAS DIARIAS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS daily_entries (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(100) NOT NULL,
+  last_name  VARCHAR(100) NOT NULL,
+  area VARCHAR(100) DEFAULT NULL,
+  cost DECIMAL(12,2) NOT NULL,
+  payment_method ENUM('efectivo','tarjeta','transferencia'),
+  user_id INT DEFAULT NULL,
+  entry_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_entry_date (entry_date),
+  INDEX idx_user_id (user_id),
+  INDEX idx_payment_method (payment_method),
+  CONSTRAINT chk_daily_cost_positive CHECK (cost >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

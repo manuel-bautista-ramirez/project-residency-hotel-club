@@ -132,16 +132,19 @@ export const loginUser = async (req, res) => {
 
   // Verificar la contraseña
   const isPasswordValid = await verifyPassword(password, user.password);
-  if (isPasswordValid) {
-    // Guardar el usuario en la sesión con su tipo
-    req.session.user = {
 
+  if (isPasswordValid) {
+    // ✅ Guardar el usuario en la sesión con su id, username y rol
+    req.session.user = {
+      id: user.id,           // ← agregado
       username: user.username,
       role: user.role,
     };
+
     console.log(
-      `El usuario (${user.username}) con el rol correspondiente:(${user.role}) ha iniciado sesión correctamente.`
+      `El usuario (${user.username}) [ID:${user.id}] con rol (${user.role}) ha iniciado sesión correctamente.`
     );
+
     res.redirect("/home"); // Redirigir al panel de inicio
   } else {
     // Credenciales incorrectas
@@ -151,3 +154,4 @@ export const loginUser = async (req, res) => {
     });
   }
 };
+

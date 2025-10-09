@@ -35,9 +35,11 @@ routerGlobal.get('/', (req, res) => {
 
 // Rutas de módulos
 routerGlobal.use(routerLogin);
+routerGlobal.use(routerRoom);
 routerGlobal.use("/memberships", membershipRoutes);
 routerGlobal.use("/api/memberships", membershipApiRoutes);
-routerGlobal.use(routerRoom);
+routerGlobal.use(entriesRouter)
+
 
 // Ruta para mostrar la página del QR (ahora es manejada por la ruta raíz, pero la mantenemos por si se accede directamente)
 routerGlobal.get('/whatsapp-qr', (req, res) => {
