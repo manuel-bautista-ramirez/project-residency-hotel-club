@@ -26,9 +26,10 @@ app.set('view engine', '.hbs');
 
 app.set('views', [
   path.join('./src/views/'),
+  path.join( './src/modules/login/views/'),
   path.join('./src/modules/membership/views/'),
   path.join( './src/modules/rooms/views/'),
-  path.join( './src/modules/login/views/'),
+  path.join("./src/modules/store/views")
   // add more view directories as needed
 
 ]);
