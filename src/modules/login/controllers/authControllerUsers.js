@@ -114,6 +114,7 @@ export const loginUser = async (req, res) => {
   if (isPasswordValid) {
     // Guardar el usuario en la sesión con su tipo
     req.session.user = {
+      // id: user.id,                // <- importante
       username: user.username,
       role: user.role,
     };

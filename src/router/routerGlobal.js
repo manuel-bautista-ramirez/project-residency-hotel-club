@@ -2,6 +2,7 @@ import express from "express";
 import routerLogin from "../modules/login/routers/routerLogin.js";
 import { routerMember } from "../modules/membership/routes/membershipRoutes.js";
 import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
+import { entriesRouter } from "../modules/entries/router/RouteDailyEntries.js";
 
 const routerGlobal = express.Router();
 
@@ -9,6 +10,7 @@ const routerGlobal = express.Router();
 routerGlobal.use(routerLogin);
 routerGlobal.use(routerMember);
 routerGlobal.use(routerRoom);
+routerGlobal.use(entriesRouter);
 // Aquí importarlas las demas porfavor...
 
 // Middleware para manejar error 404 (operando después de las rutas de las modulos)
