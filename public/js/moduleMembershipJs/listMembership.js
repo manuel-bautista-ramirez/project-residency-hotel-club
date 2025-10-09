@@ -1,10 +1,19 @@
 // Funciones de utilidad
+/**
+ * Objeto MembershipUI que encapsula toda la lógica de la interfaz de usuario
+ * para la página de listado de membresías.
+ */
 const MembershipUI = {
+  /**
+   * Inicializa el módulo, vinculando eventos y aplicando formato inicial a la tabla.
+   */
   init: function () {
     this.bindEvents();
     this.applyInitialFormatting();
   },
-
+  /**
+   * Asigna todos los manejadores de eventos a los elementos interactivos de la página.
+   */
   bindEvents: function () {
     // Referencias a elementos del DOM
     this.reportButton = document.getElementById("reportButton");
@@ -52,7 +61,12 @@ const MembershipUI = {
       });
     }
 
-    // Delegación de eventos para el botón de ver integrantes
+    /**
+     * Delegación de eventos en el documento. Esto es muy eficiente porque en lugar de
+     * añadir un listener a cada botón, se añade uno solo al documento.
+     * Luego, se comprueba si el clic ocurrió en un botón de interés ('.view-members-btn' o '.view-details-btn').
+     * Es la mejor práctica para manejar eventos en elementos que se cargan dinámicamente o en listas largas.
+     */
     document.addEventListener('click', (e) => {
       const viewMembersBtn = e.target.closest('.view-members-btn');
       if (viewMembersBtn) {
@@ -79,6 +93,10 @@ const MembershipUI = {
     });
   },
 
+  /**
+   * Aplica formato a los datos de la tabla una vez que el DOM está cargado.
+   * Mejora la presentación visual de la información.
+   */
   applyInitialFormatting: function () {
     // Iniciales de los nombres con avatar de gradiente
     const initialElements = document.querySelectorAll("[data-initial]");
@@ -98,10 +116,16 @@ const MembershipUI = {
     });
   },
 
+  /**
+   * Helper para obtener la primera letra de un nombre en mayúscula.
+   */
   getFirstLetter: function (name) {
     return name ? name.charAt(0).toUpperCase() : "";
   },
 
+  /**
+   * Helper para formatear una fecha en formato 'dd/mm/aa'.
+   */
   formatDate: function (dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -111,7 +135,11 @@ const MembershipUI = {
     return `${day}/${month}/${year}`;
   },
 
-  
+  /**
+   * Muestra un modal con la lista de integrantes de una membresía.
+   * Utiliza un <template> HTML para clonar y poblar el contenido del modal.
+   * @param {Array} integrantes - Un array de objetos, cada uno representando un integrante.
+   */
   showIntegrantesModal: function (integrantes) {
     if (!integrantes || integrantes.length === 0) {
       alert("Esta membresía no tiene integrantes registrados");
@@ -151,6 +179,11 @@ const MembershipUI = {
     });
   },
 
+  /**
+   * Muestra un modal con los detalles completos de una membresía, incluyendo el QR.
+   * También utiliza un <template> para generar su contenido.
+   * @param {Object} details - Un objeto con todos los detalles de la membresía.
+   */
   showDetailsModal: function (details) {
     const template = document.getElementById('details-modal-template');
     if (!template) {
@@ -194,6 +227,11 @@ const MembershipUI = {
     });
   },
 
+  /**
+   * Manejador para el clic en el botón "Ver Detalles".
+   * Realiza una petición fetch a la API para obtener los detalles completos
+   * y luego llama a `showDetailsModal` para mostrarlos.
+   */
   handleViewDetailsClick: function (e) {
     const button = e.currentTarget;
     const id = button.getAttribute("data-id");
@@ -226,6 +264,11 @@ const MembershipUI = {
       });
   },
 
+  /**
+   * Manejador para el clic en el botón "Ver Integrantes".
+   * Realiza una petición fetch a la API para obtener la lista de integrantes
+   * y luego llama a `showIntegrantesModal` para mostrarlos.
+   */
   handleViewMembersClick: function (e) {
     const button = e.currentTarget;
     const idActiva = button.getAttribute("data-id-activa");
@@ -272,6 +315,11 @@ const MembershipUI = {
       });
   },
 
+  /**
+   * Filtra y muestra las filas de la tabla que coinciden con el término de búsqueda
+   * y el filtro de estado seleccionados. Se ejecuta cada vez que el usuario
+   * escribe en el buscador o cambia un filtro.
+   */
   filterMemberships: function () {
     const searchTerm = this.searchInput
       ? this.searchInput.value.toLowerCase()
@@ -317,6 +365,10 @@ const MembershipUI = {
     this.sortTable(sortValue);
   },
 
+  /**
+   * Ordena las filas de la tabla según el criterio seleccionado (nombre, más reciente o fecha de expiración).
+   * @param {string} criteria - El criterio de ordenamiento ('name', 'recent', 'expiry').
+   */
   sortTable: function (criteria) {
     const tbody = document.getElementById("membershipsTableBody");
     if (!tbody) return;
@@ -347,7 +399,7 @@ const MembershipUI = {
             : new Date(0);
         return dateB - dateA;
       } else {
-        // expiry por defecto
+        // Ordenamiento por defecto: por fecha de expiración más próxima.
         const daysA = parseInt(a.getAttribute('data-days-until-expiry'), 10);
         const daysB = parseInt(b.getAttribute('data-days-until-expiry'), 10);
         return daysA - daysB;
@@ -359,7 +411,9 @@ const MembershipUI = {
   },
 };
 
-// Inicializar cuando el DOM esté listo
+/**
+ * Punto de entrada del script. Se ejecuta cuando el DOM está completamente cargado.
+ */
 document.addEventListener("DOMContentLoaded", function () {
   MembershipUI.init();
 });

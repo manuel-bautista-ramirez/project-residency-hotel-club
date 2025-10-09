@@ -1,19 +1,31 @@
 // Funciones de utilidad
+/**
+ * Objeto MembershipUI que encapsula toda la lógica de la interfaz de usuario
+ * para la creación de clientes y membresías. Sigue un patrón de módulo para organizar el código.
+ */
 const MembershipUI = {
+  /**
+   * Inicializa el módulo. Se encarga de:
+   * 1. Cachear los elementos del DOM para un acceso más rápido.
+   * 2. Vincular los eventos a los elementos interactivos (botones, formularios, etc.).
+   * 3. Establecer la fecha mínima para los inputs de tipo 'date'.
+   * 4. Disparar eventos iniciales para configurar el estado inicial de la UI.
+   */
   init: function () {
-    this.cacheDOM(); // 1. Guardar elementos del DOM
-    this.bindEvents(); // 2. Asignar eventos
+    this.cacheDOM();
+    this.bindEvents();
     this.setMinDate();
     this.triggerInitialEvents();
 
-    // Hacer campos calculados de solo lectura
+    // Asegura que los campos calculados no puedan ser editados manualmente por el usuario.
     if (this.precioFinalInput) this.precioFinalInput.readOnly = true;
     if (this.fechaFinInput) this.fechaFinInput.readOnly = true;
   },
-
+  /**
+   * Guarda referencias a los elementos del DOM en propiedades del objeto.
+   * Esto evita repetidas búsquedas en el DOM, mejorando el rendimiento.
+   */
   cacheDOM: function () {
-    this.clientFormContainer = document.getElementById("client-form-container");
-    this.membershipFormContainer = document.getElementById("membership-form-container");
     this.formCliente = document.getElementById("form-cliente");
     this.formMembership = document.getElementById("createMemberForm");
     this.clienteMessage = document.getElementById("cliente-message");
@@ -43,7 +55,10 @@ const MembershipUI = {
     this.procesandoCliente = false;
     this.procesandoMembresia = false;
   },
-
+  /**
+   * Asigna todos los manejadores de eventos a los elementos del DOM cacheados.
+   * Centraliza la lógica de interactividad del usuario.
+   */
   bindEvents: function () {
     if (this.formCliente) {
       this.formCliente.addEventListener("submit", (e) => {
@@ -109,7 +124,10 @@ const MembershipUI = {
       });
     }
   },
-
+  /**
+   * Establece la fecha mínima permitida en el campo de fecha de inicio,
+   * que corresponde al día actual para evitar seleccionar fechas pasadas.
+   */
   setMinDate: function () {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -119,13 +137,20 @@ const MembershipUI = {
       this.fechaInicioInput.min = `${yyyy}-${mm}-${dd}`;
     }
   },
-
+  /**
+   * Dispara eventos iniciales para asegurar que la UI se renderice correctamente
+   * al cargar la página. Por ejemplo, calcula el precio y la fecha de fin para
+   * la membresía seleccionada por defecto.
+   */
   triggerInitialEvents: function () {
     if (this.tipoMembresiaSelect) {
       this.tipoMembresiaSelect.dispatchEvent(new Event("change"));
     }
   },
-
+  /**
+   * Muestra un modal de confirmación con los datos del cliente antes de enviarlos al servidor.
+   * Permite al usuario verificar la información.
+   */
   mostrarModalCliente: function () {
     const formData = new FormData(this.formCliente);
     const nombre = formData.get("nombre_completo");
@@ -134,7 +159,12 @@ const MembershipUI = {
     this.clienteModalContent.innerHTML = `<p><strong>Nombre:</strong> ${nombre}</p><p><strong>Teléfono:</strong> ${telefono}</p><p><strong>Correo:</strong> ${correo}</p>`;
     this.clienteModal.classList.remove("hidden");
   },
-
+  /**
+   * Función asíncrona que se ejecuta al confirmar la creación del cliente.
+   * Envía los datos del formulario al servidor usando fetch.
+   * Si la respuesta es exitosa, actualiza la UI para permitir la creación de la membresía.
+   * Maneja los estados de carga y los posibles errores.
+   */
   confirmarCliente: async function () {
     this.procesandoCliente = true;
     this.clienteModal.classList.add("hidden");
@@ -155,21 +185,12 @@ const MembershipUI = {
       if (responseData.id_cliente) {
         this.idClienteInput.value = responseData.id_cliente;
         this.clienteRegistrado = true;
-
-        // Habilitar el botón de la membresía
         this.submitMembershipBtn.disabled = false;
         this.submitMembershipBtn.classList.remove("bg-gray-400", "hover:bg-gray-400", "focus:ring-gray-400");
         this.submitMembershipBtn.classList.add("bg-green-600", "hover:bg-green-700", "focus:ring-green-500");
         this.submitMembershipBtn.textContent = "Crear Membresía";
-
-        // Ocultar formulario de cliente y mostrar el de membresía
-        if(this.clientFormContainer) this.clientFormContainer.classList.add("hidden");
-        if(this.membershipFormContainer) this.membershipFormContainer.classList.remove("hidden");
-
-        // Scroll hacia el formulario de membresía
-        if (this.membershipFormContainer) {
-            this.membershipFormContainer.scrollIntoView({ behavior: "smooth" });
-        }
+        this.showMessage(this.clienteMessage, "Cliente registrado con éxito. Ahora puede crear la membresía.", "success");
+        if (this.formMembership) this.formMembership.scrollIntoView({ behavior: "smooth" });
       } else {
         throw new Error("No se recibió un ID de cliente válido");
       }
@@ -182,7 +203,10 @@ const MembershipUI = {
       if (this.confirmClienteBtn) this.confirmClienteBtn.disabled = false;
     }
   },
-
+  /**
+   * Muestra un modal de confirmación con el resumen de la membresía
+   * antes de finalizar la creación.
+   */
   mostrarModalMembresia: function () {
     const formData = new FormData(this.formMembership);
     const tipoMembresiaText = this.tipoMembresiaSelect.options[this.tipoMembresiaSelect.selectedIndex].text;
@@ -201,7 +225,12 @@ const MembershipUI = {
     this.membershipModalContent.innerHTML = `<p><strong>Tipo de membresía:</strong> ${tipoMembresiaText}</p><p><strong>Fecha de inicio:</strong> ${fechaInicio}</p><p><strong>Fecha de fin:</strong> ${fechaFin}</p><p><strong>Método de pago:</strong> ${metodoPagoText}</p><p><strong>Precio final:</strong> ${precioFinal}</p>${integrantesHTML}${descuentoAplicado > 0 ? `<p><strong>Descuento aplicado:</strong> ${descuentoAplicado}%</p>` : ""}`;
     this.membershipModal.classList.remove("hidden");
   },
-
+  /**
+   * Función asíncrona que envía los datos del formulario de membresía al servidor.
+   * Si la creación es exitosa, invoca a `mostrarModalExito` para mostrar los resultados.
+   * Deshabilita los formularios para prevenir envíos duplicados.
+   * Gestiona los estados de carga y errores.
+   */
   confirmarMembresia: async function () {
     this.procesandoMembresia = true;
     this.membershipModal.classList.add("hidden");
@@ -235,7 +264,12 @@ const MembershipUI = {
       if (this.confirmMembershipBtn) this.confirmMembershipBtn.disabled = false;
     }
   },
-
+  /**
+   * Muestra un modal de éxito después de crear la membresía.
+   * Clona un template HTML, lo rellena con los datos recibidos del servidor (incluyendo el QR),
+   * y lo añade al DOM. También configura los botones de "Cerrar" y "Ver Lista".
+   * @param {object} data - Los datos de la membresía creada, devueltos por el servidor.
+   */
   mostrarModalExito: function (data) {
     const template = document.getElementById('success-modal-template');
     if (!template) return;
@@ -265,7 +299,10 @@ const MembershipUI = {
       window.location.href = '/memberships/listMembership';
     });
   },
-
+  /**
+   * Inicia la descarga del archivo de imagen del código QR.
+   * @param {number} id_activa - El ID de la membresía activa para construir la URL de descarga.
+   */
   descargarQR: function (id_activa) {
     const link = document.createElement("a");
     link.href = `/memberships/download-qr/${id_activa}`;
@@ -274,7 +311,10 @@ const MembershipUI = {
     link.click();
     document.body.removeChild(link);
   },
-
+  /**
+   * Limpia y resetea ambos formularios a su estado inicial,
+   * permitiendo registrar un nuevo cliente y membresía.
+   */
   limpiarFormularios: function () {
     if (this.formCliente) this.formCliente.reset();
     if (this.formMembership) {
@@ -287,12 +327,13 @@ const MembershipUI = {
     this.submitMembershipBtn.classList.remove("bg-green-600", "hover:bg-green-700", "focus:ring-green-500");
     this.submitMembershipBtn.classList.add("bg-gray-400", "hover:bg-gray-400", "focus:ring-gray-400");
     this.submitMembershipBtn.textContent = "Crear Membresía (complete primero el cliente)";
-
-    // Restaurar la visibilidad de los formularios al estado inicial
-    if(this.clientFormContainer) this.clientFormContainer.classList.remove("hidden");
-    if(this.membershipFormContainer) this.membershipFormContainer.classList.add("hidden");
   },
-
+  /**
+   * Realiza una llamada a una API en el backend para calcular dinámicamente
+   * la fecha de fin y el precio final de la membresía.
+   * Se ejecuta cuando cambia el tipo de membresía, la fecha de inicio o se aplica un descuento.
+   * Esto centraliza la lógica de negocio en el servidor.
+   */
   updateCalculatedDetails: async function () {
     const id_tipo_membresia = this.tipoMembresiaSelect.value;
     const fecha_inicio = this.fechaInicioInput.value;
@@ -315,7 +356,11 @@ const MembershipUI = {
       this.showMessage(this.membershipMessage, `Error: ${err.message}`, "error");
     }
   },
-
+  /**
+   * Manejador para el evento 'change' del selector de tipo de membresía.
+   * Actualiza el número máximo de integrantes permitidos y muestra u oculta
+   * la sección para agregar integrantes según el tipo de membresía.
+   */
   handleTipoMembresiaChange: function (e) {
     const selectedOption = e.target.options[e.target.selectedIndex];
     this.maxIntegrantes = parseInt(selectedOption.dataset.max, 10);
@@ -330,7 +375,11 @@ const MembershipUI = {
       this.integrantesContainer.innerHTML = "";
     }
   },
-
+  /**
+   * Añade dinámicamente un nuevo campo de texto para registrar un integrante familiar.
+   * Valida que no se exceda el número máximo de integrantes permitidos.
+   * Asigna un evento al botón de eliminar para quitar el campo recién creado.
+   */
   agregarIntegrante: function () {
     const currentIntegrantes = this.integrantesContainer.querySelectorAll(".integrante").length;
     if (currentIntegrantes < this.maxIntegrantes - 1) {
@@ -351,7 +400,13 @@ const MembershipUI = {
       setTimeout(() => { this.membershipMessage.classList.add("hidden"); }, 3000);
     }
   },
-
+  /**
+   * Función de utilidad para mostrar mensajes de feedback (éxito o error) al usuario.
+   * El mensaje desaparece automáticamente después de 5 segundos.
+   * @param {HTMLElement} element - El elemento del DOM donde se mostrará el mensaje.
+   * @param {string} text - El texto del mensaje.
+   * @param {string} type - El tipo de mensaje ('success' o 'error') para aplicar el estilo correcto.
+   */
   showMessage: function (element, text, type) {
     element.textContent = text;
     element.classList.remove("hidden", "text-green-600", "text-red-600");
@@ -366,6 +421,10 @@ const MembershipUI = {
   },
 };
 
+/**
+ * Punto de entrada del script.
+ * Se asegura de que el DOM esté completamente cargado antes de ejecutar la lógica de inicialización.
+ */
 document.addEventListener("DOMContentLoaded", function () {
   MembershipUI.init();
 });

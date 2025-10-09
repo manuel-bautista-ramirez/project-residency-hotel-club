@@ -314,14 +314,14 @@
                             </div>
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap">
-                            <span class="{{this.statusClass}}">
+                            <span
+                                class="{{this.statusClass}} py-1.5 px-3 rounded-full font-medium inline-flex items-center transition-all duration-200 whitespace-nowrap">
                                 <i class="{{this.statusIcon}} mr-1"></i>{{this.statusText}}
                             </span>
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap">
                             <div class="flex items-center space-x-2">
-                                {{#if this.isFamily}}
-                                <button
+                                {{#if this.isFamily}} <button <button
                                     class="view-members-btn action-btn bg-purple-100 text-purple-600 hover:bg-purple-200 "
                                     title="Ver integrantes" data-id-activa="{{this.id_activa}}">
                                     <i class="fas fa-users"></i>
@@ -390,97 +390,6 @@
     </div>
 </div>
 
-<style>
-    .status-badge {
-        padding: 0.35rem 0.7rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        border-radius: 0.5rem;
-        transition: all 0.2s ease;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .action-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .table-row {
-        transition: all 0.2s ease;
-    }
-
-    .table-row:hover {
-        transform: translateX(2px);
-    }
-
-    /* Estilos para el modal de integrantes */
-    .integrantes-modal {
-        transition: all 0.3s ease;
-    }
-
-
-    /* Animaciones para el modal */
-    #deleteModal {
-        transition: opacity 0.3s ease;
-    }
-
-    #deleteModal:not(.hidden) {
-        display: flex !important;
-        animation: fadeIn 0.3s ease;
-    }
-
-    #deleteModal .bg-white {
-        animation: slideIn 0.3s ease;
-        transform-origin: center;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
-    @keyframes slideIn {
-        from {
-            transform: scale(0.95) translateY(-10px);
-            opacity: 0;
-        }
-
-        to {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-        }
-    }
-
-    /* Estilo para botones deshabilitados */
-    button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none !important;
-    }
-
-    /* Mejora visual para el mensaje de confirmación */
-    #deleteModal p strong {
-        color: #dc2626;
-    }
-</style>
 {{!-- Modal Genérico para Confirmación/Notificación --}}
 <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 hidden">
     <div class="bg-white rounded-2xl p-6 w-11/12 md:w-1/3 max-w-md">
@@ -497,32 +406,10 @@
     </div>
 </div>
 
-<!-- Incluir el script externo -->
-<!-- Script local con verificación -->
-<script src="/js/moduleMembershipJs/listMembership.js"></script>
-<script src="/js/moduleMembershipJs/deleteMembership.js"></script>
-<!-- Script de debug temporal -->
-<script>
-    // Verificar que los elementos existan
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log('DOM cargado');
-        console.log('Modal element:', document.getElementById('deleteModal'));
-        console.log('Delete buttons:', document.querySelectorAll('.delete-btn').length);
-
-        // Verificar data attributes
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            console.log('Button data:', {
-                id: btn.getAttribute('data-id'),
-                name: btn.getAttribute('data-name'),
-                type: btn.getAttribute('data-type')
-            });
-        });
-    });
-</script>
-
 <!-- Templates para Modales -->
 <template id="integrantes-modal-template">
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 integrantes-modal">
+    <div
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all duration-300 ease-in-out">
         <div class="bg-white rounded-2xl p-6 w-11/12 md:w-96 max-w-90vw">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">
                 <i class="fas fa-users mr-2 text-purple-500"></i>Integrantes de la Membresía
@@ -550,7 +437,7 @@
 </template>
 
 <template id="details-modal-template">
-    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 details-modal">
+    <div class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
         <div class="bg-white rounded-2xl p-8 w-11/12 md:w-1/2 max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold text-gray-800">
@@ -578,3 +465,6 @@
         </div>
     </div>
 </template>
+
+<script src="/js/moduleMembershipJs/listMembership.js"></script>
+<script src="/js/moduleMembershipJs/deleteMembership.js"></script>

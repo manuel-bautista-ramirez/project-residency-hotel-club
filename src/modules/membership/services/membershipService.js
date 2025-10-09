@@ -710,7 +710,7 @@ export const MembershipService = {
         statusIcon: `fas ${statusIcon}`,
         canRenew: isAdmin || diasRestantes <= 0,
       };
-    });
+    }); 
 
     return {
       memberships: membresiasFormateadas,

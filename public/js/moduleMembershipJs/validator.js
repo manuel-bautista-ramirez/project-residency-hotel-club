@@ -1,4 +1,8 @@
-// Modulo exportable para reutilización
+/**
+ * Módulo Validator que encapsula la lógica de validación de formularios.
+ * Está diseñado para ser reutilizable en cualquier formulario de la aplicación.
+ * Sigue un patrón de módulo simple.
+ */
 const Validator = {
     rules: {
         nombre_completo: {
@@ -28,14 +32,16 @@ const Validator = {
     },
 
     /**
-     * Valida un formulario y devuelve true si es válido, false en caso contrario.
+     * Valida todos los campos de un formulario basándose en el objeto `rules`.
+     * Muestra u oculta mensajes de error directamente en el DOM.
      * @param {HTMLFormElement} form - El formulario a validar.
      * @returns {boolean} - True si el formulario es válido, de lo contrario false.
      */
     validateForm: function (form) {
         let isFormValid = true;
         
-        // Limpia errores anteriores
+        // 1. Limpieza: Antes de validar, oculta todos los mensajes de error existentes
+        // y elimina los estilos de borde rojo para empezar desde un estado limpio.
         form.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
         form.querySelectorAll('input, select').forEach(el => el.classList.remove('border-red-500'));
 
@@ -48,12 +54,18 @@ const Validator = {
             const value = input.value.trim();
             let isFieldValid = false;
 
+            // 3. Aplicación de la regla: Determina si la regla es una expresión regular (regex)
+            // o una función de validación personalizada y la ejecuta.
             if (rule.regex) {
                 isFieldValid = rule.regex.test(value);
             } else if (rule.validator) {
                 isFieldValid = rule.validator(value);
             }
             
+            // 4. Manejo de errores: Si el campo no es válido, busca el elemento de error
+            // asociado (que se asume es el siguiente hermano del input), le pone el mensaje
+            // de la regla, lo hace visible y añade un borde rojo al input.
+            // También marca el formulario como inválido.
             if (!isFieldValid) {
                 const errorContainer = input.nextElementSibling;
                 if (errorContainer && errorContainer.classList.contains('error-message')) {
@@ -64,6 +76,7 @@ const Validator = {
                 isFormValid = false;
             }
         }
+        // 5. Retorno: Devuelve el estado final de la validación del formulario.
         return isFormValid;
     }
 };
