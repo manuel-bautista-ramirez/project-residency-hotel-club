@@ -1,9 +1,34 @@
+/**
+ * @file modelEdit.js
+ * @description Modelo de datos para las operaciones de edición de membresías.
+ * Contiene la lógica transaccional para actualizar una membresía y sus datos relacionados.
+ * @module models/modelEdit
+ */
 import { pool } from "../../../dataBase/connectionDataBase.js";
 
+/**
+ * Actualiza una membresía completa y sus datos asociados (cliente, integrantes) dentro de una transacción.
+ * @async
+ * @param {number} id - El ID de la membresía activa (`id_activa`) a actualizar.
+ * @param {object} data - Objeto que contiene los datos a actualizar.
+ * @param {object} data.membershipData - Datos del cliente y de la membresía.
+ * @param {string} data.membershipData.nombre_completo - Nombre del cliente.
+ * @param {string} data.membershipData.telefono - Teléfono del cliente.
+ * @param {string} data.membershipData.correo - Correo del cliente.
+ * @param {string} data.membershipData.estado - Nuevo estado de la membresía.
+ * @param {string} data.membershipData.fecha_inicio - Nueva fecha de inicio.
+ * @param {string} data.membershipData.fecha_fin - Nueva fecha de fin.
+ * @param {number} data.membershipData.precio_final - Nuevo precio final.
+ * @param {string} data.tipo - El tipo de membresía (ej. 'Familiar').
+ * @param {Array<object>} [data.integrantes] - Array de integrantes para membresías familiares. Cada objeto debe tener `nombre_completo`.
+ * @returns {Promise<object>} El resultado de la operación de actualización de la tabla `membresias_activas`.
+ * @throws {Error} Si la membresía no se encuentra o si ocurre un error en la base de datos. La transacción se revierte en caso de error.
+ */
 async function updateMembershipById(id, data) {
   const connection = await pool.getConnection();
 
   try {
+    // Inicia una transacción para asegurar la integridad de los datos.
     await connection.beginTransaction();
 
     // 1. Obtener el id_cliente de la membresía
@@ -45,13 +70,13 @@ async function updateMembershipById(id, data) {
 
     // 4. Si es membresía familiar, manejar los integrantes
     if (data.tipo === "Familiar" && data.integrantes) {
-      // Eliminar integrantes existentes
+      // Estrategia "borrar y re-insertar": se eliminan todos los integrantes actuales.
       await connection.query(
         "DELETE FROM integrantes_membresia WHERE id_activa = ?",
         [id]
       );
 
-      // Insertar nuevos integrantes (solo nombre_completo)
+      // Se insertan los nuevos integrantes enviados desde el formulario.
       for (const integrante of data.integrantes) {
         if (integrante.nombre_completo && integrante.nombre_completo.trim() !== '') {
           await connection.query(
@@ -62,12 +87,15 @@ async function updateMembershipById(id, data) {
       }
     }
 
+    // Si todas las operaciones fueron exitosas, se confirman los cambios en la base de datos.
     await connection.commit();
     return membershipResult;
   } catch (error) {
+    // Si ocurre cualquier error, se revierten todos los cambios hechos durante la transacción.
     await connection.rollback();
     throw error;
   } finally {
+    // Se asegura de que la conexión se libere de vuelta al pool, sin importar el resultado.
     connection.release();
   }
 };

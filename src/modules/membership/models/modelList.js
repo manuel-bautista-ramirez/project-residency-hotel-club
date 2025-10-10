@@ -1,8 +1,20 @@
-// models/modelList.js
+/**
+ * @file modelList.js
+ * @description Modelo de datos para operaciones de lectura y listado de membresías.
+ * Contiene consultas complejas para obtener listas filtradas, búsquedas y detalles completos.
+ * @module models/modelList
+ */
 import { pool } from "../../../dataBase/connectionDataBase.js";
 
+/**
+ * Objeto que encapsula los métodos para las consultas de listado de membresías.
+ * @type {object}
+ */
 const modelList = {
-  // Obtener todas las membresías activas con información de clientes
+  /**
+   * Obtiene todas las membresías con estado 'Activa', enriquecidas con datos del cliente y tipo.
+   * @returns {Promise<Array<object>>} Un array de objetos de membresía.
+   */
   async getMembresiasActivas() {
     try {
       const query = `
@@ -36,7 +48,7 @@ const modelList = {
 
       const [membresias] = await pool.query(query);
 
-      // Para cada membresía, obtener los integrantes si es familiar
+      // Para cada membresía, obtener los integrantes si es familiar.
       for (let membresia of membresias) {
         if (membresia.max_integrantes > 1) {
           membresia.integrantes = await this.getIntegrantesMembresia(
@@ -54,7 +66,11 @@ const modelList = {
     }
   },
 
-  // Obtener integrantes de una membresía familiar (SIMPLIFICADO)
+  /**
+   * Obtiene los integrantes de una membresía específica.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<Array<object>>} Un array con los integrantes.
+   */
   async getIntegrantesMembresia(id_activa) {
     try {
       const query = `
@@ -74,7 +90,11 @@ const modelList = {
     }
   },
 
-  // Obtener membresías por tipo (Individual/Familiar)
+  /**
+   * Obtiene membresías activas filtradas por tipo ('Individual' o 'Familiar').
+   * @param {string} tipo - El tipo de membresía a filtrar.
+   * @returns {Promise<Array<object>>} Un array de objetos de membresía.
+   */
   async getMembresiasPorTipo(tipo) {
     try {
       const esFamiliar = tipo === "Familiar";
@@ -122,7 +142,11 @@ const modelList = {
     }
   },
 
-  // Obtener membresías por estado (Activa, Por vencer, Vencida)
+  /**
+   * Obtiene membresías activas filtradas por su estado de vencimiento.
+   * @param {string} estado - El estado a filtrar ('Activa', 'Por vencer', 'Vencida').
+   * @returns {Promise<Array<object>>} Un array de objetos de membresía.
+   */
   async getMembresiasPorEstado(estado) {
     try {
       let condition = "";
@@ -136,6 +160,8 @@ const modelList = {
           break;
         case "Vencida":
           condition = "AND DATEDIFF(ma.fecha_fin, CURDATE()) <= 0";
+          // Nota: Esta condición sobre 'ma.estado = Activa' puede ser contradictoria si las membresías
+          // vencidas no se actualizan a estado 'Vencida' en la BD.
           break;
         default:
           condition = "";
@@ -188,7 +214,11 @@ const modelList = {
     }
   },
 
-  // Buscar membresías por nombre, teléfono o correo
+  /**
+   * Busca membresías activas que coincidan con un término de búsqueda en el nombre, teléfono o correo del cliente.
+   * @param {string} termino - El término de búsqueda.
+   * @returns {Promise<Array<object>>} Un array de membresías que coinciden.
+   */
   async buscarMembresias(termino) {
     try {
       const query = `
@@ -243,7 +273,10 @@ const modelList = {
     }
   },
 
-  // Obtener estadísticas de membresías
+  /**
+   * Calcula y devuelve estadísticas agregadas sobre las membresías activas.
+   * @returns {Promise<object>} Un objeto con las estadísticas (total, activas, por vencer, etc.).
+   */
   async getEstadisticasMembresias() {
     try {
       const query = `
@@ -269,9 +302,11 @@ const modelList = {
     }
   },
 
-  // 🔽 NUEVOS MÉTODOS PARA LA ESTRUCTURA SIMPLIFICADA
-
-  // Obtener detalles completos de una membresía
+  /**
+   * Obtiene todos los detalles de una membresía específica, incluyendo integrantes y historial de pagos.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<object|null>} Un objeto con los detalles completos o null si no se encuentra.
+   */
   async getMembresiaDetalles(id_activa) {
     try {
       const query = `
@@ -334,7 +369,11 @@ const modelList = {
     }
   },
 
-  // Obtener pagos de una membresía
+  /**
+   * Obtiene el historial de pagos de una membresía específica.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<Array<object>>} Un array con los pagos realizados.
+   */
   async getPagosMembresia(id_activa) {
     try {
       const query = `
@@ -355,7 +394,12 @@ const modelList = {
     }
   },
 
-  // Cancelar/vencer membresía
+  /**
+   * Actualiza el campo 'estado' de una membresía activa.
+   * @param {number} id_activa - El ID de la membresía a actualizar.
+   * @param {string} nuevo_estado - El nuevo estado (ej. 'Vencida', 'Inactiva').
+   * @returns {Promise<boolean>} `true` si la actualización fue exitosa.
+   */
   async actualizarEstadoMembresia(id_activa, nuevo_estado) {
     try {
       const query = `
@@ -371,6 +415,12 @@ const modelList = {
       throw error;
     }
   },
+
+  /**
+   * Obtiene los nombres de los integrantes de una membresía.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<Array<{nombre_completo: string}>>} Un array de objetos con los nombres.
+   */
   async getIntegrantesByMembresia(id_activa) {
     try {
       const query = `
