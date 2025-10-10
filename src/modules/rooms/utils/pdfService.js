@@ -1,3 +1,4 @@
+// utils/pdfService.js
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -10,35 +11,31 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Genera un PDF y un QR para una renta o reservación, los guarda en disco
- * y los envía por correo y WhatsApp.
+ * Función genérica que genera PDF y QR, guarda en disco y envía por email/WhatsApp.
  * @param {object} data - Datos de la renta o reservación.
  * @param {"rentas"|"reservaciones"} type - Tipo de documento.
  */
 export const generateAndSendDocuments = async (data, type) => {
   try {
-    // 📂 Definir rutas base
+    // Rutas de archivos
     const pdfDir = path.join(__dirname, `../../../../public/uploads/rooms/pdf/${type}`);
     const qrDir = path.join(__dirname, `../../../../public/uploads/rooms/qr/${type}`);
 
-    // Crear directorios si no existen
     if (!fs.existsSync(pdfDir)) fs.mkdirSync(pdfDir, { recursive: true });
     if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
 
-    // 📄 Generar PDF
+    // Generar PDF
     const pdfPath = path.join(pdfDir, `${type}_${data.id}.pdf`);
     await generatePDF(data, pdfPath);
 
-    // 🔳 Generar QR
+    // Generar QR
     const qrPath = path.join(qrDir, `${type}_qr_${data.id}.png`);
     const qrContent = `https://tu-dominio.com/${type}/ver/${data.id}`;
     await generateQR(qrContent, qrPath);
 
-    console.log(`✅ Archivos generados:
-- PDF: ${pdfPath}
-- QR:  ${qrPath}`);
+    console.log(`✅ Archivos generados:\n- PDF: ${pdfPath}\n- QR:  ${qrPath}`);
 
-    // ✉️ Enviar por correo si existe email
+    // Enviar por email
     if (data.email) {
       const emailResult = await emailService.send({
         to: data.email,
@@ -54,14 +51,12 @@ export const generateAndSendDocuments = async (data, type) => {
           { filename: path.basename(qrPath), path: qrPath },
         ],
       });
-
       console.log("📧 Email enviado:", emailResult.success);
     }
 
-    // 💬 Enviar por WhatsApp si hay teléfono
+    // Enviar por WhatsApp
     if (data.telefono) {
       await whatsappService.waitForReady();
-
       const mensaje = `🏨 *Hotel Residency Club*\n` +
         `📋 *${type === "rentas" ? "Comprobante de Renta" : "Comprobante de Reservación"}*\n` +
         `━━━━━━━━━━━━━━━━━━━━━━━\n` +
@@ -77,7 +72,6 @@ export const generateAndSendDocuments = async (data, type) => {
         pdfPath,
         `${type}_${data.id}.pdf`
       );
-
       console.log("📱 Comprobante enviado por WhatsApp a:", data.telefono);
     }
 
@@ -88,3 +82,9 @@ export const generateAndSendDocuments = async (data, type) => {
     return { success: false, message: error.message };
   }
 };
+
+/**
+ * Aliases para compatibilidad con el código existente en roomsController.js
+ */
+export const generateAndSendRentPDF = (data) => generateAndSendDocuments(data, "rentas");
+export const generateAndSendReservationPDF = (data) => generateAndSendDocuments(data, "reservaciones");

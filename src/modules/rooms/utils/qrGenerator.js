@@ -1,20 +1,18 @@
-// Generador de QR para reportes
-// Este archivo se crea para resolver la dependencia faltante
-
+// utils/qrGenerator.js
 import QRCode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
 
-export const generarQRReporte = async (data, filename = 'reporte-qr.png') => {
+/**
+ * Export principal para generar un QR
+ */
+export const generateQR = async (data, filename = 'reporte-qr.png') => {
   try {
-    const qrPath = path.join('./public/', filename);
+    const qrDir = path.join('./public/');
+    if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
 
-    // Crear directorio si no existe
-    const qrDir = path.dirname(qrPath);
-    if (!fs.existsSync(qrDir)) {
-      fs.mkdirSync(qrDir, { recursive: true });
-    }
-    // Generar QR
+    const qrPath = path.join(qrDir, filename);
+
     await QRCode.toFile(qrPath, JSON.stringify(data), {
       width: 200,
       margin: 2,
@@ -32,6 +30,14 @@ export const generarQRReporte = async (data, filename = 'reporte-qr.png') => {
   }
 };
 
+/**
+ * Alias para mantener compatibilidad con código que usaba generarQRReporte
+ */
+export const generarQRReporte = generateQR;
+
+/**
+ * Función para generar payload de reporte
+ */
 export const generarPayloadReporte = (tipoReporte, datos, fechas = {}) => {
   return {
     tipo: tipoReporte,
