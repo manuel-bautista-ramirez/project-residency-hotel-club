@@ -7,12 +7,19 @@ export const generarQR = async (datos, tipo) => {
   try {
     // Validar tipo de documento
     const normalizedTipo = tipo.toLowerCase();
-    if (!['renta', 'reservacion', 'reservation'].includes(normalizedTipo)) {
+
+    // ✅ CORREGIDO: Mapeo correcto de tipos
+    const tipoMap = {
+      'renta': 'rentas',
+      'reservacion': 'reservaciones',
+      'reservation': 'reservaciones'
+    };
+
+    const folderTipo = tipoMap[normalizedTipo];
+
+    if (!folderTipo) {
       throw new Error(`Tipo de documento no válido: ${tipo}`);
     }
-
-    // Determinar folder tipo
-    const folderTipo = normalizedTipo === 'reservation' ? 'reservaciones' : normalizedTipo + 's';
 
     // Crear datos para el QR
     const qrData = {
@@ -33,7 +40,9 @@ export const generarQR = async (datos, tipo) => {
     const qrPath = path.join(rutaBase, qrFileName);
 
     console.log('=== GENERANDO QR ===');
-    console.log('Tipo:', folderTipo);
+    console.log('Tipo recibido:', tipo);
+    console.log('Tipo normalizado:', normalizedTipo);
+    console.log('Folder tipo:', folderTipo);
     console.log('Ruta destino:', qrPath);
 
     // Validar que el directorio existe usando el validador

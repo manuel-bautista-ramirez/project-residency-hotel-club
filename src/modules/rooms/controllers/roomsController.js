@@ -169,6 +169,10 @@ export const handleCreateReservation = async (req, res) => {
       return res.status(500).send("Error al crear la reservación");
     }
 
+    // Obtener el número real de la habitación
+    const { getRoomNumberById } = await import("../models/ModelRoom.js");
+    const numeroHabitacion = await getRoomNumberById(habitacion_id);
+
     // Preparar datos para el PDF
     const datosParaPDF = {
       nombre_cliente,
@@ -178,6 +182,7 @@ export const handleCreateReservation = async (req, res) => {
       fecha_salida,
       monto,
       habitacion_id,
+      numero_habitacion: numeroHabitacion || habitacion_id, // Usar número real o ID como fallback
       tipo: "reservacion",
     };
 
@@ -185,21 +190,18 @@ export const handleCreateReservation = async (req, res) => {
 
     // Generar PDF y QR y enviar
     try {
-      const { generateAndSendPDF } = await import("../utils/pdfService.js");
-      const { generarQR } = await import("../utils/qrService.js");
-      const envioPdfService = await import("../utils/pdfEnvio.js").then(
+      // ✅ CORREGIDO: Usar los nombres correctos de archivos
+      const { generateAndSendPDF } = await import("../utils/pdfGenerator.js");
+      const { generarQR } = await import("../utils/qrGenerator.js");
+      const pdfEnvioService = await import("../utils/pdfEnvio.js").then(
         (module) => module.default
       );
 
-      // Generar PDF
-      const qrPath = await generarQR(datosParaPDF, "reservacion");
+      // ✅ CORREGIDO: Eliminar código duplicado - solo generar QR una vez
+      const qrPath = await generarQR(datosParaPDF, 'reservacion');
 
-      // Generar QR
-      const pdfPath = await generateAndSendPDF(
-        datosParaPDF,
-        "reservacion",
-        qrPath
-      );
+      // ✅ CORREGIDO: Generar PDF con el QR
+      const pdfPath = await generateAndSendPDF(datosParaPDF, 'reservacion', qrPath);
 
       console.log("✅ Comprobantes generados:");
       console.log("📄 PDF:", pdfPath);
@@ -212,12 +214,11 @@ export const handleCreateReservation = async (req, res) => {
       };
 
       // Enviar comprobante
-      const resultadosEnvio =
-        await envioPdfService.enviarComprobanteReservacion(
-          datosParaPDF,
-          pdfPath,
-          opcionesEnvio
-        );
+      const resultadosEnvio = await pdfEnvioService.enviarComprobanteReservacion(
+        datosParaPDF,
+        pdfPath,
+        opcionesEnvio
+      );
 
       console.log("📊 Resultados del envío:", resultadosEnvio);
     } catch (pdfError) {
@@ -534,6 +535,10 @@ export const handleCreateRenta = async (req, res) => {
     const rent_id = await createRent(rentData);
     console.log("✅ Renta creada con ID:", rent_id);
 
+    // Obtener el número real de la habitación
+    const { getRoomNumberById } = await import("../models/ModelRoom.js");
+    const numeroHabitacion = await getRoomNumberById(habitacion_id);
+
     // Preparar datos para el PDF
     const datosParaPDF = {
       client_name,
@@ -544,6 +549,7 @@ export const handleCreateRenta = async (req, res) => {
       payment_type: tipo_pago,
       price,
       habitacion_id,
+      numero_habitacion: numeroHabitacion || habitacion_id, // Usar número real o ID como fallback
       tipo: "renta",
     };
 
