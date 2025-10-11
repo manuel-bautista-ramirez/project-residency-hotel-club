@@ -5,6 +5,7 @@ import jobQueueService from '../../../services/jobQueueService.js';
 
 class PDFRegistry {
   constructor() {
+    
     // La creación de tablas se gestiona fuera de este servicio (scripts/migraciones)
   }
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { generateAndSendDocuments } from "../utils/pdfService.js";
+import { generateAndSendPDF } from "../utils/pdfGenerator.js";
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ router.post("/generate/:type", async (req, res) => {
   const data = req.body; // Debe incluir id, client_name, email, telefono, etc.
 
   try {
-    const result = await generateAndSendDocuments(data, type);
+    const result = await generateAndSendPDF(data, type);
     if (result.success) {
       res.status(200).json({
         message: "✅ Documentos generados y enviados correctamente.",

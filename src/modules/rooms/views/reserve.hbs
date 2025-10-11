@@ -171,7 +171,7 @@
 
     </div>
 
-    <!-- Información sobre envío automático -->
+        <!-- Información sobre envío automático -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
       <div class="flex items-start gap-3">
         <div class="flex-shrink-0 mt-0.5">
@@ -186,7 +186,7 @@
           </p>
         </div>
       </div>
-      
+
       <div class="flex items-center gap-2 text-sm text-blue-700">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-green-600">
           <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" />
@@ -194,6 +194,9 @@
         <span class="font-medium">WhatsApp: Activado automáticamente</span>
       </div>
     </div>
+
+    <input type="hidden" name="send_email" value="on">
+   <input type="hidden" name="send_whatsapp" value="on">
 
     <!-- Botones -->
     <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t mt-5 md:justify-end">
@@ -249,7 +252,7 @@
     const durationDisplay = document.getElementById("duration-display");
     const nightsCount = document.getElementById("nights-count");
     const submitButton = document.querySelector('button[type="submit"]');
-    
+
     // ============================================
     // VALIDACIÓN: Solo reservaciones desde MAÑANA en adelante
     // ============================================
@@ -257,36 +260,36 @@
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    
+
     // Establecer fecha mínima de ingreso = MAÑANA
     checkInInput.setAttribute('min', tomorrowStr);
     checkInInput.value = tomorrowStr; // Establecer mañana por defecto
-    
+
     // Fecha de salida mínima = 2 días después de hoy (pasado mañana)
     const dayAfterTomorrow = new Date(today);
     dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
     const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0];
     checkOutInput.setAttribute('min', dayAfterTomorrowStr);
     checkOutInput.value = dayAfterTomorrowStr; // Establecer pasado mañana por defecto
-    
+
     // Validar si el usuario intenta seleccionar HOY
     checkInInput.addEventListener('change', function() {
       const selectedDate = new Date(this.value);
       const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      
+
       if (selectedDate <= todayMidnight) {
         showNotification('⚠️ Las reservaciones solo se pueden hacer desde mañana en adelante', 'error');
         this.value = tomorrowStr;
       }
     });
-    
+
     // Actualizar fecha mínima de salida cuando cambia entrada
     checkInInput.addEventListener('input', function() {
       const checkInDate = new Date(this.value);
       const nextDay = new Date(checkInDate);
       nextDay.setDate(nextDay.getDate() + 1);
       checkOutInput.min = nextDay.toISOString().split('T')[0];
-      
+
       if (checkOutInput.value && checkOutInput.value <= this.value) {
         checkOutInput.value = nextDay.toISOString().split('T')[0];
       }
@@ -297,13 +300,13 @@
       hideOverlay();
       if (skeleton) skeleton.classList.add('hidden');
       if (form) form.classList.remove('hidden');
-      
+
       // ============================================
       // CALCULAR PRECIO AUTOMÁTICAMENTE al cargar
       // ============================================
       const initialCheckIn = checkInInput.value;
       const initialCheckOut = checkOutInput.value;
-      
+
       if (initialCheckIn && initialCheckOut) {
         const nights = updateDurationDisplay(initialCheckIn, initialCheckOut);
         // Calcular precio automáticamente
@@ -403,7 +406,7 @@
         // Add time to dates (12:00 PM for both check-in and check-out)
         const checkInWithTime = addTimeToDate(checkIn);
         const checkOutWithTime = addTimeToDate(checkOut, true);
-        
+
         const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
         const res = await fetch(url);
         const json = await res.json();
@@ -554,31 +557,31 @@
     // Form submission validation
     document.getElementById('formReserve').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const isValid = await validateForm();
       if (!isValid) {
         return;
       }
-      
+
       // Add time to hidden inputs
       const checkInWithTime = addTimeToDate(checkInInput.value);
       const checkOutWithTime = addTimeToDate(checkOutInput.value, true);
-      
+
       console.log('Enviando fechas con hora:');
       console.log('fecha_ingreso:', checkInWithTime);
       console.log('fecha_salida:', checkOutWithTime);
-      
+
       // Update the HIDDEN input values with time before submitting
       const hiddenCheckIn = document.getElementById('fecha_ingreso_with_time');
       const hiddenCheckOut = document.getElementById('fecha_salida_with_time');
-      
+
       if (hiddenCheckIn) hiddenCheckIn.value = checkInWithTime;
       if (hiddenCheckOut) hiddenCheckOut.value = checkOutWithTime;
-      
+
       submitButton.disabled = true;
       submitButton.textContent = 'Creando reservación...';
       if (overlay) overlay.classList.remove('hidden');
-      
+
       // Submit the form
       e.target.submit();
     });
