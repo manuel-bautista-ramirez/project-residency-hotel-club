@@ -300,7 +300,7 @@ const MembershipUI = {
     document.body.appendChild(modalElement);
     modalElement.querySelector('[data-action="close"]').addEventListener('click', () => {
       modalElement.remove();
-      this.limpiarFormularios();
+      window.location.reload();
     });
     modalElement.querySelector('[data-action="view-list"]').addEventListener('click', () => {
       window.location.href = '/memberships/listMembership';
