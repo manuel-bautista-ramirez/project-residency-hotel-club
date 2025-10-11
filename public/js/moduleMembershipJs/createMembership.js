@@ -190,6 +190,13 @@ const MembershipUI = {
         this.submitMembershipBtn.classList.add("bg-green-600", "hover:bg-green-700", "focus:ring-green-500");
         this.submitMembershipBtn.textContent = "Crear Membresía";
         this.showMessage(this.clienteMessage, "Cliente registrado con éxito. Ahora puede crear la membresía.", "success");
+       
+        // Hacer visible el formulario de membresía antes de desplazarse a él.
+        if (this.formMembership) this.formMembership.parentElement.classList.remove('hidden');
+        
+        
+        // Ocultar el formulario de cliente una vez que se ha procesado con éxito.
+        if (this.formCliente) this.formCliente.parentElement.classList.add('hidden');
         if (this.formMembership) this.formMembership.scrollIntoView({ behavior: "smooth" });
       } else {
         throw new Error("No se recibió un ID de cliente válido");
@@ -340,6 +347,10 @@ const MembershipUI = {
     const descuento = this.descuentoInput ? parseInt(this.descuentoInput.value) || 0 : 0;
     if (!id_tipo_membresia || !fecha_inicio) return;
     try {
+      // --- CORRECCIÓN ---
+      // Deshabilitar el botón de envío mientras se calculan los detalles para evitar envíos con datos inconsistentes.
+      if (this.submitMembershipBtn) this.submitMembershipBtn.disabled = true;
+
       this.showMessage(this.membershipMessage, "Calculando...", "success");
       const resp = await fetch("/memberships/api/calculate-details", {
         method: "POST",
@@ -354,6 +365,10 @@ const MembershipUI = {
       this.membershipMessage.classList.add("hidden");
     } catch (err) {
       this.showMessage(this.membershipMessage, `Error: ${err.message}`, "error");
+    } finally {
+      // Volver a habilitar el botón una vez que el cálculo ha terminado (con éxito o error).
+      // Solo si el cliente ya fue registrado.
+      if (this.submitMembershipBtn && this.clienteRegistrado) this.submitMembershipBtn.disabled = false;
     }
   },
   /**
