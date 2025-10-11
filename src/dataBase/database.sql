@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS medios_mensajes (
 
 
 CREATE TABLE IF NOT EXISTS reservaciones (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id INT NOT NULL AUTO_INCREMENT,
   habitacion_id INT NOT NULL,
   usuario_id INT NOT NULL,
   id_medio_mensaje INT NOT NULL,
@@ -81,14 +81,32 @@ CREATE TABLE IF NOT EXISTS reservaciones (
   monto DECIMAL(10,2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_reservaciones_habitacion FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
-  CONSTRAINT fk_reservaciones_usuario FOREIGN KEY (usuario_id) REFERENCES users_hotel (id),
-  CONSTRAINT fk_reservaciones_medio FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  pdf_path VARCHAR(500) NULL COMMENT 'Ruta del archivo PDF generado',
+  qr_path VARCHAR(500) NULL COMMENT 'Ruta del archivo QR generado',
+  PRIMARY KEY (id),
+  INDEX idx_habitacion (habitacion_id),
+  INDEX idx_usuario (usuario_id),
+  INDEX idx_medio_mensaje (id_medio_mensaje),
+  CONSTRAINT fk_reservaciones_habitacion 
+    FOREIGN KEY (habitacion_id) 
+    REFERENCES habitaciones (id) 
+    ON DELETE RESTRICT 
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_reservaciones_usuario 
+    FOREIGN KEY (usuario_id) 
+    REFERENCES users_hotel (id) 
+    ON DELETE RESTRICT 
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_reservaciones_medio_mensaje 
+    FOREIGN KEY (id_medio_mensaje) 
+    REFERENCES medios_mensajes (id_medio_mensaje) 
+    ON DELETE RESTRICT 
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de reservaciones con rutas de archivos PDF y QR';
 
 
 CREATE TABLE IF NOT EXISTS rentas (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id INT NOT NULL AUTO_INCREMENT,
   habitacion_id INT NOT NULL,
   usuario_id INT NOT NULL,
   id_medio_mensaje INT NOT NULL,
@@ -99,10 +117,28 @@ CREATE TABLE IF NOT EXISTS rentas (
   monto DECIMAL(10,2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_rentas_habitacion FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id),
-  CONSTRAINT fk_rentas_usuario FOREIGN KEY (usuario_id) REFERENCES users_hotel (id),
-  CONSTRAINT fk_rentas_medio FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes (id_medio_mensaje)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  pdf_path VARCHAR(500) NULL COMMENT 'Ruta del archivo PDF generado',
+  qr_path VARCHAR(500) NULL COMMENT 'Ruta del archivo QR generado',
+  PRIMARY KEY (id),
+  INDEX idx_habitacion (habitacion_id),
+  INDEX idx_usuario (usuario_id),
+  INDEX idx_medio_mensaje (id_medio_mensaje),
+  CONSTRAINT fk_rentas_habitacion 
+    FOREIGN KEY (habitacion_id) 
+    REFERENCES habitaciones (id)
+    ON DELETE RESTRICT 
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_rentas_usuario 
+    FOREIGN KEY (usuario_id) 
+    REFERENCES users_hotel (id)
+    ON DELETE RESTRICT 
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_rentas_medio_mensaje 
+    FOREIGN KEY (id_medio_mensaje) 
+    REFERENCES medios_mensajes (id_medio_mensaje)
+    ON DELETE RESTRICT 
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de rentas con rutas de archivos PDF y QR';
 
 
 CREATE TABLE IF NOT EXISTS pdf_registry (

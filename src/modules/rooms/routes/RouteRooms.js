@@ -8,6 +8,7 @@ import {
 import {
   renderHabitacionesView,
   renderFormEditarReservacion,
+  handleEditReservation,
   renderAllPriceView,
   renderAllRentas,
   renderReservacionesView,
@@ -33,6 +34,9 @@ import {
   sendReservationReceiptByEmail,
   sendReservationReceiptByWhatsApp,
   sendCheckInReminder,
+  // Funciones para conversión de reservación a renta
+  renderConvertReservationToRent,
+  handleConvertReservationToRent,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -58,6 +62,11 @@ routerRoom.get("/rooms/rentar/:id", renderFormRentar);
 routerRoom.post("/rooms/create-renta/:id", handleCreateRenta);
 
 routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
+routerRoom.post("/api/reservaciones/:id/editar", handleEditReservation);
+
+// ----- CONVERSIÓN DE RESERVACIÓN A RENTA -----
+routerRoom.get("/rooms/confirmReservations/renta/:id", renderConvertReservationToRent);
+routerRoom.post("/api/rooms/convertReservationToRent/:id", handleConvertReservationToRent);
 
 routerRoom.post("/rooms/delete/:id", deleteByIdResevation);
 routerRoom.post("/rentas/eliminar/:id", deleteIdRenta);

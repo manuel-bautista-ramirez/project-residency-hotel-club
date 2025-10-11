@@ -15,9 +15,10 @@ import {
   checkRoomAvailability,
   createRent,
   deleteByIdRenta,
+  updateReservation,
+  updateRent,
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
-/*** --- VISTAS PRINCIPALES --- ***/
 export const renderHabitacionesView = async (req, res) => {
   try {
     const user = req.session.user || { role: "Usuario" };
@@ -163,11 +164,13 @@ export const handleCreateReservation = async (req, res) => {
     };
 
     console.log("📝 Creando reservación con datos:", reservationData);
-    const result = await createReservation(reservationData);
+    const reservationId = await createReservation(reservationData);
 
-    if (!result) {
+    if (!reservationId) {
       return res.status(500).send("Error al crear la reservación");
     }
+
+    console.log(`✅ Reservación creada con ID: ${reservationId}`);
 
     // Obtener el número real de la habitación
     const { getRoomNumberById } = await import("../models/ModelRoom.js");
@@ -206,6 +209,13 @@ export const handleCreateReservation = async (req, res) => {
       console.log("✅ Comprobantes generados:");
       console.log("📄 PDF:", pdfPath);
       console.log("🔗 QR:", qrPath);
+
+      // Guardar las rutas de los archivos en la base de datos
+      await updateReservation(reservationId, {
+        pdf_path: pdfPath,
+        qr_path: qrPath,
+      });
+      console.log("✅ Rutas de archivos guardadas en la base de datos");
 
       // Opciones de envío
       const opcionesEnvio = {
@@ -369,6 +379,152 @@ export const renderFormEditarReservacion = async (req, res) => {
     return res
       .status(500)
       .send("Error al cargar el formulario de edición de reservación");
+  }
+};
+
+// Procesar la edición de una reservación
+export const handleEditReservation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      nombre_cliente,
+      fecha_ingreso,
+      fecha_salida,
+      habitacion_id,
+      monto,
+      monto_letras,
+      send_email,
+      send_whatsapp,
+    } = req.body;
+
+    console.log(`📝 Editando reservación ${id}...`);
+    console.log("📦 Datos recibidos:", req.body);
+
+    // Formatear fechas para MySQL
+    const fechaIngresoDate = new Date(fecha_ingreso);
+    const fechaSalidaDate = new Date(fecha_salida);
+
+    const formatUTCForMySQL = (date) => {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(date.getUTCDate()).padStart(2, "0");
+      return `${year}-${month}-${day} 12:00:00`;
+    };
+
+    const fecha_ingreso_formatted = formatUTCForMySQL(fechaIngresoDate);
+    const fecha_salida_formatted = formatUTCForMySQL(fechaSalidaDate);
+
+    // Datos para actualizar
+    const reservationData = {
+      nombre_cliente,
+      fecha_ingreso: fecha_ingreso_formatted,
+      fecha_salida: fecha_salida_formatted,
+      habitacion_id,
+      monto,
+      monto_letras,
+    };
+
+    // Obtener datos completos de la reservación ANTES de actualizar (para eliminar archivos antiguos)
+    const reservacionAnterior = await findReservacionById(id);
+    
+    // Actualizar la reservación
+    await updateReservation(id, reservationData);
+    console.log("✅ Reservación actualizada exitosamente");
+
+    // Obtener datos completos de la reservación actualizada para el PDF
+    const reservacionActualizada = await findReservacionById(id);
+    
+    // Obtener el número real de la habitación
+    const { getRoomNumberById } = await import("../models/ModelRoom.js");
+    const numeroHabitacion = await getRoomNumberById(habitacion_id);
+
+    // Preparar datos para el PDF
+    const datosParaPDF = {
+      nombre_cliente,
+      correo: reservacionActualizada.correo_cliente,
+      telefono: reservacionActualizada.telefono_cliente,
+      fecha_ingreso: fecha_ingreso,
+      fecha_salida: fecha_salida,
+      monto,
+      habitacion_id,
+      numero_habitacion: numeroHabitacion || habitacion_id,
+      tipo: "reservacion",
+    };
+
+    console.log("📄 Datos listos para PDF actualizado:", datosParaPDF);
+
+    // Generar y enviar PDF actualizado
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      const { generateAndSendPDF } = await import("../utils/pdfGenerator.js");
+      const { generarQR } = await import("../utils/qrGenerator.js");
+      const validadorDirectorios = (await import("../utils/validadorDirectorios.js")).default;
+      const envioPdfService = await import("../utils/pdfEnvio.js").then(
+        (module) => module.default
+      );
+
+      // 🗑️ ELIMINAR ARCHIVOS ANTERIORES
+      console.log("🗑️ Eliminando archivos anteriores...");
+      
+      try {
+        // Eliminar PDF anterior si existe
+        if (reservacionAnterior.pdf_path && fs.existsSync(reservacionAnterior.pdf_path)) {
+          fs.unlinkSync(reservacionAnterior.pdf_path);
+          console.log(`✅ PDF anterior eliminado: ${reservacionAnterior.pdf_path}`);
+        }
+        
+        // Eliminar QR anterior si existe
+        if (reservacionAnterior.qr_path && fs.existsSync(reservacionAnterior.qr_path)) {
+          fs.unlinkSync(reservacionAnterior.qr_path);
+          console.log(`✅ QR anterior eliminado: ${reservacionAnterior.qr_path}`);
+        }
+      } catch (cleanupError) {
+        console.warn("⚠️ Error al eliminar archivos anteriores:", cleanupError.message);
+      }
+
+      // Generar nuevos archivos
+      console.log("📝 Generando nuevos comprobantes...");
+      
+      // Generar QR
+      const qrPath = await generarQR(datosParaPDF, "reservacion");
+      // Generar PDF
+      const pdfPath = await generateAndSendPDF(datosParaPDF, "reservacion", qrPath);
+
+      console.log("✅ Comprobantes actualizados generados:");
+      console.log("📄 PDF:", pdfPath);
+      console.log("🔗 QR:", qrPath);
+
+      // Guardar las rutas de los nuevos archivos en la base de datos
+      await updateReservation(id, {
+        pdf_path: pdfPath,
+        qr_path: qrPath,
+      });
+      console.log("✅ Rutas de archivos guardadas en la base de datos");
+
+      // Opciones de envío
+      const opcionesEnvio = {
+        sendEmail: send_email === "on",
+        sendWhatsApp: send_whatsapp === "on",
+      };
+
+      // Enviar comprobante actualizado
+      const resultadosEnvio = await envioPdfService.enviarComprobanteReservacion(
+        datosParaPDF,
+        pdfPath,
+        opcionesEnvio
+      );
+
+      console.log("📧 Resultados de envío:", resultadosEnvio);
+    } catch (pdfError) {
+      console.error("❌ Error al generar/enviar PDF:", pdfError);
+      // Aunque falle el PDF, la reservación ya se actualizó
+    }
+
+    res.redirect("/rooms/list/reservations");
+  } catch (error) {
+    console.error("❌ Error al editar reservación:", error);
+    res.status(500).send("Error al editar la reservación");
   }
 };
 
@@ -646,13 +802,14 @@ export const apiCheckAvailability = async (req, res) => {
     const roomId = Number(req.params.id);
     const checkIn = req.query.check_in;
     const checkOut = req.query.check_out;
+    const excludeReservationId = req.query.exclude_reservation_id ? Number(req.query.exclude_reservation_id) : null;
 
     if (!checkIn || !checkOut) {
       return res.json({ available: false, error: "Fechas no proporcionadas" });
     }
 
     // Verificar disponibilidad usando la función del modelo
-    const available = await checkRoomAvailability(roomId, checkIn, checkOut);
+    const available = await checkRoomAvailability(roomId, checkIn, checkOut, excludeReservationId);
 
     res.json({ available });
   } catch (err) {
@@ -1172,5 +1329,205 @@ export const sendCheckInReminder = async (req, res) => {
       error: "Error al enviar el recordatorio por WhatsApp",
       details: error.message,
     });
+  }
+};
+
+/*** --- CONVERSIÓN DE RESERVACIÓN A RENTA --- ***/
+
+// Renderizar formulario de conversión con datos de la reservación
+export const renderConvertReservationToRent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.session.user || { role: "Administrador" };
+
+    console.log(`📋 Cargando reservación ${id} para conversión a renta...`);
+
+    const reservacion = await findReservacionById(id);
+
+    if (!reservacion) {
+      console.error(`❌ Reservación ${id} no encontrada`);
+      return res.status(404).send("Reservación no encontrada");
+    }
+
+    console.log("✅ Reservación encontrada:", reservacion);
+
+    // Formatear fechas al formato DD/MM/YYYY
+    const formatearFecha = (fecha) => {
+      const date = new Date(fecha);
+      const dia = String(date.getDate()).padStart(2, '0');
+      const mes = String(date.getMonth() + 1).padStart(2, '0');
+      const anio = date.getFullYear();
+      return `${dia}/${mes}/${anio}`;
+    };
+
+    // Preparar datos formateados para la vista
+    const reservacionFormateada = {
+      ...reservacion,
+      id_reservacion: reservacion.id,
+      correo: reservacion.correo_cliente,
+      telefono: reservacion.telefono_cliente,
+      fecha_ingreso: formatearFecha(reservacion.fecha_ingreso),
+      fecha_salida: formatearFecha(reservacion.fecha_salida),
+    };
+
+    console.log("✅ Reservación formateada:", reservacionFormateada);
+
+    res.render("convertReservationToRent", {
+      title: `Convertir Reservación #${id} a Renta`,
+      showFooter: true,
+      reservacion: reservacionFormateada,
+      user: {
+        ...user,
+        rol: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error al cargar formulario de conversión:", error);
+    res.status(500).send("Error al cargar el formulario de conversión");
+  }
+};
+
+// Procesar la conversión de reservación a renta
+export const handleConvertReservationToRent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      client_name,
+      email,
+      phone,
+      check_in,
+      check_out,
+      habitacion_id_value,
+      price,
+      price_text,
+      payment_type,
+      send_email,
+      send_whatsapp,
+    } = req.body;
+
+    console.log(`🔄 Convirtiendo reservación ${id} a renta...`);
+    console.log("📦 Datos recibidos:", req.body);
+
+    // Validar que se haya seleccionado tipo de pago
+    if (!payment_type) {
+      return res.status(400).send("El tipo de pago es requerido");
+    }
+
+    // Función para parsear fechas en formato DD/MM/YYYY
+    const parseDate = (dateString) => {
+      const [day, month, year] = dateString.split('/');
+      // Crear fecha en formato ISO (YYYY-MM-DD)
+      return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T12:00:00Z`);
+    };
+
+    // Formatear fechas para MySQL
+    const checkInDate = parseDate(check_in);
+    const checkOutDate = parseDate(check_out);
+
+    const formatUTCForMySQL = (date) => {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      return `${year}-${month}-${day} 12:00:00`;
+    };
+
+    const check_in_formatted = formatUTCForMySQL(checkInDate);
+    const check_out_formatted = formatUTCForMySQL(checkOutDate);
+
+    // Obtener el usuario de la sesión
+    const usuario_id = req.session.user?.id || 1;
+
+    // IMPORTANTE: Eliminar la reservación ANTES de crear la renta
+    // para que no haya conflicto de disponibilidad
+    console.log(`🗑️ Eliminando reservación ${id} antes de crear la renta...`);
+    await deletebyReservation(id);
+    console.log(`✅ Reservación ${id} eliminada`);
+
+    // Crear la renta con los datos de la reservación
+    const rentData = {
+      room_id: habitacion_id_value,
+      user_id: usuario_id,
+      client_name,
+      email,
+      phone,
+      check_in_date: check_in_formatted,
+      check_out_date: check_out_formatted,
+      payment_type,
+      amount: price,
+      amount_text: price_text,
+    };
+
+    console.log("📝 Creando renta con datos:", rentData);
+    const rent_id = await createRent(rentData);
+    console.log("✅ Renta creada con ID:", rent_id);
+
+    // Obtener el número real de la habitación
+    const { getRoomNumberById } = await import("../models/ModelRoom.js");
+    const numeroHabitacion = await getRoomNumberById(habitacion_id_value);
+
+    // Preparar datos para el PDF
+    const datosParaPDF = {
+      client_name,
+      email,
+      phone,
+      check_in: check_in,
+      check_out: check_out,
+      payment_type,
+      price,
+      habitacion_id: habitacion_id_value,
+      numero_habitacion: numeroHabitacion || habitacion_id_value,
+      tipo: "renta",
+    };
+
+    console.log("📄 Datos listos para PDF:", datosParaPDF);
+
+    // Generar PDF y QR y enviar
+    try {
+      const { generateAndSendPDF } = await import("../utils/pdfGenerator.js");
+      const { generarQR } = await import("../utils/qrGenerator.js");
+      const envioPdfService = await import("../utils/pdfEnvio.js").then(
+        (module) => module.default
+      );
+
+      // Generar QR
+      const qrPath = await generarQR(datosParaPDF, "renta");
+      // Generar PDF
+      const pdfPath = await generateAndSendPDF(datosParaPDF, "renta", qrPath);
+
+      console.log("✅ Comprobantes generados:");
+      console.log("📄 PDF:", pdfPath);
+      console.log("🔗 QR:", qrPath);
+
+      // Guardar las rutas de los archivos en la base de datos
+      await updateRent(rent_id, {
+        pdf_path: pdfPath,
+        qr_path: qrPath,
+      });
+      console.log("✅ Rutas de archivos guardadas en la base de datos");
+
+      // Opciones de envío
+      const opcionesEnvio = {
+        sendEmail: send_email === "on",
+        sendWhatsApp: send_whatsapp === "on",
+      };
+
+      // Enviar comprobante
+      const resultadosEnvio = await envioPdfService.enviarComprobanteRenta(
+        datosParaPDF,
+        pdfPath,
+        opcionesEnvio
+      );
+
+      console.log("📧 Resultados de envío:", resultadosEnvio);
+
+      res.redirect("/rooms/list/rentas");
+    } catch (pdfError) {
+      console.error("❌ Error al generar/enviar PDF:", pdfError);
+      // Aunque falle el PDF, la renta ya se creó
+      res.redirect("/rooms/list/rentas");
+    }
+  } catch (error) {
+    console.error("❌ Error al convertir reservación a renta:", error);
+    res.status(500).send("Error al convertir la reservación a renta");
   }
 };

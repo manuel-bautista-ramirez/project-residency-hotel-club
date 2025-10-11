@@ -160,7 +160,7 @@ export const createReservation = async (reservationData) => {
       [habitacion_id]
     );
 
-    return { id: result.insertId, ...reservationData };
+    return result.insertId;
   } catch (err) {
     console.error("Error createReservation:", err);
     throw err; // Propagar el error para manejarlo en el controlador
@@ -253,7 +253,7 @@ export const findReservacionById = async (id) => {
   try {
     const query = `
     SELECT res.id, res.nombre_cliente, res.fecha_reserva, res.fecha_ingreso, res.fecha_salida,
-          res.monto, res.monto_letras,
+          res.monto, res.monto_letras, res.pdf_path, res.qr_path,
           h.id AS habitacion_id, h.numero AS habitacion_numero, h.tipo AS habitacion_tipo,
           m.correo_cliente, m.telefono_cliente
     FROM reservaciones res
@@ -266,6 +266,81 @@ export const findReservacionById = async (id) => {
   } catch (err) {
     console.error("Error findReservacionById:", err);
     return null;
+  }
+};
+
+// Update Reservation
+export const updateReservation = async (id, reservationData) => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const {
+      nombre_cliente,
+      fecha_ingreso,
+      fecha_salida,
+      habitacion_id,
+      monto,
+      monto_letras,
+      pdf_path,
+      qr_path,
+    } = reservationData;
+
+    // Construir query dinámicamente según los campos proporcionados
+    let updateFields = [];
+    let updateValues = [];
+
+    if (nombre_cliente !== undefined) {
+      updateFields.push('nombre_cliente = ?');
+      updateValues.push(nombre_cliente);
+    }
+    if (fecha_ingreso !== undefined) {
+      updateFields.push('fecha_ingreso = ?');
+      updateValues.push(fecha_ingreso);
+    }
+    if (fecha_salida !== undefined) {
+      updateFields.push('fecha_salida = ?');
+      updateValues.push(fecha_salida);
+    }
+    if (habitacion_id !== undefined) {
+      updateFields.push('habitacion_id = ?');
+      updateValues.push(habitacion_id);
+    }
+    if (monto !== undefined) {
+      updateFields.push('monto = ?');
+      updateValues.push(monto);
+    }
+    if (monto_letras !== undefined) {
+      updateFields.push('monto_letras = ?');
+      updateValues.push(monto_letras);
+    }
+    if (pdf_path !== undefined) {
+      updateFields.push('pdf_path = ?');
+      updateValues.push(pdf_path);
+    }
+    if (qr_path !== undefined) {
+      updateFields.push('qr_path = ?');
+      updateValues.push(qr_path);
+    }
+
+    updateValues.push(id);
+
+    const updateReservacionQuery = `
+      UPDATE reservaciones 
+      SET ${updateFields.join(', ')}
+      WHERE id = ?
+    `;
+
+    await connection.query(updateReservacionQuery, updateValues);
+
+    await connection.commit();
+    return true;
+  } catch (err) {
+    await connection.rollback();
+    console.error("Error updateReservation:", err);
+    throw err;
+  } finally {
+    connection.release();
   }
 };
 
@@ -418,8 +493,9 @@ export const createMessageMethod = async (email, phone) => {
 export const createRent = async ({
   room_id,
   user_id,
-  message_method_id,
   client_name,
+  email,
+  phone,
   check_in_date,
   check_out_date,
   payment_type,
@@ -437,6 +513,14 @@ export const createRent = async ({
     throw new Error('La habitación no está disponible para las fechas seleccionadas');
   }
 
+  // 1. Crear el medio de mensaje
+  const [medioResult] = await pool.query(
+    `INSERT INTO medios_mensajes (correo_cliente, telefono_cliente) VALUES (?, ?)`,
+    [email, phone]
+  );
+  const message_method_id = medioResult.insertId;
+
+  // 2. Insertar la renta
   const params = [
     room_id,
     user_id,
@@ -461,6 +545,86 @@ export const createRent = async ({
     params
   );
   return result.insertId;
+};
+
+// Update Rent
+export const updateRent = async (id, rentData) => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const {
+      nombre_cliente,
+      fecha_ingreso,
+      fecha_salida,
+      habitacion_id,
+      tipo_pago,
+      monto,
+      monto_letras,
+      pdf_path,
+      qr_path,
+    } = rentData;
+
+    // Construir query dinámicamente según los campos proporcionados
+    let updateFields = [];
+    let updateValues = [];
+
+    if (nombre_cliente !== undefined) {
+      updateFields.push('nombre_cliente = ?');
+      updateValues.push(nombre_cliente);
+    }
+    if (fecha_ingreso !== undefined) {
+      updateFields.push('fecha_ingreso = ?');
+      updateValues.push(fecha_ingreso);
+    }
+    if (fecha_salida !== undefined) {
+      updateFields.push('fecha_salida = ?');
+      updateValues.push(fecha_salida);
+    }
+    if (habitacion_id !== undefined) {
+      updateFields.push('habitacion_id = ?');
+      updateValues.push(habitacion_id);
+    }
+    if (tipo_pago !== undefined) {
+      updateFields.push('tipo_pago = ?');
+      updateValues.push(tipo_pago);
+    }
+    if (monto !== undefined) {
+      updateFields.push('monto = ?');
+      updateValues.push(monto);
+    }
+    if (monto_letras !== undefined) {
+      updateFields.push('monto_letras = ?');
+      updateValues.push(monto_letras);
+    }
+    if (pdf_path !== undefined) {
+      updateFields.push('pdf_path = ?');
+      updateValues.push(pdf_path);
+    }
+    if (qr_path !== undefined) {
+      updateFields.push('qr_path = ?');
+      updateValues.push(qr_path);
+    }
+
+    updateValues.push(id);
+
+    const updateRentQuery = `
+      UPDATE rentas 
+      SET ${updateFields.join(', ')}
+      WHERE id = ?
+    `;
+
+    await connection.query(updateRentQuery, updateValues);
+
+    await connection.commit();
+    return true;
+  } catch (err) {
+    await connection.rollback();
+    console.error("Error updateRent:", err);
+    throw err;
+  } finally {
+    connection.release();
+  }
 };
 
 /** Helpers **/

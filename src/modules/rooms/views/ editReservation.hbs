@@ -41,6 +41,7 @@
     <div class="p-6 space-y-4">
 
     <input type="hidden" id="room_id" value="{{reservacion.habitacion_id}}" />
+    <input type="hidden" id="reservation_id" value="{{reservacion.id}}" />
 
     <!-- Info Reservación -->
     <section class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-900">
@@ -246,7 +247,10 @@
   document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('loadingOverlay');
     const form = document.getElementById('formEditReservation');
-    const roomId = Number(document.getElementById('room_id').value);
+    const originalRoomId = Number(document.getElementById('room_id').value);
+    const reservationId = Number(document.getElementById('reservation_id').value);
+    let currentRoomId = originalRoomId;
+    const habitacionSelect = document.getElementById('habitacion_id');
     const fechaIngresoInput = document.getElementById('fecha_ingreso');
     const fechaSalidaInput = document.getElementById('fecha_salida');
     const montoField = document.getElementById('monto');
@@ -325,14 +329,14 @@
 
     // Fetch price from API
     async function fetchPrice(checkIn, nights = 1) {
-      if (!checkIn || !roomId) return;
+      if (!checkIn || !currentRoomId) return;
 
       const month = new Date(checkIn).getMonth() + 1;
       submitButton.disabled = true;
       submitButton.textContent = 'Calculando precio...';
 
       try {
-        const res = await fetch(`/api/rooms/${roomId}/price?month=${month}`);
+        const res = await fetch(`/api/rooms/${currentRoomId}/price?month=${month}`);
         const json = await res.json();
         const pricePerNight = json.price ?? 0;
         const totalPrice = pricePerNight * nights;
@@ -363,25 +367,36 @@
     }
 
     // Check room availability
-    async function checkAvailability(checkIn, checkOut) {
+    async function checkAvailability(checkIn, checkOut, roomIdToCheck = null) {
       if (!checkIn || !checkOut) return false;
+
+      const roomToValidate = roomIdToCheck || currentRoomId;
 
       try {
         // Add time to dates (12:00 PM for both check-in and check-out)
         const checkInWithTime = addTimeToDate(checkIn);
         const checkOutWithTime = addTimeToDate(checkOut, true);
         
-        const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
+        // Incluir el ID de la reservación actual para excluirla de la validación
+        const url = `/api/rooms/${roomToValidate}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}&exclude_reservation_id=${reservationId}`;
         const res = await fetch(url);
         const json = await res.json();
 
         if (!json.available) {
-          showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta.", 'error');
-          fechaIngresoInput.value = "";
-          fechaSalidaInput.value = "";
-          montoField.value = "";
-          montoLetrasField.value = "";
-          durationDisplay.classList.add('hidden');
+          showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta de otro cliente.", 'error');
+          
+          // Si cambió de habitación, revertir al original
+          if (roomIdToCheck && roomIdToCheck !== originalRoomId) {
+            habitacionSelect.value = originalRoomId;
+            currentRoomId = originalRoomId;
+            showNotification("Se revirtió a la habitación original", 'warning');
+          } else {
+            fechaIngresoInput.value = "";
+            fechaSalidaInput.value = "";
+            montoField.value = "";
+            montoLetrasField.value = "";
+            durationDisplay.classList.add('hidden');
+          }
           return false;
         }
 
@@ -524,6 +539,39 @@
           await fetchPrice(checkIn, nights);
         }
       }
+    });
+
+    // Validate room change - check if new room is available for selected dates
+    habitacionSelect.addEventListener('change', async (e) => {
+      const newRoomId = Number(e.target.value);
+      const checkIn = fechaIngresoInput.value;
+      const checkOut = fechaSalidaInput.value;
+      
+      // Si no hay fechas seleccionadas, solo actualizar el ID
+      if (!checkIn || !checkOut) {
+        currentRoomId = newRoomId;
+        showNotification('Habitación cambiada. Seleccione las fechas para validar disponibilidad.', 'info');
+        return;
+      }
+      
+      // Si es la misma habitación original, no validar
+      if (newRoomId === originalRoomId) {
+        currentRoomId = newRoomId;
+        showNotification('Habitación original seleccionada', 'info');
+        return;
+      }
+      
+      // Validar disponibilidad de la nueva habitación
+      showNotification('Validando disponibilidad de la nueva habitación...', 'info');
+      const isAvailable = await checkAvailability(checkIn, checkOut, newRoomId);
+      
+      if (isAvailable) {
+        currentRoomId = newRoomId;
+        // Recalcular precio con la nueva habitación
+        const nights = calculateNights(checkIn, checkOut);
+        await fetchPrice(checkIn, nights);
+      }
+      // Si no está disponible, checkAvailability ya revirtió el select
     });
 
     // Show notification function

@@ -1,7 +1,0 @@
-intallation dependencies
-//  nmp install :
-
-run project
-//  npm run dev : cammand for runing the project
-
-//  npm run build : cammand for styles build the project
