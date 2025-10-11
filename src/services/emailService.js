@@ -65,6 +65,29 @@ class EmailService {
       throw new Error(`Fallo al enviar email: ${error.message}`);
     }
   }
+
+  /**
+   * Envía un correo electrónico con un archivo adjunto.
+   * @param {string} to - El destinatario del correo.
+   * @param {string} subject - El asunto del correo.
+   * @param {string} body - El cuerpo del correo en texto plano.
+   * @param {object} attachment - El archivo adjunto.
+   * @param {string} attachment.filename - El nombre del archivo.
+   * @param {Buffer|string} attachment.content - El contenido del archivo (Buffer o ruta).
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async sendEmailWithAttachment(to, subject, body, attachment) {
+    const mailOptions = {
+      to,
+      subject,
+      text: body,
+      attachments: [
+        attachment
+      ],
+    };
+
+    return this.send(mailOptions);
+  }
 }
 
 const emailService = new EmailService();

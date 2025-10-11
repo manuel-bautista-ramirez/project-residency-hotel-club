@@ -368,7 +368,7 @@ export const MembershipService = {
           filename: `Comprobante-Membresia-${cliente.nombre_completo.replace(/\s/g, '_')}.pdf`,
           content: pdfBuffer,
         };
-        await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment);
+        await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment); 
       } catch (error) {
         console.error("❌ Error enviando comprobante por correo:", error.message);
       }
