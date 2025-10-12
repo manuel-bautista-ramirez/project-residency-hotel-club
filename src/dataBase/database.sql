@@ -320,6 +320,65 @@ INSERT IGNORE INTO tipos_membresia (nombre, descripcion, max_integrantes, precio
 ('Familiar','Membresía para toda la familia',4,1200.00);
 
 
+-- =====================================================
+--               MÓDULO DE TIENDA
+-- =====================================================
+
+-- Tabla de productos
+CREATE TABLE IF NOT EXISTS productos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  descripcion TEXT,
+  categoria ENUM('bebidas','snacks','comida','otros') NOT NULL,
+  precio DECIMAL(10,2) NOT NULL,
+  stock INT NOT NULL DEFAULT 0,
+  imagen VARCHAR(255),
+  fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_categoria (categoria),
+  INDEX idx_stock (stock)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla de ventas
+CREATE TABLE IF NOT EXISTS ventas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT NOT NULL,
+  id_medio_mensaje INT,
+  nombre_cliente VARCHAR(100),
+  fecha_venta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  tipo_pago ENUM('efectivo','transferencia','tarjeta') NOT NULL,
+  total DECIMAL(10,2) NOT NULL,
+  total_letras VARCHAR(255),
+  pdf_path VARCHAR(255),
+  qr_path VARCHAR(255),
+  INDEX idx_fecha_venta (fecha_venta),
+  INDEX idx_tipo_pago (tipo_pago),
+  FOREIGN KEY (usuario_id) REFERENCES users_hotel(id),
+  FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes(id_medio_mensaje)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla de detalle de ventas
+CREATE TABLE IF NOT EXISTS detalle_ventas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  venta_id INT NOT NULL,
+  producto_id INT NOT NULL,
+  cantidad INT NOT NULL,
+  precio_unitario DECIMAL(10,2) NOT NULL,
+  subtotal DECIMAL(10,2) NOT NULL,
+  INDEX idx_venta (venta_id),
+  INDEX idx_producto (producto_id),
+  FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE,
+  FOREIGN KEY (producto_id) REFERENCES productos(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insertar productos de ejemplo
+INSERT IGNORE INTO productos (id, nombre, descripcion, categoria, precio, stock) VALUES
+(1, 'Coca Cola 600ml', 'Refresco de cola', 'bebidas', 15.00, 50),
+(2, 'Agua Natural 1L', 'Agua purificada', 'bebidas', 10.00, 100),
+(3, 'Sabritas Original', 'Papas fritas', 'snacks', 12.00, 30),
+(4, 'Galletas Oreo', 'Galletas de chocolate', 'snacks', 18.00, 25),
+(5, 'Sandwich Jamón', 'Sandwich de jamón y queso', 'comida', 35.00, 15),
+(6, 'Torta Cubana', 'Torta especial', 'comida', 45.00, 10);
 
 
 

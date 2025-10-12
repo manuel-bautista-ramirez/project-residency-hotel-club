@@ -2,7 +2,7 @@
 import express from "express";
 import {
   authMiddleware,
-  roleMiddleware,
+
 } from "../../login/middlewares/accessDenied.js";
 
 import {

@@ -5,6 +5,8 @@
 
 .env
 
+/src/modules/store/*
+
 /whatsapp_session/*
 
 # Ignorar archivos subidos (PDFs/QRs)

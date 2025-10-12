@@ -3,6 +3,7 @@ import routerLogin from "../modules/login/routers/routerLogin.js";
 import { membershipApiRoutes, membershipRoutes } from "../modules/membership/routes/index.js";
 import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
 import { entriesRouter } from "../modules/entries/router/RouteDailyEntries.js";
+import { routerStore } from "../modules/store/routes/storeRoutes.js";
 
 // Rutas de módulos
 
@@ -38,7 +39,9 @@ routerGlobal.use(routerLogin);
 routerGlobal.use(routerRoom);
 routerGlobal.use("/memberships", membershipRoutes);
 routerGlobal.use("/api/memberships", membershipApiRoutes);
-routerGlobal.use(entriesRouter)
+routerGlobal.use(entriesRouter);
+routerGlobal.use("/store", routerStore);
+
 
 
 // Ruta para mostrar la página del QR (ahora es manejada por la ruta raíz, pero la mantenemos por si se accede directamente)
