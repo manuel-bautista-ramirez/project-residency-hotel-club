@@ -1,4 +1,6 @@
 // roomsController.js
+import path from "path";
+import { fileURLToPath } from "url";
 import {
   getHabitaciones,
   findReservacionById,
@@ -18,6 +20,10 @@ import {
   updateReservation,
   updateRent,
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
+
+// Para obtener __dirname en ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const renderHabitacionesView = async (req, res) => {
   try {
@@ -296,9 +302,44 @@ export const deleteByIdResevation = async (req, res) => {
     const reservationId = Number(req.params.id);
     if (Number.isNaN(reservationId)) return res.status(400).send("ID inválido");
 
+    // Obtener datos de la reservación antes de eliminarla para borrar archivos
+    console.log(`📋 Obteniendo datos de la reservación ${reservationId}...`);
+    const reservacion = await findReservacionById(reservationId);
+    
+    // Eliminar PDF y QR de la reservación si existen
+    if (reservacion) {
+      const fs = await import("fs");
+      const fsPromises = fs.promises;
+      
+      if (reservacion.pdf_path) {
+        try {
+          if (fs.default.existsSync(reservacion.pdf_path)) {
+            await fsPromises.unlink(reservacion.pdf_path);
+            console.log(`🗑️ PDF de reservación eliminado: ${reservacion.pdf_path}`);
+          }
+        } catch (error) {
+          console.error(`⚠️ Error al eliminar PDF de reservación:`, error.message);
+        }
+      }
+      
+      if (reservacion.qr_path) {
+        try {
+          if (fs.default.existsSync(reservacion.qr_path)) {
+            await fsPromises.unlink(reservacion.qr_path);
+            console.log(`🗑️ QR de reservación eliminado: ${reservacion.qr_path}`);
+          }
+        } catch (error) {
+          console.error(`⚠️ Error al eliminar QR de reservación:`, error.message);
+        }
+      }
+    }
+
+    // Eliminar la reservación de la base de datos
+    console.log(`🗑️ Eliminando reservación ${reservationId} de la base de datos...`);
     const success = await deletebyReservation(reservationId);
 
     if (success) {
+      console.log(`✅ Reservación ${reservationId} eliminada exitosamente`);
       res.redirect("/rooms/list/reservations");
     } else {
       res.status(500).send("No se pudo eliminar la reservación");
@@ -356,8 +397,45 @@ export const deleteIdRenta = async (req, res) => {
     const rentaId = Number(req.params.id);
     if (Number.isNaN(rentaId)) return res.status(400).send("ID inválido");
 
+    // Obtener datos de la renta antes de eliminarla para borrar archivos
+    console.log(`📋 Obteniendo datos de la renta ${rentaId}...`);
+    const { default: pool } = await import("../../../config/database.js");
+    const [rentas] = await pool.query("SELECT pdf_path, qr_path FROM rentas WHERE id = ?", [rentaId]);
+    
+    // Eliminar PDF y QR de la renta si existen
+    if (rentas.length > 0) {
+      const renta = rentas[0];
+      const fs = await import("fs");
+      const fsPromises = fs.promises;
+      
+      if (renta.pdf_path) {
+        try {
+          if (fs.default.existsSync(renta.pdf_path)) {
+            await fsPromises.unlink(renta.pdf_path);
+            console.log(`🗑️ PDF de renta eliminado: ${renta.pdf_path}`);
+          }
+        } catch (error) {
+          console.error(`⚠️ Error al eliminar PDF de renta:`, error.message);
+        }
+      }
+      
+      if (renta.qr_path) {
+        try {
+          if (fs.default.existsSync(renta.qr_path)) {
+            await fsPromises.unlink(renta.qr_path);
+            console.log(`🗑️ QR de renta eliminado: ${renta.qr_path}`);
+          }
+        } catch (error) {
+          console.error(`⚠️ Error al eliminar QR de renta:`, error.message);
+        }
+      }
+    }
+
+    // Eliminar la renta de la base de datos
+    console.log(`🗑️ Eliminando renta ${rentaId} de la base de datos...`);
     const success = await deleteByIdRenta(rentaId);
     if (success) {
+      console.log(`✅ Renta ${rentaId} eliminada exitosamente`);
       res.redirect("/rooms/list/rentas"); // Ajusta la ruta según tu vista de rentas
     } else {
       res.status(500).send("No se pudo eliminar la renta");
@@ -549,9 +627,20 @@ export const handleEditReservation = async (req, res) => {
 };
 
 export const renderReservacionesView = async (req, res) => {
-  const user = req.session.user || { role: "Administrador" };
+  const user = req.session.user || { role: "Usuario" };
+  
   try {
-    res.render("reports", {
+    // Verificar que solo administradores puedan acceder
+    if (user.role !== "Administrador") {
+      return res.status(403).render("error", {
+        title: "Acceso Denegado",
+        message: "Solo los Administradores tienen permiso para ver los reportes de habitaciones.",
+        user,
+      });
+    }
+
+    // Usar ruta absoluta para evitar conflictos con otros módulos
+    res.render(path.join(__dirname, '../views/reports'), {
       title: "reportes",
       showFooter: true,
       user: {
@@ -1049,6 +1138,125 @@ export const generateReport = async (req, res) => {
 };
 
 /**
+ * Función auxiliar para generar datos del reporte
+ */
+async function generateReportData(tipo, fechaInicio, fechaFin, filtros = {}) {
+  const {
+    getReporteRentas,
+    getReporteReservaciones,
+  } = await import("../models/ModelRoom.js");
+
+  if (tipo === "rentas") {
+    // getReporteRentas ya devuelve el objeto completo con datos y estadisticas
+    const reporte = await getReporteRentas(fechaInicio, fechaFin, filtros);
+    return reporte;
+  } else if (tipo === "reservaciones") {
+    // getReporteReservaciones ya devuelve el objeto completo con datos y estadisticas
+    const reporte = await getReporteReservaciones(fechaInicio, fechaFin, filtros);
+    return reporte;
+  } else if (tipo === "consolidado") {
+    const rentasReporte = await getReporteRentas(fechaInicio, fechaFin, filtros);
+    const reservacionesReporte = await getReporteReservaciones(fechaInicio, fechaFin, filtros);
+    
+    return {
+      tipo: "consolidado",
+      fechaInicio,
+      fechaFin,
+      rentas: {
+        datos: rentasReporte.datos || [],
+        estadisticas: rentasReporte.estadisticas || {},
+      },
+      reservaciones: {
+        datos: reservacionesReporte.datos || [],
+        estadisticas: reservacionesReporte.estadisticas || {},
+      },
+      estadisticas: {
+        totalOperaciones: (rentasReporte.datos?.length || 0) + (reservacionesReporte.datos?.length || 0),
+        ingresosReales: rentasReporte.estadisticas?.totalIngresos || 0,
+        ingresosEsperados: reservacionesReporte.estadisticas?.totalMontoEsperado || 0,
+        totalGeneral: (rentasReporte.estadisticas?.totalIngresos || 0) + (reservacionesReporte.estadisticas?.totalMontoEsperado || 0),
+      },
+    };
+  }
+
+  // Fallback
+  return {
+    tipo,
+    fechaInicio,
+    fechaFin,
+    datos: [],
+    estadisticas: {},
+  };
+}
+
+/**
+ * Función auxiliar para formatear el mensaje del reporte
+ */
+function formatReportMessage(reporte) {
+  const formatCurrency = (value) => `$${parseFloat(value).toFixed(2)} MXN`;
+  const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('es-MX');
+
+  let mensaje = `📊 *REPORTE DE ${reporte.tipo.toUpperCase()}*\n`;
+  mensaje += `📅 Período: ${formatDate(reporte.fechaInicio)} - ${formatDate(reporte.fechaFin)}\n`;
+  mensaje += `🕐 Generado: ${new Date().toLocaleString('es-MX')}\n\n`;
+
+  if (reporte.tipo === 'rentas') {
+    mensaje += `📈 *ESTADÍSTICAS*\n`;
+    mensaje += `• Total Rentas: ${reporte.estadisticas.totalRentas}\n`;
+    mensaje += `• Ingreso Total: ${formatCurrency(reporte.estadisticas.totalIngresos)}\n`;
+    mensaje += `• Promedio: ${formatCurrency(reporte.estadisticas.promedioIngreso)}\n\n`;
+    
+    if (reporte.datos.length > 0) {
+      mensaje += `📋 *DETALLE DE RENTAS*\n`;
+      reporte.datos.forEach((r, i) => {
+        mensaje += `\n${i + 1}. ${r.nombre_cliente}\n`;
+        mensaje += `   Hab: ${r.numero_habitacion} (${r.tipo_habitacion})\n`;
+        mensaje += `   Check-in: ${formatDate(r.fecha_ingreso)}\n`;
+        mensaje += `   Check-out: ${formatDate(r.fecha_salida)}\n`;
+        mensaje += `   Pago: ${r.tipo_pago} - ${formatCurrency(r.monto)}\n`;
+      });
+    }
+  } else if (reporte.tipo === 'reservaciones') {
+    mensaje += `📈 *ESTADÍSTICAS*\n`;
+    mensaje += `• Total Reservaciones: ${reporte.estadisticas.totalReservaciones}\n`;
+    mensaje += `• Monto Esperado: ${formatCurrency(reporte.estadisticas.totalMontoEsperado)}\n`;
+    mensaje += `• Enganche Recibido: ${formatCurrency(reporte.estadisticas.totalEnganche)}\n`;
+    mensaje += `• Pendiente: ${formatCurrency(reporte.estadisticas.pendientePorCobrar)}\n\n`;
+    
+    if (reporte.datos.length > 0) {
+      mensaje += `📋 *DETALLE DE RESERVACIONES*\n`;
+      reporte.datos.forEach((r, i) => {
+        mensaje += `\n${i + 1}. ${r.nombre_cliente}\n`;
+        mensaje += `   Hab: ${r.numero_habitacion} (${r.tipo_habitacion})\n`;
+        mensaje += `   Fechas: ${formatDate(r.fecha_ingreso)} - ${formatDate(r.fecha_salida)}\n`;
+        mensaje += `   Monto: ${formatCurrency(r.monto)}\n`;
+        mensaje += `   Enganche: ${formatCurrency(r.enganche || 0)}\n`;
+        mensaje += `   Pendiente: ${formatCurrency(r.monto - (r.enganche || 0))}\n`;
+      });
+    }
+  } else if (reporte.tipo === 'consolidado') {
+    mensaje += `📈 *ESTADÍSTICAS GENERALES*\n`;
+    mensaje += `• Total Operaciones: ${reporte.estadisticas.totalOperaciones}\n`;
+    mensaje += `• Ingresos Reales: ${formatCurrency(reporte.estadisticas.ingresosReales)}\n`;
+    mensaje += `• Ingresos Esperados: ${formatCurrency(reporte.estadisticas.ingresosEsperados)}\n`;
+    mensaje += `• Total General: ${formatCurrency(reporte.estadisticas.totalGeneral)}\n\n`;
+    
+    mensaje += `🏨 *RENTAS (${reporte.rentas.estadisticas.totalRentas})*\n`;
+    mensaje += `• Ingresos: ${formatCurrency(reporte.rentas.estadisticas.totalIngresos)}\n`;
+    mensaje += `• Promedio: ${formatCurrency(reporte.rentas.estadisticas.promedioIngreso)}\n\n`;
+    
+    mensaje += `📅 *RESERVACIONES (${reporte.reservaciones.estadisticas.totalReservaciones})*\n`;
+    mensaje += `• Monto Esperado: ${formatCurrency(reporte.reservaciones.estadisticas.totalMontoEsperado)}\n`;
+    mensaje += `• Enganche: ${formatCurrency(reporte.reservaciones.estadisticas.totalEnganche)}\n`;
+    mensaje += `• Pendiente: ${formatCurrency(reporte.reservaciones.estadisticas.pendientePorCobrar)}\n`;
+  }
+
+  mensaje += `\n---\n🏨 Hotel Residencial Club`;
+  
+  return mensaje;
+}
+
+/**
  * Envía reporte por correo electrónico
  */
 export const sendReportByEmail = async (req, res) => {
@@ -1062,36 +1270,33 @@ export const sendReportByEmail = async (req, res) => {
       filtros = {},
     } = req.body;
 
-    // Generar el reporte
-    let reporte;
-    switch (tipo) {
-      case "rentas":
-        reporte = await ReportService.generateRentReport(
-          fechaInicio,
-          fechaFin,
-          filtros
-        );
-        break;
-      case "reservaciones":
-        reporte = await ReportService.generateReservationReport(
-          fechaInicio,
-          fechaFin,
-          filtros
-        );
-        break;
-      case "consolidado":
-        reporte = await ReportService.generateConsolidatedReport(
-          fechaInicio,
-          fechaFin,
-          filtros
-        );
-        break;
-      default:
-        return res.status(400).json({ error: "Tipo de reporte no válido" });
-    }
+    // Generar el reporte usando la función existente
+    const reporteData = await generateReportData(tipo, fechaInicio, fechaFin, filtros);
 
-    // Enviar por correo
-    await ReportService.sendReportByEmail(reporte, destinatario, asunto);
+    // Crear mensaje de texto del reporte
+    const mensaje = formatReportMessage(reporteData);
+
+    // Generar PDF del reporte
+    const { generateReportPDF } = await import("../utils/reportPdfGenerator.js");
+    const pdfPath = await generateReportPDF(reporteData);
+
+    // Importar servicio de email dinámicamente
+    const emailService = (await import("../../../services/emailService.js")).default;
+
+    // Enviar por correo con PDF adjunto
+    const fs = await import("fs");
+    await emailService.send({
+      to: destinatario,
+      subject: asunto || `Reporte de ${tipo} - Hotel Club`,
+      text: mensaje,
+      html: `<pre style="font-family: monospace; white-space: pre-wrap;">${mensaje}</pre>`,
+      attachments: [
+        {
+          filename: `reporte_${tipo}_${new Date().toISOString().split('T')[0]}.pdf`,
+          content: fs.default.readFileSync(pdfPath),
+        },
+      ],
+    });
 
     res.json({
       success: true,
@@ -1114,41 +1319,51 @@ export const sendReportByWhatsApp = async (req, res) => {
   try {
     const { tipo, fechaInicio, fechaFin, telefono, filtros = {} } = req.body;
 
-    // Generar el reporte
-    let reporte;
-    switch (tipo) {
-      case "rentas":
-        reporte = await ReportService.generateRentReport(
-          fechaInicio,
-          fechaFin,
-          filtros
-        );
-        break;
-      case "reservaciones":
-        reporte = await ReportService.generateReservationReport(
-          fechaInicio,
-          fechaFin,
-          filtros
-        );
-        break;
-      case "consolidado":
-        reporte = await ReportService.generateConsolidatedReport(
-          fechaInicio,
-          fechaFin,
-          filtros
-        );
-        break;
-      default:
-        return res.status(400).json({ error: "Tipo de reporte no válido" });
+    // Generar el reporte usando la función existente
+    const reporteData = await generateReportData(tipo, fechaInicio, fechaFin, filtros);
+
+    // Crear mensaje de texto del reporte
+    const mensaje = formatReportMessage(reporteData);
+
+    // Generar PDF del reporte
+    const { generateReportPDF } = await import("../utils/reportPdfGenerator.js");
+    const pdfPath = await generateReportPDF(reporteData);
+
+    // Importar servicio de WhatsApp dinámicamente
+    const whatsappService = (await import("../../../services/whatsappService.js")).default;
+    const fs = await import("fs");
+
+    // Formatear número de teléfono
+    const jid = whatsappService.formatPhoneNumber(telefono);
+
+    // Enviar por WhatsApp con PDF
+    if (whatsappService.isConnected && whatsappService.socket) {
+      // Enviar mensaje de texto
+      await whatsappService.socket.sendMessage(jid, { text: mensaje });
+      
+      // Enviar PDF
+      if (fs.default.existsSync(pdfPath)) {
+        await whatsappService.socket.sendMessage(jid, {
+          document: fs.default.readFileSync(pdfPath),
+          mimetype: 'application/pdf',
+          fileName: `reporte_${tipo}_${new Date().toISOString().split('T')[0]}.pdf`,
+          caption: `📊 Reporte de ${tipo} - Hotel Club`
+        });
+        console.log(`✅ Reporte y PDF enviados por WhatsApp a ${telefono}`);
+      } else {
+        console.log(`✅ Reporte enviado por WhatsApp a ${telefono} (sin PDF)`);
+      }
+    } else {
+      console.warn('⚠️ WhatsApp no está conectado, se generará solo el enlace');
     }
 
-    // Enviar por WhatsApp
-    const result = await ReportService.sendReportByWhatsApp(reporte, telefono);
+    // Crear URL de WhatsApp Web
+    const whatsappURL = `https://wa.me/52${telefono}?text=${encodeURIComponent(mensaje)}`;
 
     res.json({
       success: true,
       message: "Reporte enviado por WhatsApp exitosamente",
-      whatsappURL: result.whatsappURL,
+      whatsappURL,
     });
   } catch (error) {
     console.error("Error enviando reporte por WhatsApp:", error);
@@ -1455,10 +1670,12 @@ export const handleConvertReservationToRent = async (req, res) => {
       payment_type,
       send_email,
       send_whatsapp,
+      enganche, // Capturar el enganche de la reservación
     } = req.body;
 
     console.log(`🔄 Convirtiendo reservación ${id} a renta...`);
     console.log("📦 Datos recibidos:", req.body);
+    console.log("💰 Enganche recibido:", enganche);
 
     // Validar que se haya seleccionado tipo de pago
     if (!payment_type) {
@@ -1489,16 +1706,54 @@ export const handleConvertReservationToRent = async (req, res) => {
     // Obtener el usuario de la sesión
     const usuario_id = req.session.user?.id || 1;
 
+    // IMPORTANTE: Obtener datos de la reservación para eliminar archivos
+    console.log(`📋 Obteniendo datos de la reservación ${id}...`);
+    const reservacion = await findReservacionById(id);
+    
+    // Eliminar PDF y QR de la reservación si existen
+    if (reservacion) {
+      const fs = await import("fs");
+      const fsPromises = fs.promises;
+      
+      if (reservacion.pdf_path) {
+        try {
+          if (fs.default.existsSync(reservacion.pdf_path)) {
+            await fsPromises.unlink(reservacion.pdf_path);
+            console.log(`🗑️ PDF de reservación eliminado: ${reservacion.pdf_path}`);
+          }
+        } catch (error) {
+          console.error(`⚠️ Error al eliminar PDF de reservación:`, error.message);
+        }
+      }
+      
+      if (reservacion.qr_path) {
+        try {
+          if (fs.default.existsSync(reservacion.qr_path)) {
+            await fsPromises.unlink(reservacion.qr_path);
+            console.log(`🗑️ QR de reservación eliminado: ${reservacion.qr_path}`);
+          }
+        } catch (error) {
+          console.error(`⚠️ Error al eliminar QR de reservación:`, error.message);
+        }
+      }
+    }
+
     // IMPORTANTE: Eliminar la reservación ANTES de crear la renta
     // para que no haya conflicto de disponibilidad
-    console.log(`🗑️ Eliminando reservación ${id} antes de crear la renta...`);
+    console.log(`🗑️ Eliminando reservación ${id} de la base de datos...`);
     await deletebyReservation(id);
     console.log(`✅ Reservación ${id} eliminada`);
+
+    // Crear el registro de medios de mensaje primero
+    console.log("📧 Creando registro de medios de mensaje...");
+    const messageMethodId = await createMessageMethod(email, phone);
+    console.log("✅ Medio de mensaje creado con ID:", messageMethodId);
 
     // Crear la renta con los datos de la reservación
     const rentData = {
       room_id: habitacion_id_value,
       user_id: usuario_id,
+      message_method_id: messageMethodId,
       client_name,
       email,
       phone,
@@ -1507,6 +1762,7 @@ export const handleConvertReservationToRent = async (req, res) => {
       payment_type,
       amount: price,
       amount_text: price_text,
+      enganche: enganche || 0, // Agregar el enganche
     };
 
     console.log("📝 Creando renta con datos:", rentData);
@@ -1526,6 +1782,7 @@ export const handleConvertReservationToRent = async (req, res) => {
       check_out: check_out,
       payment_type,
       price,
+      enganche: enganche || 0, // Agregar el enganche al PDF
       habitacion_id: habitacion_id_value,
       numero_habitacion: numeroHabitacion || habitacion_id_value,
       tipo: "renta",

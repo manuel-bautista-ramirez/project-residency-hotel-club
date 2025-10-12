@@ -283,7 +283,7 @@ export const findReservacionById = async (id) => {
   try {
     const query = `
     SELECT res.id, res.nombre_cliente, res.fecha_reserva, res.fecha_ingreso, res.fecha_salida,
-          res.monto, res.monto_letras, res.pdf_path, res.qr_path,
+          res.monto, res.monto_letras, res.enganche, res.pdf_path, res.qr_path,
           h.id AS habitacion_id, h.numero AS habitacion_numero, h.tipo AS habitacion_tipo,
           m.correo_cliente, m.telefono_cliente
     FROM reservaciones res
@@ -675,7 +675,7 @@ export const getReporteRentas = async (fechaInicio, fechaFin, filtros = {}) => {
   try {
     let query = `
       SELECT 
-        r.id_renta,
+        r.id AS id_renta,
         r.nombre_cliente,
         h.numero AS numero_habitacion,
         h.tipo AS tipo_habitacion,

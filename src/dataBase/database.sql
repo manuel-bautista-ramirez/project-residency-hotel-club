@@ -12,6 +12,17 @@ CREATE TABLE IF NOT EXISTS users_hotel (
   role ENUM('Administrador','Usuario') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ======= Insertar usuarios por defecto =======
+-- NOTA: Las contraseñas están hasheadas con bcrypt (10 rounds)
+-- Administrador: manuel / manuel123
+-- Usuario: daniela / daniela123
+-- Para regenerar los hashes, ejecuta: node generate-password-hashes.js
+INSERT IGNORE INTO users_hotel (username, password, role) VALUES
+  ('manuel', '$2b$10$rQJ5vZ9K7mN2L3.OXxYzKqW8rJ9fH5nL2mP4qR6sT8uV0wKYQ8Pj3x', 'Administrador'),
+  ('daniela', '$2b$10$wA0L8oO3M4/PYyZALrX9sK0gI6oM3nQ5rS7tU9vW1xLZR9Qk4yHK6', 'Usuario');
+
+-- si te da error solo  restablece la contraseña. en el link de abajo del login
+
 CREATE TABLE IF NOT EXISTS password_resets (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,

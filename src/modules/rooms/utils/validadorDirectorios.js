@@ -120,14 +120,14 @@ class ValidadorDirectorios {
    */
   validarRutaEspecifica(tipo, subtipo) {
     const tiposValidos = ['pdf', 'qr'];
-    const subtiposValidos = ['rentas', 'reservaciones'];
+    const subtiposValidos = ['rentas', 'reservaciones', 'reportes'];
 
     if (!tiposValidos.includes(tipo)) {
       throw new Error(`Tipo inválido: ${tipo}. Debe ser 'pdf' o 'qr'`);
     }
 
     if (!subtiposValidos.includes(subtipo)) {
-      throw new Error(`Subtipo inválido: ${subtipo}. Debe ser 'rentas' o 'reservaciones'`);
+      throw new Error(`Subtipo inválido: ${subtipo}. Debe ser 'rentas', 'reservaciones' o 'reportes'`);
     }
 
     const rutaEspecifica = path.join(this.basePath, tipo, subtipo);
