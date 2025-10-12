@@ -62,6 +62,13 @@ export const getHabitaciones = async () => {
 // Verificar disponibilidad de habitación en un rango de fechas
 export const checkRoomAvailability = async (roomId, fechaIngreso, fechaSalida, excludeReservationId = null, excludeRentId = null) => {
   try {
+    console.log('\n🔍 === VERIFICANDO DISPONIBILIDAD ===');
+    console.log('📅 Habitación ID:', roomId);
+    console.log('📅 Fecha Ingreso:', fechaIngreso);
+    console.log('📅 Fecha Salida:', fechaSalida);
+    console.log('📅 Excluir Reservación ID:', excludeReservationId);
+    console.log('📅 Excluir Renta ID:', excludeRentId);
+
     const query = `
       SELECT
         (
@@ -87,8 +94,16 @@ export const checkRoomAvailability = async (roomId, fechaIngreso, fechaSalida, e
     params.push(roomId, fechaIngreso, fechaSalida);
     if (excludeReservationId) params.push(excludeReservationId);
 
+    console.log('📤 Parámetros de consulta:', params);
+
     const [rows] = await pool.query(query, params);
-    return rows[0].conflicts === 0; // true si está disponible, false si hay conflictos
+    const isAvailable = rows[0].conflicts === 0;
+    
+    console.log('🔢 Conflictos encontrados:', rows[0].conflicts);
+    console.log('✅ Disponible:', isAvailable);
+    console.log('=== FIN VERIFICACIÓN ===\n');
+    
+    return isAvailable; // true si está disponible, false si hay conflictos
   } catch (err) {
     console.error('Error checkRoomAvailability:', err);
     return false;
@@ -121,6 +136,8 @@ export const createReservation = async (reservationData) => {
     fecha_salida,
     monto,
     monto_letras,
+    enganche,
+    enganche_letras,
   } = reservationData;
   const usuarioIdInt = Number(usuario_id);
   try {
@@ -138,10 +155,13 @@ export const createReservation = async (reservationData) => {
     const id_medio_mensaje = medioResult.insertId;
 
     // 2. Insertar la reservación
+    const engancheAmount = enganche || 0;
+    const engancheText = enganche_letras || '';
+    
     const [result] = await pool.query(
       `INSERT INTO reservaciones
-       (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida ,monto, monto_letras)
-        VALUES (?, ?, ?, ?, CURDATE(), ?, ?, ?,?)`,
+       (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida, monto, monto_letras, enganche, enganche_letras)
+        VALUES (?, ?, ?, ?, CURDATE(), ?, ?, ?, ?, ?, ?)`,
       [
         habitacion_id,
         usuarioIdInt,
@@ -151,14 +171,24 @@ export const createReservation = async (reservationData) => {
         fecha_salida,
         monto,
         monto_letras,
+        engancheAmount,
+        engancheText,
       ]
     );
 
-    // 3. Cambiar el estado de la habitación a "ocupado"
-    await pool.query(
-      "UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?",
-      [habitacion_id]
-    );
+    // 3. Cambiar el estado de la habitación a "ocupado" solo si el check-in ya pasó
+    const checkInDate = new Date(fecha_ingreso);
+    const now = new Date();
+    
+    if (checkInDate <= now) {
+      console.log('🏠 Actualizando estado de habitación a "ocupado" (check-in ya pasó)');
+      await pool.query(
+        "UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?",
+        [habitacion_id]
+      );
+    } else {
+      console.log('📅 Check-in es futuro, estado de habitación no se cambia aún');
+    }
 
     return result.insertId;
   } catch (err) {
@@ -493,9 +523,8 @@ export const createMessageMethod = async (email, phone) => {
 export const createRent = async ({
   room_id,
   user_id,
+  message_method_id,
   client_name,
-  email,
-  phone,
   check_in_date,
   check_out_date,
   payment_type,
@@ -506,19 +535,13 @@ export const createRent = async ({
   console.log('📥 Fechas recibidas en el modelo:');
   console.log('  - check_in_date:', check_in_date, typeof check_in_date);
   console.log('  - check_out_date:', check_out_date, typeof check_out_date);
+  console.log('  - message_method_id:', message_method_id);
 
   // 0. Verificar disponibilidad de la habitación
   const isAvailable = await checkRoomAvailability(room_id, check_in_date, check_out_date);
   if (!isAvailable) {
     throw new Error('La habitación no está disponible para las fechas seleccionadas');
   }
-
-  // 1. Crear el medio de mensaje
-  const [medioResult] = await pool.query(
-    `INSERT INTO medios_mensajes (correo_cliente, telefono_cliente) VALUES (?, ?)`,
-    [email, phone]
-  );
-  const message_method_id = medioResult.insertId;
 
   // 2. Insertar la renta
   const params = [
@@ -544,6 +567,22 @@ export const createRent = async ({
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     params
   );
+
+  // 3. Actualizar estado de la habitación si el check-in es hoy y ya pasó la hora
+  const checkInDate = new Date(check_in_date);
+  const now = new Date();
+  
+  // Si la fecha de check-in es hoy o ya pasó, cambiar estado a "ocupado"
+  if (checkInDate <= now) {
+    console.log('🏠 Actualizando estado de habitación a "ocupado" (check-in ya pasó)');
+    await pool.query(
+      "UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?",
+      [room_id]
+    );
+  } else {
+    console.log('📅 Check-in es futuro, estado de habitación no se cambia aún');
+  }
+
   return result.insertId;
 };
 
@@ -628,36 +667,210 @@ export const updateRent = async (id, rentData) => {
 };
 
 /** Helpers **/
-// const nextId = (arr) => (!arr.length ? 1 : Math.max(...arr.map(x => Number(x.id))) + 1);
-// const numeroALetras = (num) =>
-//   new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(num);
 
-// /** Datos simulados **/
+// ===== FUNCIONES PARA REPORTES =====
 
-// --- Base de datos ---
-//  export const getEventosCalendario = async () => {
-//   try {
-//     const query = `
-//       SELECT r.id, r.nombre_cliente, m.correo_cliente, m.telefono_cliente, r.fecha_ingreso, r.fecha_salida, 'renta' AS tipo
-//       FROM rentas r
-//       INNER JOIN medios_mensajes m ON r.id_medio_mensaje = m.id_medio_mensaje
-//       UNION ALL
-//       SELECT res.id, res.nombre_cliente, m.correo_cliente, m.telefono_cliente, res.fecha_ingreso, res.fecha_salida, 'reserva' AS tipo
-//       FROM reservaciones res
-//       INNER JOIN medios_mensajes m ON res.id_medio_mensaje = m.id_medio_mensaje
-//     `;
-//     const [rows] = await pool.execute(query);
-//     return rows.map(evento => ({
-//       id: evento.id,
-//       title: evento.nombre_cliente,
-//       start: evento.fecha_ingreso,
-//       end: evento.fecha_salida ? new Date(new Date(evento.fecha_salida).getTime() + 24*60*60*1000).toISOString().split('T')[0] : evento.fecha_salida,
-//       tipo: evento.tipo,
-//       correo: evento.correo_cliente,
-//       telefono: evento.telefono_cliente
-//     }));
-//   } catch (err) {
-//     console.error("Error getEventosCalendario:", err);
-//     return [];
-//   }
-// }
+// Reporte de rentas por rango de fechas
+export const getReporteRentas = async (fechaInicio, fechaFin, filtros = {}) => {
+  try {
+    let query = `
+      SELECT 
+        r.id_renta,
+        r.nombre_cliente,
+        h.numero AS numero_habitacion,
+        h.tipo AS tipo_habitacion,
+        r.fecha_ingreso,
+        r.fecha_salida,
+        r.tipo_pago,
+        r.monto,
+        r.monto_letras,
+        mm.correo_cliente,
+        mm.telefono_cliente
+      FROM rentas r
+      INNER JOIN habitaciones h ON r.habitacion_id = h.id
+      LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
+      WHERE DATE(r.fecha_ingreso) BETWEEN ? AND ?
+    `;
+    
+    const params = [fechaInicio, fechaFin];
+    
+    // Aplicar filtros opcionales
+    if (filtros.habitacion) {
+      query += ` AND h.numero = ?`;
+      params.push(filtros.habitacion);
+    }
+    if (filtros.cliente) {
+      query += ` AND r.nombre_cliente LIKE ?`;
+      params.push(`%${filtros.cliente}%`);
+    }
+    if (filtros.tipoPago) {
+      query += ` AND r.tipo_pago = ?`;
+      params.push(filtros.tipoPago);
+    }
+    
+    query += ` ORDER BY r.fecha_ingreso DESC`;
+    
+    const [rentas] = await pool.query(query, params);
+    
+    // Calcular estadísticas
+    const totalRentas = rentas.length;
+    const totalIngresos = rentas.reduce((sum, r) => sum + Number(r.monto), 0);
+    const promedioIngreso = totalRentas > 0 ? totalIngresos / totalRentas : 0;
+    
+    return {
+      tipo: 'rentas',
+      fechaInicio,
+      fechaFin,
+      datos: rentas,
+      estadisticas: {
+        totalRentas,
+        totalIngresos,
+        promedioIngreso
+      }
+    };
+  } catch (err) {
+    console.error("Error en getReporteRentas:", err);
+    throw err;
+  }
+};
+
+// Reporte de reservaciones por rango de fechas
+export const getReporteReservaciones = async (fechaInicio, fechaFin, filtros = {}) => {
+  try {
+    let query = `
+      SELECT 
+        r.id,
+        r.nombre_cliente,
+        h.numero AS numero_habitacion,
+        h.tipo AS tipo_habitacion,
+        r.fecha_ingreso,
+        r.fecha_salida,
+        r.monto,
+        r.enganche,
+        mm.correo_cliente,
+        mm.telefono_cliente
+      FROM reservaciones r
+      INNER JOIN habitaciones h ON r.habitacion_id = h.id
+      LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
+      WHERE DATE(r.fecha_ingreso) BETWEEN ? AND ?
+    `;
+    
+    const params = [fechaInicio, fechaFin];
+    
+    // Aplicar filtros opcionales
+    if (filtros.habitacion) {
+      query += ` AND h.numero = ?`;
+      params.push(filtros.habitacion);
+    }
+    if (filtros.cliente) {
+      query += ` AND r.nombre_cliente LIKE ?`;
+      params.push(`%${filtros.cliente}%`);
+    }
+    
+    query += ` ORDER BY r.fecha_ingreso DESC`;
+    
+    const [reservaciones] = await pool.query(query, params);
+    
+    // Calcular estadísticas
+    const totalReservaciones = reservaciones.length;
+    const totalMontoEsperado = reservaciones.reduce((sum, r) => sum + Number(r.monto), 0);
+    const totalEnganche = reservaciones.reduce((sum, r) => sum + Number(r.enganche || 0), 0);
+    
+    return {
+      tipo: 'reservaciones',
+      fechaInicio,
+      fechaFin,
+      datos: reservaciones,
+      estadisticas: {
+        totalReservaciones,
+        totalMontoEsperado,
+        totalEnganche,
+        pendientePorCobrar: totalMontoEsperado - totalEnganche
+      }
+    };
+  } catch (err) {
+    console.error("Error en getReporteReservaciones:", err);
+    throw err;
+  }
+};
+
+// Reporte consolidado (rentas + reservaciones)
+export const getReporteConsolidado = async (fechaInicio, fechaFin, filtros = {}) => {
+  try {
+    const reporteRentas = await getReporteRentas(fechaInicio, fechaFin, filtros);
+    const reporteReservaciones = await getReporteReservaciones(fechaInicio, fechaFin, filtros);
+    
+    return {
+      tipo: 'consolidado',
+      fechaInicio,
+      fechaFin,
+      rentas: reporteRentas,
+      reservaciones: reporteReservaciones,
+      estadisticas: {
+        totalOperaciones: reporteRentas.estadisticas.totalRentas + reporteReservaciones.estadisticas.totalReservaciones,
+        ingresosReales: reporteRentas.estadisticas.totalIngresos,
+        ingresosEsperados: reporteReservaciones.estadisticas.totalMontoEsperado,
+        totalGeneral: reporteRentas.estadisticas.totalIngresos + reporteReservaciones.estadisticas.totalMontoEsperado
+      }
+    };
+  } catch (err) {
+    console.error("Error en getReporteConsolidado:", err);
+    throw err;
+  }
+};
+
+// Obtener datos del calendario con rentas y reservaciones por habitación
+export const getRoomsCalendarData = async () => {
+  try {
+    // Obtener todas las habitaciones
+    const rooms = await getHabitaciones();
+    
+    console.log(`📊 Total habitaciones en modelo: ${rooms.length}`);
+
+    // Para cada habitación, obtener sus rentas y reservaciones
+    const roomsWithBookings = await Promise.all(
+      rooms.map(async (room) => {
+        // Obtener rentas
+        const [rentas] = await pool.query(
+          `SELECT r.*, mm.correo_cliente, mm.telefono_cliente
+           FROM rentas r
+           LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
+           WHERE r.habitacion_id = ?
+           ORDER BY r.fecha_ingreso`,
+          [room.id]
+        );
+
+        // Obtener reservaciones
+        const [reservaciones] = await pool.query(
+          `SELECT r.*, mm.correo_cliente, mm.telefono_cliente
+           FROM reservaciones r
+           LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
+           WHERE r.habitacion_id = ?
+           ORDER BY r.fecha_ingreso`,
+          [room.id]
+        );
+
+        if (rentas.length > 0 || reservaciones.length > 0) {
+          console.log(`🏠 Habitación ${room.numero}:`, {
+            rentas: rentas.length,
+            reservaciones: reservaciones.length
+          });
+        }
+
+        return {
+          id: room.id,
+          numero: room.numero,
+          tipo: room.tipo,
+          estado: room.estado,
+          rentas: rentas,
+          reservaciones: reservaciones,
+        };
+      })
+    );
+
+    return roomsWithBookings;
+  } catch (err) {
+    console.error("❌ Error en getRoomsCalendarData:", err);
+    throw err;
+  }
+};

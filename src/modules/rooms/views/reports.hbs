@@ -294,74 +294,134 @@
                         </div>
                         <div class="bg-green-100 p-4 rounded-lg">
                             <h3 class="font-semibold text-green-800">Ingreso Total</h3>
-                            <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.ingresoTotal)}</p>
+                            <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.totalIngresos)}</p>
                         </div>
                         <div class="bg-purple-100 p-4 rounded-lg">
                             <h3 class="font-semibold text-purple-800">Promedio</h3>
                             <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.promedioIngreso)}</p>
                         </div>
                     </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 border">Cliente</th>
+                                    <th class="px-4 py-2 border">Habitación</th>
+                                    <th class="px-4 py-2 border">Check-in</th>
+                                    <th class="px-4 py-2 border">Check-out</th>
+                                    <th class="px-4 py-2 border">Tipo Pago</th>
+                                    <th class="px-4 py-2 border">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${reporte.datos.map(r => `
+                                    <tr>
+                                        <td class="px-4 py-2 border">${r.nombre_cliente}</td>
+                                        <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
+                                        <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
+                                        <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
+                                        <td class="px-4 py-2 border text-center">${r.tipo_pago}</td>
+                                        <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 `;
             } else if (reporte.tipo === 'reservaciones') {
                 contenidoHTML += `
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <div class="bg-green-100 p-4 rounded-lg">
                             <h3 class="font-semibold text-green-800">Total Reservaciones</h3>
                             <p class="text-2xl font-bold text-green-900">${reporte.estadisticas.totalReservaciones}</p>
                         </div>
                         <div class="bg-blue-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-blue-800">Monto Total</h3>
-                            <p class="text-2xl font-bold text-blue-900">${formatCurrency(reporte.estadisticas.montoTotal)}</p>
+                            <h3 class="font-semibold text-blue-800">Monto Esperado</h3>
+                            <p class="text-2xl font-bold text-blue-900">${formatCurrency(reporte.estadisticas.totalMontoEsperado)}</p>
                         </div>
-                        <div class="bg-purple-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-purple-800">Promedio</h3>
-                            <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.promedioMonto)}</p>
+                        <div class="bg-yellow-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-yellow-800">Enganche Recibido</h3>
+                            <p class="text-2xl font-bold text-yellow-900">${formatCurrency(reporte.estadisticas.totalEnganche)}</p>
                         </div>
+                        <div class="bg-red-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-red-800">Pendiente por Cobrar</h3>
+                            <p class="text-2xl font-bold text-red-900">${formatCurrency(reporte.estadisticas.pendientePorCobrar)}</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 border">Cliente</th>
+                                    <th class="px-4 py-2 border">Habitación</th>
+                                    <th class="px-4 py-2 border">Check-in</th>
+                                    <th class="px-4 py-2 border">Check-out</th>
+                                    <th class="px-4 py-2 border">Monto Total</th>
+                                    <th class="px-4 py-2 border">Enganche</th>
+                                    <th class="px-4 py-2 border">Pendiente</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${reporte.datos.map(r => `
+                                    <tr>
+                                        <td class="px-4 py-2 border">${r.nombre_cliente}</td>
+                                        <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
+                                        <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
+                                        <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
+                                        <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
+                                        <td class="px-4 py-2 border text-right">${formatCurrency(r.enganche || 0)}</td>
+                                        <td class="px-4 py-2 border text-right">${formatCurrency(r.monto - (r.enganche || 0))}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 `;
             } else if (reporte.tipo === 'consolidado') {
                 contenidoHTML += `
-                    <div class="grid grid-cols-1 md:grid-4 gap-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <div class="bg-blue-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-blue-800">Rentas</h3>
-                            <p class="text-2xl font-bold text-blue-900">${reporte.resumenConsolidado.totalRentas}</p>
+                            <h3 class="font-semibold text-blue-800">Total Operaciones</h3>
+                            <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalOperaciones}</p>
                         </div>
                         <div class="bg-green-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-green-800">Reservaciones</h3>
-                            <p class="text-2xl font-bold text-green-900">${reporte.resumenConsolidado.totalReservaciones}</p>
-                        </div>
-                        <div class="bg-purple-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-purple-800">Ingreso Total</h3>
-                            <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.resumenConsolidado.ingresoTotalConsolidado)}</p>
+                            <h3 class="font-semibold text-green-800">Ingresos Reales</h3>
+                            <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.ingresosReales)}</p>
                         </div>
                         <div class="bg-yellow-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-yellow-800">Ocupación</h3>
-                            <p class="text-2xl font-bold text-yellow-900">${reporte.resumenConsolidado.ocupacionTotal}</p>
+                            <h3 class="font-semibold text-yellow-800">Ingresos Esperados</h3>
+                            <p class="text-2xl font-bold text-yellow-900">${formatCurrency(reporte.estadisticas.ingresosEsperados)}</p>
+                        </div>
+                        <div class="bg-purple-100 p-4 rounded-lg">
+                            <h3 class="font-semibold text-purple-800">Total General</h3>
+                            <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.totalGeneral)}</p>
                         </div>
                     </div>
-                `;
-            }
-
-            // Agregar QR si está disponible
-            if (reporte.qrPath) {
-                contenidoHTML += `
-                    <div class="text-center mt-6 p-4 bg-gray-50 rounded-lg">
-                        <h4 class="font-semibold text-gray-800 mb-3">
-                            <i class="fas fa-qrcode mr-2"></i>Código QR del Reporte
-                        </h4>
-                        <img src="${reporte.qrPath}" alt="QR del Reporte" 
-                             class="mx-auto max-w-48 border border-gray-300 rounded-lg shadow-sm">
-                        <p class="text-xs text-gray-500 mt-2">
-                            Escanea este código para acceder a los datos del reporte
-                        </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h3 class="font-semibold text-gray-800 mb-3">📊 Rentas (${reporte.rentas.estadisticas.totalRentas})</h3>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <p class="text-sm"><strong>Ingresos:</strong> ${formatCurrency(reporte.rentas.estadisticas.totalIngresos)}</p>
+                                <p class="text-sm"><strong>Promedio:</strong> ${formatCurrency(reporte.rentas.estadisticas.promedioIngreso)}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800 mb-3">📅 Reservaciones (${reporte.reservaciones.estadisticas.totalReservaciones})</h3>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <p class="text-sm"><strong>Monto Esperado:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.totalMontoEsperado)}</p>
+                                <p class="text-sm"><strong>Enganche:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.totalEnganche)}</p>
+                                <p class="text-sm"><strong>Pendiente:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.pendientePorCobrar)}</p>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
 
             contenidoHTML += `
-                <div class="text-sm text-gray-500 mt-4">
-                    <p><strong>Período:</strong> ${reporte.fechaInicio || 'Inicio'} - ${reporte.fechaFin || 'Fin'}</p>
-                    <p><strong>Generado:</strong> ${new Date(reporte.fechaGeneracion).toLocaleString('es-MX')}</p>
+                <div class="text-sm text-gray-500 mt-4 p-4 bg-gray-50 rounded-lg">
+                    <p><strong>📅 Período:</strong> ${new Date(reporte.fechaInicio).toLocaleDateString('es-MX')} - ${new Date(reporte.fechaFin).toLocaleDateString('es-MX')}</p>
+                    <p><strong>🕐 Generado:</strong> ${new Date().toLocaleString('es-MX')}</p>
                 </div>
             `;
 

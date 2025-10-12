@@ -194,13 +194,22 @@ export const generateAndSendPDF = async (datos, tipo, qrPath = null) => {
       // ===== DETALLES DE LA TRANSACCIÓN =====
       const detallesY = 242;
       
+      // Calcular datos de pago primero para determinar el tamaño de la caja
+      const monto = datos.monto || datos.amount || datos.price || 0;
+      const enganche = datos.enganche || 0;
+      const saldoPendiente = monto - enganche;
+      const tieneEnganche = (tipo.toLowerCase() === "reservacion" || tipo.toLowerCase() === "reservation") && enganche > 0;
+      
+      // Altura dinámica: más alta si hay enganche
+      const detallesHeight = tieneEnganche ? 176 : 120;
+      
       // Caja con sombra
-      doc.rect(42, detallesY + 2, doc.page.width - 84, 120)
+      doc.rect(42, detallesY + 2, doc.page.width - 84, detallesHeight)
          .fillOpacity(0.1)
          .fill(colors.gray);
       doc.fillOpacity(1);
       
-      doc.roundedRect(40, detallesY, doc.page.width - 80, 120, 6)
+      doc.roundedRect(40, detallesY, doc.page.width - 80, detallesHeight, 6)
          .fillAndStroke(colors.light, colors.gray);
 
       // Encabezado de sección
@@ -212,8 +221,6 @@ export const generateAndSendPDF = async (datos, tipo, qrPath = null) => {
         .fillColor(colors.white)
         .font("Helvetica-Bold")
         .text("DETALLES DE LA TRANSACCION", 55, detallesY + 8);
-
-      const monto = datos.monto || datos.amount || datos.price || 0;
       const habitacion = datos.numero_habitacion || datos.habitacion_id || "No especificada";
       const fechaEmision = new Date().toLocaleDateString("es-MX", {
         year: 'numeric',
@@ -226,27 +233,95 @@ export const generateAndSendPDF = async (datos, tipo, qrPath = null) => {
       });
 
       // Detalles con diseño de tabla
-      const detY = detallesY + 38;
+      let detY = detallesY + 38;
       const lineHeight = 20;
       
-      // Monto destacado
-      doc.roundedRect(55, detY, doc.page.width - 110, 24, 4)
-         .fill(colors.white);
-      
-      doc
-        .fontSize(9)
-        .fillColor(colors.gray)
-        .font("Helvetica")
-        .text("Monto Total:", 65, detY + 6);
-      
-      doc
-        .fontSize(12)
-        .fillColor(colors.success)
-        .font("Helvetica-Bold")
-        .text(`$${Number(monto).toLocaleString('es-MX')} MXN`, 0, detY + 6, {
-          align: "right",
-          width: doc.page.width - 105
-        });
+      // Si es reservación con enganche, mostrar desglose
+      if (normalizedTipo === "reservacion" && enganche > 0) {
+        // Precio Total
+        doc.roundedRect(55, detY, doc.page.width - 110, 24, 4)
+           .fill(colors.white);
+        
+        doc
+          .fontSize(9)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Precio Total:", 65, detY + 6);
+        
+        doc
+          .fontSize(11)
+          .fillColor(colors.dark)
+          .font("Helvetica-Bold")
+          .text(`$${Number(monto).toLocaleString('es-MX')} MXN`, 0, detY + 6, {
+            align: "right",
+            width: doc.page.width - 105
+          });
+
+        detY += 28;
+
+        // Enganche/Anticipo
+        doc.roundedRect(55, detY, doc.page.width - 110, 24, 4)
+           .fill(colors.white);
+        
+        doc
+          .fontSize(9)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Enganche/Anticipo:", 65, detY + 6);
+        
+        doc
+          .fontSize(11)
+          .fillColor(colors.success)
+          .font("Helvetica-Bold")
+          .text(`-$${Number(enganche).toLocaleString('es-MX')} MXN`, 0, detY + 6, {
+            align: "right",
+            width: doc.page.width - 105
+          });
+
+        detY += 28;
+
+        // Saldo Pendiente
+        doc.roundedRect(55, detY, doc.page.width - 110, 24, 4)
+           .fillAndStroke(colors.warning, colors.warning);
+        
+        doc
+          .fontSize(9)
+          .fillColor(colors.white)
+          .font("Helvetica-Bold")
+          .text("Saldo Pendiente:", 65, detY + 6);
+        
+        doc
+          .fontSize(12)
+          .fillColor(colors.white)
+          .font("Helvetica-Bold")
+          .text(`$${Number(saldoPendiente).toLocaleString('es-MX')} MXN`, 0, detY + 6, {
+            align: "right",
+            width: doc.page.width - 105
+          });
+
+        detY += 28;
+      } else {
+        // Monto destacado (sin enganche)
+        doc.roundedRect(55, detY, doc.page.width - 110, 24, 4)
+           .fill(colors.white);
+        
+        doc
+          .fontSize(9)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Monto Total:", 65, detY + 6);
+        
+        doc
+          .fontSize(12)
+          .fillColor(colors.success)
+          .font("Helvetica-Bold")
+          .text(`$${Number(monto).toLocaleString('es-MX')} MXN`, 0, detY + 6, {
+            align: "right",
+            width: doc.page.width - 105
+          });
+
+        detY += 28;
+      }
 
       // Habitación
       doc
@@ -366,7 +441,8 @@ export const generateAndSendPDF = async (datos, tipo, qrPath = null) => {
       }
 
       // ===== INFORMACIÓN IMPORTANTE =====
-      const resumenY = 372;
+      // Ajustar posición según si hay enganche
+      const resumenY = tieneEnganche ? 428 : 372;
       
       doc.roundedRect(40, resumenY, doc.page.width - 80, 55, 6)
          .fillAndStroke(colors.warning, colors.warning);
@@ -399,7 +475,8 @@ export const generateAndSendPDF = async (datos, tipo, qrPath = null) => {
       // ===== CÓDIGO QR =====
       if (qrPath && fs.existsSync(qrPath)) {
         try {
-          const qrSectionY = 437;
+          // Ajustar posición según si hay enganche
+          const qrSectionY = tieneEnganche ? 493 : 437;
 
           // Caja para el QR con sombra
           doc.rect(42, qrSectionY + 2, doc.page.width - 84, 120)

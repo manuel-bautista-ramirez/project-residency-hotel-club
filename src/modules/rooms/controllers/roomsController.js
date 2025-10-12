@@ -117,7 +117,9 @@ export const handleCreateReservation = async (req, res) => {
       telefono,
       fecha_ingreso,
       fecha_salida,
+      price,
       monto,
+      enganche,
       send_email,
       send_whatsapp,
     } = req.body;
@@ -149,7 +151,13 @@ export const handleCreateReservation = async (req, res) => {
     const fecha_ingreso_formatted = formatUTCForMySQL(fechaIngresoDate);
     const fecha_salida_formatted = formatUTCForMySQL(fechaSalidaDate);
 
-    const monto_letras = convertMumbersWorks(Number(monto) || 0);
+    // El formulario envía "price", pero también aceptar "monto" por compatibilidad
+    const montoTotal = Number(price || monto) || 0;
+    const monto_letras = convertMumbersWorks(montoTotal);
+    const enganche_amount = Number(enganche) || 0;
+    const enganche_letras = convertMumbersWorks(enganche_amount);
+    
+    console.log("💰 Montos recibidos:", { price, monto, montoTotal, enganche_amount });
 
     const reservationData = {
       habitacion_id,
@@ -159,8 +167,10 @@ export const handleCreateReservation = async (req, res) => {
       telefono,
       fecha_ingreso: fecha_ingreso_formatted,
       fecha_salida: fecha_salida_formatted,
-      monto: Number(monto) || 0,
+      monto: montoTotal,
       monto_letras,
+      enganche: enganche_amount,
+      enganche_letras,
     };
 
     console.log("📝 Creando reservación con datos:", reservationData);
@@ -183,7 +193,8 @@ export const handleCreateReservation = async (req, res) => {
       telefono,
       fecha_ingreso,
       fecha_salida,
-      monto,
+      monto: montoTotal,
+      enganche: enganche_amount,
       habitacion_id,
       numero_habitacion: numeroHabitacion || habitacion_id, // Usar número real o ID como fallback
       tipo: "reservacion",
@@ -236,7 +247,7 @@ export const handleCreateReservation = async (req, res) => {
       // No detenemos el flujo principal si falla el PDF
     }
 
-    return res.redirect("/rooms");
+    return res.redirect("/rooms?success=reservacion");
   } catch (err) {
     console.error("Error en handleCreateReservation:", err);
     return res.status(500).send("Error interno del servidor");
@@ -303,15 +314,24 @@ export const renderAllRentas = async (req, res) => {
     const user = req.session.user || { role: "Administrador" };
     const allRentas = await getAllRentas();
 
-    // Convertir fechas a formato ISO string para preservar la hora en los atributos HTML
+    // Formatear fechas sin ajuste de zona horaria
+    const formatDateForDisplay = (dateStr) => {
+      if (!dateStr) return null;
+      // Extraer la fecha y hora directamente del string de MySQL
+      // Formato: "2025-10-11T12:00:00.000Z" → "11/10/2025 12:00"
+      const date = new Date(dateStr);
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const year = date.getUTCFullYear();
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    };
+
     const rentasFormateadas = allRentas.map((renta) => ({
       ...renta,
-      fecha_ingreso: renta.fecha_ingreso
-        ? new Date(renta.fecha_ingreso).toISOString()
-        : null,
-      fecha_salida: renta.fecha_salida
-        ? new Date(renta.fecha_salida).toISOString()
-        : null,
+      fecha_ingreso: formatDateForDisplay(renta.fecha_ingreso),
+      fecha_salida: formatDateForDisplay(renta.fecha_salida),
     }));
 
     console.log(rentasFormateadas);
@@ -623,6 +643,7 @@ export const handleCreateRenta = async (req, res) => {
     send_whatsapp,
   } = req.body;
 
+  console.log("📝 req.body completo:", req.body);
   console.log("📝 Datos recibidos para renta:", {
     habitacion_id,
     usuario_id,
@@ -637,42 +658,25 @@ export const handleCreateRenta = async (req, res) => {
   });
 
   try {
-    // Formateo de fechas
-    const checkInDate = new Date(check_in);
-    const checkOutDate = new Date(check_out);
-
-    checkInDate.setUTCHours(18, 0, 0, 0);
-    checkOutDate.setUTCHours(18, 0, 0, 0);
-
-    const formatUTCForMySQL = (date) => {
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-      const day = String(date.getUTCDate()).padStart(2, "0");
-      const hours = String(date.getUTCHours()).padStart(2, "0");
-      const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-      const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    };
-
-    const check_in_formatted = formatUTCForMySQL(checkInDate);
-    const check_out_formatted = formatUTCForMySQL(checkOutDate);
+    // Las fechas ya vienen con la hora correcta desde el frontend
+    // Check-in: 12:00 PM, Check-out: 11:59 AM
+    // NO modificar las horas, solo usar las que vienen
+    const check_in_formatted = check_in;
+    const check_out_formatted = check_out;
 
     // 1. Insertar medio de mensaje
+    console.log("🔍 Antes de createMessageMethod - email:", email, "phone:", phone);
     const message_method_id = await createMessageMethod(email, phone);
     console.log("ID medio de mensaje creado:", message_method_id);
 
-    // Mapeo de tipos de pago
-    const paymentMap = {
-      Card: "tarjeta",
-      Transfer: "transferencia",
-      Cash: "efectivo",
-    };
-
-    const tipo_pago = paymentMap[payment_type] || null;
-
-    if (!tipo_pago) {
+    // Validar tipo de pago (el formulario ya envía los valores correctos en español)
+    const tiposPagoValidos = ["tarjeta", "transferencia", "efectivo"];
+    
+    if (!tiposPagoValidos.includes(payment_type)) {
       return res.status(400).send("Tipo de pago inválido");
     }
+
+    const tipo_pago = payment_type;
 
     // 2. Insertar renta
     const rentData = {
@@ -747,7 +751,7 @@ export const handleCreateRenta = async (req, res) => {
       // No detenemos el flujo principal si falla el PDF
     }
 
-    res.redirect("/rooms");
+    res.redirect("/rooms?success=renta");
   } catch (err) {
     console.error("Error creando la renta:", err);
 
@@ -768,6 +772,36 @@ export const renderCalendario = (req, res) => {
     title: "Calendario de Habitaciones",
     showFooter: true,
   });
+};
+
+// Nuevo calendario mejorado con vista por habitación
+export const renderCalendarioRooms = (req, res) => {
+  const user = req.session.user || {};
+  res.render("calendarRooms", {
+    title: "Calendario de Habitaciones",
+    showFooter: true,
+    user: {
+      ...user,
+      rol: user.role,
+    },
+  });
+};
+
+// API para obtener datos del calendario
+export const getCalendarData = async (req, res) => {
+  try {
+    const { getRoomsCalendarData } = await import("../models/ModelRoom.js");
+    
+    // Obtener datos del modelo
+    const roomsWithBookings = await getRoomsCalendarData();
+
+    console.log(`✅ Habitaciones con datos preparadas: ${roomsWithBookings.length}`);
+    
+    res.json({ rooms: roomsWithBookings });
+  } catch (error) {
+    console.error("❌ Error obteniendo datos del calendario:", error);
+    res.status(500).json({ error: "Error al obtener datos del calendario" });
+  }
 };
 
 export const fetchEventos = async (req, res) => {
@@ -963,45 +997,49 @@ export const generateReport = async (req, res) => {
     const { tipo, fechaInicio, fechaFin, habitacion, cliente, tipoPago } =
       req.query;
 
+    // Validar fechas
+    if (!fechaInicio || !fechaFin) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Las fechas de inicio y fin son requeridas" 
+      });
+    }
+
     const filtros = {};
     if (habitacion) filtros.habitacion = habitacion;
     if (cliente) filtros.cliente = cliente;
     if (tipoPago) filtros.tipoPago = tipoPago;
 
+    const { getReporteRentas, getReporteReservaciones, getReporteConsolidado } = 
+      await import("../models/ModelRoom.js");
+
     let reporte;
 
     switch (tipo) {
       case "rentas":
-        reporte = await ReportService.generateRentReport(
-          fechaInicio,
-          fechaFin,
-          filtros
-        );
+        reporte = await getReporteRentas(fechaInicio, fechaFin, filtros);
         break;
       case "reservaciones":
-        reporte = await ReportService.generateReservationReport(
-          fechaInicio,
-          fechaFin,
-          filtros
-        );
+        reporte = await getReporteReservaciones(fechaInicio, fechaFin, filtros);
         break;
       case "consolidado":
-        reporte = await ReportService.generateConsolidatedReport(
-          fechaInicio,
-          fechaFin,
-          filtros
-        );
+        reporte = await getReporteConsolidado(fechaInicio, fechaFin, filtros);
         break;
       default:
-        return res.status(400).json({ error: "Tipo de reporte no válido" });
+        return res.status(400).json({ 
+          success: false,
+          error: "Tipo de reporte no válido. Opciones: rentas, reservaciones, consolidado" 
+        });
     }
+
+    console.log(`✅ Reporte generado: ${tipo} (${fechaInicio} a ${fechaFin})`);
 
     res.json({
       success: true,
       reporte,
     });
   } catch (error) {
-    console.error("Error generando reporte:", error);
+    console.error("❌ Error generando reporte:", error);
     res.status(500).json({
       success: false,
       error: "Error al generar el reporte",
@@ -1360,6 +1398,12 @@ export const renderConvertReservationToRent = async (req, res) => {
       return `${dia}/${mes}/${anio}`;
     };
 
+    // Calcular saldo pendiente
+    const montoTotal = Number(reservacion.monto) || 0;
+    const enganche = Number(reservacion.enganche) || 0;
+    const saldoPendiente = montoTotal - enganche;
+    const saldoPendienteLetras = convertMumbersWorks(saldoPendiente);
+
     // Preparar datos formateados para la vista
     const reservacionFormateada = {
       ...reservacion,
@@ -1368,9 +1412,17 @@ export const renderConvertReservationToRent = async (req, res) => {
       telefono: reservacion.telefono_cliente,
       fecha_ingreso: formatearFecha(reservacion.fecha_ingreso),
       fecha_salida: formatearFecha(reservacion.fecha_salida),
+      enganche: enganche.toFixed(2),
+      saldo_pendiente: saldoPendiente.toFixed(2),
+      saldo_pendiente_letras: saldoPendienteLetras,
     };
 
     console.log("✅ Reservación formateada:", reservacionFormateada);
+    console.log("💰 Desglose de pago:", {
+      montoTotal,
+      enganche,
+      saldoPendiente
+    });
 
     res.render("convertReservationToRent", {
       title: `Convertir Reservación #${id} a Renta`,

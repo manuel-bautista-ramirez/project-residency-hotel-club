@@ -172,8 +172,52 @@
     }
   }
 
+  // Función para mostrar notificaciones
+  function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-20 right-4 z-[70] px-6 py-4 rounded-lg text-white font-medium shadow-2xl transition-all duration-300 transform translate-x-0 ${
+      type === 'success' ? 'bg-green-500' :
+      type === 'error' ? 'bg-red-500' :
+      type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+    }`;
+    notification.innerHTML = `
+      <div class="flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+          <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+        </svg>
+        <span>${message}</span>
+      </div>
+    `;
+    notification.setAttribute('role', 'status');
+    document.body.appendChild(notification);
+
+    // Animación de entrada
+    setTimeout(() => notification.style.transform = 'translateX(0)', 10);
+
+    // Remover después de 5 segundos
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => notification.remove(), 300);
+    }, 5000);
+  }
+
   // Revela tarjetas de habitación con intersección (stagger natural por scroll)
   document.addEventListener('DOMContentLoaded', () => {
+    // Verificar si hay parámetro de éxito en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const successType = urlParams.get('success');
+    
+    if (successType === 'renta') {
+      showNotification('✅ Renta creada exitosamente', 'success');
+      // Limpiar el parámetro de la URL sin recargar la página
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (successType === 'reservacion') {
+      showNotification('✅ Reservación creada exitosamente', 'success');
+      // Limpiar el parámetro de la URL sin recargar la página
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     const cards = document.querySelectorAll('.room-card');
     const overlay = document.getElementById('loadingOverlay');
     const skeletons = document.getElementById('roomsSkeletons');

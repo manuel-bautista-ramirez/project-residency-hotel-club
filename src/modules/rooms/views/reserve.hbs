@@ -1,18 +1,20 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+{{>navbar}}
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100 p-4 pt-24">
 
   <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+  <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center hidden">
     <div class="flex flex-col items-center gap-3">
       <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="img">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
       </svg>
-      <p class="text-sm text-blue-900 font-medium">Cargando formulario...</p>
+      <p id="loadingMessage" class="text-sm text-blue-900 font-medium">Cargando formulario...</p>
     </div>
   </div>
 
   <!-- Skeleton while loading -->
-  <div id="reserveSkeleton" class="w-full sm:max-w-lg lg:max-w-xl bg-white p-6 rounded-lg sm:rounded-xl shadow-md ring-1 ring-slate-100 animate-pulse mb-4">
+  <div id="reserveSkeleton" class="w-full sm:max-w-lg lg:max-w-xl bg-white p-6 rounded-lg sm:rounded-xl shadow-md ring-1 ring-slate-100 animate-pulse mb-4 hidden">
     <div class="h-6 w-44 bg-slate-200 rounded mb-4"></div>
     <div class="h-4 w-60 bg-slate-200 rounded mb-2"></div>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
@@ -30,7 +32,7 @@
     id="formReserve"
     action="/rooms/reservar/{{habitacion.id}}"
     method="POST"
-    class="w-full sm:max-w-lg lg:max-w-xl bg-white p-0 rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-[1px] hidden"
+    class="w-full sm:max-w-lg lg:max-w-xl bg-white p-0 rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-[1px]"
   >
 
     <!-- Header con gradiente, igual a rent.hbs -->
@@ -159,15 +161,34 @@
 
     <!-- Precio y Pago (estilo tomado de rent.hbs) -->
     <div class="space-y-5 md:space-y-6">
-      <section aria-labelledby="precio-title" class="space-y-2 md:space-y-3">
-        <h3 id="precio-title" class="text-sm md:text-lg font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">Precio</h3>
-        <div class="relative group">
-          <span class="pointer-events-none absolute left-3 top-3.5 text-slate-400 text-sm transition-colors group-focus-within:text-blue-500">$</span>
-          <input id="price" name="price" type="number" readonly placeholder="0.00"
-            class="w-full pl-8 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
-          <input id="price_text" name="price_text" type="text"  placeholder="Precio en letras"
-            class="w-full pl-8 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200 mt-3"/>
+      <!-- Campos de precio ocultos pero enviados al servidor -->
+      <input id="price" name="price" type="hidden" value="0"/>
+      <input id="price_text" name="price_text" type="hidden" value=""/>
+
+      <!-- Enganche (Opcional) -->
+      <section aria-labelledby="enganche-title" class="space-y-2 md:space-y-3">
+        <h3 id="enganche-title" class="text-sm md:text-lg font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4 text-green-600" viewBox="0 0 24 24">
+            <path d="M12 7.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"/>
+            <path fill-rule="evenodd" d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 011.5 14.625v-9.75zM8.25 9.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM18.75 9a.75.75 0 00-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 00.75-.75V9.75a.75.75 0 00-.75-.75h-.008zM4.5 9.75A.75.75 0 015.25 9h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H5.25a.75.75 0 01-.75-.75V9.75z" clip-rule="evenodd"/>
+            <path d="M2.25 18a.75.75 0 000 1.5c5.4 0 10.63.722 15.6 2.075 1.19.324 2.4-.558 2.4-1.82V18.75a.75.75 0 00-.75-.75H2.25z"/>
+          </svg>
+          Enganche / Anticipo (Opcional)
+        </h3>
+        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+          <p class="text-xs text-green-800">
+            <strong>💡 Nota:</strong> Si el cliente desea dejar un enganche para apartar la reservación, ingrésalo aquí. 
+            Al convertir la reservación a renta, se descontará este monto del precio total.
+          </p>
         </div>
+        <div class="relative group">
+          <span class="pointer-events-none absolute left-3 top-3.5 text-slate-400 text-sm transition-colors group-focus-within:text-green-500">$</span>
+          <input id="enganche" name="enganche" type="number" step="0.01" min="0" placeholder="0.00" value="0"
+            class="w-full pl-8 pr-3 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-slate-700 font-medium outline-none transition-colors duration-200"/>
+          <input id="enganche_text" name="enganche_text" type="text" readonly placeholder="Enganche en letras"
+            class="w-full pl-8 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium outline-none transition-colors duration-200 mt-3 tracking-wide"/>
+        </div>
+      </section>
 
     </div>
 
@@ -265,6 +286,8 @@
     const checkOutInput = document.getElementById("fecha_salida");
     const priceField = document.getElementById("price");
     const priceTextField = document.getElementById("price_text");
+    const engancheField = document.getElementById("enganche");
+    const engancheTextField = document.getElementById("enganche_text");
     const durationDisplay = document.getElementById("duration-display");
     const nightsCount = document.getElementById("nights-count");
     const submitButton = document.querySelector('button[type="submit"]');
@@ -273,18 +296,37 @@
     // VALIDACIÓN: Solo reservaciones desde MAÑANA en adelante
     // ============================================
     const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    // Mañana (check-in mínimo)
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const tomorrowYear = tomorrow.getFullYear();
+    const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0');
+    const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
+
+    // Pasado mañana (check-out mínimo)
+    const dayAfterTomorrow = new Date(today);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+    const dayAfterYear = dayAfterTomorrow.getFullYear();
+    const dayAfterMonth = String(dayAfterTomorrow.getMonth() + 1).padStart(2, '0');
+    const dayAfterDay = String(dayAfterTomorrow.getDate()).padStart(2, '0');
+    const dayAfterTomorrowStr = `${dayAfterYear}-${dayAfterMonth}-${dayAfterDay}`;
+
+    console.log('📅 Fechas iniciales:', {
+      hoy: `${year}-${month}-${day}`,
+      mañana: tomorrowStr,
+      pasadoMañana: dayAfterTomorrowStr
+    });
 
     // Establecer fecha mínima de ingreso = MAÑANA
     checkInInput.setAttribute('min', tomorrowStr);
     checkInInput.value = tomorrowStr; // Establecer mañana por defecto
 
-    // Fecha de salida mínima = 2 días después de hoy (pasado mañana)
-    const dayAfterTomorrow = new Date(today);
-    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-    const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0];
+    // Establecer fecha mínima de salida = PASADO MAÑANA
     checkOutInput.setAttribute('min', dayAfterTomorrowStr);
     checkOutInput.value = dayAfterTomorrowStr; // Establecer pasado mañana por defecto
 
@@ -313,9 +355,8 @@
 
     // Reveal flow: hide overlay and skeleton, show form
     setTimeout(() => {
-      hideOverlay();
+      // El formulario ya está visible por defecto ahora
       if (skeleton) skeleton.classList.add('hidden');
-      if (form) form.classList.remove('hidden');
 
       // ============================================
       // CALCULAR PRECIO AUTOMÁTICAMENTE al cargar
@@ -325,10 +366,14 @@
 
       if (initialCheckIn && initialCheckOut) {
         const nights = updateDurationDisplay(initialCheckIn, initialCheckOut);
-        // Calcular precio automáticamente
-        checkAvailability(initialCheckIn, initialCheckOut).then(isAvailable => {
+        // Verificar disponibilidad y ajustar fechas si es necesario
+        checkAvailability(initialCheckIn, initialCheckOut).then(async isAvailable => {
           if (isAvailable) {
             fetchPrice(initialCheckIn, nights);
+          } else {
+            // Habitación no disponible, buscar primera fecha disponible
+            showNotification('⚠️ La habitación no está disponible para las fechas por defecto. Buscando fechas disponibles...', 'warning');
+            await findNextAvailableDate();
           }
         });
       }
@@ -377,41 +422,126 @@
 
     // Fetch price from API
     async function fetchPrice(checkIn, nights = 1) {
-      if (!checkIn) return;
+      if (!checkIn) {
+        console.log('⚠️ fetchPrice: checkIn está vacío');
+        return;
+      }
 
       const month = new Date(checkIn).getMonth() + 1;
+      console.log('💰 Calculando precio para:', { checkIn, nights, month, roomId });
+      
       submitButton.disabled = true;
       submitButton.textContent = 'Calculando precio...';
 
       try {
-        const res = await fetch(`/api/rooms/${roomId}/price?month=${month}`);
+        const url = `/api/rooms/${roomId}/price?month=${month}`;
+        console.log('📡 Llamando a:', url);
+        
+        const res = await fetch(url);
         const json = await res.json();
+        
+        console.log('📥 Respuesta del servidor:', json);
+        
         const pricePerNight = json.price ?? 0;
         const totalPrice = pricePerNight * nights;
+
+        console.log('💵 Precio calculado:', { pricePerNight, totalPrice });
 
         priceField.value = totalPrice.toFixed(2);
         priceTextField.value = numberToWords(totalPrice);
 
+        console.log('✅ Campos actualizados:', {
+          priceField: priceField.value,
+          priceTextField: priceTextField.value
+        });
+
         showNotification(`Precio calculado: $${totalPrice.toFixed(2)} por ${nights} noche(s)`, 'success');
       } catch (err) {
         showNotification('Error al obtener el precio', 'error');
-        console.error("Error obteniendo precio:", err);
+        console.error("❌ Error obteniendo precio:", err);
       } finally {
         submitButton.disabled = false;
         submitButton.textContent = 'Crear reservación';
       }
     }
 
-    // Add time to date (12:00 PM noon in local time)
+    // Add time to date
+    // Check-in: 12:00 PM (mediodía)
+    // Check-out: 11:59 AM (para permitir nuevas reservaciones/rentas el mismo día a las 12:00 PM)
     function addTimeToDate(dateStr, isCheckout = false) {
       if (!dateStr) return '';
-      // Create a date at noon local time
-      const date = new Date(`${dateStr}T12:00:00`);
-      // Format as YYYY-MM-DD HH:MM:SS for MySQL
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day} 12:00:00`;
+      
+      // Extraer año, mes y día directamente del string YYYY-MM-DD
+      // Sin usar new Date() para evitar problemas de zona horaria
+      const [year, month, day] = dateStr.split('-');
+      
+      // Check-out a las 11:59 AM, Check-in a las 12:00 PM
+      const time = isCheckout ? '11:59:00' : '12:00:00';
+      return `${year}-${month}-${day} ${time}`;
+    }
+
+    // Find next available date
+    async function findNextAvailableDate() {
+      console.log('🔍 Buscando primera fecha disponible...');
+      const maxDaysToCheck = 30; // Buscar hasta 30 días en el futuro
+      
+      // Empezar desde mañana
+      let checkDate = new Date(today);
+      checkDate.setDate(checkDate.getDate() + 1);
+      
+      for (let i = 0; i < maxDaysToCheck; i++) {
+        // Formatear fecha sin usar toISOString() para evitar problemas de zona horaria
+        const year = checkDate.getFullYear();
+        const month = String(checkDate.getMonth() + 1).padStart(2, '0');
+        const day = String(checkDate.getDate()).padStart(2, '0');
+        const checkInStr = `${year}-${month}-${day}`;
+        
+        // Calcular fecha de salida (día siguiente)
+        const checkOutDate = new Date(checkDate);
+        checkOutDate.setDate(checkOutDate.getDate() + 1);
+        const outYear = checkOutDate.getFullYear();
+        const outMonth = String(checkOutDate.getMonth() + 1).padStart(2, '0');
+        const outDay = String(checkOutDate.getDate()).padStart(2, '0');
+        const checkOutStr = `${outYear}-${outMonth}-${outDay}`;
+        
+        const checkInWithTime = addTimeToDate(checkInStr);
+        const checkOutWithTime = addTimeToDate(checkOutStr, true);
+        
+        console.log(`📅 Verificando fecha ${i + 1}:`, {
+          checkIn: checkInWithTime,
+          checkOut: checkOutWithTime
+        });
+        
+        try {
+          const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
+          const res = await fetch(url);
+          const json = await res.json();
+          
+          console.log(`  → Disponible: ${json.available}`);
+          
+          if (json.available) {
+            // Encontramos una fecha disponible
+            console.log(`✅ Fecha disponible encontrada: ${checkInStr}`);
+            checkInInput.value = checkInStr;
+            checkOutInput.value = checkOutStr;
+            checkOutInput.setAttribute('min', checkOutStr);
+            
+            const nights = updateDurationDisplay(checkInStr, checkOutStr);
+            await fetchPrice(checkInStr, nights);
+            showNotification(`✅ Primera fecha disponible: ${checkInStr}`, 'success');
+            return;
+          }
+        } catch (err) {
+          console.error("❌ Error verificando fecha:", checkInStr, err);
+        }
+        
+        // Avanzar al siguiente día
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      // No se encontró fecha disponible en los próximos 30 días
+      console.log('❌ No se encontró fecha disponible en 30 días');
+      showNotification('⚠️ No hay fechas disponibles en los próximos 30 días', 'error');
     }
 
     // Check room availability
@@ -570,6 +700,12 @@
       }
     });
 
+    // Convertir enganche a letras automáticamente
+    engancheField.addEventListener("input", (e) => {
+      const amount = parseFloat(e.target.value) || 0;
+      engancheTextField.value = amount > 0 ? numberToWords(amount) : '';
+    });
+
     // Form submission validation
     document.getElementById('formReserve').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -594,10 +730,16 @@
       if (hiddenCheckIn) hiddenCheckIn.value = checkInWithTime;
       if (hiddenCheckOut) hiddenCheckOut.value = checkOutWithTime;
 
+      // Mostrar overlay con mensaje de creación
       submitButton.disabled = true;
       submitButton.textContent = 'Creando reservación...';
-      if (overlay) overlay.classList.remove('hidden');
-
+      
+      if (overlay) {
+        overlay.classList.remove('hidden');
+        const loadingMsg = document.getElementById('loadingMessage');
+        if (loadingMsg) loadingMsg.textContent = '✨ Creando reservación...';
+      }
+      
       // Submit the form
       e.target.submit();
     });

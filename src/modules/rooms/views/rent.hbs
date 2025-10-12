@@ -2,19 +2,19 @@
 
 <div id="center-root" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-x-hidden md:grid md:place-items-center lg:grid lg:place-items-center">
   <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+  <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center hidden">
     <div class="flex flex-col items-center gap-3">
       <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="img">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
       </svg>
-      <p class="text-sm text-blue-900 font-medium">Cargando formulario...</p>
+      <p id="loadingMessage" class="text-sm text-blue-900 font-medium">Cargando formulario...</p>
     </div>
   </div>
   <div class="max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-4 pt-16 sm:pt-20 lg:pt-0 xl:pt-2 pb-24 sm:pb-20 lg:pb-0">
 
     <!-- Skeleton while loading -->
-    <div id="rentSkeleton" class="bg-white rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 p-6 animate-pulse">
+    <div id="rentSkeleton" class="bg-white rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 p-6 animate-pulse hidden">
       <div class="h-6 w-48 bg-slate-200 rounded mb-4"></div>
       <div class="h-4 w-40 bg-slate-200 rounded mb-2"></div>
       <div class="h-4 w-56 bg-slate-200 rounded mb-4"></div>
@@ -30,7 +30,7 @@
       id="formRent"
       action="/rooms/create-renta/{{habitacion.id}}"
       method="POST"
-      class="bg-white rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-[1px] hidden"
+      class="bg-white rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-[1px]"
       aria-labelledby="form-title"
     >
       <input type="hidden" id="room_id" value="{{habitacion.id}}">
@@ -109,13 +109,15 @@
               </h3>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label for="check_in" class="block text-sm font-medium text-slate-700 mb-1">Entrada *</label>
+                  <label for="check_in" class="block text-sm font-medium text-slate-700 mb-1">
+                    Entrada * <span class="text-xs text-slate-500">(Hoy)</span>
+                  </label>
                   <div class="relative group">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-colors">
                       <path d="M6.75 3a.75.75 0 01.75.75V5h9V3.75a.75.75 0 011.5 0V5h.75A2.25 2.25 0 0121 7.25v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.25A2.25 2.25 0 015.25 5H6V3.75A.75.75 0 016.75 3zM4.5 9v9.75c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V9H4.5z"/>
                     </svg>
                     <input id="check_in" type="date" required
-                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg outline-none transition-colors duration-200"/>
                     <input type="hidden" id="check_in_with_time" name="check_in" value=""/>
                   </div>
                 </div>
@@ -276,48 +278,52 @@
     const submitButton = document.querySelector('button[type="submit"]');
     
     // ============================================
-    // VALIDACIÓN: Solo rentas para el día de hoy
+    // VALIDACIÓN: Check-in FIJO en HOY, Check-out modificable
     // ============================================
+    // Obtener fecha local correcta (sin problemas de zona horaria)
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`; // Formato YYYY-MM-DD
     
-    // Establecer fecha mínima y máxima = HOY
+    console.log('📅 Fecha de HOY:', todayStr);
+    
+    // Check-in BLOQUEADO en HOY (no modificable)
+    checkInInput.value = todayStr;
     checkInInput.setAttribute('min', todayStr);
     checkInInput.setAttribute('max', todayStr);
-    checkInInput.value = todayStr; // Establecer HOY por defecto
+    checkInInput.setAttribute('readonly', 'readonly');
+    checkInInput.style.backgroundColor = '#f3f4f6'; // Gris claro para indicar que está bloqueado
+    checkInInput.style.cursor = 'not-allowed';
     
-    // Fecha de salida mínima = mañana
+    // Check-out por defecto MAÑANA (pero modificable)
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    checkOutInput.setAttribute('min', tomorrowStr);
-    checkOutInput.value = tomorrowStr; // Establecer mañana por defecto
+    const tomorrowYear = tomorrow.getFullYear();
+    const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0');
+    const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
     
-    // Validar si el usuario intenta cambiar manualmente la fecha de entrada
-    checkInInput.addEventListener('change', function() {
-      if (this.value !== todayStr) {
-        showNotification('⚠️ Solo se pueden crear rentas para el día de hoy', 'error');
-        this.value = todayStr;
-      }
+    console.log('📅 Fecha de MAÑANA:', tomorrowStr);
+    
+    checkOutInput.setAttribute('min', tomorrowStr);
+    checkOutInput.value = tomorrowStr;
+    
+    // Prevenir cambios en el check-in
+    checkInInput.addEventListener('click', function(e) {
+      e.preventDefault();
+      showNotification('📅 La fecha de entrada siempre es HOY', 'info');
     });
     
-    // Actualizar fecha mínima de salida cuando cambia entrada
-    checkInInput.addEventListener('input', function() {
-      const checkInDate = new Date(this.value);
-      const nextDay = new Date(checkInDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      checkOutInput.min = nextDay.toISOString().split('T')[0];
-      
-      if (checkOutInput.value && checkOutInput.value <= this.value) {
-        checkOutInput.value = nextDay.toISOString().split('T')[0];
-      }
+    checkInInput.addEventListener('keydown', function(e) {
+      e.preventDefault();
     });
 
     // Reveal flow: hide overlay and skeleton, show form
     setTimeout(() => {
-      hideOverlay();
+      // El formulario ya está visible por defecto ahora
       if (skeleton) skeleton.classList.add('hidden');
-      if (form) form.classList.remove('hidden');
       
       // ============================================
       // CALCULAR PRECIO AUTOMÁTICAMENTE al cargar
@@ -404,17 +410,26 @@
       }
     }
 
-    // Add time to date (12:00 PM noon in local time, accounting for UTC conversion)
+    // Add time to date
+    // Check-in: 12:00 PM (mediodía)
+    // Check-out: 11:59 AM (para permitir reservaciones el mismo día a las 12:00 PM)
     function addTimeToDate(dateStr, isCheckout = false) {
-      if (!dateStr) return '';
-      // Create a date at noon local time
-      const date = new Date(`${dateStr}T12:00:00`);
-      // Format as ISO string but MySQL will interpret as local, so we need to format differently
-      // Get the date in YYYY-MM-DD HH:MM:SS format for MySQL
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day} 12:00:00`;
+      if (!dateStr) {
+        console.log('⚠️ addTimeToDate: dateStr está vacío');
+        return '';
+      }
+      
+      // Extraer año, mes y día directamente del string YYYY-MM-DD
+      // Sin usar new Date() para evitar problemas de zona horaria
+      const [year, month, day] = dateStr.split('-');
+      
+      // Check-out a las 11:59 AM, Check-in a las 12:00 PM
+      const time = isCheckout ? '11:59:00' : '12:00:00';
+      const result = `${year}-${month}-${day} ${time}`;
+      
+      console.log(`⏰ addTimeToDate(${dateStr}, isCheckout=${isCheckout}) → ${result}`);
+      
+      return result;
     }
 
     // Check room availability
@@ -594,9 +609,15 @@
       document.getElementById('check_in_with_time').value = checkInWithTime;
       document.getElementById('check_out_with_time').value = checkOutWithTime;
       
+      // Mostrar overlay con mensaje de creación
       submitButton.disabled = true;
       submitButton.textContent = 'Creando renta...';
-      if (overlay) overlay.classList.remove('hidden');
+      
+      if (overlay) {
+        overlay.classList.remove('hidden');
+        const loadingMsg = document.getElementById('loadingMessage');
+        if (loadingMsg) loadingMsg.textContent = '✨ Creando renta...';
+      }
       
       // Submit the form
       e.target.submit();

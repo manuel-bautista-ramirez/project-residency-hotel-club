@@ -80,6 +80,8 @@ CREATE TABLE IF NOT EXISTS reservaciones (
   fecha_salida DATETIME NOT NULL,
   monto DECIMAL(10,2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
+  enganche DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Monto del enganche/anticipo pagado',
+  enganche_letras VARCHAR(255) DEFAULT '' COMMENT 'Enganche en letras',
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   pdf_path VARCHAR(500) NULL COMMENT 'Ruta del archivo PDF generado',
   qr_path VARCHAR(500) NULL COMMENT 'Ruta del archivo QR generado',
@@ -102,7 +104,7 @@ CREATE TABLE IF NOT EXISTS reservaciones (
     REFERENCES medios_mensajes (id_medio_mensaje) 
     ON DELETE RESTRICT 
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de reservaciones con rutas de archivos PDF y QR';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de reservaciones con enganche/anticipo, rutas de archivos PDF y QR';
 
 
 CREATE TABLE IF NOT EXISTS rentas (

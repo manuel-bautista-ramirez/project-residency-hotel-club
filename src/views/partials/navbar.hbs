@@ -1,58 +1,160 @@
-<header class="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-blue-800 to-blue-700 text-white shadow-md border-b border-blue-700/40 backdrop-saturate-150">
+<header
+  class="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-blue-800 to-blue-700 text-white shadow-md border-b border-blue-700/40 backdrop-saturate-150"
+>
   <!-- iOS safe-area filler to prevent white stripe at the notch/status bar -->
-  <div class="md:hidden" style="height: env(safe-area-inset-top); background: #1e40af;"></div>
-  <div class="max-w-7xl mx-auto flex items-center justify-between p-2.5 sm:p-3 lg:p-3 min-h-[48px] sm:min-h-[54px]">
+  <div
+    class="md:hidden"
+    style="height: env(safe-area-inset-top); background: #1e40af;"
+  ></div>
+  <div
+    class="max-w-7xl mx-auto flex items-center justify-between p-2.5 sm:p-3 lg:p-3 min-h-[48px] sm:min-h-[54px]"
+  >
     <!-- Logo -->
-    <a href="/" class="inline-flex items-center gap-1.5 text-xs sm:text-sm md:text-base font-bold leading-tight tracking-tight hover:text-blue-200 transition">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 opacity-90">
-        <path d="M3 10.5l9-6 9 6V19a2 2 0 01-2 2h-4.5v-5h-5V21H5a 2 2 0 01-2-2v-8.5z" />
+    <a
+      href="/"
+      class="inline-flex items-center gap-1.5 text-xs sm:text-sm md:text-base font-bold leading-tight tracking-tight hover:text-blue-200 transition"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        class="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 opacity-90"
+      >
+        <path
+          d="M3 10.5l9-6 9 6V19a2 2 0 01-2 2h-4.5v-5h-5V21H5a 2 2 0 01-2-2v-8.5z"
+        />
       </svg>
       Hotel Residencial
     </a>
 
     <!-- Enlaces desktop -->
     <nav aria-label="Principal" class="hidden md:block">
-      <ul class="flex items-center gap-1.5 md:gap-2 lg:gap-3 flex-nowrap whitespace-nowrap overflow-hidden">
+      <ul
+        class="flex items-center gap-1.5 md:gap-2 lg:gap-3 flex-nowrap whitespace-nowrap overflow-hidden"
+      >
         {{#if (eq user.role "Administrador")}}
           <li>
-            <a href="/admin" class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110">
-                <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />
+            <a
+              href="/admin"
+              class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
+              >
+                <path
+                  d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"
+                />
               </svg>
               <span>Panel de Administración</span>
             </a>
           </li>
         {{/if}}
         <li>
-          <a href="/rooms" class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110">
-              <path d="M21 10.5V21h-2.25v-4.5H5.25V21H3V10.5L12 4l9 6.5zM7.5 12.75h9v-2.062L12 7.75l-4.5 2.938v2.062z" />
+          <a
+            href="/entries"
+            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
+            >
+              <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd"/>
+            </svg>
+            <span>Entradas</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/rooms"
+            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
+            >
+              <path
+                d="M21 10.5V21h-2.25v-4.5H5.25V21H3V10.5L12 4l9 6.5zM7.5 12.75h9v-2.062L12 7.75l-4.5 2.938v2.062z"
+              />
             </svg>
             <span>Habitaciones</span>
           </a>
         </li>
         <li>
-          <a href="/memberships" class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110">
-              <path d="M3.75 5.25A2.25 2.25 0 016 3h12a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 21H6a2.25 2.25 0 01-2.25-2.25V5.25zM6 6.75h12v3H6v-3zm0 4.5h7.5V18H6v-6.75z" />
+          <a
+            href="/rooms/calendario"
+            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
+            >
+              <path d="M12.75 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM7.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM8.25 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM9.75 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM10.5 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM12.75 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM14.25 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 13.5a.75.75 0 100-1.5.75.75 0 000 1.5z"/>
+              <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clip-rule="evenodd"/>
+            </svg>
+            <span>Calendario</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/memberships"
+            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
+            >
+              <path
+                d="M3.75 5.25A2.25 2.25 0 016 3h12a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 21H6a2.25 2.25 0 01-2.25-2.25V5.25zM6 6.75h12v3H6v-3zm0 4.5h7.5V18H6v-6.75z"
+              />
             </svg>
             <span>Membresías</span>
           </a>
         </li>
         {{#if (eq user.role "Administrador")}}
           <li>
-            <a href="/services" class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110">
-                <path d="M21.6 7.2l-2.8 2.8-4-4 2.8-2.8a1 1 0 011.4 0l2.6 2.6a1 1 0 010 1.4zM3 17.25V21h3.75l10.6-10.6-3.75-3.75L3 17.25z" />
+            <a
+              href="/services"
+              class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
+              >
+                <path
+                  d="M21.6 7.2l-2.8 2.8-4-4 2.8-2.8a1 1 0 011.4 0l2.6 2.6a1 1 0 010 1.4zM3 17.25V21h3.75l10.6-10.6-3.75-3.75L3 17.25z"
+                />
               </svg>
               <span>Servicios</span>
             </a>
           </li>
         {{/if}}
         <li>
-          <a href="/logout" class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110">
-              <path d="M15.75 4.5v3h-6V4.5H6v15h3.75v-3h6v3H21v-15h-5.25zM9.75 13.5h6l-1.875 1.875 1.06 1.06L19.5 12l-4.565-4.435-1.06 1.06L15.75 10.5h-6v3z" />
+          <a
+            href="/logout"
+            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
+            >
+              <path
+                d="M15.75 4.5v3h-6V4.5H6v15h3.75v-3h6v3H21v-15h-5.25zM9.75 13.5h6l-1.875 1.875 1.06 1.06L19.5 12l-4.565-4.435-1.06 1.06L15.75 10.5h-6v3z"
+              />
             </svg>
             <span>Cerrar Sesión</span>
           </a>
@@ -61,61 +163,176 @@
     </nav>
 
     <!-- Botón hamburguesa móvil -->
-    <button id="btn-open-sidebar" class="md:hidden focus:outline-none p-2 rounded hover:bg-white/10 active:scale-[0.98] transition" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
-      <svg class="w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-200 hover:rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    <button
+      id="btn-open-sidebar"
+      class="md:hidden focus:outline-none p-2 rounded hover:bg-white/10 active:scale-[0.98] transition"
+      aria-label="Abrir menú"
+      aria-controls="sidebar"
+      aria-expanded="false"
+    >
+      <svg
+        class="w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-200 hover:rotate-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 6h16M4 12h16M4 18h16"
+        />
       </svg>
     </button>
   </div>
 
   <!-- Sidebar móvil -->
-  <div id="sidebar" class="fixed top-0 left-0 w-64 max-w-[80vw] bg-blue-700 shadow-xl transform -translate-x-full transition-transform duration-200 ease-out z-40 flex flex-col" role="dialog" aria-modal="true" aria-hidden="true" style="height: 100dvh; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);">
-    <div class="flex justify-between items-center p-4 border-b border-blue-600/60 sticky top-0 bg-blue-700" style="margin-top: calc(-1 * env(safe-area-inset-top)); padding-top: calc(env(safe-area-inset-top) + 1rem);">
+  <div
+    id="sidebar"
+    class="fixed top-0 left-0 w-64 max-w-[80vw] bg-blue-700 shadow-xl transform -translate-x-full transition-transform duration-200 ease-out z-40 flex flex-col"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    style="height: 100dvh; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);"
+  >
+    <div
+      class="flex justify-between items-center p-4 border-b border-blue-600/60 sticky top-0 bg-blue-700"
+      style="margin-top: calc(-1 * env(safe-area-inset-top)); padding-top: calc(env(safe-area-inset-top) + 1rem);"
+    >
       <span class="font-bold text-white">Menú</span>
-      <button id="btn-close-sidebar" class="text-white focus:outline-none hover:text-green-200 p-2 rounded" aria-label="Cerrar menú">&times;</button>
+      <button
+        id="btn-close-sidebar"
+        class="text-white focus:outline-none hover:text-green-200 p-2 rounded"
+        aria-label="Cerrar menú"
+      >&times;</button>
 
     </div>
-    <ul class="flex-1 flex flex-col space-y-2 p-3 bg-blue-700 text-white overflow-y-auto">
+    <ul
+      class="flex-1 flex flex-col space-y-2 p-3 bg-blue-700 text-white overflow-y-auto"
+    >
       {{#if (eq user.role "Administrador")}}
         <li>
-          <a href="/admin" class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110">
-              <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z" />
+          <a
+            href="/admin"
+            class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
+            >
+              <path
+                d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"
+              />
             </svg>
             <span>Panel de Administración</span>
           </a>
         </li>
       {{/if}}
       <li>
-        <a href="/rooms" class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110">
-            <path d="M21 10.5V21h-2.25v-4.5H5.25V21H3V10.5L12 4l9 6.5zM7.5 12.75h9v-2.062L12 7.75l-4.5 2.938v2.062z" />
+        <a
+          href="/entries"
+          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
+          >
+            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd"/>
+          </svg>
+          <span>Entradas</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href="/rooms"
+          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
+          >
+            <path
+              d="M21 10.5V21h-2.25v-4.5H5.25V21H3V10.5L12 4l9 6.5zM7.5 12.75h9v-2.062L12 7.75l-4.5 2.938v2.062z"
+            />
           </svg>
           <span>Habitaciones</span>
         </a>
       </li>
       <li>
-        <a href="/memberships" class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110">
-            <path d="M3.75 5.25A2.25 2.25 0 016 3h12a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 21H6a2.25 2.25 0 01-2.25-2.25V5.25zM6 6.75h12v3H6v-3zm0 4.5h7.5V18H6v-6.75z" />
+        <a
+          href="/rooms/calendario"
+          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
+          >
+            <path d="M12.75 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM7.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM8.25 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM9.75 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM10.5 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM12.75 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM14.25 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 13.5a.75.75 0 100-1.5.75.75 0 000 1.5z"/>
+            <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clip-rule="evenodd"/>
+          </svg>
+          <span>Calendario</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href="/memberships"
+          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
+          >
+            <path
+              d="M3.75 5.25A2.25 2.25 0 016 3h12a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 21H6a2.25 2.25 0 01-2.25-2.25V5.25zM6 6.75h12v3H6v-3zm0 4.5h7.5V18H6v-6.75z"
+            />
           </svg>
           <span>Membresías</span>
         </a>
       </li>
       {{#if (eq user.role "Administrador")}}
         <li>
-          <a href="/services" class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110">
-              <path d="M21.6 7.2l-2.8 2.8-4-4 2.8-2.8a1 1 0 011.4 0l2.6 2.6a1 1 0 010 1.4zM3 17.25V21h3.75l10.6-10.6-3.75-3.75L3 17.25z" />
+          <a
+            href="/services"
+            class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
+            >
+              <path
+                d="M21.6 7.2l-2.8 2.8-4-4 2.8-2.8a1 1 0 011.4 0l2.6 2.6a1 1 0 010 1.4zM3 17.25V21h3.75l10.6-10.6-3.75-3.75L3 17.25z"
+              />
             </svg>
             <span>Servicios</span>
           </a>
         </li>
       {{/if}}
       <li>
-        <a href="/logout" class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110">
-            <path d="M15.75 4.5v3h-6V4.5H6v15h3.75v-3h6v3H21v-15h-5.25zM9.75 13.5h6l-1.875 1.875 1.06 1.06L19.5 12l-4.565-4.435-1.06 1.06L15.75 10.5h-6v3z" />
+        <a
+          href="/logout"
+          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
+          >
+            <path
+              d="M15.75 4.5v3h-6V4.5H6v15h3.75v-3h6v3H21v-15h-5.25zM9.75 13.5h6l-1.875 1.875 1.06 1.06L19.5 12l-4.565-4.435-1.06 1.06L15.75 10.5h-6v3z"
+            />
           </svg>
           <span>Cerrar Sesión</span>
         </a>
@@ -124,102 +341,61 @@
   </div>
 
   <!-- Overlay semitransparente -->
-  <div id="overlay" class="fixed inset-0 bg-black/50 hidden z-30 md:hidden"></div>
+  <div
+    id="overlay"
+    class="fixed inset-0 bg-black/50 hidden z-30 md:hidden"
+  ></div>
 </header>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const btnOpen = document.getElementById('btn-open-sidebar');
-  const btnClose = document.getElementById('btn-close-sidebar');
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
-  const focusableSelectors = 'a, button, input, select, textarea, [tabindex]';
-  let lastFocused = null;
-
-  // Set mobile browser bar color to match navbar (blue-800)
-  (function setThemeColor() {
-    const NAV_BLUE = '#1e40af';
-    let meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'theme-color');
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', NAV_BLUE);
-    // Also set platform-specific meta where possible
-    let ms = document.querySelector('meta[name="msapplication-navbutton-color"]');
-    if (!ms) {
-      ms = document.createElement('meta');
-      ms.setAttribute('name', 'msapplication-navbutton-color');
-      document.head.appendChild(ms);
-    }
-    ms.setAttribute('content', NAV_BLUE);
-    let appleCap = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
-    if (!appleCap) {
-      appleCap = document.createElement('meta');
-      appleCap.setAttribute('name', 'apple-mobile-web-app-capable');
-      document.head.appendChild(appleCap);
-    }
-    appleCap.setAttribute('content', 'yes');
-    let appleStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if (!appleStyle) {
-      appleStyle = document.createElement('meta');
-      appleStyle.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-      document.head.appendChild(appleStyle);
-    }
-    appleStyle.setAttribute('content', 'black-translucent');
-    // Optional: keep it updated if system theme changes
-    const mql = window.matchMedia('(prefers-color-scheme: dark)');
-    if (mql && typeof mql.addEventListener === 'function') {
-      mql.addEventListener('change', () => meta.setAttribute('content', NAV_BLUE));
-    }
-  })();
-
-  const openSidebar = () => {
-    lastFocused = document.activeElement;
-    sidebar.classList.remove('-translate-x-full');
-    sidebar.setAttribute('aria-hidden', 'false');
-    btnOpen.setAttribute('aria-expanded', 'true');
-    overlay.classList.remove('hidden');
-    // prevent body scroll
-    document.body.style.overflow = 'hidden';
-    // focus first link
-    const first = sidebar.querySelector(focusableSelectors);
-    if (first) first.focus();
-  };
-
-  const closeSidebar = () => {
-    sidebar.classList.add('-translate-x-full');
-    sidebar.setAttribute('aria-hidden', 'true');
-    btnOpen.setAttribute('aria-expanded', 'false');
-    overlay.classList.add('hidden');
-    document.body.style.overflow = '';
-    if (lastFocused) lastFocused.focus();
-  };
-
-  btnOpen.addEventListener('click', openSidebar);
-  btnClose.addEventListener('click', closeSidebar);
-  overlay.addEventListener('click', closeSidebar);
-
-  // Close on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !sidebar.classList.contains('-translate-x-full')) {
-      closeSidebar();
-    }
-  });
-
-  // Cerrar sidebar si cambia a desktop
-  window.addEventListener('resize', () => {
-    if (window.innerWidth >= 768) {
-      closeSidebar();
-    }
-  });
-
-  // Cerrar sidebar al hacer click en cualquier enlace
-  document.querySelectorAll('#sidebar a').forEach(a => {
-    a.addEventListener('click', () => {
-      if (window.innerWidth < 768) closeSidebar();
-    });
-  });
-});
+  document.addEventListener('DOMContentLoaded', () => { const btnOpen =
+  document.getElementById('btn-open-sidebar'); const btnClose =
+  document.getElementById('btn-close-sidebar'); const sidebar =
+  document.getElementById('sidebar'); const overlay =
+  document.getElementById('overlay'); const focusableSelectors = 'a, button,
+  input, select, textarea, [tabindex]'; let lastFocused = null; // Set mobile
+  browser bar color to match navbar (blue-800) (function setThemeColor() { const
+  NAV_BLUE = '#1e40af'; let meta =
+  document.querySelector('meta[name="theme-color"]'); if (!meta) { meta =
+  document.createElement('meta'); meta.setAttribute('name', 'theme-color');
+  document.head.appendChild(meta); } meta.setAttribute('content', NAV_BLUE); //
+  Also set platform-specific meta where possible let ms =
+  document.querySelector('meta[name="msapplication-navbutton-color"]'); if (!ms)
+  { ms = document.createElement('meta'); ms.setAttribute('name',
+  'msapplication-navbutton-color'); document.head.appendChild(ms); }
+  ms.setAttribute('content', NAV_BLUE); let appleCap =
+  document.querySelector('meta[name="apple-mobile-web-app-capable"]'); if
+  (!appleCap) { appleCap = document.createElement('meta');
+  appleCap.setAttribute('name', 'apple-mobile-web-app-capable');
+  document.head.appendChild(appleCap); } appleCap.setAttribute('content',
+  'yes'); let appleStyle =
+  document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (!appleStyle) { appleStyle = document.createElement('meta');
+  appleStyle.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+  document.head.appendChild(appleStyle); } appleStyle.setAttribute('content',
+  'black-translucent'); // Optional: keep it updated if system theme changes
+  const mql = window.matchMedia('(prefers-color-scheme: dark)'); if (mql &&
+  typeof mql.addEventListener === 'function') { mql.addEventListener('change',
+  () => meta.setAttribute('content', NAV_BLUE)); } })(); const openSidebar = ()
+  => { lastFocused = document.activeElement;
+  sidebar.classList.remove('-translate-x-full');
+  sidebar.setAttribute('aria-hidden', 'false');
+  btnOpen.setAttribute('aria-expanded', 'true');
+  overlay.classList.remove('hidden'); // prevent body scroll
+  document.body.style.overflow = 'hidden'; // focus first link const first =
+  sidebar.querySelector(focusableSelectors); if (first) first.focus(); }; const
+  closeSidebar = () => { sidebar.classList.add('-translate-x-full');
+  sidebar.setAttribute('aria-hidden', 'true');
+  btnOpen.setAttribute('aria-expanded', 'false');
+  overlay.classList.add('hidden'); document.body.style.overflow = ''; if
+  (lastFocused) lastFocused.focus(); }; btnOpen.addEventListener('click',
+  openSidebar); btnClose.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar); // Close on Escape
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' &&
+  !sidebar.classList.contains('-translate-x-full')) { closeSidebar(); } }); //
+  Cerrar sidebar si cambia a desktop window.addEventListener('resize', () => {
+  if (window.innerWidth >= 768) { closeSidebar(); } }); // Cerrar sidebar al
+  hacer click en cualquier enlace document.querySelectorAll('#sidebar
+  a').forEach(a => { a.addEventListener('click', () => { if (window.innerWidth <
+  768) closeSidebar(); }); }); });
 </script>

@@ -37,6 +37,9 @@ import {
   // Funciones para conversión de reservación a renta
   renderConvertReservationToRent,
   handleConvertReservationToRent,
+  // Funciones para calendario
+  renderCalendarioRooms,
+  getCalendarData,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -71,8 +74,9 @@ routerRoom.post("/api/rooms/convertReservationToRent/:id", handleConvertReservat
 routerRoom.post("/rooms/delete/:id", deleteByIdResevation);
 routerRoom.post("/rentas/eliminar/:id", deleteIdRenta);
 
-// routerRoom.get("/rooms/calendario", renderCalendario)
-// routerRoom.get('/rooms/calendario', fetchEventos);
+// ----- CALENDARIO -----
+routerRoom.get("/rooms/calendario", renderCalendarioRooms);
+routerRoom.get("/api/rooms/calendar-data", getCalendarData);
 
 // ----- API for promesas -----
 
