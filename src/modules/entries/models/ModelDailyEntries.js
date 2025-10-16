@@ -1,6 +1,7 @@
 // ModelDailyEntries.js
 import { pool } from "../../../dataBase/connectionDataBase.js";
 
+//Stashed changes
 /*** --- CRUD FUNCTIONS --- ***/
 
 // Get all entries

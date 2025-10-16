@@ -36,8 +36,8 @@ app.set('views', [
   path.join( './src/modules/rooms/views/'),
   path.join( './src/modules/login/views/'),
   path.join( './src/modules/entries/views/'),
-  path.join("./src/modules/store/views/")
-  
+  path.join( './src/modules/store/views/'),
+
 ]);
 
 app.set('port', config.app.port);
