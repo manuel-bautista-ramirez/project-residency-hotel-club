@@ -5,7 +5,7 @@
 
 .env
 
-/src/modules/store/*
+
 
 /whatsapp_session/*
 

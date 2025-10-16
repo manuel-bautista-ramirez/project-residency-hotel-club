@@ -18,5 +18,5 @@ export const hbsHelpers = {
   lte: (a, b) => a <= b,
   // Helper para comparar mayor o igual que
   gte: (a, b) => a >= b,
-  //json: (context) => JSON.stringify(context)
+  json: (context) => JSON.stringify(context)
 };

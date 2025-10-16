@@ -1,0 +1,319 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 pb-20">
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex items-center gap-3 mb-4">
+        <a href="/store/sales" class="text-purple-600 hover:text-purple-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path fill-rule="evenodd" d="M7.28 7.72a.75.75 0 010 1.06l-2.47 2.47H21a.75.75 0 010 1.5H4.81l2.47 2.47a.75.75 0 11-1.06 1.06l-3.75-3.75a.75.75 0 010-1.06l3.75-3.75a.75.75 0 011.06 0z" clip-rule="evenodd"/>
+          </svg>
+        </a>
+        <h1 class="text-3xl md:text-4xl font-bold text-purple-900">
+          📊 Reportes de Ventas
+        </h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Filtros -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+      <h2 class="text-lg font-bold text-gray-800 mb-4">Seleccionar Período</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label for="fechaInicio" class="block text-sm font-medium text-gray-700 mb-2">
+            Fecha Inicio
+          </label>
+          <input
+            type="date"
+            id="fechaInicio"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+          />
+        </div>
+
+        <div>
+          <label for="fechaFin" class="block text-sm font-medium text-gray-700 mb-2">
+            Fecha Fin
+          </label>
+          <input
+            type="date"
+            id="fechaFin"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+          />
+        </div>
+
+        <div class="flex items-end">
+          <button
+            onclick="generateReport()"
+            class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-md transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+              <path fill-rule="evenodd" d="M2.25 2.25a.75.75 0 000 1.5H3v10.5a3 3 0 003 3h1.21l-1.172 3.513a.75.75 0 001.424.474l.329-.987h8.418l.33.987a.75.75 0 001.422-.474l-1.17-3.513H18a3 3 0 003-3V3.75h.75a.75.75 0 000-1.5H2.25zm6.54 15h6.42l.5 1.5H8.29l.5-1.5zm8.085-8.995a.75.75 0 10-.75-1.299 12.81 12.81 0 00-3.558 3.05L11.03 8.47a.75.75 0 00-1.06 0l-3 3a.75.75 0 101.06 1.06l2.47-2.47 1.617 1.618a.75.75 0 001.146-.102 11.312 11.312 0 013.612-3.321z" clip-rule="evenodd"/>
+            </svg>
+            Generar Reporte
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultados del reporte -->
+    <div id="reportResults" class="hidden">
+      
+      <!-- Estadísticas -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-600">Total Ventas</h3>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-blue-500">
+              <path fill-rule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0118 9.375v9.375a3 3 0 003-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 00-.673-.05A3 3 0 0015 1.5h-1.5a3 3 0 00-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6zM13.5 3A1.5 1.5 0 0012 4.5h4.5A1.5 1.5 0 0015 3h-1.5z" clip-rule="evenodd"/>
+              <path fill-rule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 013 20.625V9.375zm9.586 4.594a.75.75 0 00-1.172-.938l-2.476 3.096-.908-.907a.75.75 0 00-1.06 1.06l1.5 1.5a.75.75 0 001.116-.062l3-3.75z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <p id="totalVentas" class="text-3xl font-bold text-gray-800">0</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-600">Ingresos Totales</h3>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-green-500">
+              <path d="M10.464 8.746c.227-.18.497-.311.786-.394v2.795a2.252 2.252 0 01-.786-.393c-.394-.313-.546-.681-.546-1.004 0-.323.152-.691.546-1.004zM12.75 15.662v-2.824c.347.085.664.228.921.421.427.32.579.686.579.991 0 .305-.152.671-.579.991a2.534 2.534 0 01-.921.42z"/>
+              <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v.816a3.836 3.836 0 00-1.72.756c-.712.566-1.112 1.35-1.112 2.178 0 .829.4 1.612 1.113 2.178.502.4 1.102.647 1.719.756v2.978a2.536 2.536 0 01-.921-.421l-.879-.66a.75.75 0 00-.9 1.2l.879.66c.533.4 1.169.645 1.821.75V18a.75.75 0 001.5 0v-.81a4.124 4.124 0 001.821-.749c.745-.559 1.179-1.344 1.179-2.191 0-.847-.434-1.632-1.179-2.191a4.122 4.122 0 00-1.821-.75V8.354c.29.082.559.213.786.393l.415.33a.75.75 0 00.933-1.175l-.415-.33a3.836 3.836 0 00-1.719-.755V6z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <p id="totalIngresos" class="text-3xl font-bold text-green-600">$0.00</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-600">Promedio Venta</h3>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-purple-500">
+              <path fill-rule="evenodd" d="M2.25 13.5a8.25 8.25 0 018.25-8.25.75.75 0 01.75.75v6.75H18a.75.75 0 01.75.75 8.25 8.25 0 01-16.5 0z" clip-rule="evenodd"/>
+              <path fill-rule="evenodd" d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <p id="promedioVenta" class="text-3xl font-bold text-purple-600">$0.00</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-medium text-gray-600">Productos Vendidos</h3>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-orange-500">
+              <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z"/>
+            </svg>
+          </div>
+          <p id="totalProductos" class="text-3xl font-bold text-orange-600">0</p>
+        </div>
+      </div>
+
+      <!-- Ventas por tipo de pago -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Ventas por Tipo de Pago</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+            <div>
+              <p class="text-sm text-gray-600">Efectivo</p>
+              <p id="ventasEfectivo" class="text-2xl font-bold text-green-600">$0.00</p>
+            </div>
+            <span class="text-4xl">💵</span>
+          </div>
+          <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+            <div>
+              <p class="text-sm text-gray-600">Transferencia</p>
+              <p id="ventasTransferencia" class="text-2xl font-bold text-blue-600">$0.00</p>
+            </div>
+            <span class="text-4xl">🏦</span>
+          </div>
+          <div class="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+            <div>
+              <p class="text-sm text-gray-600">Tarjeta</p>
+              <p id="ventasTarjeta" class="text-2xl font-bold text-purple-600">$0.00</p>
+            </div>
+            <span class="text-4xl">💳</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Productos más vendidos -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Top 10 Productos Más Vendidos</h3>
+        <div id="topProductos" class="space-y-3">
+          <!-- Se llenará dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex gap-3">
+        <button
+          onclick="sendReportByEmail()"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+            <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z"/>
+            <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z"/>
+          </svg>
+          Enviar por Email
+        </button>
+        <button
+          onclick="sendReportByWhatsApp()"
+          class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-md transition"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+          </svg>
+          Enviar por WhatsApp
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let currentReport = null;
+
+  // Establecer fechas por defecto (último mes)
+  window.addEventListener('DOMContentLoaded', () => {
+    const today = new Date();
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    
+    document.getElementById('fechaInicio').valueAsDate = lastMonth;
+    document.getElementById('fechaFin').valueAsDate = today;
+  });
+
+  async function generateReport() {
+    const fechaInicio = document.getElementById('fechaInicio').value;
+    const fechaFin = document.getElementById('fechaFin').value;
+
+    if (!fechaInicio || !fechaFin) {
+      alert('Por favor seleccione ambas fechas');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/store/api/reports?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
+      const result = await response.json();
+
+      if (result.success) {
+        currentReport = result.reporte;
+        displayReport(currentReport);
+      } else {
+        alert('Error al generar el reporte');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al generar el reporte');
+    }
+  }
+
+  function displayReport(reporte) {
+    // Mostrar sección de resultados
+    document.getElementById('reportResults').classList.remove('hidden');
+
+    // Estadísticas generales
+    document.getElementById('totalVentas').textContent = reporte.estadisticas.totalVentas;
+    document.getElementById('totalIngresos').textContent = `$${reporte.estadisticas.totalIngresos.toFixed(2)}`;
+    document.getElementById('promedioVenta').textContent = `$${reporte.estadisticas.promedioVenta.toFixed(2)}`;
+    
+    // Calcular total de productos vendidos
+    const totalProductos = reporte.productosMasVendidos.reduce((sum, p) => sum + parseInt(p.total_vendido), 0);
+    document.getElementById('totalProductos').textContent = totalProductos;
+
+    // Ventas por tipo de pago
+    document.getElementById('ventasEfectivo').textContent = `$${reporte.estadisticas.ventasPorTipoPago.efectivo.toFixed(2)}`;
+    document.getElementById('ventasTransferencia').textContent = `$${reporte.estadisticas.ventasPorTipoPago.transferencia.toFixed(2)}`;
+    document.getElementById('ventasTarjeta').textContent = `$${reporte.estadisticas.ventasPorTipoPago.tarjeta.toFixed(2)}`;
+
+    // Top productos
+    const topProductosHtml = reporte.productosMasVendidos.map((producto, index) => `
+      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center justify-center w-8 h-8 bg-purple-600 text-white font-bold rounded-full text-sm">
+            ${index + 1}
+          </span>
+          <div>
+            <p class="font-semibold text-gray-800">${producto.nombre}</p>
+            <p class="text-sm text-gray-600">${producto.categoria}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="font-bold text-gray-800">${producto.total_vendido} unidades</p>
+          <p class="text-sm text-green-600">$${parseFloat(producto.total_ingresos).toFixed(2)}</p>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('topProductos').innerHTML = topProductosHtml || '<p class="text-gray-500 text-center">No hay datos</p>';
+  }
+
+  async function sendReportByEmail() {
+    if (!currentReport) {
+      alert('Primero genera un reporte');
+      return;
+    }
+
+    const email = prompt('Ingrese el correo electrónico:');
+    if (!email) return;
+
+    try {
+      const response = await fetch('/store/api/reports/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fechaInicio: currentReport.fechaInicio,
+          fechaFin: currentReport.fechaFin,
+          destinatario: email,
+          asunto: `Reporte de Ventas ${currentReport.fechaInicio} - ${currentReport.fechaFin}`
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('✅ Reporte enviado por email');
+      } else {
+        alert('❌ Error al enviar el reporte');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al enviar el reporte');
+    }
+  }
+
+  async function sendReportByWhatsApp() {
+    if (!currentReport) {
+      alert('Primero genera un reporte');
+      return;
+    }
+
+    const telefono = prompt('Ingrese el número de teléfono (10 dígitos):');
+    if (!telefono || telefono.length !== 10) {
+      alert('Número inválido');
+      return;
+    }
+
+    try {
+      const response = await fetch('/store/api/reports/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fechaInicio: currentReport.fechaInicio,
+          fechaFin: currentReport.fechaFin,
+          telefono
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('✅ Reporte enviado por WhatsApp');
+      } else {
+        alert('❌ Error al enviar el reporte');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error al enviar el reporte');
+    }
+  }
+</script>
