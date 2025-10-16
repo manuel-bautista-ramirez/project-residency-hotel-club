@@ -669,13 +669,10 @@ video {
   top: 0.5rem;
 }
 
-<<<<<<< Updated upstream
 .top-20 {
   top: 5rem;
 }
 
-=======
->>>>>>> Stashed changes
 .top-3\.5 {
   top: 0.875rem;
 }
@@ -704,13 +701,10 @@ video {
   z-index: 60;
 }
 
-<<<<<<< Updated upstream
 .z-\[70\] {
   z-index: 70;
 }
 
-=======
->>>>>>> Stashed changes
 .z-\[9999\] {
   z-index: 9999;
 }
@@ -1045,13 +1039,10 @@ video {
   width: 16rem;
 }
 
-<<<<<<< Updated upstream
 .w-8 {
   width: 2rem;
 }
 
-=======
->>>>>>> Stashed changes
 .w-\[12\%\] {
   width: 12%;
 }
@@ -1084,13 +1075,6 @@ video {
   max-width: 42rem;
 }
 
-<<<<<<< Updated upstream
-=======
-.max-w-48 {
-  max-width: 12rem;
-}
-
->>>>>>> Stashed changes
 .max-w-6xl {
   max-width: 72rem;
 }
@@ -1149,14 +1133,11 @@ video {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-<<<<<<< Updated upstream
 .translate-x-0 {
   --tw-translate-x: 0px;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-=======
->>>>>>> Stashed changes
 .translate-y-0 {
   --tw-translate-y: 0px;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -1615,14 +1596,11 @@ video {
   border-color: rgb(255 255 255 / 0.3);
 }
 
-<<<<<<< Updated upstream
 .border-yellow-300 {
   --tw-border-opacity: 1;
   border-color: rgb(253 224 71 / var(--tw-border-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .border-yellow-400 {
   --tw-border-opacity: 1;
   border-color: rgb(250 204 21 / var(--tw-border-opacity, 1));
@@ -1786,14 +1764,11 @@ video {
   background-color: rgb(255 237 213 / var(--tw-bg-opacity, 1));
 }
 
-<<<<<<< Updated upstream
 .bg-orange-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(249 115 22 / var(--tw-bg-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .bg-purple-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(243 232 255 / var(--tw-bg-opacity, 1));
@@ -1937,15 +1912,12 @@ video {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
-<<<<<<< Updated upstream
 .from-green-600 {
   --tw-gradient-from: #16a34a var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(22 163 74 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
-=======
->>>>>>> Stashed changes
 .from-red-500 {
   --tw-gradient-from: #ef4444 var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(239 68 68 / 0) var(--tw-gradient-to-position);
@@ -1969,14 +1941,11 @@ video {
   --tw-gradient-stops: var(--tw-gradient-from), #1e40af var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 
-<<<<<<< Updated upstream
 .via-green-500 {
   --tw-gradient-to: rgb(34 197 94 / 0)  var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), #22c55e var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 
-=======
->>>>>>> Stashed changes
 .via-purple-500 {
   --tw-gradient-to: rgb(168 85 247 / 0)  var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), #a855f7 var(--tw-gradient-via-position), var(--tw-gradient-to);
@@ -2015,13 +1984,10 @@ video {
   --tw-gradient-to: #f0fdf4 var(--tw-gradient-to-position);
 }
 
-<<<<<<< Updated upstream
 .to-green-600 {
   --tw-gradient-to: #16a34a var(--tw-gradient-to-position);
 }
 
-=======
->>>>>>> Stashed changes
 .to-pink-500 {
   --tw-gradient-to: #ec4899 var(--tw-gradient-to-position);
 }
@@ -2052,13 +2018,10 @@ video {
   padding: 0px;
 }
 
-<<<<<<< Updated upstream
 .p-1 {
   padding: 0.25rem;
 }
 
-=======
->>>>>>> Stashed changes
 .p-2 {
   padding: 0.5rem;
 }
@@ -2180,25 +2143,19 @@ video {
   padding-bottom: 1.5rem;
 }
 
-<<<<<<< Updated upstream
 .py-8 {
   padding-top: 2rem;
   padding-bottom: 2rem;
 }
 
-=======
->>>>>>> Stashed changes
 .pb-1 {
   padding-bottom: 0.25rem;
 }
 
-<<<<<<< Updated upstream
 .pb-12 {
   padding-bottom: 3rem;
 }
 
-=======
->>>>>>> Stashed changes
 .pb-2 {
   padding-bottom: 0.5rem;
 }
@@ -2211,13 +2168,10 @@ video {
   padding-bottom: 7rem;
 }
 
-<<<<<<< Updated upstream
 .pl-10 {
   padding-left: 2.5rem;
 }
 
-=======
->>>>>>> Stashed changes
 .pl-12 {
   padding-left: 3rem;
 }
@@ -2440,14 +2394,11 @@ video {
   color: rgb(146 64 14 / var(--tw-text-opacity, 1));
 }
 
-<<<<<<< Updated upstream
 .text-black {
   --tw-text-opacity: 1;
   color: rgb(0 0 0 / var(--tw-text-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .text-blue-100 {
   --tw-text-opacity: 1;
   color: rgb(219 234 254 / var(--tw-text-opacity, 1));
@@ -2518,14 +2469,11 @@ video {
   color: rgb(17 24 39 / var(--tw-text-opacity, 1));
 }
 
-<<<<<<< Updated upstream
 .text-green-100 {
   --tw-text-opacity: 1;
   color: rgb(220 252 231 / var(--tw-text-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .text-green-500 {
   --tw-text-opacity: 1;
   color: rgb(34 197 94 / var(--tw-text-opacity, 1));
@@ -2556,14 +2504,11 @@ video {
   color: rgb(79 70 229 / var(--tw-text-opacity, 1));
 }
 
-<<<<<<< Updated upstream
 .text-orange-500 {
   --tw-text-opacity: 1;
   color: rgb(249 115 22 / var(--tw-text-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .text-orange-600 {
   --tw-text-opacity: 1;
   color: rgb(234 88 12 / var(--tw-text-opacity, 1));
@@ -2614,7 +2559,6 @@ video {
   color: rgb(185 28 28 / var(--tw-text-opacity, 1));
 }
 
-<<<<<<< Updated upstream
 .text-red-800 {
   --tw-text-opacity: 1;
   color: rgb(153 27 27 / var(--tw-text-opacity, 1));
@@ -2625,8 +2569,6 @@ video {
   color: rgb(127 29 29 / var(--tw-text-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .text-slate-400 {
   --tw-text-opacity: 1;
   color: rgb(148 163 184 / var(--tw-text-opacity, 1));
@@ -2666,14 +2608,11 @@ video {
   color: rgb(202 138 4 / var(--tw-text-opacity, 1));
 }
 
-<<<<<<< Updated upstream
 .text-yellow-700 {
   --tw-text-opacity: 1;
   color: rgb(161 98 7 / var(--tw-text-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .text-yellow-800 {
   --tw-text-opacity: 1;
   color: rgb(133 77 14 / var(--tw-text-opacity, 1));
@@ -2862,13 +2801,10 @@ video {
   transition-duration: 500ms;
 }
 
-<<<<<<< Updated upstream
 .ease-in-out {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-=======
->>>>>>> Stashed changes
 .ease-out {
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
@@ -3103,13 +3039,10 @@ video {
   text-decoration-line: underline;
 }
 
-<<<<<<< Updated upstream
 .hover\:opacity-80:hover {
   opacity: 0.8;
 }
 
-=======
->>>>>>> Stashed changes
 .hover\:opacity-90:hover {
   opacity: 0.9;
 }
@@ -3162,14 +3095,11 @@ video {
   border-color: rgb(250 204 21 / var(--tw-border-opacity, 1));
 }
 
-<<<<<<< Updated upstream
 .focus\:border-yellow-500:focus {
   --tw-border-opacity: 1;
   border-color: rgb(234 179 8 / var(--tw-border-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .focus\:bg-white:focus {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
@@ -3232,14 +3162,11 @@ video {
   --tw-ring-color: rgb(250 204 21 / var(--tw-ring-opacity, 1));
 }
 
-<<<<<<< Updated upstream
 .focus\:ring-yellow-500:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(234 179 8 / var(--tw-ring-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .focus\:ring-offset-2:focus {
   --tw-ring-offset-width: 2px;
 }
@@ -3284,14 +3211,11 @@ video {
   color: rgb(59 130 246 / var(--tw-text-opacity, 1));
 }
 
-<<<<<<< Updated upstream
 .group:focus-within .group-focus-within\:text-green-500 {
   --tw-text-opacity: 1;
   color: rgb(34 197 94 / var(--tw-text-opacity, 1));
 }
 
-=======
->>>>>>> Stashed changes
 .group:focus-within .group-focus-within\:text-yellow-500 {
   --tw-text-opacity: 1;
   color: rgb(234 179 8 / var(--tw-text-opacity, 1));
@@ -3651,13 +3575,10 @@ video {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-<<<<<<< Updated upstream
   .md\:grid-cols-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-=======
->>>>>>> Stashed changes
   .md\:flex-row {
     flex-direction: row;
   }
