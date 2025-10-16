@@ -1,6 +1,10 @@
 // ModelDailyEntries.js
 import { pool } from "../../../dataBase/connectionDataBase.js";
 
+
+// ¡Asegúrate de que este nombre (connectionDataBase.js) es el nombre real del archivo en tu carpeta src/dataBase/!
+                                  
+//Stashed changes
 /*** --- CRUD FUNCTIONS --- ***/
 
 // Get all entries
