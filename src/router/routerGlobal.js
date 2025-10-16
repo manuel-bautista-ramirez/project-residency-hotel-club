@@ -40,7 +40,7 @@ routerGlobal.use(routerRoom);
 routerGlobal.use("/memberships", membershipRoutes);
 routerGlobal.use("/api/memberships", membershipApiRoutes);
 routerGlobal.use(entriesRouter);
-routerGlobal.use("/store", routerStore);
+routerGlobal.use( routerStore);
 
 
 
@@ -81,14 +81,18 @@ routerGlobal.use((req, res) => {
 
 // Middleware para manejar error 500
 routerGlobal.use((err, req, res, next) => {
+  console.error("❌❌❌ ERROR 500 CAPTURADO ❌❌❌");
+  console.error("Mensaje:", err.message);
+  console.error("Stack:", err.stack);
+  
   const isDev = process.env.NODE_ENV === "development";
 
   res.status(500).render("error500", {
     layout: "main",
     title: "500",
     mensaje: "Error interno del servidor",
-    errorMessage: isDev ? err.message : null,
-    stack: isDev ? err.stack : null,
+    errorMessage: err.message, // Siempre mostrar el mensaje
+    stack: err.stack, // Siempre mostrar el stack
     showFooter: true,
   });
 });
