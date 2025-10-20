@@ -188,13 +188,16 @@ export const handleCheckout = async (req, res) => {
     const user = req.session.user || {};
     const { nombre_cliente, email, telefono, tipo_pago, productos, total, total_letras, send_email, send_whatsapp } = req.body;
 
-    console.log("🛒 Procesando venta...");
+    // Para ventas rápidas, no necesitamos email, teléfono, etc.
+    const isQuickSale = nombre_cliente === 'Cliente de Mostrador';
+
+    console.log(`🛒 Procesando ${isQuickSale ? 'venta rápida' : 'venta'}...`);
     console.log("Productos:", productos);
     console.log("Total:", total);
 
-    // Crear medio de mensaje si hay email o teléfono
+    // Crear medio de mensaje solo si NO es venta rápida y hay email o teléfono
     let messageMethodId = null;
-    if (email || telefono) {
+    if (!isQuickSale && (email || telefono)) {
       messageMethodId = await createMessageMethod(email, telefono);
       console.log("✅ Medio de mensaje creado:", messageMethodId);
     }
@@ -214,6 +217,15 @@ export const handleCheckout = async (req, res) => {
     });
 
     console.log("✅ Venta creada con ID:", ventaId);
+
+    // Para ventas rápidas, solo responder con éxito
+    if (isQuickSale) {
+      return res.json({
+        success: true,
+        message: "Venta registrada exitosamente",
+        ventaId
+      });
+    }
 
     // Generar PDF y QR
     try {

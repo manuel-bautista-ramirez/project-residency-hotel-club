@@ -12,10 +12,20 @@
             Agregar Producto
           </a>
         {{/if}}
-        <a href="/sales" class="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-md transition-all">
+        <a href="/store/sales" class="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-md transition-all">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0118 9.375v9.375a3 3 0 003-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 00-.673-.05A3 3 0 0015 1.5h-1.5a3 3 0 00-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6zM13.5 3A1.5 1.5 0 0012 4.5h4.5A1.5 1.5 0 0015 3h-1.5z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 013 20.625V9.375zm9.586 4.594a.75.75 0 00-1.172-.938l-2.476 3.096-.908-.907a.75.75 0 00-1.06 1.06l1.5 1.5a.75.75 0 001.116-.062l3-3.75z" clip-rule="evenodd"/></svg>
           Ver Ventas
         </a>
+        {{#if (eq user.role "Administrador")}}
+          <a href="/store/dashboard" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z"/></svg>
+            Dashboard
+          </a>
+          <a href="/store/inventory" class="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg shadow-md transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v.75c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875v-.75C22.5 3.839 21.66 3 20.625 3H3.375z"/><path fill-rule="evenodd" d="m3.087 9l.54 9.176A3 3 0 006.62 21h10.757a3 3 0 002.995-2.824L20.913 9H3.087zm6.163 3.75A.75.75 0 0110 12h4a.75.75 0 010 1.5h-4a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>
+            Inventario
+          </a>
+        {{/if}}
       </div>
     </div>
   </div>
@@ -110,15 +120,25 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const products = JSON.parse('{{{json products}}}');
+    console.log('🛒 Inicializando tienda...');
+    
+    const products = {{{json products}}};
+    console.log('📦 Productos cargados:', products);
+    
     const modal = document.getElementById('sale-modal');
     const form = document.getElementById('sale-form');
     const cancelBtn = document.getElementById('cancel-sale-btn');
+    
+    if (!modal || !form || !cancelBtn) {
+      console.error('❌ No se encontraron elementos del modal');
+      return;
+    }
 
     const openModal = (product) => {
+      const precio = parseFloat(product.precio);
       document.getElementById('modal-product-id').value = product.id;
       document.getElementById('modal-product-name').textContent = product.nombre;
-      document.getElementById('modal-product-price').textContent = `$${product.precio.toFixed(2)}`;
+      document.getElementById('modal-product-price').textContent = `$${precio.toFixed(2)}`;
       document.getElementById('modal-quantity').max = product.stock;
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -130,13 +150,30 @@
       form.reset();
     };
 
-    document.querySelectorAll('.sell-btn').forEach(button => {
+    // Agregar event listeners a los botones de vender
+    document.querySelectorAll('.sell-btn').forEach((button, index) => {
+      console.log(`🔘 Configurando botón ${index + 1}`);
       button.addEventListener('click', (e) => {
+        console.log('🛒 Click en botón vender');
+        e.preventDefault();
+        
         const card = e.target.closest('.product-card');
+        if (!card) {
+          console.error('❌ No se encontró la tarjeta del producto');
+          return;
+        }
+        
         const productId = card.dataset.id;
+        console.log('🆔 ID del producto:', productId);
+        
         const product = products.find(p => p.id == productId);
+        console.log('📦 Producto encontrado:', product);
+        
         if (product) {
           openModal(product);
+        } else {
+          console.error('❌ Producto no encontrado');
+          alert('Error: Producto no encontrado');
         }
       });
     });
@@ -155,19 +192,24 @@
         return;
       }
 
+      const precio = parseFloat(product.precio);
+      const total = precio * quantity;
+      
       const saleData = {
         productos: JSON.stringify([{
           id: product.id,
           nombre: product.nombre,
-          precio: product.precio,
+          precio: precio,
           cantidad: quantity,
-          subtotal: product.precio * quantity
+          subtotal: total
         }]),
-        total: product.precio * quantity,
+        total: total,
         tipo_pago: paymentMethod,
         nombre_cliente: 'Cliente de Mostrador',
-        total_letras: numeroALetras(product.precio * quantity)
+        total_letras: convertirNumeroALetras(total)
       };
+      
+      console.log('💰 Datos de venta:', saleData);
 
       try {
         const response = await fetch('/store/checkout', {
@@ -204,6 +246,12 @@
     };
     searchInput.addEventListener('input', applyFilters);
     categoryFilter.addEventListener('change', applyFilters);
+    
+    console.log('✅ Tienda inicializada correctamente');
   });
+  
+  // Función simple para convertir números a letras
+  function convertirNumeroALetras(numero) {
+    return `${numero.toFixed(2)} pesos`;
+  }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/numero-a-letras@1.0.6/dist/numero-a-letras.min.js"></script>

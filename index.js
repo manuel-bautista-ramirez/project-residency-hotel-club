@@ -3,11 +3,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import session from "express-session";
 import { app } from "./src/config/app.js";
-import { routerGlobal } from "./src/router/routerGlobal.js";
 import { config } from "./src/config/configuration.js";
+import { routerGlobal } from "./src/router/routerGlobal.js";
 
-// Importar el servicio centralizado de WhatsApp
-import "./src/services/whatsappService.js";
 
 // Configuración de variables para __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);

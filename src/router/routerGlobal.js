@@ -3,20 +3,25 @@ import routerLogin from "../modules/login/routers/routerLogin.js";
 import { membershipApiRoutes, membershipRoutes } from "../modules/membership/routes/index.js";
 import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
 import { entriesRouter } from "../modules/entries/router/RouteDailyEntries.js";
-import { routerStore } from "../modules/store/router/storeRoutes.js";
+import { routerStore } from "../modules/store/routes/storeRoutes.js";
 
 // Rutas de módulos
 
 // Importar el servicio centralizado de WhatsApp
-import whatsappService from '../services/whatsappService.js';
+//import whatsappService from '../services/whatsappService.js';
 
 // Importar y habilitar el servicio de correo electrónico
 import emailService from '../services/emailService.js';
 
 const routerGlobal = express.Router();
 
+// Ruta raíz simple (WhatsApp temporalmente deshabilitado)
+routerGlobal.get('/', (req, res) => {
+  // Redirigir directamente al login
+  res.redirect('/login');
+});
 
-// --- Nueva Ruta Raíz Inteligente ---
+/* --- Ruta Raíz con WhatsApp (TEMPORALMENTE DESHABILITADA) ---
 routerGlobal.get('/', (req, res) => {
   const status = whatsappService.getStatus();
   if (status.connected) {
@@ -31,6 +36,7 @@ routerGlobal.get('/', (req, res) => {
     });
   }
 });
+*/
 
 
 
@@ -39,13 +45,14 @@ routerGlobal.use(routerLogin);
 routerGlobal.use(routerRoom);
 routerGlobal.use("/memberships", membershipRoutes);
 routerGlobal.use("/api/memberships", membershipApiRoutes);
-routerGlobal.use("/entries", entriesRouter);
-routerGlobal.use("/store", routerStore);
+routerGlobal.use( entriesRouter);
+routerGlobal.use(routerStore);
 
 
 
 
-// Ruta para mostrar la página del QR (ahora es manejada por la ruta raíz, pero la mantenemos por si se accede directamente)
+// Ruta para mostrar la página del QR (TEMPORALMENTE DESHABILITADA)
+/*
 routerGlobal.get('/whatsapp-qr', (req, res) => {
   const status = whatsappService.getStatus();
   if (status.connected) {
@@ -57,8 +64,10 @@ routerGlobal.get('/whatsapp-qr', (req, res) => {
     centerContent: true
   });
 });
+*/
 
-// API para obtener estado de WhatsApp en JSON
+// API para obtener estado de WhatsApp en JSON (TEMPORALMENTE DESHABILITADA)
+/*
 routerGlobal.get('/api/whatsapp/status', (req, res) => {
   try {
     const status = whatsappService.getStatus();
@@ -67,6 +76,7 @@ routerGlobal.get('/api/whatsapp/status', (req, res) => {
     res.status(500).json({ error: 'Error al obtener estado de WhatsApp' });
   }
 });
+*/
 
 
 // Middleware para manejar error 404 (después de todas las rutas)

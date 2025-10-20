@@ -16,6 +16,13 @@ import {
   sendReportByEmail,
   sendReportByWhatsApp,
 } from "../controllers/storeController.js";
+
+import {
+  renderStoreDashboard,
+  renderInventoryReport,
+  getDashboardData,
+  getStockAlerts
+} from "../controllers/reportsController.js";
 import { authMiddleware } from "../../login/middlewares/accessDenied.js";
 
 const routerStore = express.Router();
@@ -34,29 +41,29 @@ routerStore.get("/store/create", renderCreateProduct);
 routerStore.post("/store/create", handleCreateProduct);
 
 // Editar producto (solo administradores)
-routerStore.get("/edit/:id", renderEditProduct);
-routerStore.post("/edit/:id", handleUpdateProduct);
+routerStore.get("/store/edit/:id", renderEditProduct);
+routerStore.post("/store/edit/:id", handleUpdateProduct);
 
 // Eliminar producto (solo administradores)
-routerStore.get("/delete/:id", handleDeleteProduct);
+routerStore.get("/store/delete/:id", handleDeleteProduct);
 
 // =====================================================
 //              RUTAS DE VENTAS
 // =====================================================
 
 // Checkout (finalizar compra)
-routerStore.get("/checkout",  renderCheckout);
-routerStore.post("/checkout", handleCheckout);
+routerStore.get("/store/checkout",  renderCheckout);
+routerStore.post("/store/checkout", handleCheckout);
 
 // Lista de ventas
-routerStore.get("/sales", showSales);
+routerStore.get("/store/sales", showSales);
 
 // Detalle de venta
-routerStore.get("/sales/:id",  showSaleDetail);
+routerStore.get("/store/sales/:id",  showSaleDetail);
 
 // Eliminar venta (solo administradores)
 routerStore.get(
-  "/sales/delete/:id",
+  "/store/sales/delete/:id",
   handleDeleteSale
 );
 
@@ -64,19 +71,31 @@ routerStore.get(
 //              RUTAS DE REPORTES
 // =====================================================
 
+// Dashboard del store (solo administradores)
+routerStore.get("/store/dashboard", renderStoreDashboard);
+
+// Reporte de inventario (solo administradores)
+routerStore.get("/store/inventory", renderInventoryReport);
+
 // Página de reportes
 routerStore.get("/store/reports", renderReports);
 
 // Generar reporte (API)
-routerStore.get("/api/reports", generateReport);
+routerStore.get("/store/api/reports", generateReport);
 
 // Enviar reporte por email
-routerStore.post("/api/reports/email",  sendReportByEmail);
+routerStore.post("/store/api/reports/email",  sendReportByEmail);
 
 // Enviar reporte por WhatsApp
 routerStore.post(
-  "/api/reports/whatsapp",
+  "/store/api/reports/whatsapp",
   sendReportByWhatsApp
 );
+
+// API para datos del dashboard
+routerStore.get("/store/api/dashboard", getDashboardData);
+
+// API para alertas de stock
+routerStore.get("/store/api/stock-alerts", getStockAlerts);
 
 export { routerStore };
