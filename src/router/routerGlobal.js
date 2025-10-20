@@ -8,15 +8,20 @@ import { routerStore } from "../modules/store/routes/storeRoutes.js";
 // Rutas de módulos
 
 // Importar el servicio centralizado de WhatsApp
-import whatsappService from '../services/whatsappService.js';
+//import whatsappService from '../services/whatsappService.js';
 
 // Importar y habilitar el servicio de correo electrónico
 import emailService from '../services/emailService.js';
 
 const routerGlobal = express.Router();
 
+// Ruta raíz simple (WhatsApp temporalmente deshabilitado)
+routerGlobal.get('/', (req, res) => {
+  // Redirigir directamente al login
+  res.redirect('/login');
+});
 
-// --- Nueva Ruta Raíz Inteligente ---
+/* --- Ruta Raíz con WhatsApp (TEMPORALMENTE DESHABILITADA) ---
 routerGlobal.get('/', (req, res) => {
   const status = whatsappService.getStatus();
   if (status.connected) {
@@ -31,6 +36,7 @@ routerGlobal.get('/', (req, res) => {
     });
   }
 });
+*/
 
 
 
@@ -39,12 +45,14 @@ routerGlobal.use(routerLogin);
 routerGlobal.use(routerRoom);
 routerGlobal.use("/memberships", membershipRoutes);
 routerGlobal.use("/api/memberships", membershipApiRoutes);
-routerGlobal.use(entriesRouter);
-routerGlobal.use("/store", routerStore);
+routerGlobal.use( entriesRouter);
+routerGlobal.use(routerStore);
 
 
 
-// Ruta para mostrar la página del QR (ahora es manejada por la ruta raíz, pero la mantenemos por si se accede directamente)
+
+// Ruta para mostrar la página del QR (TEMPORALMENTE DESHABILITADA)
+/*
 routerGlobal.get('/whatsapp-qr', (req, res) => {
   const status = whatsappService.getStatus();
   if (status.connected) {
@@ -56,8 +64,10 @@ routerGlobal.get('/whatsapp-qr', (req, res) => {
     centerContent: true
   });
 });
+*/
 
-// API para obtener estado de WhatsApp en JSON
+// API para obtener estado de WhatsApp en JSON (TEMPORALMENTE DESHABILITADA)
+/*
 routerGlobal.get('/api/whatsapp/status', (req, res) => {
   try {
     const status = whatsappService.getStatus();
@@ -66,6 +76,7 @@ routerGlobal.get('/api/whatsapp/status', (req, res) => {
     res.status(500).json({ error: 'Error al obtener estado de WhatsApp' });
   }
 });
+*/
 
 
 // Middleware para manejar error 404 (después de todas las rutas)
@@ -81,14 +92,18 @@ routerGlobal.use((req, res) => {
 
 // Middleware para manejar error 500
 routerGlobal.use((err, req, res, next) => {
+  console.error("❌❌❌ ERROR 500 CAPTURADO ❌❌❌");
+  console.error("Mensaje:", err.message);
+  console.error("Stack:", err.stack);
+  
   const isDev = process.env.NODE_ENV === "development";
 
   res.status(500).render("error500", {
     layout: "main",
     title: "500",
     mensaje: "Error interno del servidor",
-    errorMessage: isDev ? err.message : null,
-    stack: isDev ? err.stack : null,
+    errorMessage: err.message, // Siempre mostrar el mensaje
+    stack: err.stack, // Siempre mostrar el stack
     showFooter: true,
   });
 });

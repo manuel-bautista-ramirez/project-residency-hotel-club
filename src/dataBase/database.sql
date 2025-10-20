@@ -321,66 +321,88 @@ INSERT IGNORE INTO tipos_membresia (nombre, descripcion, max_integrantes, precio
 
 
 -- =====================================================
---               MÓDULO DE TIENDA
+--               MÓDULO DE TIENDA (STORE)
 -- =====================================================
 
 -- Tabla de productos
 CREATE TABLE IF NOT EXISTS productos (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(100) NOT NULL,
+  nombre VARCHAR(255) NOT NULL,
   descripcion TEXT,
-  categoria ENUM('bebidas','snacks','comida','otros') NOT NULL,
-  precio DECIMAL(10,2) NOT NULL,
+  categoria ENUM('bebidas', 'snacks', 'comida', 'otros') NOT NULL DEFAULT 'otros',
+  precio DECIMAL(10, 2) NOT NULL,
   stock INT NOT NULL DEFAULT 0,
-  imagen VARCHAR(255),
-  fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  imagen VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_categoria (categoria),
-  INDEX idx_stock (stock)
+  INDEX idx_stock (stock),
+  INDEX idx_precio (precio)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de ventas
 CREATE TABLE IF NOT EXISTS ventas (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  usuario_id INT NOT NULL,
+  usuario_id INT,
   id_medio_mensaje INT,
-  nombre_cliente VARCHAR(100),
-  fecha_venta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  tipo_pago ENUM('efectivo','transferencia','tarjeta') NOT NULL,
-  total DECIMAL(10,2) NOT NULL,
-  total_letras VARCHAR(255),
-  pdf_path VARCHAR(255),
-  qr_path VARCHAR(255),
-  INDEX idx_fecha_venta (fecha_venta),
+  nombre_cliente VARCHAR(255) NOT NULL,
+  tipo_pago ENUM('efectivo', 'tarjeta', 'transferencia') NOT NULL,
+  total DECIMAL(10, 2) NOT NULL,
+  total_letras VARCHAR(500),
+  pdf_path VARCHAR(500),
+  qr_path VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_fecha_venta (created_at),
   INDEX idx_tipo_pago (tipo_pago),
-  FOREIGN KEY (usuario_id) REFERENCES users_hotel(id),
-  FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes(id_medio_mensaje)
+  INDEX idx_usuario (usuario_id),
+  FOREIGN KEY (usuario_id) REFERENCES users_hotel(id) ON DELETE SET NULL,
+  FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Tabla de detalle de ventas
-CREATE TABLE IF NOT EXISTS detalle_ventas (
+-- Tabla de detalles de venta
+CREATE TABLE IF NOT EXISTS venta_detalles (
   id INT AUTO_INCREMENT PRIMARY KEY,
   venta_id INT NOT NULL,
   producto_id INT NOT NULL,
   cantidad INT NOT NULL,
-  precio_unitario DECIMAL(10,2) NOT NULL,
-  subtotal DECIMAL(10,2) NOT NULL,
+  precio_unitario DECIMAL(10, 2) NOT NULL,
+  subtotal DECIMAL(10, 2) NOT NULL,
   INDEX idx_venta (venta_id),
   INDEX idx_producto (producto_id),
   FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE,
-  FOREIGN KEY (producto_id) REFERENCES productos(id)
+  FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- Insertar productos de ejemplo
 INSERT IGNORE INTO productos (id, nombre, descripcion, categoria, precio, stock) VALUES
-(1, 'Coca Cola 600ml', 'Refresco de cola', 'bebidas', 15.00, 50),
-(2, 'Agua Natural 1L', 'Agua purificada', 'bebidas', 10.00, 100),
-(3, 'Sabritas Original', 'Papas fritas', 'snacks', 12.00, 30),
-(4, 'Galletas Oreo', 'Galletas de chocolate', 'snacks', 18.00, 25),
-(5, 'Sandwich Jamón', 'Sandwich de jamón y queso', 'comida', 35.00, 15),
-(6, 'Torta Cubana', 'Torta especial', 'comida', 45.00, 10);
+-- Bebidas
+(1, 'Coca Cola 600ml', 'Refresco de cola 600ml', 'bebidas', 25.00, 50),
+(2, 'Agua Natural 1L', 'Agua purificada 1 litro', 'bebidas', 15.00, 100),
+(3, 'Pepsi 600ml', 'Refresco de cola Pepsi', 'bebidas', 25.00, 40),
+(4, 'Jugo de Naranja', 'Jugo natural de naranja 500ml', 'bebidas', 30.00, 25),
+(5, 'Café Americano', 'Café americano caliente', 'bebidas', 20.00, 0),
+(6, 'Cerveza Corona', 'Cerveza Corona 355ml', 'bebidas', 35.00, 30),
 
+-- Snacks
+(7, 'Sabritas Original', 'Papas fritas sabor natural', 'snacks', 18.00, 30),
+(8, 'Galletas Oreo', 'Galletas de chocolate con crema', 'snacks', 22.00, 25),
+(9, 'Chocolate Snickers', 'Barra de chocolate con cacahuates', 'snacks', 24.00, 35),
+(10, 'Galletas Marías', 'Paquete de galletas marías', 'snacks', 12.00, 40),
+(11, 'Doritos Nacho', 'Tortillas de maíz sabor nacho', 'snacks', 20.00, 28),
 
+-- Comida
+(12, 'Sandwich Club', 'Sandwich de pollo, jamón y queso', 'comida', 65.00, 15),
+(13, 'Torta Cubana', 'Torta especial con todos los ingredientes', 'comida', 55.00, 10),
+(14, 'Quesadilla', 'Quesadilla de queso con guacamole', 'comida', 45.00, 20),
+(15, 'Hot Dog', 'Hot dog con papas fritas', 'comida', 40.00, 18),
+(16, 'Ensalada César', 'Ensalada césar con pollo', 'comida', 50.00, 12),
+
+-- Otros
+(17, 'Aspirina', 'Analgésico para dolor de cabeza', 'otros', 15.00, 20),
+(18, 'Protector Solar', 'Bloqueador solar FPS 50', 'otros', 80.00, 15),
+(19, 'Toalla de Playa', 'Toalla grande para alberca', 'otros', 120.00, 8),
+(20, 'Gafas de Sol', 'Lentes de sol UV protection', 'otros', 150.00, 12);
 
 -- =====================================================
 --             MÓDULO ENTRADAS DIARIAS
