@@ -37,6 +37,24 @@ const MembershipController = {
   },
 
   /**
+   * Valida la existencia de un cliente por correo o teléfono.
+   * @async
+   * @param {import('express').Request} req - El objeto de solicitud. Se esperan `correo` y `telefono` en `req.body`.
+   * @param {import('express').Response} res - El objeto de respuesta.
+   * @returns {Promise<void>}
+   */
+  async validateClient(req, res) {
+    try {
+      const { correo, telefono } = req.body;
+      const result = await ClientService.checkClientStatus({ correo, telefono });
+      res.json(result);
+    } catch (error) {
+      console.error("Error en validateClient:", error);
+      res.status(500).json({ error: "Error al validar el cliente", details: error.message });
+    }
+  },
+
+  /**
    * Maneja la solicitud para crear una membresía completa.
    * Delega toda la lógica de creación (contrato, activación, QR, pagos, notificaciones) al servicio de membresías.
    * @async

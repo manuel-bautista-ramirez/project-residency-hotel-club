@@ -37,5 +37,33 @@ export const ClientService = {
     
     // Devuelve solo la información necesaria al controlador.
     return { id_cliente };
+  },
+
+  /**
+   * Verifica el estado de un cliente basado en su correo o teléfono.
+   * @async
+   * @param {object} identifiers - Los identificadores del cliente.
+   * @param {string} identifiers.correo - Correo electrónico del cliente.
+   * @param {string} identifiers.telefono - Número de teléfono del cliente.
+   * @returns {Promise<object>} Un objeto con el estado del cliente: { status: 'active' | 'inactive' | 'not_found' }.
+   */
+  async checkClientStatus(identifiers) {
+    const { correo, telefono } = identifiers;
+
+    const clientStatus = await MembershipModel.findClientAndMembershipStatus(correo, telefono);
+
+    // Caso 1: El cliente no existe O el cliente existe pero nunca ha tenido una membresía (estado es null).
+    // En ambos casos, el flujo de creación debe continuar.
+    if (!clientStatus || !clientStatus.estado) {
+      return { status: 'not_found' };
+    }
+
+    // Caso 2: El cliente tiene una membresía activa.
+    if (clientStatus.estado === 'Activa') {
+      return { status: 'active' };
+    }
+
+    // Caso 3: El cliente tiene una membresía inactiva, vencida, etc.
+    return { status: 'inactive', id_activa: clientStatus.id_activa };
   }
 };

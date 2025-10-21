@@ -9,6 +9,18 @@ const Validator = {
             regex: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,50}$/,
             message: 'El nombre debe contener letras y espacios (Un mínimo de 3 caracteres).'
         },
+        'integrantes[]': {
+            regex: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,50}$/,
+            message: 'El nombre del integrante es inválido.'
+        },
+        descuento: {
+            validator: (value) => {
+                if (value === '') return true; // El descuento es opcional
+                const num = Number(value);
+                return Number.isInteger(num) && num >= 0 && num <= 100;
+            },
+            message: 'El descuento debe ser un número entero entre 0 y 100.'
+        },
         telefono: {
             regex: /^\d{10}$/,
             message: 'El teléfono debe contener 10 dígitos.'
