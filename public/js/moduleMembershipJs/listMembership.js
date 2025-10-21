@@ -363,8 +363,16 @@ const MembershipUI = {
       row.innerHTML = `
         <td class="px-6 py-4 whitespace-nowrap">
             <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10">
+                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200 border border-green-200">
+                        <span class="text-green-600 font-bold" data-initial="${membresia.nombre_completo}"></span>
+                    </div>
+                </div>
                 <div class="ml-3">
                     <div class="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200">${membresia.nombre_completo}</div>
+                    <div class="text-xs text-gray-500 flex items-center mt-1">
+                        <i class="fas fa-phone-alt mr-1 text-green-500"></i>${membresia.telefono}
+                    </div>
                 </div>
             </div>
         </td>
@@ -386,6 +394,9 @@ const MembershipUI = {
       `;
       this.tableBody.appendChild(row);
     });
+
+    // Volver a aplicar el formato para los nuevos elementos
+    this.applyInitialFormatting();
   }
 };
 

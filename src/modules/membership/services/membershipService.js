@@ -792,15 +792,10 @@ export const MembershipService = {
       }
 
       return {
-        id_activa: membresia.id_activa,
-        nombre_completo: membresia.nombre_completo,
-        tipo_membresia: membresia.tipo_membresia,
-        fecha_inicio: membresia.fecha_inicio,
-        fecha_fin: membresia.fecha_fin,
-        // Nuevos campos para la vista
+        ...membresia, // Incluir todos los campos originales
         statusClass: statusClass,
         statusText: statusText,
-        canRenew: isAdmin || diasRestantes <= 0, // Permitir renovar si es admin o si está vencida
+        canRenew: isAdmin || diasRestantes <= 0,
       };
     });
 
