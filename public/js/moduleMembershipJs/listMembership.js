@@ -137,7 +137,7 @@ const MembershipUI = {
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear().toString().slice(-2);
+    const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   },
 
@@ -347,6 +347,13 @@ const MembershipUI = {
     }
   },
 
+  formatPeriod: function (start, end) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const formatDate = (d) => `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  },
+
   renderTableRows: function (memberships) {
     this.tableBody.innerHTML = "";
     if (memberships.length === 0) {
@@ -355,44 +362,52 @@ const MembershipUI = {
     }
 
     memberships.forEach(membresia => {
-      const row = document.createElement('tr');
-      row.className = 'table-row bg-white hover:bg-green-50 transition-all duration-200 group';
+        const row = document.createElement('tr');
+        row.className = 'table-row bg-white hover:bg-green-50 transition-all duration-200 group';
 
-      const period = `${this.formatDate(membresia.fecha_inicio)} - ${this.formatDate(membresia.fecha_fin)}`;
+        let actionsHtml = '';
+        if (membresia.isFamily) {
+            actionsHtml += `<button class="view-members-btn action-btn bg-purple-100 text-purple-600 hover:bg-purple-200" title="Ver integrantes" data-id-activa="${membresia.id_activa}"><i class="fas fa-users"></i></button>`;
+        }
+        actionsHtml += `<button class="view-details-btn action-btn bg-green-100 text-green-600 hover:bg-green-200" title="Ver detalles" data-id="${membresia.id_activa}"><i class="fas fa-eye"></i></button>`;
+        if (membresia.canRenew) {
+            actionsHtml += `<a href="/memberships/renew/${membresia.id_activa}" class="action-btn bg-blue-100 text-blue-600 hover:bg-blue-200" title="Renovar"><i class="fas fa-sync-alt"></i></a>`;
+        }
+        if (membresia.isAdmin) {
+            actionsHtml += `<a href="/memberships/editMembership/${membresia.id_activa}" class="action-btn bg-amber-100 text-amber-600 hover:bg-amber-200" title="Editar"><i class="fas fa-edit"></i></a>`;
+            actionsHtml += `<button type="button" class="delete-btn action-btn bg-red-100 text-red-600 hover:bg-red-200" data-id="${membresia.id_activa}" data-name="${membresia.nombre_completo}"><i class="fas fa-trash-alt"></i></button>`;
+        }
 
-      row.innerHTML = `
-        <td class="px-6 py-4 whitespace-nowrap">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 h-10 w-10">
-                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200 border border-green-200">
-                        <span class="text-green-600 font-bold" data-initial="${membresia.nombre_completo}"></span>
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200 border border-green-200">
+                            <span class="text-green-600 font-bold" data-initial="${membresia.nombre_completo}"></span>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <div class="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200">${membresia.nombre_completo}</div>
+                        <div class="text-xs text-gray-500 flex items-center mt-1">
+                            <i class="fas fa-phone-alt mr-1 text-green-500"></i>${membresia.telefono}
+                        </div>
                     </div>
                 </div>
-                <div class="ml-3">
-                    <div class="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200">${membresia.nombre_completo}</div>
-                    <div class="text-xs text-gray-500 flex items-center mt-1">
-                        <i class="fas fa-phone-alt mr-1 text-green-500"></i>${membresia.telefono}
-                    </div>
-                </div>
-            </div>
-        </td>
-        <td class="px-4 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">${membresia.tipo_membresia}</div>
-        </td>
-        <td class="px-4 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">${period}</div>
-        </td>
-        <td class="px-4 py-4 whitespace-nowrap">
-            <span class="${membresia.statusClass} text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">${membresia.statusText}</span>
-        </td>
-        <td class="px-4 py-4 whitespace-nowrap">
-            <div class="flex items-center space-x-2">
-                <a href="/memberships/editMembership/${membresia.id_activa}" class="action-btn bg-amber-100 text-amber-600 hover:bg-amber-200" title="Editar"><i class="fas fa-edit"></i></a>
-                <button type="button" class="delete-btn action-btn bg-red-100 text-red-600 hover:bg-red-200" data-id="${membresia.id_activa}" data-name="${membresia.nombre_completo}"><i class="fas fa-trash-alt"></i></button>
-            </div>
-        </td>
-      `;
-      this.tableBody.appendChild(row);
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">${membresia.tipo_membresia}</div>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">${this.formatPeriod(membresia.fecha_inicio, membresia.fecha_fin)}</div>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+                <span class="${membresia.statusClass} text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">${membresia.statusText}</span>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center space-x-2">${actionsHtml}</div>
+            </td>
+        `;
+        this.tableBody.appendChild(row);
     });
 
     // Volver a aplicar el formato para los nuevos elementos

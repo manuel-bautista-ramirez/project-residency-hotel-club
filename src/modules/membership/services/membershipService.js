@@ -810,23 +810,17 @@ export const MembershipService = {
    * @param {object} queryParams - Parámetros de la URL para filtrar y buscar.
    * @returns {Promise<Array<object>>} La lista de membresías formateada.
    */
-  async getFormattedMembresiasAPI(queryParams) {
-    const { memberships } = await this.getMembershipListData(queryParams);
+  async getFormattedMembresiasAPI(queryParams, userRole = 'Recepcionista') {
+    const { memberships } = await this.getMembershipListData(queryParams, userRole);
+    const isAdmin = userRole === 'Administrador';
 
-    // Formato adicional específico para la API (ej. fechas)
     return memberships.map(membresia => {
-      const formatDate = (dateString) => {
-        if (!dateString) return "";
-        const date = new Date(dateString);
-        return date.toLocaleDateString("es-ES", {
-          year: "numeric", month: "short", day: "numeric",
-        });
-      };
-      return {
-        ...membresia,
-        startDate: formatDate(membresia.startDate),
-        endDate: formatDate(membresia.endDate),
-      };
+        return {
+            ...membresia,
+            isFamily: membresia.tipo_membresia === "Familiar",
+            canRenew: isAdmin || membresia.dias_restantes <= 0,
+            isAdmin: isAdmin
+        };
     });
   },
 

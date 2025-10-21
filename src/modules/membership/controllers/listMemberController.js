@@ -70,8 +70,9 @@ const listMembershipController = {
    */
   async getMembresiasAPI(req, res) {
     try {
+      const userRole = req.session.user?.role || "Recepcionista";
       // Llama al servicio para obtener los datos ya formateados para la API.
-      const membresiasFormateadas = await MembershipService.getFormattedMembresiasAPI(req.query);
+      const membresiasFormateadas = await MembershipService.getFormattedMembresiasAPI(req.query, userRole);
       res.json({
         success: true,
         data: membresiasFormateadas,
