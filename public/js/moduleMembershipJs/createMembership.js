@@ -14,6 +14,7 @@ const MembershipUI = {
   init: function () {
     this.cacheDOM();
     this.bindEvents();
+    this.bindInputFiltering();
     this.setMinDate();
     this.triggerInitialEvents();
 
@@ -122,41 +123,6 @@ const MembershipUI = {
         }
         this.updateCalculatedDetails();
       });
-    }
-
-    // Event listener para validación en tiempo real
-    this.formCliente.addEventListener('input', (e) => this.liveValidate(e.target));
-    this.formMembership.addEventListener('input', (e) => this.liveValidate(e.target));
-  },
-
-  /**
-   * Realiza validación en tiempo real en un campo de formulario.
-   * @param {HTMLElement} input - El elemento del input que cambió.
-   */
-  liveValidate: function(input) {
-    const fieldName = input.name;
-    const rule = Validator.rules[fieldName];
-    if (!rule) return;
-
-    const value = input.value.trim();
-    let isFieldValid = false;
-
-    if (rule.regex) {
-      isFieldValid = rule.regex.test(value);
-    } else if (rule.validator) {
-      isFieldValid = rule.validator(value);
-    }
-
-    const errorContainer = input.nextElementSibling;
-    if (errorContainer && errorContainer.classList.contains('error-message')) {
-      if (!isFieldValid) {
-        errorContainer.textContent = rule.message;
-        errorContainer.classList.remove('hidden');
-        input.classList.add('border-red-500');
-      } else {
-        errorContainer.classList.add('hidden');
-        input.classList.remove('border-red-500');
-      }
     }
   },
   /**
@@ -493,6 +459,60 @@ const MembershipUI = {
         integranteDiv.remove();
       });
     }
+  },
+
+  /**
+   * Vincula los eventos de filtrado de entrada en tiempo real a los campos del formulario.
+   */
+  bindInputFiltering: function() {
+    const filterInput = (inputElement, regex) => {
+      inputElement.addEventListener('input', (e) => {
+        const originalValue = e.target.value;
+        const sanitizedValue = originalValue.replace(regex, '');
+        if (originalValue !== sanitizedValue) {
+          e.target.value = sanitizedValue;
+        }
+      });
+    };
+
+    const nombreCompletoInput = this.formCliente.querySelector('[name="nombre_completo"]');
+    const telefonoInput = this.formCliente.querySelector('[name="telefono"]');
+    const descuentoInput = this.formMembership.querySelector('[name="descuento"]');
+
+    // Filtrar nombre completo (solo letras, espacios y caracteres españoles)
+    if (nombreCompletoInput) {
+      filterInput(nombreCompletoInput, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g);
+    }
+
+    // Filtrar teléfono (solo números, máximo 10)
+    if (telefonoInput) {
+      telefonoInput.addEventListener('input', (e) => {
+        const originalValue = e.target.value;
+        let sanitizedValue = originalValue.replace(/[^0-9]/g, '');
+        if (sanitizedValue.length > 10) {
+          sanitizedValue = sanitizedValue.slice(0, 10);
+        }
+        if (originalValue !== sanitizedValue) {
+          e.target.value = sanitizedValue;
+        }
+      });
+    }
+
+    // Filtrar descuento (solo números)
+    if (descuentoInput) {
+      filterInput(descuentoInput, /[^0-9]/g);
+    }
+
+    // Delegación de eventos para los campos de integrantes creados dinámicamente
+    this.integrantesContainer.addEventListener('input', (e) => {
+        if (e.target && e.target.name === 'integrantes[]') {
+            const originalValue = e.target.value;
+            const sanitizedValue = originalValue.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            if (originalValue !== sanitizedValue) {
+                e.target.value = sanitizedValue;
+            }
+        }
+    });
   },
   /**
    * Función de utilidad para mostrar mensajes de feedback (éxito o error) al usuario.
