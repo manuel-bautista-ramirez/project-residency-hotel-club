@@ -761,79 +761,48 @@ export const MembershipService = {
    * @returns {Promise<{memberships: Array<object>, estadisticas: object}>}
    */
   async getMembershipListData(queryParams, userRole = 'Recepcionista') {
-    const { search, type, status } = queryParams;
     const isAdmin = userRole === 'Administrador';
 
-    // 1. Obtener estadísticas
+    // 1. Obtener estadísticas (puede que necesitemos ajustar esto más adelante si el rendimiento es un problema)
     const estadisticas = await modelList.getEstadisticasMembresias();
 
-    // 2. Obtener la lista de membresías según los filtros
-    let membresias;
-    if (search) {
-      membresias = await modelList.buscarMembresias(search);
-    } else if (type) {
-      membresias = await modelList.getMembresiasPorTipo(type);
-    } else if (status) {
-      membresias = await modelList.getMembresiasPorEstado(status);
-    } else {
-      membresias = await modelList.getMembresiasActivas();
-    }
+    // 2. Obtener la lista de membresías usando la nueva función centralizada
+    const membresias = await modelList.getAllMembresias(queryParams);
 
-    // 3. Formatear los datos (lógica de negocio y presentación)
+    // 3. Formatear los datos con la nueva lógica de estado
     const membresiasFormateadas = membresias.map((membresia) => {
       const diasRestantes = membresia.dias_restantes;
-      const estadoDB = membresia.estado;
+      const diasParaIniciar = membresia.dias_para_iniciar;
 
       let statusClass = '';
       let statusText = '';
-      let statusIcon = '';
 
-      if (estadoDB === 'Activa' && diasRestantes > 0) {
-        if (diasRestantes <= 7) {
-          statusClass = 'bg-amber-100 text-amber-800 border-amber-200';
-          statusText = `Por vencer (${diasRestantes} días)`;
-          statusIcon = 'fa-exclamation-triangle';
-        } else if (diasRestantes <= 20) {
-          statusClass = 'bg-green-100 text-green-800 border-green-200';
-          statusText = `Activa (${diasRestantes} días)`;
-          statusIcon = 'fa-check-circle';
-        } else {
-          statusClass = 'bg-emerald-100 text-emerald-800 border-emerald-200';
-          statusText = `Activa (${diasRestantes} días)`;
-          statusIcon = 'fa-check-circle';
-        }
-      } else if (estadoDB === 'Inactiva') {
-        statusClass = 'bg-gray-100 text-gray-800 border-gray-200';
-        statusText = 'Inactiva';
-        statusIcon = 'fa-ban';
-      } else { // Vencida
-        statusClass = 'bg-red-100 text-red-800 border-red-200';
+      if (diasParaIniciar > 0) {
+        statusClass = 'bg-blue-100 text-blue-800';
+        statusText = 'Programada';
+      } else if (diasRestantes <= 0) {
+        statusClass = 'bg-red-100 text-red-800';
         statusText = 'Vencida';
-        statusIcon = 'fa-times-circle';
+      } else if (diasRestantes <= 8) {
+        statusClass = 'bg-yellow-100 text-yellow-800';
+        statusText = 'Por Vencer';
+      } else {
+        statusClass = 'bg-green-100 text-green-800';
+        statusText = 'Activa';
       }
 
       return {
-        id: membresia.id_activa,
         id_activa: membresia.id_activa,
-        fullName: membresia.nombre_completo,
-        phone: membresia.telefono,
-        email: membresia.correo,
-        type: membresia.tipo,
-        startDate: membresia.fecha_inicio,
-        endDate: membresia.fecha_fin,
-        status: membresia.estado,
-        daysUntilExpiry: diasRestantes,
-        members: membresia.total_integrantes + 1,
-        amount: membresia.precio_final,
-        isFamily: membresia.tipo === "Familiar",
-        integrantes: membresia.integrantes || [],
+        nombre_completo: membresia.nombre_completo,
+        tipo_membresia: membresia.tipo_membresia,
+        fecha_inicio: membresia.fecha_inicio,
+        fecha_fin: membresia.fecha_fin,
         // Nuevos campos para la vista
-        statusClass: `status-badge ${statusClass} text-xs`,
+        statusClass: statusClass,
         statusText: statusText,
-        statusIcon: `fas ${statusIcon}`,
-        canRenew: isAdmin || diasRestantes <= 0,
+        canRenew: isAdmin || diasRestantes <= 0, // Permitir renovar si es admin o si está vencida
       };
-    }); 
+    });
 
     return {
       memberships: membresiasFormateadas,

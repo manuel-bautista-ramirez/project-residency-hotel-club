@@ -24,7 +24,10 @@ const listMembershipController = {
       const { filter, search, type, status } = req.query;
 
       // Llama al servicio para obtener la lista de membresías y las estadísticas.
-      const listData = await MembershipService.getMembershipListData(req.query, userRole);
+      const [listData, pageData] = await Promise.all([
+          MembershipService.getMembershipListData(req.query, userRole),
+          MembershipService.getDataForCreatePage()
+      ]);
 
       // Renderiza la vista 'membershipList' con todos los datos necesarios.
       res.render("membershipList", {
@@ -32,6 +35,7 @@ const listMembershipController = {
         isAdmin,
         userRole,
         memberships: listData.memberships,
+        membershipTypes: pageData.tiposMembresia,
         estadisticas: listData.estadisticas,
         currentFilter: filter || "all",
         currentSearch: search || "",
@@ -40,6 +44,12 @@ const listMembershipController = {
         // Helper para la plantilla Handlebars.
         helpers: {
           eq: (a, b) => a === b,
+          formatPeriod: (start, end) => {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const formatDate = (d) => `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+            return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+          }
         }
       });
     } catch (error) {

@@ -42,23 +42,29 @@ const MembershipUI = {
       });
     }
 
+    this.typeFilter = document.getElementById("typeFilter");
+    this.tableBody = document.getElementById("membershipsTableBody");
+
     // Búsqueda y filtros
+    const debounce = (func, delay) => {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    };
+
     if (this.searchInput) {
-      this.searchInput.addEventListener("input", () => {
-        this.filterMemberships();
-      });
+      this.searchInput.addEventListener("input", debounce(() => this.fetchAndRenderMemberships(), 300));
     }
-
     if (this.statusFilter) {
-      this.statusFilter.addEventListener("change", () => {
-        this.filterMemberships();
-      });
+      this.statusFilter.addEventListener("change", () => this.fetchAndRenderMemberships());
     }
-
+    if (this.typeFilter) {
+      this.typeFilter.addEventListener("change", () => this.fetchAndRenderMemberships());
+    }
     if (this.sortBy) {
-      this.sortBy.addEventListener("change", () => {
-        this.filterMemberships();
-      });
+      this.sortBy.addEventListener("change", () => this.fetchAndRenderMemberships());
     }
 
     /**
@@ -315,100 +321,72 @@ const MembershipUI = {
       });
   },
 
-  /**
-   * Filtra y muestra las filas de la tabla que coinciden con el término de búsqueda
-   * y el filtro de estado seleccionados. Se ejecuta cada vez que el usuario
-   * escribe en el buscador o cambia un filtro.
-   */
-  filterMemberships: function () {
-    const searchTerm = this.searchInput
-      ? this.searchInput.value.toLowerCase()
-      : "";
-    const statusValue = this.statusFilter ? this.statusFilter.value : "all";
-    const sortValue = this.sortBy ? this.sortBy.value : "expiry";
+  fetchAndRenderMemberships: async function () {
+    const searchTerm = this.searchInput.value;
+    const status = this.statusFilter.value;
+    const type = this.typeFilter.value;
+    const sortBy = this.sortBy.value;
 
-    this.membershipRows.forEach((row) => {
-      const text = row.textContent.toLowerCase();
-      const statusBadge = row.querySelector(".status-badge");
-      let statusMatch = true;
-
-      // Filtrar por estado
-      if (statusValue !== "all") {
-        if (statusValue === "active") {
-          statusMatch =
-            statusBadge &&
-            statusBadge.textContent.includes("Activa") &&
-            !statusBadge.textContent.includes("Vencida");
-        } else if (statusValue === "expiring") {
-          statusMatch =
-            statusBadge && statusBadge.textContent.includes("vencer");
-        } else if (statusValue === "expired") {
-          statusMatch =
-            statusBadge && statusBadge.textContent.includes("Vencida");
-        }
-      }
-
-      // Filtrar por término de búsqueda
-      const searchMatch = searchTerm === "" || text.includes(searchTerm);
-
-      // Mostrar u ocultar fila según los filtros
-      if (searchMatch && statusMatch) {
-        row.style.display = "";
-        row.classList.add("bg-green-100");
-        setTimeout(() => row.classList.remove("bg-green-100"), 1000);
-      } else {
-        row.style.display = "none";
-      }
+    const query = new URLSearchParams({
+      search: searchTerm,
+      status: status,
+      type: type,
+      sortBy: sortBy
     });
 
-    // Ordenar resultados
-    this.sortTable(sortValue);
-  },
-
-  /**
-   * Ordena las filas de la tabla según el criterio seleccionado (nombre, más reciente o fecha de expiración).
-   * @param {string} criteria - El criterio de ordenamiento ('name', 'recent', 'expiry').
-   */
-  sortTable: function (criteria) {
-    const tbody = document.getElementById("membershipsTableBody");
-    if (!tbody) return;
-
-    const rows = Array.from(tbody.querySelectorAll(".membership-row"));
-
-    rows.sort((a, b) => {
-      if (criteria === "name") {
-        const nameElementA = a.querySelector(".text-sm.font-semibold");
-        const nameElementB = b.querySelector(".text-sm.font-semibold");
-        const nameA = nameElementA
-          ? nameElementA.textContent.toLowerCase()
-          : "";
-        const nameB = nameElementB
-          ? nameElementB.textContent.toLowerCase()
-          : "";
-        return nameA.localeCompare(nameB);
-      } else if (criteria === "recent") {
-        const dateFieldsA = a.querySelectorAll(".date-field");
-        const dateFieldsB = b.querySelectorAll(".date-field");
-        const dateA =
-          dateFieldsA.length > 0
-            ? new Date(dateFieldsA[0].getAttribute("data-original"))
-            : new Date(0);
-        const dateB =
-          dateFieldsB.length > 0
-            ? new Date(dateFieldsB[0].getAttribute("data-original"))
-            : new Date(0);
-        return dateB - dateA;
-      } else {
-        // Ordenamiento por defecto: por fecha de expiración más próxima.
-        const daysA = parseInt(a.getAttribute('data-days-until-expiry'), 10);
-        const daysB = parseInt(b.getAttribute('data-days-until-expiry'), 10);
-        return daysA - daysB;
+    try {
+      this.tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-10">Cargando...</td></tr>';
+      const response = await fetch(`/api/memberships?${query.toString()}`);
+      if (!response.ok) {
+        throw new Error('Error al cargar los datos');
       }
-    });
-
-    // Limpiar y reordenar la tabla
-    rows.forEach((row) => tbody.appendChild(row));
+      const result = await response.json();
+      this.renderTableRows(result.data);
+    } catch (error) {
+      this.tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-red-500">Error: ${error.message}</td></tr>`;
+    }
   },
+
+  renderTableRows: function (memberships) {
+    this.tableBody.innerHTML = "";
+    if (memberships.length === 0) {
+      this.tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-10">No se encontraron membresías.</td></tr>';
+      return;
+    }
+
+    memberships.forEach(membresia => {
+      const row = document.createElement('tr');
+      row.className = 'table-row bg-white hover:bg-green-50 transition-all duration-200 group';
+
+      const period = `${this.formatDate(membresia.fecha_inicio)} - ${this.formatDate(membresia.fecha_fin)}`;
+
+      row.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+                <div class="ml-3">
+                    <div class="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200">${membresia.nombre_completo}</div>
+                </div>
+            </div>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${membresia.tipo_membresia}</div>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${period}</div>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap">
+            <span class="${membresia.statusClass} text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">${membresia.statusText}</span>
+        </td>
+        <td class="px-4 py-4 whitespace-nowrap">
+            <div class="flex items-center space-x-2">
+                <a href="/memberships/editMembership/${membresia.id_activa}" class="action-btn bg-amber-100 text-amber-600 hover:bg-amber-200" title="Editar"><i class="fas fa-edit"></i></a>
+                <button type="button" class="delete-btn action-btn bg-red-100 text-red-600 hover:bg-red-200" data-id="${membresia.id_activa}" data-name="${membresia.nombre_completo}"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </td>
+      `;
+      this.tableBody.appendChild(row);
+    });
+  }
 };
 
 /**
