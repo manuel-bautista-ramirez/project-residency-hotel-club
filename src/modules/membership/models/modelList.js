@@ -139,7 +139,7 @@ const modelList = {
 
         // Obtener integrantes si es membresía familiar
         if (membresiaData.max_integrantes > 1) {
-          membresiaData.integrantes = await this.getIntegrantesMembresia(
+          membresiaData.integrantes = await this.getIntegrantesByMembresia(
             id_activa
           );
         } else {

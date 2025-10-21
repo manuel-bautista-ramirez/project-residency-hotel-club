@@ -795,6 +795,7 @@ export const MembershipService = {
         ...membresia, // Incluir todos los campos originales
         statusClass: statusClass,
         statusText: statusText,
+        isFamily: membresia.tipo_membresia === "Familiar", // <-- AÑADIR ESTA LÍNEA
         canRenew: isAdmin || diasRestantes <= 0,
       };
     });
@@ -811,7 +812,7 @@ export const MembershipService = {
    * @returns {Promise<Array<object>>} La lista de membresías formateada.
    */
   async getFormattedMembresiasAPI(queryParams, userRole = 'Recepcionista') {
-    const { memberships } = await this.getMembershipListData(queryParams, userRole);
+    const { memberships } = await this.getMembershipListData(queryParams, userRole);    
     const isAdmin = userRole === 'Administrador';
 
     return memberships.map(membresia => {

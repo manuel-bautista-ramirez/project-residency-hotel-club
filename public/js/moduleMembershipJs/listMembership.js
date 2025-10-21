@@ -16,31 +16,10 @@ const MembershipUI = {
    */
   bindEvents: function () {
     // Referencias a elementos del DOM
-    this.reportButton = document.getElementById("reportButton");
-    this.reportModal = document.getElementById("reportModal");
-    this.closeReportModal = document.getElementById("closeReportModal");
     this.searchInput = document.getElementById("searchInput");
     this.statusFilter = document.getElementById("statusFilter");
     this.sortBy = document.getElementById("sortBy");
     this.membershipRows = document.querySelectorAll(".membership-row");
-
-    // Modal de reportes para administradores
-    if (this.reportButton && this.reportModal && this.closeReportModal) {
-      this.reportButton.addEventListener("click", () => {
-        this.reportModal.classList.remove("hidden");
-      });
-
-      this.closeReportModal.addEventListener("click", () => {
-        this.reportModal.classList.add("hidden");
-      });
-
-      // Cerrar modal al hacer clic fuera del contenido
-      this.reportModal.addEventListener("click", (e) => {
-        if (e.target === this.reportModal) {
-          this.reportModal.classList.add("hidden");
-        }
-      });
-    }
 
     this.typeFilter = document.getElementById("typeFilter");
     this.tableBody = document.getElementById("membershipsTableBody");
@@ -251,7 +230,7 @@ const MembershipUI = {
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-    fetch(`/api/memberships/details/${id}`)
+    fetch(`/memberships/api/memberships/details/${id}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Error al cargar los detalles');
@@ -293,7 +272,7 @@ const MembershipUI = {
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
     // Hacemos la llamada a la API
-    fetch(`/api/memberships/${idActiva}/integrantes`, {
+    fetch(`/memberships/api/memberships/${idActiva}/integrantes`, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -336,7 +315,7 @@ const MembershipUI = {
 
     try {
       this.tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-10">Cargando...</td></tr>';
-      const response = await fetch(`/api/memberships?${query.toString()}`);
+      const response = await fetch(`/memberships/api/memberships?${query.toString()}`);
       if (!response.ok) {
         throw new Error('Error al cargar los datos');
       }
@@ -395,7 +374,18 @@ const MembershipUI = {
                 </div>
             </td>
             <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">${membresia.tipo_membresia}</div>
+                <div class="text-sm text-gray-900">
+                    ${membresia.isFamily
+                        ? `<span 
+                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                <i class="fas fa-users mr-1 text-green-600"></i> Familiar
+                            </span>`
+                        : `<span
+                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                <i class="fas fa-user mr-1 text-blue-600"></i> ${membresia.tipo_membresia}
+                            </span>`
+                    }
+                </div>
             </td>
             <td class="px-4 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">${this.formatPeriod(membresia.fecha_inicio, membresia.fecha_fin)}</div>

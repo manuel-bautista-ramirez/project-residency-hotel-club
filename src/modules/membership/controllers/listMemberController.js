@@ -76,7 +76,7 @@ const listMembershipController = {
       res.json({
         success: true,
         data: membresiasFormateadas,
-        total: membresiasFormateadas.length,
+        total: memberships.length,
       });
     } catch (error) {
       // Devuelve un error en formato JSON si algo falla.
