@@ -22,7 +22,7 @@ export const editMemberController = {
     try {
       const { id } = req.params;
       const membresia = await MembershipService.getMembershipForEdit(id);
-      res.render('editMembership', { membership: membresia });
+      res.render('editMembership', { membership: membresia, showFooter: true });
     } catch (error) {
       // Nota: Este controlador devuelve JSON en caso de error, lo cual es inconsistente
       // para un método que se supone que renderiza una vista. Debería renderizar una página de error.

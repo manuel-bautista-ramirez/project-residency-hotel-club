@@ -24,4 +24,7 @@ public/uploads/rooms/pdf/reservaciones/*
 !public/uploads/rooms/qr/reservaciones/.gitkeep
 !public/uploads/rooms/pdf/rentas/.gitkeep
 !public/uploads/rooms/pdf/reservaciones/.gitkeep
-*.css
+# Ignorar archivos CSS generados automáticamente, pero permitir librerías
+# *.css
+public/styles.css
+!public/css/all.min.css

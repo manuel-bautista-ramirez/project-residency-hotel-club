@@ -6,7 +6,7 @@
  * Todas las rutas aquí definidas estarán prefijadas por `/api/memberships` en la aplicación principal.
  */
 import express from "express";
-import { authMiddleware } from "../../login/middlewares/accessDenied.js";
+import { authMiddleware } from "../../../middlewares/validation/accessDenied.js";
 import { listMembershipController } from "../controllers/listMemberController.js";
 import { reportsController } from "../controllers/reportsController.js";
 

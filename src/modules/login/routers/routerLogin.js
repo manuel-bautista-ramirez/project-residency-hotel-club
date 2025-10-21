@@ -1,5 +1,5 @@
 import express from "express";
-import { roleMiddleware, authMiddleware } from "../middlewares/accessDenied.js";
+import { roleMiddleware, authMiddleware } from "../../../middlewares/validation/accessDenied.js";
 import {
   loginUser,
   sendPasswordResetLink,

@@ -21,6 +21,7 @@ export const renderMembershipHome = (req, res) => {
     title: "Área de Membresías",
     isAdmin,
     userRole,
+    showFooter: true,
   });
 };
 
@@ -38,6 +39,7 @@ export const renderMembershipList = (req, res) => {
     title: "Lista de Membresías",
     isAdmin,
     userRole,
+    showFooter: true,
     apiBase: "/memberships",
     apiIntegrantes: "/memberships/:id_activa/integrantes",
   });
@@ -66,7 +68,7 @@ export const renderMembershipCreate = async (req, res) => {
   } catch (error) {
     // En caso de error al obtener los datos, renderiza una página de error.
     console.error("Error al cargar la página de creación de membresía:", error);
-    res.status(500).render('error', {
+    res.status(500).render('error500', {
         title: "Error",
         message: "Error al cargar la página de creación de membresía."
     });
@@ -91,6 +93,7 @@ export const renderRenewMembership = async (req, res) => {
     res.render("renewalMembership", {
       title: "Renovar Membresía",
       isAdmin,
+      showFooter: true,
       userRole,
       membership: pageData.membresia,
       tiposMembresia: pageData.tiposMembresia,
@@ -137,6 +140,7 @@ export const renderEditMembership = async (req, res) => {
       title: "Editar Membresía",
       isAdmin,
       userRole,
+      showFooter: true,
       membership: pageData.membresia,
       tiposMembresia: pageData.tiposMembresia,
       // Helpers de Handlebars para formatear datos en la plantilla.
@@ -153,7 +157,7 @@ export const renderEditMembership = async (req, res) => {
     console.error("Error al cargar la página de edición de membresía:", error);
     // Maneja errores como "membresía no encontrada" (404) u otros errores del servidor (500).
     const statusCode = error.statusCode || 500;
-    res.status(statusCode).render('error', {
+    res.status(statusCode).render('error500', {
         title: "Error",
         message: error.message || "Error al cargar la página de edición."
     });

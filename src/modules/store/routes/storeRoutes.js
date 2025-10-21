@@ -23,7 +23,7 @@ import {
   getDashboardData,
   getStockAlerts
 } from "../controllers/reportsController.js";
-import { authMiddleware } from "../../login/middlewares/accessDenied.js";
+import { authMiddleware } from "../../../middlewares/validation/accessDenied.js"; 
 
 const routerStore = express.Router();
 

@@ -89,6 +89,7 @@ const reportsController = {
     // Renderiza la vista 'reports' y le pasa las variables necesarias
     res.render("reports", {
       title: "Reportes",
+      showFooter: true,
       isAdmin,
       userRole,
       error: error || null, // Asegura que 'error' no sea undefined en la plantilla

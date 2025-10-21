@@ -3,7 +3,7 @@ import express from "express";
 import {
   authMiddleware,
 
-} from "../../login/middlewares/accessDenied.js";
+} from "../../../middlewares/validation/accessDenied.js";
 
 import {
   renderHabitacionesView,

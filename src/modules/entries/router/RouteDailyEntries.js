@@ -9,7 +9,7 @@ import {
   renderReports
 } from "../controllers/dailyEntriesController.js";
 
-import { authMiddleware, roleMiddleware } from "../../login/middlewares/accessDenied.js";
+import { authMiddleware, roleMiddleware }from "../../../middlewares/validation/accessDenied.js";
 
 const entriesRouter = express.Router();
 

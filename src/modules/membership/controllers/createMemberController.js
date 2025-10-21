@@ -174,7 +174,7 @@ const MembershipController = {
    */
   async renderTiposMembresia(req, res) {
     try {
-      const userRole = req.session.user?.role || "Recepcionista";
+      const userRole = req.session.user?.role || "Usuario";
       const isAdmin = userRole === "Administrador";
       // Llama al servicio para obtener los datos necesarios para poblar los selectores del formulario.
       const pageData = await MembershipService.getDataForCreatePage();
@@ -189,7 +189,7 @@ const MembershipController = {
       });
     } catch (error) {
       console.error("Error al cargar tipos de membresía:", error);
-      res.status(500).render('error', {
+      res.status(500).render('error500', {
           title: "Error",
           message: "Error al cargar la página de creación de membresía."
       });

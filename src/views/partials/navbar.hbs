@@ -11,7 +11,7 @@
   >
     <!-- Logo -->
     <a
-      href="/"
+      href="/home"
       class="inline-flex items-center gap-1.5 text-xs sm:text-sm md:text-base font-bold leading-tight tracking-tight hover:text-blue-200 transition"
     >
       <svg
@@ -24,7 +24,6 @@
           d="M3 10.5l9-6 9 6V19a2 2 0 01-2 2h-4.5v-5h-5V21H5a 2 2 0 01-2-2v-8.5z"
         />
       </svg>
-      Hotel Residencial
     </a>
 
     <!-- Enlaces desktop -->
@@ -315,6 +314,22 @@
           <span>Membresías</span>
         </a>
       </li>
+      <li>
+        <a
+          href="/store"
+          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
+          >
+            <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z"/>
+          </svg>
+          <span>Tienda</span>
+        </a>
+      </li>
       {{#if (eq user.role "Administrador")}}
         <li>
           <a
@@ -364,54 +379,109 @@
 </header>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => { const btnOpen =
-  document.getElementById('btn-open-sidebar'); const btnClose =
-  document.getElementById('btn-close-sidebar'); const sidebar =
-  document.getElementById('sidebar'); const overlay =
-  document.getElementById('overlay'); const focusableSelectors = 'a, button,
-  input, select, textarea, [tabindex]'; let lastFocused = null; // Set mobile
-  browser bar color to match navbar (blue-800) (function setThemeColor() { const
-  NAV_BLUE = '#1e40af'; let meta =
-  document.querySelector('meta[name="theme-color"]'); if (!meta) { meta =
-  document.createElement('meta'); meta.setAttribute('name', 'theme-color');
-  document.head.appendChild(meta); } meta.setAttribute('content', NAV_BLUE); //
-  Also set platform-specific meta where possible let ms =
-  document.querySelector('meta[name="msapplication-navbutton-color"]'); if (!ms)
-  { ms = document.createElement('meta'); ms.setAttribute('name',
-  'msapplication-navbutton-color'); document.head.appendChild(ms); }
-  ms.setAttribute('content', NAV_BLUE); let appleCap =
-  document.querySelector('meta[name="apple-mobile-web-app-capable"]'); if
-  (!appleCap) { appleCap = document.createElement('meta');
-  appleCap.setAttribute('name', 'apple-mobile-web-app-capable');
-  document.head.appendChild(appleCap); } appleCap.setAttribute('content',
-  'yes'); let appleStyle =
-  document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-  if (!appleStyle) { appleStyle = document.createElement('meta');
-  appleStyle.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-  document.head.appendChild(appleStyle); } appleStyle.setAttribute('content',
-  'black-translucent'); // Optional: keep it updated if system theme changes
-  const mql = window.matchMedia('(prefers-color-scheme: dark)'); if (mql &&
-  typeof mql.addEventListener === 'function') { mql.addEventListener('change',
-  () => meta.setAttribute('content', NAV_BLUE)); } })(); const openSidebar = ()
-  => { lastFocused = document.activeElement;
-  sidebar.classList.remove('-translate-x-full');
-  sidebar.setAttribute('aria-hidden', 'false');
-  btnOpen.setAttribute('aria-expanded', 'true');
-  overlay.classList.remove('hidden'); // prevent body scroll
-  document.body.style.overflow = 'hidden'; // focus first link const first =
-  sidebar.querySelector(focusableSelectors); if (first) first.focus(); }; const
-  closeSidebar = () => { sidebar.classList.add('-translate-x-full');
-  sidebar.setAttribute('aria-hidden', 'true');
-  btnOpen.setAttribute('aria-expanded', 'false');
-  overlay.classList.add('hidden'); document.body.style.overflow = ''; if
-  (lastFocused) lastFocused.focus(); }; btnOpen.addEventListener('click',
-  openSidebar); btnClose.addEventListener('click', closeSidebar);
-  overlay.addEventListener('click', closeSidebar); // Close on Escape
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' &&
-  !sidebar.classList.contains('-translate-x-full')) { closeSidebar(); } }); //
-  Cerrar sidebar si cambia a desktop window.addEventListener('resize', () => {
-  if (window.innerWidth >= 768) { closeSidebar(); } }); // Cerrar sidebar al
-  hacer click en cualquier enlace document.querySelectorAll('#sidebar
-  a').forEach(a => { a.addEventListener('click', () => { if (window.innerWidth <
-  768) closeSidebar(); }); }); });
+document.addEventListener('DOMContentLoaded', () => {
+  const btnOpen = document.getElementById('btn-open-sidebar');
+  const btnClose = document.getElementById('btn-close-sidebar');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const focusableSelectors = 'a, button, input, select, textarea, [tabindex]';
+  let lastFocused = null;
+
+  // Set mobile browser bar color to match navbar (blue-800)
+  (function setThemeColor() {
+    const NAV_BLUE = '#1e40af';
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', NAV_BLUE);
+
+    // Also set platform-specific meta where possible
+    let ms = document.querySelector('meta[name="msapplication-navbutton-color"]');
+    if (!ms) {
+      ms = document.createElement('meta');
+      ms.setAttribute('name', 'msapplication-navbutton-color');
+      document.head.appendChild(ms);
+    }
+    ms.setAttribute('content', NAV_BLUE);
+
+    let appleCap = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+    if (!appleCap) {
+      appleCap = document.createElement('meta');
+      appleCap.setAttribute('name', 'apple-mobile-web-app-capable');
+      document.head.appendChild(appleCap);
+    }
+    appleCap.setAttribute('content', 'yes');
+
+    let appleStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (!appleStyle) {
+      appleStyle = document.createElement('meta');
+      appleStyle.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+      document.head.appendChild(appleStyle);
+    }
+    appleStyle.setAttribute('content', 'black-translucent');
+
+    // Optional: keep it updated if system theme changes
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mql && typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', () => meta.setAttribute('content', NAV_BLUE));
+    }
+  })();
+
+  const openSidebar = () => {
+    lastFocused = document.activeElement;
+    sidebar.classList.remove('-translate-x-full');
+    sidebar.setAttribute('aria-hidden', 'false');
+    btnOpen.setAttribute('aria-expanded', 'true');
+    overlay.classList.remove('hidden');
+    // prevent body scroll
+    document.body.style.overflow = 'hidden';
+    // focus first link
+    const first = sidebar.querySelector(focusableSelectors);
+    if (first) first.focus();
+  };
+
+  const closeSidebar = () => {
+    sidebar.classList.add('-translate-x-full');
+    sidebar.setAttribute('aria-hidden', 'true');
+    btnOpen.setAttribute('aria-expanded', 'false');
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+    if (lastFocused) lastFocused.focus();
+  };
+
+  // Verificar que los elementos existen antes de agregar event listeners
+  if (btnOpen) {
+    btnOpen.addEventListener('click', openSidebar);
+  }
+  if (btnClose) {
+    btnClose.addEventListener('click', closeSidebar);
+  }
+  if (overlay) {
+    overlay.addEventListener('click', closeSidebar);
+  }
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !sidebar.classList.contains('-translate-x-full')) {
+      closeSidebar();
+    }
+  });
+
+  // Cerrar sidebar si cambia a desktop
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) {
+      closeSidebar();
+    }
+  });
+
+  // Cerrar sidebar al hacer click en cualquier enlace
+  document.querySelectorAll('#sidebar a').forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.innerWidth < 768) closeSidebar();
+    });
+  });
+});
 </script>

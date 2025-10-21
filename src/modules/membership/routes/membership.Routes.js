@@ -5,7 +5,7 @@
  * como para exponer una API interna (endpoints para acciones específicas).
  */
 import express from "express";
-import { authMiddleware } from "../../login/middlewares/accessDenied.js";
+import { authMiddleware } from "../../../middlewares/validation/accessDenied.js";
 import {
   renderMembershipHome,
   renderMembershipCreate,

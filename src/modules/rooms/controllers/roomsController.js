@@ -281,6 +281,7 @@ export const renderAllRervationes = async (req, res) => {
 
     res.render("showReservations", {
       title: "Adminstracion de  Reservaciones",
+      showFooter: true,
       allReservationes: reservacionesFormateadas,
       user: {
         ...user,
@@ -642,6 +643,7 @@ export const renderReservacionesView = async (req, res) => {
     // Usar ruta absoluta para evitar conflictos con otros módulos
     res.render(path.join(__dirname, '../views/reports'), {
       title: "reportes",
+      showNavbar: true,
       showFooter: true,
       user: {
         ...user,
@@ -668,6 +670,7 @@ export const createResevation = async (req, res) => {
 
     return res.render("reserve", {
       title: "Reservar habitación",
+      showFooter: true,
       habitacion,
       habitaciones,
       user: req.session.user,

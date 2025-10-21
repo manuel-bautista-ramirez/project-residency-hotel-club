@@ -1,17 +1,52 @@
-<footer class="fixed bottom-0 left-0 w-full h-15 flex flex-col justify-center items-center backdrop-blur-md z-50 bg-[rgba(31,41,55,0.85)] text-white text-[0.9rem] text-center">
-  <p>&copy; <span id="currentYear"></span> Hotel Jardines de la Higera — Todos los derechos reservados.</p>
-  <nav class="mt-1 space-x-1.5">
-    <a href="/" class="text-[#93c5fd] hover:text-[#3b82f6]">Inicio</a>
-    <a href="/rooms" class="text-[#93c5fd] hover:text-[#3b82f6]">Habitaciones</a>
-    <a href="/contacto" class="text-[#93c5fd] hover:text-[#3b82f6]">Contacto</a>
-  </nav>
+<!-- Footer compacto y fijo -->
+<footer id="siteFooter" class="fixed bottom-0 left-0 w-full bg-gray-900/95 backdrop-blur-md text-white py-4 z-50 border-t border-gray-800">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+      <div>
+        <h3 class="text-lg font-semibold mb-2">Hotel Residencial</h3>
+        <p class="text-gray-400 text-xs">Sistema de gestión hotelera integral para optimizar las operaciones diarias.</p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-2">Accesos Rápidos</h3>
+        <ul class="space-y-1 text-gray-400 text-xs">
+          <li><a href="/rooms" class="hover:text-white transition-colors">Habitaciones</a></li>
+          <li><a href="/rooms/calendario" class="hover:text-white transition-colors">Calendario</a></li>
+          <li><a href="/entries" class="hover:text-white transition-colors">Entradas</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-2">Soporte</h3>
+        <p class="text-gray-400 text-xs">¿Necesitas ayuda?<br>Contacta al administrador del sistema.</p>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-800 mt-4 pt-3 text-center text-gray-400 text-xs">
+      <p>&copy; <span id="currentYear"></span> Hotel Jardines de la Higuera — Todos los derechos reservados.</p>
+    </div>
+  </div>
 </footer>
 
+<!-- Script para año actual y ajuste dinámico del espacio inferior -->
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    // Año actual
     const yearSpan = document.getElementById('currentYear');
-    if (yearSpan) {
-      yearSpan.textContent = new Date().getFullYear();
+    if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+
+    // Ajustar padding-bottom según la altura real del footer
+    const footer = document.getElementById("siteFooter");
+    const main = document.querySelector("main"); // Ajusta si tu contenedor principal tiene otro selector
+
+    function adjustPadding() {
+      if (footer && main) {
+        const footerHeight = footer.offsetHeight;
+        main.style.paddingBottom = `${footerHeight + 16}px`; // +16px de margen extra
+      }
     }
+
+    adjustPadding(); // Al cargar
+    window.addEventListener("resize", adjustPadding); // Al redimensionar
   });
 </script>

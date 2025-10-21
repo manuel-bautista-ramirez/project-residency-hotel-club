@@ -29,6 +29,7 @@ const listMembershipController = {
       // Renderiza la vista 'membershipList' con todos los datos necesarios.
       res.render("membershipList", {
         title: "Lista de Membresías",
+         showFooter: true,
         isAdmin,
         userRole,
         memberships: listData.memberships,
