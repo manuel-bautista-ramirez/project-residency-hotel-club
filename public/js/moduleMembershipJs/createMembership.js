@@ -498,9 +498,22 @@ const MembershipUI = {
       });
     }
 
-    // Filtrar descuento (solo números)
+    // Filtrar descuento (solo números, máximo 3 caracteres, no mayor a 100)
     if (descuentoInput) {
-      filterInput(descuentoInput, /[^0-9]/g);
+      descuentoInput.addEventListener('input', (e) => {
+        let value = e.target.value;
+        // 1. Quitar no-números
+        value = value.replace(/[^0-9]/g, '');
+        // 2. Limitar a 3 caracteres
+        if (value.length > 3) {
+          value = value.slice(0, 3);
+        }
+        // 3. Asegurar que no sea mayor a 100
+        if (parseInt(value, 10) > 100) {
+          value = '100';
+        }
+        e.target.value = value;
+      });
     }
 
     // Delegación de eventos para los campos de integrantes creados dinámicamente

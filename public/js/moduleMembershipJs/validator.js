@@ -58,37 +58,58 @@ const Validator = {
         form.querySelectorAll('input, select').forEach(el => el.classList.remove('border-red-500'));
 
         for (const fieldName in this.rules) {
-            // Buscamos por 'name' en lugar de id
-            const input = form.querySelector(`[name="${fieldName}"]`);
-            if (!input) continue;
+            const inputs = form.querySelectorAll(`[name="${fieldName}"]`);
+            if (inputs.length === 0) continue;
 
-            const rule = this.rules[fieldName];
-            const value = input.value.trim();
-            let isFieldValid = false;
+            inputs.forEach(input => {
+                const rule = this.rules[fieldName];
+                const value = input.value.trim();
+                let isFieldValid = false;
 
-            // 3. Aplicación de la regla: Determina si la regla es una expresión regular (regex)
-            // o una función de validación personalizada y la ejecuta.
-            if (rule.regex) {
-                isFieldValid = rule.regex.test(value);
-            } else if (rule.validator) {
-                isFieldValid = rule.validator(value);
-            }
-            
-            // 4. Manejo de errores: Si el campo no es válido, busca el elemento de error
-            // asociado (que se asume es el siguiente hermano del input), le pone el mensaje
-            // de la regla, lo hace visible y añade un borde rojo al input.
-            // También marca el formulario como inválido.
-            if (!isFieldValid) {
-                const errorContainer = input.nextElementSibling;
-                if (errorContainer && errorContainer.classList.contains('error-message')) {
-                    errorContainer.textContent = rule.message;
-                    errorContainer.classList.remove('hidden');
-                    input.classList.add('border-red-500');
+                if (rule.regex) {
+                    isFieldValid = rule.regex.test(value);
+                } else if (rule.validator) {
+                    isFieldValid = rule.validator(value);
                 }
-                isFormValid = false;
-            }
+
+                if (!isFieldValid) {
+                    // Los campos de integrantes no tienen un .nextElementSibling, el error se muestra en un contenedor general.
+                    // Para otros campos, se puede mantener la lógica del nextElementSibling si existe.
+                    let errorContainer = input.nextElementSibling;
+                    if (!errorContainer || !errorContainer.classList.contains('error-message')) {
+                        // Si no hay un contenedor de error específico, se puede buscar uno general o simplemente marcar el campo.
+                        // Por ahora, solo marcamos el campo y el mensaje se podría mostrar en `membershipMessage`.
+                         this.showFieldError(input, rule.message);
+                    } else {
+                         this.showFieldError(input, rule.message);
+                    }
+                    isFormValid = false;
+                }
+            });
         }
         // 5. Retorno: Devuelve el estado final de la validación del formulario.
         return isFormValid;
+    },
+
+    /**
+     * Muestra un mensaje de error para un campo específico.
+     * @param {HTMLElement} input - El campo que tiene el error.
+     * @param {string} message - El mensaje de error a mostrar.
+     */
+    showFieldError: function(input, message) {
+        input.classList.add('border-red-500');
+        let errorContainer = input.nextElementSibling;
+
+        // Si el contenedor de error no existe o no es el correcto, lo creamos.
+        // Esto es especialmente útil para campos dinámicos como los de integrantes.
+        if (!errorContainer || !errorContainer.classList.contains('error-message')) {
+            errorContainer = document.createElement('div');
+            errorContainer.classList.add('error-message', 'text-red-600', 'text-sm', 'mt-1');
+            // insertAfter
+            input.parentNode.insertBefore(errorContainer, input.nextSibling);
+        }
+
+        errorContainer.textContent = message;
+        errorContainer.classList.remove('hidden');
     }
 };
