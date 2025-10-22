@@ -51,10 +51,10 @@ const modelList = {
     if (status) {
         switch (status) {
             case 'active':
-                baseQuery += ` AND ma.fecha_inicio <= CURDATE() AND ma.fecha_fin > CURDATE() AND DATEDIFF(ma.fecha_fin, CURDATE()) > 8`;
+                baseQuery += ` AND ma.fecha_inicio <= CURDATE() AND ma.fecha_fin >= CURDATE() AND DATEDIFF(ma.fecha_fin, CURDATE()) > 7`;
                 break;
             case 'expiring':
-                baseQuery += ` AND ma.fecha_inicio <= CURDATE() AND ma.fecha_fin >= CURDATE() AND DATEDIFF(ma.fecha_fin, CURDATE()) BETWEEN 0 AND 8`;
+                baseQuery += ` AND ma.fecha_inicio <= CURDATE() AND ma.fecha_fin >= CURDATE() AND DATEDIFF(ma.fecha_fin, CURDATE()) BETWEEN 0 AND 7`;
                 break;
             case 'expired':
                 baseQuery += ` AND ma.fecha_fin < CURDATE()`;
