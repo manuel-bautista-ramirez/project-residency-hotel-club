@@ -14,6 +14,7 @@ const MembershipUI = {
   init: function () {
     this.cacheDOM();
     this.bindEvents();
+    this.bindInputFiltering();
     this.setMinDate();
     this.triggerInitialEvents();
 
@@ -171,31 +172,61 @@ const MembershipUI = {
     if (this.confirmClienteBtn) this.confirmClienteBtn.disabled = true;
     const submitBtn = this.formCliente.querySelector('button[type="submit"]');
     const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "Verificando...";
+
     try {
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = "Procesando...";
+      // Paso 1: Validar si el cliente ya existe
       const formData = new FormData(this.formCliente);
-      const resp = await fetch(this.formCliente.action, {
+      const validationResp = await fetch('/api/memberships/validate-client', {
+        method: 'POST',
+        body: new URLSearchParams(formData),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      });
+
+      const validationData = await validationResp.json();
+
+      if (!validationResp.ok) {
+        throw new Error(validationData.error || 'Error al validar el cliente.');
+      }
+
+      // Paso 2: Manejar la respuesta de la validación
+      if (validationData.status === 'active') {
+        this.showMessage(this.clienteMessage, 'Este cliente ya tiene una membresía activa. No se puede crear una nueva.', 'error');
+        // Aquí podrías mostrar un modal más elaborado si quisieras
+        return; // Detener el proceso
+      }
+
+      if (validationData.status === 'inactive') {
+        this.showMessage(this.clienteMessage, 'Este cliente tiene una membresía inactiva. Será redirigido a la página de renovación.', 'error');
+        // Mostrar un modal que ofrezca redirigir
+        // Por ahora, redirigimos directamente tras un breve delay
+        setTimeout(() => {
+          window.location.href = `/memberships/renew/${validationData.id_activa}`; // Asumiendo que el backend devuelve el id
+        }, 3000);
+        return; // Detener el proceso
+      }
+
+      // Paso 3: Si el cliente no existe (not_found), proceder con la creación
+      submitBtn.innerHTML = "Procesando...";
+      const createResp = await fetch(this.formCliente.action, {
         method: "POST",
         body: new URLSearchParams(formData),
         headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
       });
-      const responseData = await resp.json();
-      if (!resp.ok) throw new Error(responseData.error || responseData.message || "Error desconocido");
-      if (responseData.id_cliente) {
-        this.idClienteInput.value = responseData.id_cliente;
+      const createData = await createResp.json();
+      if (!createResp.ok) throw new Error(createData.error || createData.message || "Error desconocido al crear el cliente");
+
+      if (createData.id_cliente) {
+        this.idClienteInput.value = createData.id_cliente;
         this.clienteRegistrado = true;
         this.submitMembershipBtn.disabled = false;
         this.submitMembershipBtn.classList.remove("bg-gray-400", "hover:bg-gray-400", "focus:ring-gray-400");
         this.submitMembershipBtn.classList.add("bg-green-600", "hover:bg-green-700", "focus:ring-green-500");
         this.submitMembershipBtn.textContent = "Crear Membresía";
         this.showMessage(this.clienteMessage, "Cliente registrado con éxito. Ahora puede crear la membresía.", "success");
-       
-        // Hacer visible el formulario de membresía antes de desplazarse a él.
+
         if (this.formMembership) this.formMembership.parentElement.classList.remove('hidden');
-        
-        
-        // Ocultar el formulario de cliente una vez que se ha procesado con éxito.
         if (this.formCliente) this.formCliente.parentElement.classList.add('hidden');
         if (this.formMembership) this.formMembership.scrollIntoView({ behavior: "smooth" });
       } else {
@@ -300,7 +331,7 @@ const MembershipUI = {
     document.body.appendChild(modalElement);
     modalElement.querySelector('[data-action="close"]').addEventListener('click', () => {
       modalElement.remove();
-      this.limpiarFormularios();
+      window.location.reload();
     });
     modalElement.querySelector('[data-action="view-list"]').addEventListener('click', () => {
       window.location.href = '/memberships/listMembership';
@@ -378,42 +409,123 @@ const MembershipUI = {
    */
   handleTipoMembresiaChange: function (e) {
     const selectedOption = e.target.options[e.target.selectedIndex];
+    const isFamily = selectedOption.text.toLowerCase().includes('familiar');
     this.maxIntegrantes = parseInt(selectedOption.dataset.max, 10);
     this.updateCalculatedDetails();
-    if (this.maxIntegrantes > 1) {
+
+    this.integrantesContainer.innerHTML = ""; // Limpiar siempre
+    if (isFamily) {
       this.integrantesSection.classList.remove("hidden");
-      if (this.integrantesContainer.children.length === 0) {
-        this.addIntegranteBtn.click();
+      this.addIntegranteBtn.classList.add("hidden"); // Ocultar botón de añadir
+      // Crear los 3 campos obligatorios
+      for (let i = 0; i < 3; i++) {
+        this.agregarIntegrante(false); // `false` para no mostrar el botón de eliminar
       }
+    } else if (this.maxIntegrantes > 1) {
+        // Lógica para otros tipos de membresía con integrantes opcionales (si existieran)
+      this.integrantesSection.classList.remove("hidden");
+      this.addIntegranteBtn.classList.remove("hidden");
     } else {
       this.integrantesSection.classList.add("hidden");
-      this.integrantesContainer.innerHTML = "";
     }
   },
   /**
    * Añade dinámicamente un nuevo campo de texto para registrar un integrante familiar.
-   * Valida que no se exceda el número máximo de integrantes permitidos.
-   * Asigna un evento al botón de eliminar para quitar el campo recién creado.
+   * @param {boolean} showRemoveButton - Si se debe mostrar el botón de eliminar.
    */
-  agregarIntegrante: function () {
+  agregarIntegrante: function (showRemoveButton = true) {
     const currentIntegrantes = this.integrantesContainer.querySelectorAll(".integrante").length;
-    if (currentIntegrantes < this.maxIntegrantes - 1) {
-      const integranteDiv = document.createElement("div");
-      integranteDiv.classList.add("integrante", "flex", "items-center", "space-x-2", "mb-2");
-      integranteDiv.innerHTML = `<input type="text" name="integrantes[]" placeholder="Nombre completo del integrante" required class="flex-1 px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"><button type="button" class="removeBtn px-3 py-2 border border-transparent rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">❌ Eliminar</button>`;
-      this.integrantesContainer.appendChild(integranteDiv);
-      integranteDiv.querySelector(".removeBtn").addEventListener("click", () => {
-        integranteDiv.remove();
-        const remaining = this.maxIntegrantes - 1 - this.integrantesContainer.querySelectorAll(".integrante").length;
-        if (remaining > 0) {
-          this.showMessage(this.membershipMessage, `Puede agregar hasta ${remaining} integrantes más`, "success");
-          setTimeout(() => { this.membershipMessage.classList.add("hidden"); }, 3000);
-        }
-      });
-    } else {
+    if (currentIntegrantes >= this.maxIntegrantes - 1 && showRemoveButton) {
       this.showMessage(this.membershipMessage, `Máximo ${this.maxIntegrantes - 1} integrantes adicionales permitidos`, "error");
       setTimeout(() => { this.membershipMessage.classList.add("hidden"); }, 3000);
+      return;
     }
+
+    const integranteDiv = document.createElement("div");
+    integranteDiv.classList.add("integrante", "flex", "items-center", "space-x-2", "mb-2");
+
+    let inputHTML = `<input type="text" name="integrantes[]" placeholder="Nombre completo del integrante #${currentIntegrantes + 1}" required class="flex-1 px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">`;
+    let buttonHTML = '';
+
+    if (showRemoveButton) {
+      buttonHTML = `<button type="button" class="removeBtn px-3 py-2 border border-transparent rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">❌ Eliminar</button>`;
+    }
+
+    integranteDiv.innerHTML = inputHTML + buttonHTML;
+    this.integrantesContainer.appendChild(integranteDiv);
+
+    if (showRemoveButton) {
+      integranteDiv.querySelector(".removeBtn").addEventListener("click", () => {
+        integranteDiv.remove();
+      });
+    }
+  },
+
+  /**
+   * Vincula los eventos de filtrado de entrada en tiempo real a los campos del formulario.
+   */
+  bindInputFiltering: function() {
+    const filterInput = (inputElement, regex) => {
+      inputElement.addEventListener('input', (e) => {
+        const originalValue = e.target.value;
+        const sanitizedValue = originalValue.replace(regex, '');
+        if (originalValue !== sanitizedValue) {
+          e.target.value = sanitizedValue;
+        }
+      });
+    };
+
+    const nombreCompletoInput = this.formCliente.querySelector('[name="nombre_completo"]');
+    const telefonoInput = this.formCliente.querySelector('[name="telefono"]');
+    const descuentoInput = this.formMembership.querySelector('[name="descuento"]');
+
+    // Filtrar nombre completo (solo letras, espacios y caracteres españoles)
+    if (nombreCompletoInput) {
+      filterInput(nombreCompletoInput, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g);
+    }
+
+    // Filtrar teléfono (solo números, máximo 10)
+    if (telefonoInput) {
+      telefonoInput.addEventListener('input', (e) => {
+        const originalValue = e.target.value;
+        let sanitizedValue = originalValue.replace(/[^0-9]/g, '');
+        if (sanitizedValue.length > 10) {
+          sanitizedValue = sanitizedValue.slice(0, 10);
+        }
+        if (originalValue !== sanitizedValue) {
+          e.target.value = sanitizedValue;
+        }
+      });
+    }
+
+    // Filtrar descuento (solo números, máximo 3 caracteres, no mayor a 100)
+    if (descuentoInput) {
+      descuentoInput.addEventListener('input', (e) => {
+        let value = e.target.value;
+        // 1. Quitar no-números
+        value = value.replace(/[^0-9]/g, '');
+        // 2. Limitar a 3 caracteres
+        if (value.length > 3) {
+          value = value.slice(0, 3);
+        }
+        // 3. Asegurar que no sea mayor a 100
+        if (parseInt(value, 10) > 100) {
+          value = '100';
+        }
+        e.target.value = value;
+      });
+    }
+
+    // Delegación de eventos para los campos de integrantes creados dinámicamente
+    this.integrantesContainer.addEventListener('input', (e) => {
+        if (e.target && e.target.name === 'integrantes[]') {
+            const originalValue = e.target.value;
+            const sanitizedValue = originalValue.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            if (originalValue !== sanitizedValue) {
+                e.target.value = sanitizedValue;
+            }
+        }
+    });
   },
   /**
    * Función de utilidad para mostrar mensajes de feedback (éxito o error) al usuario.

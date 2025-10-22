@@ -9,6 +9,7 @@ import express from "express";
 import { authMiddleware } from "../../../middlewares/validation/accessDenied.js";
 import { listMembershipController } from "../controllers/listMemberController.js";
 import { reportsController } from "../controllers/reportsController.js";
+import { MembershipController } from "../controllers/createMemberController.js";
 
 const routerApi = express.Router();
 
@@ -56,5 +57,9 @@ routerApi.get("/reports/preview", bind(reportsController, "getReportPreview"));
 // GET /api/memberships/reports/download
 // Genera y sirve un reporte de ingresos en formato PDF para su descarga.
 routerApi.get("/reports/download", bind(reportsController, "downloadReportPDF"));
+
+// POST /api/memberships/validate-client
+// Valida si un cliente ya existe basado en su correo o teléfono y retorna el estado de su membresía.
+routerApi.post("/validate-client", bind(MembershipController, "validateClient"));
 
 export { routerApi as membershipApiRoutes };

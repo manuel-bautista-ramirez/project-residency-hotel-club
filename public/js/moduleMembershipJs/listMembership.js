@@ -16,49 +16,34 @@ const MembershipUI = {
    */
   bindEvents: function () {
     // Referencias a elementos del DOM
-    this.reportButton = document.getElementById("reportButton");
-    this.reportModal = document.getElementById("reportModal");
-    this.closeReportModal = document.getElementById("closeReportModal");
     this.searchInput = document.getElementById("searchInput");
     this.statusFilter = document.getElementById("statusFilter");
     this.sortBy = document.getElementById("sortBy");
     this.membershipRows = document.querySelectorAll(".membership-row");
 
-    // Modal de reportes para administradores
-    if (this.reportButton && this.reportModal && this.closeReportModal) {
-      this.reportButton.addEventListener("click", () => {
-        this.reportModal.classList.remove("hidden");
-      });
-
-      this.closeReportModal.addEventListener("click", () => {
-        this.reportModal.classList.add("hidden");
-      });
-
-      // Cerrar modal al hacer clic fuera del contenido
-      this.reportModal.addEventListener("click", (e) => {
-        if (e.target === this.reportModal) {
-          this.reportModal.classList.add("hidden");
-        }
-      });
-    }
+    this.typeFilter = document.getElementById("typeFilter");
+    this.tableBody = document.getElementById("membershipsTableBody");
 
     // Búsqueda y filtros
+    const debounce = (func, delay) => {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    };
+
     if (this.searchInput) {
-      this.searchInput.addEventListener("input", () => {
-        this.filterMemberships();
-      });
+      this.searchInput.addEventListener("input", debounce(() => this.fetchAndRenderMemberships(), 300));
     }
-
     if (this.statusFilter) {
-      this.statusFilter.addEventListener("change", () => {
-        this.filterMemberships();
-      });
+      this.statusFilter.addEventListener("change", () => this.fetchAndRenderMemberships());
     }
-
+    if (this.typeFilter) {
+      this.typeFilter.addEventListener("change", () => this.fetchAndRenderMemberships());
+    }
     if (this.sortBy) {
-      this.sortBy.addEventListener("change", () => {
-        this.filterMemberships();
-      });
+      this.sortBy.addEventListener("change", () => this.fetchAndRenderMemberships());
     }
 
     /**
@@ -131,7 +116,7 @@ const MembershipUI = {
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear().toString().slice(-2);
+    const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   },
 
@@ -245,7 +230,7 @@ const MembershipUI = {
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-    fetch(`/api/memberships/details/${id}`)
+    fetch(`/memberships/api/memberships/details/${id}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Error al cargar los detalles');
@@ -287,7 +272,7 @@ const MembershipUI = {
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
     // Hacemos la llamada a la API
-    fetch(`/api/memberships/${idActiva}/integrantes`, {
+    fetch(`/memberships/api/memberships/${idActiva}/integrantes`, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -315,100 +300,109 @@ const MembershipUI = {
       });
   },
 
-  /**
-   * Filtra y muestra las filas de la tabla que coinciden con el término de búsqueda
-   * y el filtro de estado seleccionados. Se ejecuta cada vez que el usuario
-   * escribe en el buscador o cambia un filtro.
-   */
-  filterMemberships: function () {
-    const searchTerm = this.searchInput
-      ? this.searchInput.value.toLowerCase()
-      : "";
-    const statusValue = this.statusFilter ? this.statusFilter.value : "all";
-    const sortValue = this.sortBy ? this.sortBy.value : "expiry";
+  fetchAndRenderMemberships: async function () {
+    const searchTerm = this.searchInput.value;
+    const status = this.statusFilter.value;
+    const type = this.typeFilter.value;
+    const sortBy = this.sortBy.value;
 
-    this.membershipRows.forEach((row) => {
-      const text = row.textContent.toLowerCase();
-      const statusBadge = row.querySelector(".status-badge");
-      let statusMatch = true;
+    const query = new URLSearchParams({
+      search: searchTerm,
+      status: status,
+      type: type,
+      sortBy: sortBy
+    });
 
-      // Filtrar por estado
-      if (statusValue !== "all") {
-        if (statusValue === "active") {
-          statusMatch =
-            statusBadge &&
-            statusBadge.textContent.includes("Activa") &&
-            !statusBadge.textContent.includes("Vencida");
-        } else if (statusValue === "expiring") {
-          statusMatch =
-            statusBadge && statusBadge.textContent.includes("vencer");
-        } else if (statusValue === "expired") {
-          statusMatch =
-            statusBadge && statusBadge.textContent.includes("Vencida");
+    try {
+      this.tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-10">Cargando...</td></tr>';
+      const response = await fetch(`/memberships/api/memberships?${query.toString()}`);
+      if (!response.ok) {
+        throw new Error('Error al cargar los datos');
+      }
+      const result = await response.json();
+      this.renderTableRows(result.data);
+    } catch (error) {
+      this.tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-red-500">Error: ${error.message}</td></tr>`;
+    }
+  },
+
+  formatPeriod: function (start, end) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const formatDate = (d) => `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  },
+
+  renderTableRows: function (memberships) {
+    this.tableBody.innerHTML = "";
+    if (memberships.length === 0) {
+      this.tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-10">No se encontraron membresías.</td></tr>';
+      return;
+    }
+
+    memberships.forEach(membresia => {
+        const row = document.createElement('tr');
+        row.className = 'table-row bg-white hover:bg-green-50 transition-all duration-200 group';
+
+        let actionsHtml = '';
+        if (membresia.isFamily) {
+            actionsHtml += `<button class="view-members-btn action-btn bg-purple-100 text-purple-600 hover:bg-purple-200" title="Ver integrantes" data-id-activa="${membresia.id_activa}"><i class="fas fa-users"></i></button>`;
         }
-      }
+        actionsHtml += `<button class="view-details-btn action-btn bg-green-100 text-green-600 hover:bg-green-200" title="Ver detalles" data-id="${membresia.id_activa}"><i class="fas fa-eye"></i></button>`;
+        if (membresia.canRenew) {
+            actionsHtml += `<a href="/memberships/renew/${membresia.id_activa}" class="action-btn bg-blue-100 text-blue-600 hover:bg-blue-200" title="Renovar"><i class="fas fa-sync-alt"></i></a>`;
+        }
+        if (membresia.isAdmin) {
+            actionsHtml += `<a href="/memberships/editMembership/${membresia.id_activa}" class="action-btn bg-amber-100 text-amber-600 hover:bg-amber-200" title="Editar"><i class="fas fa-edit"></i></a>`;
+            actionsHtml += `<button type="button" class="delete-btn action-btn bg-red-100 text-red-600 hover:bg-red-200" data-id="${membresia.id_activa}" data-name="${membresia.nombre_completo}"><i class="fas fa-trash-alt"></i></button>`;
+        }
 
-      // Filtrar por término de búsqueda
-      const searchMatch = searchTerm === "" || text.includes(searchTerm);
-
-      // Mostrar u ocultar fila según los filtros
-      if (searchMatch && statusMatch) {
-        row.style.display = "";
-        row.classList.add("bg-green-100");
-        setTimeout(() => row.classList.remove("bg-green-100"), 1000);
-      } else {
-        row.style.display = "none";
-      }
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow duration-200 border border-green-200">
+                            <span class="text-green-600 font-bold" data-initial="${membresia.nombre_completo}"></span>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <div class="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200">${membresia.nombre_completo}</div>
+                        <div class="text-xs text-gray-500 flex items-center mt-1">
+                            <i class="fas fa-phone-alt mr-1 text-green-500"></i>${membresia.telefono}
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                    ${membresia.isFamily
+                        ? `<span 
+                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                <i class="fas fa-users mr-1 text-green-600"></i> Familiar
+                            </span>`
+                        : `<span
+                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                <i class="fas fa-user mr-1 text-blue-600"></i> ${membresia.tipo_membresia}
+                            </span>`
+                    }
+                </div>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">${this.formatPeriod(membresia.fecha_inicio, membresia.fecha_fin)}</div>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+                <span class="${membresia.statusClass} text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">${membresia.statusText}</span>
+            </td>
+            <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center space-x-2">${actionsHtml}</div>
+            </td>
+        `;
+        this.tableBody.appendChild(row);
     });
 
-    // Ordenar resultados
-    this.sortTable(sortValue);
-  },
-
-  /**
-   * Ordena las filas de la tabla según el criterio seleccionado (nombre, más reciente o fecha de expiración).
-   * @param {string} criteria - El criterio de ordenamiento ('name', 'recent', 'expiry').
-   */
-  sortTable: function (criteria) {
-    const tbody = document.getElementById("membershipsTableBody");
-    if (!tbody) return;
-
-    const rows = Array.from(tbody.querySelectorAll(".membership-row"));
-
-    rows.sort((a, b) => {
-      if (criteria === "name") {
-        const nameElementA = a.querySelector(".text-sm.font-semibold");
-        const nameElementB = b.querySelector(".text-sm.font-semibold");
-        const nameA = nameElementA
-          ? nameElementA.textContent.toLowerCase()
-          : "";
-        const nameB = nameElementB
-          ? nameElementB.textContent.toLowerCase()
-          : "";
-        return nameA.localeCompare(nameB);
-      } else if (criteria === "recent") {
-        const dateFieldsA = a.querySelectorAll(".date-field");
-        const dateFieldsB = b.querySelectorAll(".date-field");
-        const dateA =
-          dateFieldsA.length > 0
-            ? new Date(dateFieldsA[0].getAttribute("data-original"))
-            : new Date(0);
-        const dateB =
-          dateFieldsB.length > 0
-            ? new Date(dateFieldsB[0].getAttribute("data-original"))
-            : new Date(0);
-        return dateB - dateA;
-      } else {
-        // Ordenamiento por defecto: por fecha de expiración más próxima.
-        const daysA = parseInt(a.getAttribute('data-days-until-expiry'), 10);
-        const daysB = parseInt(b.getAttribute('data-days-until-expiry'), 10);
-        return daysA - daysB;
-      }
-    });
-
-    // Limpiar y reordenar la tabla
-    rows.forEach((row) => tbody.appendChild(row));
-  },
+    // Volver a aplicar el formato para los nuevos elementos
+    this.applyInitialFormatting();
+  }
 };
 
 /**

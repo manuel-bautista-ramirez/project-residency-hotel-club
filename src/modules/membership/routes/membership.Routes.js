@@ -57,6 +57,21 @@ routerMembership.get(
   bind(listMembershipController, "renderMembershipList")
 );
 
+// GET: Obtiene la lista de membresías para la API (usado por la búsqueda y filtros dinámicos).
+routerMembership.get(
+  "/api/memberships",
+  bind(listMembershipController, "getMembresiasAPI")
+);
+
+// GET: Obtiene los detalles completos de una membresía específica.
+routerMembership.get(
+  "/api/memberships/details/:id",
+  bind(listMembershipController, "getMembershipDetailsAPI")
+);
+
+// GET: Obtiene los integrantes de una membresía familiar.
+routerMembership.get("/api/memberships/:id_activa/integrantes", bind(listMembershipController, "getIntegrantesAPI"));
+
 // GET: Obtiene los tipos de membresía (usado para poblar selects en el formulario de creación).
 routerMembership.get(
   "/createMembership/tipos",

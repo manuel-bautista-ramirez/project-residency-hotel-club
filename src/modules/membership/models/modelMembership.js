@@ -483,6 +483,39 @@ const MembershipModel = {
       total: totalNeto,
     };
   },
+
+  /**
+   * Busca un cliente por correo o teléfono y devuelve el estado de su membresía más reciente.
+   * @async
+   * @param {string} correo - Correo electrónico del cliente.
+   * @param {string} telefono - Número de teléfono del cliente.
+   * @returns {Promise<object|null>} Un objeto con el estado de la membresía (ej. { estado: 'Activa' }) o null si el cliente no se encuentra.
+   */
+  async findClientAndMembershipStatus(correo, telefono) {
+    try {
+      const [rows] = await pool.query(
+        `
+        SELECT
+          ma.estado,
+          ma.id_activa
+        FROM clientes c
+        LEFT JOIN membresias_activas ma ON c.id_cliente = ma.id_cliente
+        WHERE c.correo = ? OR c.telefono = ?
+        ORDER BY ma.fecha_fin DESC
+        LIMIT 1
+        `,
+        [correo, telefono]
+      );
+
+      // Si no se encuentra un cliente o no tiene membresías, rows estará vacío.
+      // Si se encuentra un cliente sin membresía, rows[0].estado será null.
+      // Si se encuentra con membresía, rows[0].estado será 'Activa' o 'Inactiva'.
+      return rows[0] || null;
+    } catch (error) {
+      console.error("Error en findClientAndMembershipStatus del modelo:", error);
+      throw error;
+    }
+  },
 };
 
 export { MembershipModel };
