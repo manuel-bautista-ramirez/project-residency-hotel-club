@@ -400,7 +400,7 @@ export const deleteIdRenta = async (req, res) => {
 
     // Obtener datos de la renta antes de eliminarla para borrar archivos
     console.log(`📋 Obteniendo datos de la renta ${rentaId}...`);
-    const { default: pool } = await import("../../../config/database.js");
+    const { pool } = await import("../../../dataBase/connectionDataBase.js");
     const [rentas] = await pool.query("SELECT pdf_path, qr_path FROM rentas WHERE id = ?", [rentaId]);
     
     // Eliminar PDF y QR de la renta si existen

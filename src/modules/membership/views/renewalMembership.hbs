@@ -10,7 +10,7 @@
         </div>
 
         <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
-            <a href="/memberships"
+            <a href="/memberships/listMembership"
                 class="bg-gray-600 hover:bg-gray-700 text-white px-5 py-2.5 rounded-lg font-medium flex items-center transition-colors">
                 <i class="fas fa-arrow-left mr-2"></i> Volver
             </a>
@@ -68,11 +68,11 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="id_tipo_membresia">
                         Tipo de Membresía *
                     </label>
-                    <select id="id_tipo_membresia" name="id_tipo_membresia"
+                    <select id="id_tipo_membresia" name="id_tipo_membresia" data-tipos-membresia="{{json tiposMembresia}}"
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
                         required>
                         {{#each tiposMembresia}}
-                        <option value="{{this.id_tipo_membresia}}" {{#if (eq ../membership.tipo_membresia
+                        <option value="{{this.id_tipo_membresia}}" data-max-integrantes="{{this.max_integrantes}}" {{#if (eq ../membership.tipo_membresia
                             this.nombre)}}selected{{/if}}>
                             {{this.nombre}} - ${{this.precio}}
                         </option>
@@ -84,8 +84,8 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="fecha_inicio">
                         Fecha de Inicio *
                     </label>
-                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{formatDate (now)}}"
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{formatDate (now)}}" 
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent">
                 </div>
 
                 <div>
@@ -95,6 +95,20 @@
                     <input type="date" id="fecha_fin" name="fecha_fin"
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100" readonly>
                 </div>
+
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="precio_final">
+                        Precio Final
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">$</span>
+                        </div>
+                        <input type="text" id="precio_final" name="precio_final"
+                            class="pl-7 w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="id_metodo_pago">
                         Método de pago *
@@ -112,6 +126,26 @@
             </div>
         </div>
 
+        <!-- Sección de integrantes (solo para membresías familiares) -->
+        <div id="integrantesSection" class="mb-8 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-users mr-2 text-green-500"></i> Integrantes
+                </h2>
+                <button type="button" id="addIntegranteBtn"
+                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <i class="fas fa-plus mr-1"></i> Agregar Integrante
+                </button>
+            </div>
+            <div id="integrantesContainer" class="space-y-4">
+                {{#each membership.integrantes}}
+                {{!-- Los integrantes existentes no se muestran, se deben agregar los nuevos para la renovación --}}
+                {{/each}}
+            </div>
+            <p class="text-sm text-gray-500 mt-2">Agrega los nombres completos de los integrantes para la nueva membresía familiar.</p>
+        </div>
+
+
         <!-- Botones de acción -->
         <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
             <a href="/memberships"
@@ -125,5 +159,25 @@
         </div>
     </form>
 </div>
+
+<!-- Template para un nuevo integrante -->
+<template id="integrante-template">
+    <div class="integrante-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div>
+                <label class="block text-gray-700 text-sm font-medium mb-1">Nombre Completo</label>
+                <input type="text" name="integrantes[__INDEX__][nombre_completo]"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    required>
+            </div>
+            <div class="flex items-end">
+                <button type="button"
+                    class="remove-integrante inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <i class="fas fa-trash mr-1"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
 
 <script src="/js/moduleMembershipJs/renewal.js"></script>
