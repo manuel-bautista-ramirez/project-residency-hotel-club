@@ -249,6 +249,18 @@ const MembershipModel = {
   },
 
   /**
+   * Obtiene un método de pago por su ID.
+   * @param {number} id_metodo_pago - El ID del método de pago.
+   * @returns {Promise<object|null>} El objeto del método de pago o null si no se encuentra.
+   */
+  async getMetodoPagoById(id_metodo_pago) {
+    const [rows] = await pool.query(
+      `SELECT * FROM metodos_pago WHERE id_metodo_pago = ?`, [id_metodo_pago]
+    );
+    return rows[0] || null;
+  },
+
+  /**
    * Obtiene los detalles completos de una membresía activa, incluyendo datos del cliente y tipo.
    * @param {number} id_activa - El ID de la membresía activa.
    * @returns {Promise<object|null>} Un objeto con los detalles completos o `null` si no se encuentra.

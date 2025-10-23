@@ -619,6 +619,39 @@ export const MembershipService = {
       id_metodo_pago,
       monto: precio_final,
     });
+
+    // 6. Regenerar el archivo QR (buena práctica, aunque el payload no cambie)
+    const payloadQR = await this.generateQRPayload(id_activa);
+    const qrPath = await this.generateQRCode(
+      payloadQR,
+      id_activa,
+      nombre_completo
+    );
+    await MembershipModel.updateQRPath(id_activa, qrPath);
+
+    // 7. Enviar el nuevo comprobante de renovación
+    const [tipoMembresia, integrantesDB, metodoPagoInfo] = await Promise.all([
+        MembershipModel.getTipoMembresiaById(id_tipo_membresia),
+        MembershipModel.getIntegrantesByActiva(id_activa),
+        MembershipModel.getMetodoPagoById(id_metodo_pago)
+    ]);
+
+    const precioEnLetras = this.convertirNumeroALetras(parseFloat(precio_final));
+    
+    await this.sendMembershipReceipts(
+      { nombre_completo, correo, telefono }, // Datos del cliente
+      tipoMembresia,                         // Datos del tipo de membresía
+      id_activa,
+      renewalData.fecha_inicio,
+      fecha_fin,                             // Fecha de fin calculada
+      integrantesDB,                         // Integrantes actualizados desde la BD
+      metodoPagoInfo.nombre,                 // Nombre del método de pago
+      precio_final,
+      precioEnLetras
+    );
+
+    // Devolver datos para una posible respuesta de la API
+    return { id_activa, qr_path: qrPath };
   },
 
   /**
