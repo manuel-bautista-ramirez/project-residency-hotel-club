@@ -19,6 +19,7 @@ import { pool } from "../../../dataBase/connectionDataBase.js";
  * @param {string} data.membershipData.fecha_inicio - Nueva fecha de inicio.
  * @param {string} data.membershipData.fecha_fin - Nueva fecha de fin.
  * @param {number} data.membershipData.precio_final - Nuevo precio final.
+ * @param {number} [data.membershipData.id_tipo_membresia] - ID del nuevo tipo de membresía (importante para renovaciones).
  * @param {string} data.tipo - El tipo de membresía (ej. 'Familiar').
  * @param {Array<object>} [data.integrantes] - Array de integrantes para membresías familiares. Cada objeto debe tener `nombre_completo`.
  * @returns {Promise<object>} El resultado de la operación de actualización de la tabla `membresias_activas`.
@@ -33,7 +34,7 @@ async function updateMembershipById(id, data) {
 
     // 1. Obtener el id_cliente de la membresía
     const [membership] = await connection.query(
-      "SELECT id_cliente FROM membresias_activas WHERE id_activa = ?",
+      "SELECT id_cliente, id_membresia FROM membresias_activas WHERE id_activa = ?",
       [id]
     );
 
@@ -41,7 +42,7 @@ async function updateMembershipById(id, data) {
       throw new Error("Membresía no encontrada");
     }
 
-    const id_cliente = membership[0].id_cliente;
+    const { id_cliente, id_membresia } = membership[0];
 
     // 2. Actualizar la información del cliente en la tabla clientes
     const clienteData = {
@@ -68,14 +69,24 @@ async function updateMembershipById(id, data) {
       [membresiaData, id]
     );
 
-    // 4. Si es membresía familiar, manejar los integrantes
-    if (data.tipo === "Familiar" && data.integrantes) {
-      // Estrategia "borrar y re-insertar": se eliminan todos los integrantes actuales.
+    // 4. Si se proporciona un nuevo tipo de membresía (en renovaciones), actualizar el contrato base.
+    if (data.membershipData.id_tipo_membresia) {
       await connection.query(
-        "DELETE FROM integrantes_membresia WHERE id_activa = ?",
-        [id]
+        "UPDATE membresias SET id_tipo_membresia = ? WHERE id_membresia = ?",
+        [data.membershipData.id_tipo_membresia, id_membresia]
       );
+    }
 
+    // 5. Manejar integrantes (borrar y re-insertar para mantener consistencia)
+    // Primero, siempre eliminamos los integrantes existentes para limpiar.
+    // Si la membresía se cambia de Familiar a Individual, esto asegura que los integrantes antiguos se eliminen.
+    await connection.query(
+      "DELETE FROM integrantes_membresia WHERE id_activa = ?",
+      [id]
+    );
+
+    // Luego, si el nuevo tipo es Familiar y se proporcionan integrantes, los insertamos.
+    if (data.tipo === "Familiar" && data.integrantes) {
       // Se insertan los nuevos integrantes enviados desde el formulario.
       for (const integrante of data.integrantes) {
         if (integrante.nombre_completo && integrante.nombre_completo.trim() !== '') {

@@ -565,52 +565,57 @@ export const MembershipService = {
    * @param {object} renewalData - Los datos del formulario de renovación.
    * @returns {Promise<void>}
    */
-  async renewMembership(oldMembershipId, renewalData) {
+  async renewMembership(id_activa, renewalData) {
     const {
       id_cliente,
       nombre_completo,
       telefono,
       correo,
       id_tipo_membresia,
-      fecha_inicio,
-      fecha_fin,
       id_metodo_pago,
+      integrantes,
     } = renewalData;
 
-    // 1. Actualizar datos del cliente
+    // 1. Obtener la membresía existente para obtener el id_membresia (contrato)
+    const oldMembership = await MembershipModel.getMembresiaById(id_activa);
+    if (!oldMembership) {
+      throw new Error("La membresía que intenta renovar no existe.");
+    }
+
+    // 2. Recalcular precio y fecha de fin en el servidor para seguridad.
+    const { precio_final, fecha_fin } = await this.calculateMembershipDetails(
+      id_tipo_membresia,
+      renewalData.fecha_inicio,
+      0 // Descuento no aplica en renovación por ahora
+    );
+
+    // 3. Actualizar datos del cliente
     await MembershipModel.updateClient({
       id_cliente,
       nombre_completo,
       telefono,
       correo,
     });
-
-    // 2. Desactivar la membresía antigua
-    await MembershipModel.updateEstadoMembresia(oldMembershipId, 'Vencida');
-
-    // 3. Crear el nuevo contrato de membresía
-    const id_membresia = await MembershipModel.createMembershipContract({
-      id_cliente,
-      id_tipo_membresia,
-      fecha_inicio,
-      fecha_fin,
+    
+    // 4. Actualizar la membresía activa existente con los nuevos datos de renovación
+    await updateMembershipById(id_activa, {
+      membershipData: {
+        nombre_completo,
+        telefono,
+        correo,
+        estado: 'Activa', // Se reactiva la membresía
+        fecha_inicio: renewalData.fecha_inicio,
+        fecha_fin: fecha_fin, // Fecha calculada
+        id_tipo_membresia: id_tipo_membresia, // Pasar el nuevo tipo para actualizar el contrato
+        precio_final: precio_final, // Precio calculado
+      },
+      tipo: (await MembershipModel.getTipoMembresiaById(id_tipo_membresia)).nombre.includes('Familiar') ? 'Familiar' : 'Individual',
+      integrantes: integrantes || []
     });
 
-    // 4. Activar la nueva membresía
-    const tipoMembresia = await MembershipModel.getTipoMembresiaById(id_tipo_membresia);
-    const precio_final = tipoMembresia.precio;
-
-    const id_activa_nueva = await MembershipModel.activateMembership({
-      id_cliente,
-      id_membresia,
-      fecha_inicio,
-      fecha_fin,
-      precio_final,
-    });
-
-    // 5. Registrar el pago
+    // 5. Registrar el nuevo pago de la renovación
     await MembershipModel.recordPayment({
-      id_activa: id_activa_nueva,
+      id_activa: id_activa,
       id_metodo_pago,
       monto: precio_final,
     });
