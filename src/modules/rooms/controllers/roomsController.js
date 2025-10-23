@@ -33,6 +33,7 @@ export const renderHabitacionesView = async (req, res) => {
     res.render("ShowAllRooms", {
       title: "Habitaciones",
       showFooter: true,
+      showNavbar: true,
       habitaciones,
       user: {
         ...user,
@@ -287,6 +288,7 @@ export const renderAllRervationes = async (req, res) => {
         ...user,
         rol: user.role,
       },
+      showNavbar: true,
     });
   } catch (error) {
     console.error(
@@ -385,6 +387,7 @@ export const renderAllRentas = async (req, res) => {
         ...user,
         rol: user.role,
       },
+       showNavbar: true,
     });
   } catch (error) {
     console.error("Error al renderizar las rentas loco:", error.message);
@@ -649,6 +652,7 @@ export const renderReservacionesView = async (req, res) => {
         ...user,
         rol: user.role,
       },
+      showNavbar: true, 
     });
   } catch (err) {
     console.error("Error al renderizar reportes de rentas:", err);
@@ -674,6 +678,7 @@ export const createResevation = async (req, res) => {
       habitacion,
       habitaciones,
       user: req.session.user,
+      showNavbar: true, 
     });
   } catch (err) {
     console.error("Error en renderFormReservar:", err);
@@ -705,6 +710,7 @@ export const renderFormRentar = async (req, res) => {
       monto,
       monto_letras,
       user: req.session.user,
+      showNavbar: true, 
     });
   } catch (err) {
     console.error("Error en renderFormRentar:", err);
@@ -876,6 +882,7 @@ export const renderCalendarioRooms = (req, res) => {
       ...user,
       rol: user.role,
     },
+    showNavbar: true, 
   });
 };
 
@@ -914,6 +921,7 @@ export const renderAllPriceView = async (req, res) => {
       title: "Precios de Habitaciones",
       showFooter: true,
       meses: precios, // <-- ENVÍA COMO 'meses' SI TU PLANTILLA USA {{#each meses}}
+      showNavbar: true, 
     });
   } catch (err) {
     console.error("Error al renderizar precios:", err);
@@ -1072,6 +1080,7 @@ export const renderRentForm = async (req, res) => {
       price,
       price_text,
       user: req.session.user,
+      showNavbar: true,
     });
   } catch (err) {
     console.error("Error in renderRentForm:", err);
@@ -1650,6 +1659,7 @@ export const renderConvertReservationToRent = async (req, res) => {
         ...user,
         rol: user.role,
       },
+      showNavbar: true,
     });
   } catch (error) {
     console.error("❌ Error al cargar formulario de conversión:", error);

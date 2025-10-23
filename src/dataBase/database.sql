@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS password_resets (
   CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users_hotel (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
 -- =====================================================
 --               MÓDULO DE HABITACIONES
 -- =====================================================
@@ -100,20 +99,20 @@ CREATE TABLE IF NOT EXISTS reservaciones (
   INDEX idx_habitacion (habitacion_id),
   INDEX idx_usuario (usuario_id),
   INDEX idx_medio_mensaje (id_medio_mensaje),
-  CONSTRAINT fk_reservaciones_habitacion 
-    FOREIGN KEY (habitacion_id) 
-    REFERENCES habitaciones (id) 
-    ON DELETE RESTRICT 
+  CONSTRAINT fk_reservaciones_habitacion
+    FOREIGN KEY (habitacion_id)
+    REFERENCES habitaciones (id)
+    ON DELETE RESTRICT
     ON UPDATE CASCADE,
-  CONSTRAINT fk_reservaciones_usuario 
-    FOREIGN KEY (usuario_id) 
-    REFERENCES users_hotel (id) 
-    ON DELETE RESTRICT 
+  CONSTRAINT fk_reservaciones_usuario
+    FOREIGN KEY (usuario_id)
+    REFERENCES users_hotel (id)
+    ON DELETE RESTRICT
     ON UPDATE CASCADE,
-  CONSTRAINT fk_reservaciones_medio_mensaje 
-    FOREIGN KEY (id_medio_mensaje) 
-    REFERENCES medios_mensajes (id_medio_mensaje) 
-    ON DELETE RESTRICT 
+  CONSTRAINT fk_reservaciones_medio_mensaje
+    FOREIGN KEY (id_medio_mensaje)
+    REFERENCES medios_mensajes (id_medio_mensaje)
+    ON DELETE RESTRICT
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de reservaciones con enganche/anticipo, rutas de archivos PDF y QR';
 
@@ -136,20 +135,20 @@ CREATE TABLE IF NOT EXISTS rentas (
   INDEX idx_habitacion (habitacion_id),
   INDEX idx_usuario (usuario_id),
   INDEX idx_medio_mensaje (id_medio_mensaje),
-  CONSTRAINT fk_rentas_habitacion 
-    FOREIGN KEY (habitacion_id) 
+  CONSTRAINT fk_rentas_habitacion
+    FOREIGN KEY (habitacion_id)
     REFERENCES habitaciones (id)
-    ON DELETE RESTRICT 
+    ON DELETE RESTRICT
     ON UPDATE CASCADE,
-  CONSTRAINT fk_rentas_usuario 
-    FOREIGN KEY (usuario_id) 
+  CONSTRAINT fk_rentas_usuario
+    FOREIGN KEY (usuario_id)
     REFERENCES users_hotel (id)
-    ON DELETE RESTRICT 
+    ON DELETE RESTRICT
     ON UPDATE CASCADE,
-  CONSTRAINT fk_rentas_medio_mensaje 
-    FOREIGN KEY (id_medio_mensaje) 
+  CONSTRAINT fk_rentas_medio_mensaje
+    FOREIGN KEY (id_medio_mensaje)
     REFERENCES medios_mensajes (id_medio_mensaje)
-    ON DELETE RESTRICT 
+    ON DELETE RESTRICT
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de rentas con rutas de archivos PDF y QR';
 

@@ -135,27 +135,7 @@
             </svg>
             <span>Tienda</span>
           </a>
-        </li>
-        {{#if (eq user.role "Administrador")}}
-          <li>
-            <a
-              href="/services"
-              class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
-              >
-                <path
-                  d="M21.6 7.2l-2.8 2.8-4-4 2.8-2.8a1 1 0 011.4 0l2.6 2.6a1 1 0 010 1.4zM3 17.25V21h3.75l10.6-10.6-3.75-3.75L3 17.25z"
-                />
-              </svg>
-              <span>Servicios</span>
-            </a>
-          </li>
-        {{/if}}
+        
         <li>
           <a
             href="/logout"

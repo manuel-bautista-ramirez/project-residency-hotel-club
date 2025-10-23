@@ -67,6 +67,7 @@ router.get("/home", authMiddleware, (req, res) => {
     title: "Home",
     showFooter: true,
     ...user,
+    showNavbar: true
   });
 });
 
@@ -74,10 +75,16 @@ router.get("/services", roleMiddleware("Administrador"), (req, res) => {
   res.send("<h1>Panel de Servicios - Gestión de comunicaciones con clientes (correo, WhatsApp)</h1>");
 });
 
-router.get("/admin", roleMiddleware("Administrador"), (req, res) => {
-  res.send(
-    "<h1>Panel de Administración</h1>");
+router.get("/admin", authMiddleware, (req, res) => {
+  res.render("adminitration", {
+    title: "Administracion",
+    showFooter: true,
+    showNavbar: true
+  });
 });
+
+
+
 router.get("/services", roleMiddleware("Administrador"), (req, res) => {
   res.send("<h1>Panel de Servicios - Gestión de comunicaciones con clientes (correo, WhatsApp)</h1>");
 });

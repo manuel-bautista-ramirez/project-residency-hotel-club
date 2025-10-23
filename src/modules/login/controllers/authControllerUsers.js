@@ -144,7 +144,6 @@ export const loginUser = async (req, res) => {
     console.log(
       `El usuario (${user.username}) [ID:${user.id}] con rol (${user.role}) ha iniciado sesión correctamente.`
     );
-
     res.redirect("/home"); // Redirigir al panel de inicio
   } else {
     // Credenciales incorrectas
