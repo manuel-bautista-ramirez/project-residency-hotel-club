@@ -17,6 +17,7 @@ export const renderMainPage = (req, res) => {
   res.render("entriesMain", {
     title: "Daily Entries",
     showFooter: true,
+    showNavbar: true,
     user: req.session.user
   });
 };
@@ -28,6 +29,7 @@ export const renderAllEntries = async (req, res) => {
     res.render("listEntries", {
       title: "Daily Entries",
       showFooter: true,
+      showNavbar: true,
       entries,
       user: req.session.user
     });
@@ -98,6 +100,7 @@ export const renderReports = async (req, res) => {
     return res.render("reportEntries", {
       title: "Income Reports",
       showFooter: true,
+      showNavbar : true,
       reports: { daily, weekly, biweekly, monthly },
       user: req.session.user
     });
