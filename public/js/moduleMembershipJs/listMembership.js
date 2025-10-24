@@ -442,6 +442,8 @@ const MembershipUI = {
         if (membresia.canRenew) {
             actionsHtml += `<a href="/memberships/renew/${membresia.id_activa}" class="action-btn bg-blue-100 text-blue-600 hover:bg-blue-200" title="Renovar"><i class="fas fa-sync-alt"></i></a>`;
         }
+        // --- CORRECCIÓN: Mover el botón de historial de pagos a su posición correcta ---
+        actionsHtml += `<button class="view-history-payments-btn action-btn bg-indigo-100 text-indigo-600 hover:bg-indigo-200" title="Ver historial de pagos" data-id-activa="${membresia.id_activa}"><i class="fa-solid fa-file-invoice-dollar"></i></button>`;
         if (membresia.isAdmin) {
             actionsHtml += `<a href="/memberships/editMembership/${membresia.id_activa}" class="action-btn bg-amber-100 text-amber-600 hover:bg-amber-200" title="Editar"><i class="fas fa-edit"></i></a>`;
             actionsHtml += `<button type="button" class="delete-btn action-btn bg-red-100 text-red-600 hover:bg-red-200" data-id="${membresia.id_activa}" data-name="${membresia.nombre_completo}"><i class="fas fa-trash-alt"></i></button>`;

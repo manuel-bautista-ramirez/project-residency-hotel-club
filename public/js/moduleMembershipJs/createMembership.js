@@ -57,6 +57,28 @@ const MembershipUI = {
     this.procesandoMembresia = false;
   },
   /**
+   * Muestra un spinner en un botón, lo deshabilita y opcionalmente cambia su texto.
+   * @param {HTMLElement} button - El botón donde se mostrará el spinner.
+   * @param {string} [text=''] - El texto a mostrar junto al spinner.
+   * @returns {string} El HTML original del botón.
+   */
+  showButtonSpinner: function(button, text = '') {
+    const originalHtml = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${text}`;
+    return originalHtml;
+  },
+
+  /**
+   * Restaura el contenido original de un botón y lo habilita.
+   * @param {HTMLElement} button - El botón a restaurar.
+   * @param {string} originalHtml - El HTML original que se guardó.
+   */
+  hideButtonSpinner: function(button, originalHtml) {
+    button.innerHTML = originalHtml;
+    button.disabled = false;
+  },
+  /**
    * Asigna todos los manejadores de eventos a los elementos del DOM cacheados.
    * Centraliza la lógica de interactividad del usuario.
    */
@@ -170,11 +192,8 @@ const MembershipUI = {
     this.procesandoCliente = true;
     this.clienteModal.classList.add("hidden");
     if (this.confirmClienteBtn) this.confirmClienteBtn.disabled = true;
-    const submitBtn = this.formCliente.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = "Verificando...";
-
+    const submitBtn = this.formCliente.querySelector('button[type="submit"]');    
+    const originalBtnHtml = this.showButtonSpinner(submitBtn, 'Verificando...');
     try {
       // Paso 1: Validar si el cliente ya existe
       const formData = new FormData(this.formCliente);
@@ -208,7 +227,7 @@ const MembershipUI = {
       }
 
       // Paso 3: Si el cliente no existe (not_found), proceder con la creación
-      submitBtn.innerHTML = "Procesando...";
+      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Procesando...`;
       const createResp = await fetch(this.formCliente.action, {
         method: "POST",
         body: new URLSearchParams(formData),
@@ -235,8 +254,7 @@ const MembershipUI = {
     } catch (err) {
       this.showMessage(this.clienteMessage, `Error: ${err.message}`, "error");
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalBtnText;
+      this.hideButtonSpinner(submitBtn, originalBtnHtml);
       this.procesandoCliente = false;
       if (this.confirmClienteBtn) this.confirmClienteBtn.disabled = false;
     }
@@ -273,11 +291,9 @@ const MembershipUI = {
     this.procesandoMembresia = true;
     this.membershipModal.classList.add("hidden");
     if (this.confirmMembershipBtn) this.confirmMembershipBtn.disabled = true;
-    const submitBtn = this.formMembership.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
+    const submitBtn = this.formMembership.querySelector('button[type="submit"]');    
+    const originalBtnHtml = this.showButtonSpinner(submitBtn, 'Procesando...');
     try {
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = "Procesando...";
       const formData = new FormData(this.formMembership);
       const resp = await fetch(this.formMembership.action, {
         method: "POST",
@@ -296,8 +312,7 @@ const MembershipUI = {
     } catch (err) {
       this.showMessage(this.membershipMessage, "Error al crear membresía: " + err.message, "error");
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalBtnText;
+      this.hideButtonSpinner(submitBtn, originalBtnHtml);
       this.procesandoMembresia = false;
       if (this.confirmMembershipBtn) this.confirmMembershipBtn.disabled = false;
     }
