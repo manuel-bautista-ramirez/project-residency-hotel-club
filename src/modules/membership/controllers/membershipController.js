@@ -159,3 +159,22 @@ export const renderEditMembership = async (req, res) => {
     });
   }
 };
+
+export const renderManageMembership = async (req, res) => {
+    try {
+        const userRole = req.session.user?.role || "Recepcionista";
+        const isAdmin = userRole === "Administrador";
+        res.render("manageMembership", {
+            title: "Gestionar Membresía",
+            isAdmin,
+            userRole
+        });
+    } catch (error) {
+        console.error("Error al cargar la página de gestión de membresía:", error);
+        const statusCode = error.statusCode || 500;
+        res.status(statusCode).render('error', {
+            title: "Error",
+            message: error.message || "Error al cargar la página de gestión."
+        });
+    }
+};
