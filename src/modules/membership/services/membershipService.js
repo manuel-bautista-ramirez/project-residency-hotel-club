@@ -93,11 +93,13 @@ const _getReportDateRange = (period, date) => {
       
       // Calcula el primer día del año.
       const firstDayOfYear = new Date(year, 0, 1);
-      // Encuentra el primer lunes del año.
-      const daysToFirstMonday = (8 - firstDayOfYear.getDay()) % 7;
-      const firstMonday = new Date(year, 0, 1 + daysToFirstMonday);
+      // El día de la semana del 1 de enero (0=Domingo, 1=Lunes, ...).
+      const firstDayOfWeek = firstDayOfYear.getDay();
+      // Ajuste para encontrar el lunes de la primera semana del año.
+      // Si el 1 de enero es martes (2), necesitamos retroceder 1 día. Si es domingo (0), retrocedemos 6.
+      const dayOffset = (firstDayOfWeek === 0 ? -6 : 1 - firstDayOfWeek);
       
-      startDate = new Date(firstMonday.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
+      startDate = new Date(year, 0, 1 + dayOffset + (week - 1) * 7);
       endDate = new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000);
       break;
     }
