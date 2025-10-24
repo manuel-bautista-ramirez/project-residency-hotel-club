@@ -75,6 +75,17 @@ const MembershipUI = {
           stopPropagation: () => e.stopPropagation()
         });
       }
+
+      const viewPaymentsBtn = e.target.closest('.view-history-payments-btn');
+      if (viewPaymentsBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleViewPaymentsClick({
+          currentTarget: viewPaymentsBtn,
+          preventDefault: () => e.preventDefault(),
+          stopPropagation: () => e.stopPropagation()
+        });
+      }
     });
   },
 
@@ -162,6 +173,85 @@ const MembershipUI = {
     modalElement.addEventListener('click', (e) => {
         if (e.target === modalElement) closeModal();
     });
+  },
+
+  /**
+   * Muestra un modal con el historial de pagos de una membresía.
+   * @param {Array} pagos - Un array de objetos, cada uno representando un pago.
+   */
+  showPaymentsModal: function (pagos) {
+    const template = document.getElementById('payments-history-modal-template');
+    if (!template) {
+      console.error('Template "payments-history-modal-template" no encontrado.');
+      return;
+    }
+
+    if (!pagos || pagos.length === 0) {
+      // Podríamos usar un modal de notificación más elegante, pero alert funciona por ahora.
+      alert("Esta membresía no tiene pagos registrados.");
+      return;
+    }
+
+    const modalClone = template.content.cloneNode(true);
+    const listContainer = modalClone.querySelector('[data-template-content="payments-list"]');
+
+    pagos.forEach(pago => {
+      const row = document.createElement('tr');
+      const formattedDate = this.formatDate(pago.fecha_pago);
+      const formattedAmount = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(pago.monto);
+
+      row.innerHTML = `
+        <td class="py-2.5 text-sm text-gray-700">${formattedDate}</td>
+        <td class="py-2.5 text-sm text-gray-700">${pago.metodo_pago || "N/A"}</td>
+        <td class="py-2.5 text-sm text-gray-800 font-medium text-right">${formattedAmount}</td>
+      `;
+      listContainer.appendChild(row);
+    });
+
+    const modalElement = modalClone.firstElementChild;
+    document.body.appendChild(modalElement);
+
+    const closeModal = () => modalElement.remove();
+    modalElement.querySelector('.close-payments-modal').addEventListener('click', closeModal);
+    modalElement.addEventListener('click', (e) => {
+      if (e.target === modalElement) closeModal();
+    });
+  },
+
+  /**
+   * Manejador para el clic en el botón "Ver Historial de Pagos".
+   * Realiza una petición fetch para obtener el historial y lo muestra en un modal.
+   */
+  handleViewPaymentsClick: function (e) {
+    const button = e.currentTarget;
+    const id = button.getAttribute("data-id-activa");
+
+    if (!id) {
+      console.error("No se encontró el ID de la membresía");
+      return;
+    }
+
+    const originalHtml = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(`/api/memberships/${id}/payments`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error al cargar el historial de pagos');
+        }
+        return response.json();
+      })
+      .then(pagos => {
+        this.showPaymentsModal(pagos);
+      })
+      .catch(error => {
+        console.error("Error al obtener historial de pagos:", error);
+      })
+      .finally(() => {
+        button.innerHTML = originalHtml;
+        button.disabled = false;
+      });
   },
 
   /**

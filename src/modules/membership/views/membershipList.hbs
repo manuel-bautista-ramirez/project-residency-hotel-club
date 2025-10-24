@@ -257,6 +257,13 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 {{/if}}
+
+                                <button
+                                    class="view-history-payments-btn action-btn bg-purple-100 text-purple-800 hover:bg-purple-200"
+                                    title="Ver historial de pagos" data-id-activa="{{this.id_activa}}">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                                </button>
+                                
                                 {{#if ../isAdmin}}
                                 <button type="button"
                                     class="delete-btn action-btn bg-red-100 text-red-600 hover:bg-red-200"
@@ -370,6 +377,34 @@
                     class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors close-details-modal">
                     Cerrar
                 </button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="payments-history-modal-template">
+    <div
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-all duration-300 ease-in-out">
+        <div class="bg-white rounded-2xl p-6 w-11/12 md:w-[500px] max-w-90vw">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-file-invoice-dollar mr-2 text-purple-500"></i>Historial de Pagos
+            </h3>
+            <div class="max-h-80 overflow-y-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="text-left text-sm font-medium text-purple-700 py-2">Fecha</th>
+                            <th class="text-left text-sm font-medium text-purple-700 py-2">Método</th>
+                            <th class="text-right text-sm font-medium text-purple-700 py-2">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" data-template-content="payments-list">
+                        <!-- Los pagos se insertarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors close-payments-modal">Cerrar</button>
             </div>
         </div>
     </div>

@@ -894,6 +894,23 @@ export const MembershipService = {
   },
 
   /**
+   * Obtiene el historial de pagos de una membresía.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<Array<object>>} Un array con los pagos.
+   * @throws {Error} Si `id_activa` no se proporciona.
+   */
+  async getPaymentsHistory(id_activa) {
+    if (!id_activa) {
+      const error = new Error("El parámetro id_activa es requerido");
+      error.statusCode = 400;
+      throw error;
+    }
+    // Reutilizamos el método del modelo que ya existe.
+    return await modelList.getPagosMembresia(id_activa);
+  },
+
+
+  /**
    * Obtiene los detalles completos de una membresía para una respuesta de API.
    * @param {number} id - El ID de la membresía activa.
    * @returns {Promise<object>} El objeto con los detalles de la membresía.
