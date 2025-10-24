@@ -307,6 +307,19 @@ CREATE TABLE IF NOT EXISTS pagos (
     CONSTRAINT pagos_chk_1 CHECK (monto > 0)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- =====================================================
+-- NUEVO MÓDULO DE REGISTRO DE ACCESOS POR MEMBRESÍA
+-- =====================================================
+CREATE TABLE IF NOT EXISTS registro_entradas (
+  `id_entrada` INT AUTO_INCREMENT PRIMARY KEY,
+  `id_activa` BIGINT UNSIGNED NOT NULL,
+  `fecha_hora_entrada` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `area_acceso` VARCHAR(50) NULL,
+  CONSTRAINT `fk_entrada_membresia`
+    FOREIGN KEY (`id_activa`)
+    REFERENCES `membresias_activas` (`id_activa`)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insertar métodos de pago
 INSERT IGNORE INTO metodos_pago (nombre) VALUES
