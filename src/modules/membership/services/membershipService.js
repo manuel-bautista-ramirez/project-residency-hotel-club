@@ -86,12 +86,19 @@ const _getReportDateRange = (period, date) => {
       break;
     }
     case "weekly": {
-      const week = parseInt(date.substring(5));
-      const firstDay = new Date(year, 0, 1 + (week - 1) * 7);
-      const dayOfWeek = firstDay.getDay();
-      const adjustment = dayOfWeek <= 4 ? 1 - dayOfWeek : 8 - dayOfWeek; // Adjust to start of the week (Monday)
-      startDate = new Date(year, 0, firstDay.getDate() + adjustment);
-      endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6);
+      // --- CORRECCIÓN ---
+      // La lógica anterior era imprecisa. Esta nueva implementación calcula correctamente
+      // el inicio (lunes) y fin (domingo) de la semana ISO 8601.
+      const week = parseInt(date.substring(5), 10);
+      
+      // Calcula el primer día del año.
+      const firstDayOfYear = new Date(year, 0, 1);
+      // Encuentra el primer lunes del año.
+      const daysToFirstMonday = (8 - firstDayOfYear.getDay()) % 7;
+      const firstMonday = new Date(year, 0, 1 + daysToFirstMonday);
+      
+      startDate = new Date(firstMonday.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
+      endDate = new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000);
       break;
     }
     default:
