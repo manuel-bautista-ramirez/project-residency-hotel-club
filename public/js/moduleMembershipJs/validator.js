@@ -22,8 +22,8 @@ const Validator = {
             message: 'El descuento debe ser un número entero entre 0 y 100.'
         },
         telefono: {
-            regex: /^\d{10}$/,
-            message: 'El teléfono debe contener 10 dígitos.'
+            regex: /^(\d{10})?$/, // Permite campo vacío o exactamente 10 dígitos
+            message: 'El teléfono debe contener 10 dígitos o estar vacío.'
         },
         correo: {
             regex: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,

@@ -3,6 +3,7 @@
  * Es el punto de entrada para toda la lógica del script.
  */
 document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('renewMembershipForm');
     const tipoMembresiaSelect = document.getElementById('id_tipo_membresia');
     const fechaInicioInput = document.getElementById('fecha_inicio');
     const fechaFinInput = document.getElementById('fecha_fin');
@@ -136,7 +137,9 @@ document.addEventListener('DOMContentLoaded', function() {
         filterInput(nombreCompletoInput, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g);
 
         // Filtrar teléfono (solo números, máximo 10)
+        // y validar longitud al salir del campo.
         if (telefonoInput) {
+            // Evento 'input': se ejecuta mientras el usuario escribe.
             telefonoInput.addEventListener('input', (e) => {
                 const originalValue = e.target.value;
                 let sanitizedValue = originalValue.replace(/[^0-9]/g, '');
@@ -145,6 +148,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 if (originalValue !== sanitizedValue) {
                     e.target.value = sanitizedValue;
+                }
+            });
+
+            // Evento 'blur': se ejecuta cuando el usuario sale del campo.
+            telefonoInput.addEventListener('blur', (e) => {
+                const currentValue = e.target.value;
+                // Si el campo no está vacío pero no tiene 10 dígitos, se limpia.
+                if (currentValue.length > 0 && currentValue.length < 10) {
+                    e.target.value = ''; // Limpiar el campo.
                 }
             });
         }
@@ -165,6 +177,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- VINCULACIÓN DE EVENTOS ---
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Prevenir el envío si la validación falla
+            if (!Validator.validateForm(form)) {
+                e.preventDefault();
+                console.log("Validación del formulario fallida.");
+            }
+        });
+    }
 
     /**
      * Asigna la función `updateCalculatedDetails` como manejador del evento 'change'
