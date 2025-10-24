@@ -180,14 +180,14 @@ export const handleCreateReservation = async (req, res) => {
       enganche_letras,
     };
 
-    console.log("📝 Creando reservación con datos:", reservationData);
+    console.log("Creando reservación con datos:", reservationData);
     const reservationId = await createReservation(reservationData);
 
     if (!reservationId) {
       return res.status(500).send("Error al crear la reservación");
     }
 
-    console.log(`✅ Reservación creada con ID: ${reservationId}`);
+    console.log(`Reservación creada con ID: ${reservationId}`);
 
     // Obtener el número real de la habitación
     const { getRoomNumberById } = await import("../models/ModelRoom.js");
@@ -207,33 +207,33 @@ export const handleCreateReservation = async (req, res) => {
       tipo: "reservacion",
     };
 
-    console.log("📄 Datos listos para PDF:", datosParaPDF);
+    console.log("Datos listos para PDF:", datosParaPDF);
 
     // Generar PDF y QR y enviar
     try {
-      // ✅ CORREGIDO: Usar los nombres correctos de archivos
+      // CORREGIDO: Usar los nombres correctos de archivos
       const { generateAndSendPDF } = await import("../utils/pdfGenerator.js");
       const { generarQR } = await import("../utils/qrGenerator.js");
       const pdfEnvioService = await import("../utils/pdfEnvio.js").then(
         (module) => module.default
       );
 
-      // ✅ CORREGIDO: Eliminar código duplicado - solo generar QR una vez
+      // CORREGIDO: Eliminar código duplicado - solo generar QR una vez
       const qrPath = await generarQR(datosParaPDF, 'reservacion');
 
-      // ✅ CORREGIDO: Generar PDF con el QR
+      // CORREGIDO: Generar PDF con el QR
       const pdfPath = await generateAndSendPDF(datosParaPDF, 'reservacion', qrPath);
 
-      console.log("✅ Comprobantes generados:");
-      console.log("📄 PDF:", pdfPath);
-      console.log("🔗 QR:", qrPath);
+      console.log("Comprobantes generados:");
+      console.log("PDF:", pdfPath);
+      console.log("QR:", qrPath);
 
       // Guardar las rutas de los archivos en la base de datos
       await updateReservation(reservationId, {
         pdf_path: pdfPath,
         qr_path: qrPath,
       });
-      console.log("✅ Rutas de archivos guardadas en la base de datos");
+      console.log("Rutas de archivos guardadas en la base de datos");
 
       // Opciones de envío
       const opcionesEnvio = {
@@ -248,9 +248,9 @@ export const handleCreateReservation = async (req, res) => {
         opcionesEnvio
       );
 
-      console.log("📊 Resultados del envío:", resultadosEnvio);
+      console.log("Resultados del envío:", resultadosEnvio);
     } catch (pdfError) {
-      console.error("❌ Error generando/enviando comprobante:", pdfError);
+      console.error("Error generando/enviando comprobante:", pdfError);
       // No detenemos el flujo principal si falla el PDF
     }
 
@@ -306,7 +306,7 @@ export const deleteByIdResevation = async (req, res) => {
     if (Number.isNaN(reservationId)) return res.status(400).send("ID inválido");
 
     // Obtener datos de la reservación antes de eliminarla para borrar archivos
-    console.log(`📋 Obteniendo datos de la reservación ${reservationId}...`);
+    console.log(`Obteniendo datos de la reservación ${reservationId}...`);
     const reservacion = await findReservacionById(reservationId);
     
     // Eliminar PDF y QR de la reservación si existen
@@ -318,10 +318,10 @@ export const deleteByIdResevation = async (req, res) => {
         try {
           if (fs.default.existsSync(reservacion.pdf_path)) {
             await fsPromises.unlink(reservacion.pdf_path);
-            console.log(`🗑️ PDF de reservación eliminado: ${reservacion.pdf_path}`);
+            console.log(` PDF de reservación eliminado: ${reservacion.pdf_path}`);
           }
         } catch (error) {
-          console.error(`⚠️ Error al eliminar PDF de reservación:`, error.message);
+          console.error(`Error al eliminar PDF de reservación:`, error.message);
         }
       }
       
@@ -329,20 +329,20 @@ export const deleteByIdResevation = async (req, res) => {
         try {
           if (fs.default.existsSync(reservacion.qr_path)) {
             await fsPromises.unlink(reservacion.qr_path);
-            console.log(`🗑️ QR de reservación eliminado: ${reservacion.qr_path}`);
+            console.log(` QR de reservación eliminado: ${reservacion.qr_path}`);
           }
         } catch (error) {
-          console.error(`⚠️ Error al eliminar QR de reservación:`, error.message);
+          console.error(`Error al eliminar QR de reservación:`, error.message);
         }
       }
     }
 
     // Eliminar la reservación de la base de datos
-    console.log(`🗑️ Eliminando reservación ${reservationId} de la base de datos...`);
+    console.log(` Eliminando reservación ${reservationId} de la base de datos...`);
     const success = await deletebyReservation(reservationId);
 
     if (success) {
-      console.log(`✅ Reservación ${reservationId} eliminada exitosamente`);
+      console.log(`Reservación ${reservationId} eliminada exitosamente`);
       res.redirect("/rooms/list/reservations");
     } else {
       res.status(500).send("No se pudo eliminar la reservación");
@@ -402,7 +402,7 @@ export const deleteIdRenta = async (req, res) => {
     if (Number.isNaN(rentaId)) return res.status(400).send("ID inválido");
 
     // Obtener datos de la renta antes de eliminarla para borrar archivos
-    console.log(`📋 Obteniendo datos de la renta ${rentaId}...`);
+    console.log(`Obteniendo datos de la renta ${rentaId}...`);
     const { pool } = await import("../../../dataBase/connectionDataBase.js");
     const [rentas] = await pool.query("SELECT pdf_path, qr_path FROM rentas WHERE id = ?", [rentaId]);
     
@@ -416,10 +416,10 @@ export const deleteIdRenta = async (req, res) => {
         try {
           if (fs.default.existsSync(renta.pdf_path)) {
             await fsPromises.unlink(renta.pdf_path);
-            console.log(`🗑️ PDF de renta eliminado: ${renta.pdf_path}`);
+            console.log(` PDF de renta eliminado: ${renta.pdf_path}`);
           }
         } catch (error) {
-          console.error(`⚠️ Error al eliminar PDF de renta:`, error.message);
+          console.error(`Error al eliminar PDF de renta:`, error.message);
         }
       }
       
@@ -427,19 +427,19 @@ export const deleteIdRenta = async (req, res) => {
         try {
           if (fs.default.existsSync(renta.qr_path)) {
             await fsPromises.unlink(renta.qr_path);
-            console.log(`🗑️ QR de renta eliminado: ${renta.qr_path}`);
+            console.log(` QR de renta eliminado: ${renta.qr_path}`);
           }
         } catch (error) {
-          console.error(`⚠️ Error al eliminar QR de renta:`, error.message);
+          console.error(`Error al eliminar QR de renta:`, error.message);
         }
       }
     }
 
     // Eliminar la renta de la base de datos
-    console.log(`🗑️ Eliminando renta ${rentaId} de la base de datos...`);
+    console.log(` Eliminando renta ${rentaId} de la base de datos...`);
     const success = await deleteByIdRenta(rentaId);
     if (success) {
-      console.log(`✅ Renta ${rentaId} eliminada exitosamente`);
+      console.log(`Renta ${rentaId} eliminada exitosamente`);
       res.redirect("/rooms/list/rentas"); // Ajusta la ruta según tu vista de rentas
     } else {
       res.status(500).send("No se pudo eliminar la renta");
@@ -499,8 +499,8 @@ export const handleEditReservation = async (req, res) => {
       send_whatsapp,
     } = req.body;
 
-    console.log(`📝 Editando reservación ${id}...`);
-    console.log("📦 Datos recibidos:", req.body);
+    console.log(`Editando reservación ${id}...`);
+    console.log("Datos recibidos:", req.body);
 
     // Formatear fechas para MySQL
     const fechaIngresoDate = new Date(fecha_ingreso);
@@ -531,7 +531,7 @@ export const handleEditReservation = async (req, res) => {
     
     // Actualizar la reservación
     await updateReservation(id, reservationData);
-    console.log("✅ Reservación actualizada exitosamente");
+    console.log("Reservación actualizada exitosamente");
 
     // Obtener datos completos de la reservación actualizada para el PDF
     const reservacionActualizada = await findReservacionById(id);
@@ -553,7 +553,7 @@ export const handleEditReservation = async (req, res) => {
       tipo: "reservacion",
     };
 
-    console.log("📄 Datos listos para PDF actualizado:", datosParaPDF);
+    console.log("Datos listos para PDF actualizado:", datosParaPDF);
 
     // Generar y enviar PDF actualizado
     try {
@@ -566,43 +566,43 @@ export const handleEditReservation = async (req, res) => {
         (module) => module.default
       );
 
-      // 🗑️ ELIMINAR ARCHIVOS ANTERIORES
-      console.log("🗑️ Eliminando archivos anteriores...");
+      //  ELIMINAR ARCHIVOS ANTERIORES
+      console.log(" Eliminando archivos anteriores...");
       
       try {
         // Eliminar PDF anterior si existe
         if (reservacionAnterior.pdf_path && fs.existsSync(reservacionAnterior.pdf_path)) {
           fs.unlinkSync(reservacionAnterior.pdf_path);
-          console.log(`✅ PDF anterior eliminado: ${reservacionAnterior.pdf_path}`);
+          console.log(`PDF anterior eliminado: ${reservacionAnterior.pdf_path}`);
         }
         
         // Eliminar QR anterior si existe
         if (reservacionAnterior.qr_path && fs.existsSync(reservacionAnterior.qr_path)) {
           fs.unlinkSync(reservacionAnterior.qr_path);
-          console.log(`✅ QR anterior eliminado: ${reservacionAnterior.qr_path}`);
+          console.log(`QR anterior eliminado: ${reservacionAnterior.qr_path}`);
         }
       } catch (cleanupError) {
-        console.warn("⚠️ Error al eliminar archivos anteriores:", cleanupError.message);
+        console.warn("Error al eliminar archivos anteriores:", cleanupError.message);
       }
 
       // Generar nuevos archivos
-      console.log("📝 Generando nuevos comprobantes...");
+      console.log("Generando nuevos comprobantes...");
       
       // Generar QR
       const qrPath = await generarQR(datosParaPDF, "reservacion");
       // Generar PDF
       const pdfPath = await generateAndSendPDF(datosParaPDF, "reservacion", qrPath);
 
-      console.log("✅ Comprobantes actualizados generados:");
-      console.log("📄 PDF:", pdfPath);
-      console.log("🔗 QR:", qrPath);
+      console.log("Comprobantes actualizados generados:");
+      console.log("PDF:", pdfPath);
+      console.log("QR:", qrPath);
 
       // Guardar las rutas de los nuevos archivos en la base de datos
       await updateReservation(id, {
         pdf_path: pdfPath,
         qr_path: qrPath,
       });
-      console.log("✅ Rutas de archivos guardadas en la base de datos");
+      console.log("Rutas de archivos guardadas en la base de datos");
 
       // Opciones de envío
       const opcionesEnvio = {
@@ -617,15 +617,15 @@ export const handleEditReservation = async (req, res) => {
         opcionesEnvio
       );
 
-      console.log("📧 Resultados de envío:", resultadosEnvio);
+      console.log("Resultados de envío:", resultadosEnvio);
     } catch (pdfError) {
-      console.error("❌ Error al generar/enviar PDF:", pdfError);
+      console.error("Error al generar/enviar PDF:", pdfError);
       // Aunque falle el PDF, la reservación ya se actualizó
     }
 
     res.redirect("/rooms/list/reservations");
   } catch (error) {
-    console.error("❌ Error al editar reservación:", error);
+    console.error("Error al editar reservación:", error);
     res.status(500).send("Error al editar la reservación");
   }
 };
@@ -741,8 +741,8 @@ export const handleCreateRenta = async (req, res) => {
     send_whatsapp,
   } = req.body;
 
-  console.log("📝 req.body completo:", req.body);
-  console.log("📝 Datos recibidos para renta:", {
+  console.log("req.body completo:", req.body);
+  console.log("Datos recibidos para renta:", {
     habitacion_id,
     usuario_id,
     client_name,
@@ -763,7 +763,7 @@ export const handleCreateRenta = async (req, res) => {
     const check_out_formatted = check_out;
 
     // 1. Insertar medio de mensaje
-    console.log("🔍 Antes de createMessageMethod - email:", email, "phone:", phone);
+    console.log("Antes de createMessageMethod - email:", email, "phone:", phone);
     const message_method_id = await createMessageMethod(email, phone);
     console.log("ID medio de mensaje creado:", message_method_id);
 
@@ -789,9 +789,9 @@ export const handleCreateRenta = async (req, res) => {
       amount_text: price_text,
     };
 
-    console.log("📝 Creando renta con datos:", rentData);
+    console.log("Creando renta con datos:", rentData);
     const rent_id = await createRent(rentData);
-    console.log("✅ Renta creada con ID:", rent_id);
+    console.log("Renta creada con ID:", rent_id);
 
     // Obtener el número real de la habitación
     const { getRoomNumberById } = await import("../models/ModelRoom.js");
@@ -811,7 +811,7 @@ export const handleCreateRenta = async (req, res) => {
       tipo: "renta",
     };
 
-    console.log("📄 Datos listos para PDF:", datosParaPDF);
+    console.log("Datos listos para PDF:", datosParaPDF);
 
     // Generar PDF y QR y enviar
     try {
@@ -826,9 +826,9 @@ export const handleCreateRenta = async (req, res) => {
       // Generar QR
       const pdfPath = await generateAndSendPDF(datosParaPDF, "renta", qrPath);
 
-      console.log("✅ Comprobantes generados:");
-      console.log("📄 PDF:", pdfPath);
-      console.log("🔗 QR:", qrPath);
+      console.log("Comprobantes generados:");
+      console.log("PDF:", pdfPath);
+      console.log("QR:", qrPath);
 
       // Opciones de envío
       const opcionesEnvio = {
@@ -843,9 +843,9 @@ export const handleCreateRenta = async (req, res) => {
         opcionesEnvio
       );
 
-      console.log("📊 Resultados del envío:", resultadosEnvio);
+      console.log("Resultados del envío:", resultadosEnvio);
     } catch (pdfError) {
-      console.error("❌ Error generando/enviando comprobante:", pdfError);
+      console.error("Error generando/enviando comprobante:", pdfError);
       // No detenemos el flujo principal si falla el PDF
     }
 
@@ -894,11 +894,11 @@ export const getCalendarData = async (req, res) => {
     // Obtener datos del modelo
     const roomsWithBookings = await getRoomsCalendarData();
 
-    console.log(`✅ Habitaciones con datos preparadas: ${roomsWithBookings.length}`);
+    console.log(`Habitaciones con datos preparadas: ${roomsWithBookings.length}`);
     
     res.json({ rooms: roomsWithBookings });
   } catch (error) {
-    console.error("❌ Error obteniendo datos del calendario:", error);
+    console.error("Error obteniendo datos del calendario:", error);
     res.status(500).json({ error: "Error al obtener datos del calendario" });
   }
 };
@@ -1133,14 +1133,14 @@ export const generateReport = async (req, res) => {
         });
     }
 
-    console.log(`✅ Reporte generado: ${tipo} (${fechaInicio} a ${fechaFin})`);
+    console.log(`Reporte generado: ${tipo} (${fechaInicio} a ${fechaFin})`);
 
     res.json({
       success: true,
       reporte,
     });
   } catch (error) {
-    console.error("❌ Error generando reporte:", error);
+    console.error("Error generando reporte:", error);
     res.status(500).json({
       success: false,
       error: "Error al generar el reporte",
@@ -1219,7 +1219,7 @@ function formatReportMessage(reporte) {
     mensaje += `• Promedio: ${formatCurrency(reporte.estadisticas.promedioIngreso)}\n\n`;
     
     if (reporte.datos.length > 0) {
-      mensaje += `📋 *DETALLE DE RENTAS*\n`;
+      mensaje += `*DETALLE DE RENTAS*\n`;
       reporte.datos.forEach((r, i) => {
         mensaje += `\n${i + 1}. ${r.nombre_cliente}\n`;
         mensaje += `   Hab: ${r.numero_habitacion} (${r.tipo_habitacion})\n`;
@@ -1236,7 +1236,7 @@ function formatReportMessage(reporte) {
     mensaje += `• Pendiente: ${formatCurrency(reporte.estadisticas.pendientePorCobrar)}\n\n`;
     
     if (reporte.datos.length > 0) {
-      mensaje += `📋 *DETALLE DE RESERVACIONES*\n`;
+      mensaje += `*DETALLE DE RESERVACIONES*\n`;
       reporte.datos.forEach((r, i) => {
         mensaje += `\n${i + 1}. ${r.nombre_cliente}\n`;
         mensaje += `   Hab: ${r.numero_habitacion} (${r.tipo_habitacion})\n`;
@@ -1263,7 +1263,7 @@ function formatReportMessage(reporte) {
     mensaje += `• Pendiente: ${formatCurrency(reporte.reservaciones.estadisticas.pendientePorCobrar)}\n`;
   }
 
-  mensaje += `\n---\n🏨 Hotel Residencial Club`;
+  mensaje += `\n---\n Hotel Residencial Club`;
   
   return mensaje;
 }
@@ -1359,14 +1359,14 @@ export const sendReportByWhatsApp = async (req, res) => {
           document: fs.default.readFileSync(pdfPath),
           mimetype: 'application/pdf',
           fileName: `reporte_${tipo}_${new Date().toISOString().split('T')[0]}.pdf`,
-          caption: `📊 Reporte de ${tipo} - Hotel Club`
+          caption: `Reporte de ${tipo} - Hotel Club`
         });
-        console.log(`✅ Reporte y PDF enviados por WhatsApp a ${telefono}`);
+        console.log(`Reporte y PDF enviados por WhatsApp a ${telefono}`);
       } else {
-        console.log(`✅ Reporte enviado por WhatsApp a ${telefono} (sin PDF)`);
+        console.log(`Reporte enviado por WhatsApp a ${telefono} (sin PDF)`);
       }
     } else {
-      console.warn('⚠️ WhatsApp no está conectado, se generará solo el enlace');
+      console.warn('WhatsApp no está conectado, se generará solo el enlace');
     }
 
     // Crear URL de WhatsApp Web
@@ -1605,16 +1605,16 @@ export const renderConvertReservationToRent = async (req, res) => {
     const { id } = req.params;
     const user = req.session.user || { role: "Administrador" };
 
-    console.log(`📋 Cargando reservación ${id} para conversión a renta...`);
+    console.log(`Cargando reservación ${id} para conversión a renta...`);
 
     const reservacion = await findReservacionById(id);
 
     if (!reservacion) {
-      console.error(`❌ Reservación ${id} no encontrada`);
+      console.error(`Reservación ${id} no encontrada`);
       return res.status(404).send("Reservación no encontrada");
     }
 
-    console.log("✅ Reservación encontrada:", reservacion);
+    console.log("Reservación encontrada:", reservacion);
 
     // Formatear fechas al formato DD/MM/YYYY
     const formatearFecha = (fecha) => {
@@ -1644,8 +1644,8 @@ export const renderConvertReservationToRent = async (req, res) => {
       saldo_pendiente_letras: saldoPendienteLetras,
     };
 
-    console.log("✅ Reservación formateada:", reservacionFormateada);
-    console.log("💰 Desglose de pago:", {
+    console.log("Reservación formateada:", reservacionFormateada);
+    console.log("Desglose de pago:", {
       montoTotal,
       enganche,
       saldoPendiente
@@ -1662,7 +1662,7 @@ export const renderConvertReservationToRent = async (req, res) => {
       showNavbar: true,
     });
   } catch (error) {
-    console.error("❌ Error al cargar formulario de conversión:", error);
+    console.error("Error al cargar formulario de conversión:", error);
     res.status(500).send("Error al cargar el formulario de conversión");
   }
 };
@@ -1686,9 +1686,9 @@ export const handleConvertReservationToRent = async (req, res) => {
       enganche, // Capturar el enganche de la reservación
     } = req.body;
 
-    console.log(`🔄 Convirtiendo reservación ${id} a renta...`);
-    console.log("📦 Datos recibidos:", req.body);
-    console.log("💰 Enganche recibido:", enganche);
+    console.log(`Convirtiendo reservación ${id} a renta...`);
+    console.log("Datos recibidos:", req.body);
+    console.log("Enganche recibido:", enganche);
 
     // Validar que se haya seleccionado tipo de pago
     if (!payment_type) {
@@ -1706,21 +1706,23 @@ export const handleConvertReservationToRent = async (req, res) => {
     const checkInDate = parseDate(check_in);
     const checkOutDate = parseDate(check_out);
 
-    const formatUTCForMySQL = (date) => {
+    const formatUTCForMySQL = (date, isCheckOut = false) => {
       const year = date.getUTCFullYear();
       const month = String(date.getUTCMonth() + 1).padStart(2, '0');
       const day = String(date.getUTCDate()).padStart(2, '0');
-      return `${year}-${month}-${day} 12:00:00`;
+      // Check-in: 12:00:00, Check-out: 11:59:00
+      const time = isCheckOut ? '11:59:00' : '12:00:00';
+      return `${year}-${month}-${day} ${time}`;
     };
 
-    const check_in_formatted = formatUTCForMySQL(checkInDate);
-    const check_out_formatted = formatUTCForMySQL(checkOutDate);
+    const check_in_formatted = formatUTCForMySQL(checkInDate, false);
+    const check_out_formatted = formatUTCForMySQL(checkOutDate, true);
 
     // Obtener el usuario de la sesión
     const usuario_id = req.session.user?.id || 1;
 
     // IMPORTANTE: Obtener datos de la reservación para eliminar archivos
-    console.log(`📋 Obteniendo datos de la reservación ${id}...`);
+    console.log(`Obteniendo datos de la reservación ${id}...`);
     const reservacion = await findReservacionById(id);
     
     // Eliminar PDF y QR de la reservación si existen
@@ -1732,10 +1734,10 @@ export const handleConvertReservationToRent = async (req, res) => {
         try {
           if (fs.default.existsSync(reservacion.pdf_path)) {
             await fsPromises.unlink(reservacion.pdf_path);
-            console.log(`🗑️ PDF de reservación eliminado: ${reservacion.pdf_path}`);
+            console.log(`PDF de reservación eliminado: ${reservacion.pdf_path}`);
           }
         } catch (error) {
-          console.error(`⚠️ Error al eliminar PDF de reservación:`, error.message);
+          console.error(` Error al eliminar PDF de reservación:`, error.message);
         }
       }
       
@@ -1743,24 +1745,24 @@ export const handleConvertReservationToRent = async (req, res) => {
         try {
           if (fs.default.existsSync(reservacion.qr_path)) {
             await fsPromises.unlink(reservacion.qr_path);
-            console.log(`🗑️ QR de reservación eliminado: ${reservacion.qr_path}`);
+            console.log(`QR de reservación eliminado: ${reservacion.qr_path}`);
           }
         } catch (error) {
-          console.error(`⚠️ Error al eliminar QR de reservación:`, error.message);
+          console.error(`Error al eliminar QR de reservación:`, error.message);
         }
       }
     }
 
     // IMPORTANTE: Eliminar la reservación ANTES de crear la renta
     // para que no haya conflicto de disponibilidad
-    console.log(`🗑️ Eliminando reservación ${id} de la base de datos...`);
+    console.log(`Eliminando reservación ${id} de la base de datos...`);
     await deletebyReservation(id);
-    console.log(`✅ Reservación ${id} eliminada`);
+    console.log(`Reservación ${id} eliminada`);
 
     // Crear el registro de medios de mensaje primero
-    console.log("📧 Creando registro de medios de mensaje...");
+    console.log("Creando registro de medios de mensaje...");
     const messageMethodId = await createMessageMethod(email, phone);
-    console.log("✅ Medio de mensaje creado con ID:", messageMethodId);
+    console.log("Medio de mensaje creado con ID:", messageMethodId);
 
     // Crear la renta con los datos de la reservación
     const rentData = {
@@ -1778,9 +1780,9 @@ export const handleConvertReservationToRent = async (req, res) => {
       enganche: enganche || 0, // Agregar el enganche
     };
 
-    console.log("📝 Creando renta con datos:", rentData);
+    console.log("Creando renta con datos:", rentData);
     const rent_id = await createRent(rentData);
-    console.log("✅ Renta creada con ID:", rent_id);
+    console.log("Renta creada con ID:", rent_id);
 
     // Obtener el número real de la habitación
     const { getRoomNumberById } = await import("../models/ModelRoom.js");
@@ -1801,7 +1803,7 @@ export const handleConvertReservationToRent = async (req, res) => {
       tipo: "renta",
     };
 
-    console.log("📄 Datos listos para PDF:", datosParaPDF);
+    console.log("Datos listos para PDF:", datosParaPDF);
 
     // Generar PDF y QR y enviar
     try {
@@ -1816,16 +1818,16 @@ export const handleConvertReservationToRent = async (req, res) => {
       // Generar PDF
       const pdfPath = await generateAndSendPDF(datosParaPDF, "renta", qrPath);
 
-      console.log("✅ Comprobantes generados:");
-      console.log("📄 PDF:", pdfPath);
-      console.log("🔗 QR:", qrPath);
+      console.log("Comprobantes generados:");
+      console.log("PDF:", pdfPath);
+      console.log("QR:", qrPath);
 
       // Guardar las rutas de los archivos en la base de datos
       await updateRent(rent_id, {
         pdf_path: pdfPath,
         qr_path: qrPath,
       });
-      console.log("✅ Rutas de archivos guardadas en la base de datos");
+      console.log("Rutas de archivos guardadas en la base de datos");
 
       // Opciones de envío
       const opcionesEnvio = {
@@ -1840,16 +1842,16 @@ export const handleConvertReservationToRent = async (req, res) => {
         opcionesEnvio
       );
 
-      console.log("📧 Resultados de envío:", resultadosEnvio);
+      console.log("Resultados de envío:", resultadosEnvio);
 
       res.redirect("/rooms/list/rentas");
     } catch (pdfError) {
-      console.error("❌ Error al generar/enviar PDF:", pdfError);
+      console.error("Error al generar/enviar PDF:", pdfError);
       // Aunque falle el PDF, la renta ya se creó
       res.redirect("/rooms/list/rentas");
     }
   } catch (error) {
-    console.error("❌ Error al convertir reservación a renta:", error);
+    console.error("Error al convertir reservación a renta:", error);
     res.status(500).send("Error al convertir la reservación a renta");
   }
 };

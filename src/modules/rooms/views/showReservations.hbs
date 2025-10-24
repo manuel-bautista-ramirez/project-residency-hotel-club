@@ -539,5 +539,78 @@
     
     // Inicializar filtros
     applyFilters();
+    
+    // Validar botones de confirmar según fechas
+    validateConfirmButtons();
   });
+
+  // Función para validar y habilitar/deshabilitar botones de confirmar
+  function validateConfirmButtons() {
+    const now = new Date();
+    const confirmButtons = document.querySelectorAll('a[href*="/rooms/confirmReservations/renta/"]');
+    
+    confirmButtons.forEach(button => {
+      // Buscar el contenedor padre (tr para tabla, article para cards)
+      const row = button.closest('tr');
+      const card = button.closest('article');
+      const container = row || card;
+      
+      if (!container) return;
+      
+      const fechaIngresoStr = container.dataset.ingreso;
+      const fechaSalidaStr = container.dataset.salida;
+      
+      if (!fechaIngresoStr || !fechaSalidaStr) return;
+      
+      try {
+        // Parsear fechas desde el formato ISO que viene del servidor
+        const fechaIngreso = new Date(fechaIngresoStr);
+        const fechaSalida = new Date(fechaSalidaStr);
+        
+        // Calcular 30 minutos antes de la fecha de ingreso
+        const fechaHabilitacion = new Date(fechaIngreso.getTime() - (30 * 60 * 1000));
+        
+        // Verificar si estamos en el rango válido
+        const enRangoValido = now >= fechaHabilitacion && now <= fechaSalida;
+        
+        if (enRangoValido) {
+          // Habilitar botón
+          button.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          button.classList.add('hover:bg-green-700');
+          button.title = 'Confirmar reservación';
+          
+          // Remover indicador visual de deshabilitado si existe
+          const icon = button.querySelector('i');
+          if (icon) {
+            icon.classList.remove('opacity-60');
+          }
+        } else {
+          // Deshabilitar botón
+          button.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          button.classList.remove('hover:bg-green-700');
+          
+          // Agregar indicador visual de deshabilitado
+          const icon = button.querySelector('i');
+          if (icon) {
+            icon.classList.add('opacity-60');
+          }
+          
+          if (now < fechaHabilitacion) {
+            const tiempoRestante = Math.ceil((fechaHabilitacion - now) / (1000 * 60));
+            button.title = `Disponible en ${tiempoRestante} minutos (30 min antes del ingreso)`;
+          } else {
+            button.title = 'Reservación expirada - No se puede confirmar';
+          }
+        }
+      } catch (error) {
+        console.error('Error al validar fechas para botón:', error);
+        // En caso de error, deshabilitar por seguridad
+        button.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        button.title = 'Error al validar fechas';
+      }
+    });
+  }
+
+  // Actualizar validación cada minuto
+  setInterval(validateConfirmButtons, 60000);
 </script>

@@ -29,3 +29,7 @@ public/uploads/rooms/pdf/reservaciones/*
 !public/styles.css
 !public/css/all.min.css
 *.css
+*.css
+*.pdf
+/public
+/public

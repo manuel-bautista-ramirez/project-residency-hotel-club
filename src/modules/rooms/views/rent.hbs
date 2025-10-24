@@ -1,5 +1,5 @@
 
-<div id="center-root" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-x-hidden md:grid md:place-items-center lg:grid lg:place-items-center">
+<div id="center-root" class="h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6" style="padding-top: 100px; padding-bottom: 50px;">
   <!-- Loading Overlay -->
   <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center hidden">
     <div class="flex flex-col items-center gap-3">
@@ -10,13 +10,13 @@
       <p id="loadingMessage" class="text-sm text-blue-900 font-medium">Cargando formulario...</p>
     </div>
   </div>
-  <div class="max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-4 pt-16 sm:pt-20 lg:pt-0 xl:pt-2 pb-24 sm:pb-20 lg:pb-0">
+  <div class="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-3xl xl:max-w-4xl mx-auto" style="width: 50vw; min-width: 400px;">
 
     <!-- Skeleton while loading -->
     <div id="rentSkeleton" class="bg-white rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 p-6 animate-pulse hidden">
       <div class="h-6 w-48 bg-slate-200 rounded mb-4"></div>
       <div class="h-4 w-40 bg-slate-200 rounded mb-2"></div>
-      <div class="h-4 w-56 bg-slate-200 rounded mb-4"></div
+      <div class="h-4 w-56 bg-slate-200 rounded mb-4"></div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="h-24 bg-slate-200 rounded"></div>
         <div class="h-24 bg-slate-200 rounded"></div>
@@ -29,22 +29,13 @@
       id="formRent"
       action="/rooms/create-renta/{{habitacion.id}}"
       method="POST"
-      class="bg-white rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-[1px]"
+      class="bg-white rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 transition-all duration-300 ease-out hover:shadow-xl"
       aria-labelledby="form-title"
     >
-      <input type="hidden" id="room_id" value="{{ha bitacion.id}}">
+      <input type="hidden" id="room_id" value="{{habitacion.id}}">
 
       <!-- Room Info Header -->
-      <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white px-3 py-3 sm:px-6 sm:py-4 lg:py-1.5">
-        <div class="mb-2 lg:mb-1 flex items-center justify-start gap-2">
-          <a href="/rooms" class="inline-flex items-center gap-2 text-sm sm:text-base hover:opacity-90 transition">
-            <!-- Back icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
-              <path fill-rule="evenodd" d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clip-rule="evenodd"/>
-            </svg>
-            Volver
-          </a>
-        </div>
+      <div class="bg-gradient-to-r from-blue-800 via-blue-700 to-blue-900 text-white px-2 py-2 sm:px-3 sm:py-2 lg:py-1 xl:py-1.5">
 
         <h2 id="form-title" class="text-sm sm:text-lg md:text-xl lg:text-base font-bold flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 opacity-90" viewBox="0 0 24 24">
@@ -52,57 +43,56 @@
           </svg>
           Habitación {{habitacion.numero}} • {{habitacion.tipo}}
         </h2>
-        <p class="text-blue-100 text-xs sm:text-sm lg:hidden">Complete los datos</p>
       </div>
 
       <!-- Form Content -->
-      <div class="p-4 sm:p-6 md:p-6 lg:p-4">
-        <div class="space-y-5 sm:space-y-6 md:space-y-0 md:grid md:grid-cols-2 md:gap-5 lg:gap-6">
+      <div class="p-2 sm:p-3 md:p-3 lg:p-3 xl:p-4">
+        <div class="space-y-1.5 sm:space-y-1.5 md:space-y-0 md:grid md:grid-cols-2 md:gap-2 lg:gap-3 xl:gap-4">
           <!-- Columna izquierda: Cliente + Fechas -->
-          <div class="space-y-5 sm:space-y-6 lg:space-y-4">
+          <div class="space-y-1 sm:space-y-1.5 lg:space-y-1 xl:space-y-1.5">
             <!-- Cliente -->
-            <section aria-labelledby="cliente-title" class="space-y-2 md:space-y-3">
-              <h3 id="cliente-title" class="text-sm sm:text-base md:text-lg lg:text-xs font-semibold text-gray-900 border-b border-gray-200 pb-2 md:pb-2 lg:pb-1 flex items-center gap-2">
+            <section aria-labelledby="cliente-title" class="space-y-0.5 md:space-y-1 lg:space-y-0.5 xl:space-y-1">
+              <h3 id="cliente-title" class="text-sm sm:text-sm md:text-base lg:text-sm xl:text-base font-semibold text-gray-900 border-b border-gray-200 pb-1 md:pb-1.5 lg:pb-1 xl:pb-1.5 flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4" viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0v1H5v-1z"/></svg>
                 Cliente
               </h3>
               <div>
-                <label for="client_name" class="block text-sm lg:text-xs font-medium text-slate-700 mb-1 lg:mb-0.5">Nombre *</label>
+                <label for="client_name" class="block text-sm lg:text-sm xl:text-sm font-medium text-slate-700 mb-0.5 lg:mb-0.5 xl:mb-1">Nombre *</label>
                 <div class="relative group">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
                     <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0v1H5v-1z" />
                   </svg>
                   <input id="client_name" name="client_name" required placeholder="Nombre completo"
-                    class="w-full pl-9 pr-3 py-3 lg:py-2 text-base lg:text-sm border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                    class="w-full pl-9 pr-3 py-1.5 lg:py-2 xl:py-2 text-sm lg:text-sm xl:text-sm border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
                 </div>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label for="email" class="block text-sm lg:text-xs font-medium text-slate-700 mb-1">Email *</label>
+                  <label for="email" class="block text-sm lg:text-sm xl:text-sm font-medium text-slate-700 mb-0.5 lg:mb-0.5 xl:mb-1">Email *</label>
                   <div class="relative group">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
                       <path d="M1.5 6.75A2.25 2.25 0 013.75 4.5h16.5a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0120.25 19.5H3.75A2.25 2.25 0 011.5 17.25V6.75zm2.776-.75A.026.026 0 004.25 6l7.75 5.167L19.75 6a.026.026 0 00-.026 0H4.276z"/>
                     </svg>
                     <input id="email" name="email" type="email" required placeholder="email@ejemplo.com"
-                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                      class="w-full pl-9 pr-3 py-1.5 lg:py-2 xl:py-2 text-sm lg:text-sm xl:text-sm border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
                   </div>
                 </div>
                 <div>
-                  <label for="phone" class="block text-sm lg:text-xs font-medium text-slate-700 mb-1">Teléfono *</label>
+                  <label for="phone" class="block text-sm lg:text-sm xl:text-sm font-medium text-slate-700 mb-0.5 lg:mb-0.5 xl:mb-1">Teléfono *</label>
                   <div class="relative group">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
                       <path d="M2.25 4.5A2.25 2.25 0 014.5 2.25h3A2.25 2.25 0 019.75 4.5v15A2.25 2.25 0 017.5 21.75h-3A2.25 2.25 0 012.25 19.5v-15zM6 18.75a.75.75 0 100 1.5.75.75 0 000-1.5z"/>
                     </svg>
                     <input id="phone" name="phone" type="tel" maxlength="10" required placeholder="1234567890"
-                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                      class="w-full pl-9 pr-3 py-1.5 lg:py-2 xl:py-2 text-sm lg:text-sm xl:text-sm border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
                   </div>
                 </div>
               </div>
             </section>
 
             <!-- Fechas -->
-            <section aria-labelledby="fechas-title" class="space-y-2 md:space-y-3">
-              <h3 id="fechas-title" class="text-sm sm:text-base md:text-lg lg:text-xs font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">
+            <section aria-labelledby="fechas-title" class="space-y-0.5 md:space-y-1 lg:space-y-0.5 xl:space-y-0.5">
+              <h3 id="fechas-title" class="text-xs sm:text-sm md:text-base lg:text-sm xl:text-sm font-semibold text-gray-900 border-b pb-1 md:pb-1.5 lg:pb-1 xl:pb-1 flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4" viewBox="0 0 24 24"><path d="M6.75 3a.75.75 0 01.75.75V5h9V3.75a.75.75 0 011.5 0V5h.75A2.25 2.25 0 0121 7.25v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.25A2.25 2.25 0 015.25 5H6V3.75A.75.75 0 016.75 3zM4.5 9v9.75c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V9H4.5z"/></svg>
                 Fechas
               </h3>
@@ -116,7 +106,7 @@
                       <path d="M6.75 3a.75.75 0 01.75.75V5h9V3.75a.75.75 0 011.5 0V5h.75A2.25 2.25 0 0121 7.25v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.25A2.25 2.25 0 015.25 5H6V3.75A.75.75 0 016.75 3zM4.5 9v9.75c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V9H4.5z"/>
                     </svg>
                     <input id="check_in" type="date" required
-                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg outline-none transition-colors duration-200"/>
+                      class="w-full pl-9 pr-3 py-1.5 lg:py-1.5 xl:py-2 text-xs lg:text-xs xl:text-sm border border-slate-300 rounded-lg outline-none transition-colors duration-200"/>
                     <input type="hidden" id="check_in_with_time" name="check_in" value=""/>
                   </div>
                 </div>
@@ -127,7 +117,7 @@
                       <path d="M6.75 3a.75.75 0 01.75.75V5h9V3.75a.75.75 0 011.5 0V5h.75A2.25 2.25 0 0121 7.25v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.25A2.25 2.25 0 015.25 5H6V3.75A.75.75 0 016.75 3zM4.5 9v9.75c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V9H4.5z"/>
                     </svg>
                     <input id="check_out" type="date" required
-                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                      class="w-full pl-9 pr-3 py-1.5 lg:py-1.5 xl:py-2 text-xs lg:text-xs xl:text-sm border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
                     <input type="hidden" id="check_out_with_time" name="check_out" value=""/>
                   </div>
                 </div>
@@ -139,29 +129,29 @@
           </div>
 
           <!-- Columna derecha: Precio + Pago -->
-          <div class="space-y-5 md:space-y-6">
-            <section aria-labelledby="precio-title" class="space-y-2 md:space-y-3">
-              <h3 id="precio-title" class="text-sm md:text-lg font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">Precio</h3>
+          <div class="space-y-1.5 sm:space-y-2 lg:space-y-1 xl:space-y-1.5">
+            <section aria-labelledby="precio-title" class="space-y-0.5 md:space-y-1 lg:space-y-0.5 xl:space-y-0.5">
+              <h3 id="precio-title" class="text-xs sm:text-sm md:text-base lg:text-sm xl:text-sm font-semibold text-gray-900 border-b pb-1 md:pb-1.5 lg:pb-1 xl:pb-1 flex items-center gap-1">Precio</h3>
               <div class="relative group">
 
                 <span class="pointer-events-none absolute left-3 top-3.5 text-slate-400 text-sm transition-colors group-focus-within:text-blue-500">$</span>
 
                 <input id="price" name="price" type="number" readonly placeholder="0.00"
-                  class="w-full pl-8 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                  class="w-full pl-8 pr-3 py-1.5 lg:py-1.5 xl:py-2 text-xs lg:text-xs xl:text-sm border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
 
                 <input id="price_text" name="price_text" type="text" placeholder="Precio en letras"
-                  class="w-full pl-8 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200 mt-3 tracking-widest text-base md:text-lg"/>
+                  class="w-full pl-8 pr-3 py-1 lg:py-1 xl:py-1.5 text-xs lg:text-xs xl:text-xs border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200 mt-1 lg:mt-1 xl:mt-1.5 tracking-wide"/>
               </div>
             </section>
 
-            <section aria-labelledby="pago-title" class="space-y-2 md:space-y-3">
-              <h3 id="pago-title" class="text-sm md:text-lg font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">Pago</h3>
+            <section aria-labelledby="pago-title" class="space-y-0.5 md:space-y-1 lg:space-y-0.5 xl:space-y-0.5">
+              <h3 id="pago-title" class="text-xs sm:text-sm md:text-base lg:text-sm xl:text-sm font-semibold text-gray-900 border-b pb-1 md:pb-1.5 lg:pb-1 xl:pb-1 flex items-center gap-1">Pago</h3>
               <div class="relative group">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
                   <path d="M2.25 7.5A2.25 2.25 0 014.5 5.25h15a2.25 2.25 0 012.25 2.25v9A2.25 2.25 0 0119.5 18.75h-15A2.25 2.25 0 012.25 16.5v-9zM3.75 9h16.5V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75V9z"/>
                 </svg>
                 <select id="payment_type" name="payment_type" required
-                  class="w-full pl-9 pr-8 py-3 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200 appearance-none">
+                  class="w-full pl-9 pr-8 py-1.5 lg:py-1.5 xl:py-2 text-xs lg:text-xs xl:text-sm border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200 appearance-none">
                   <option value="">-- Seleccionar método de pago --</option>
                   <option value="tarjeta">Tarjeta</option>
                   <option value="transferencia">Transferencia</option>
@@ -174,8 +164,8 @@
             </section>
 
           <!-- Sección de Envío Automático Unificado -->
-<section aria-labelledby="envio-title" class="space-y-2 md:space-y-3">
-  <h3 id="envio-title" class="text-sm md:text-lg font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">
+<section aria-labelledby="envio-title" class="space-y-1 md:space-y-2 lg:space-y-1">
+  <h3 id="envio-title" class="text-xs sm:text-sm md:text-base lg:text-sm xl:text-sm font-semibold text-gray-900 border-b pb-1 md:pb-1.5 lg:pb-1 xl:pb-1 flex items-center gap-1">
     <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4" viewBox="0 0 24 24">
       <path d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z"/>
     </svg>
@@ -183,31 +173,25 @@
   </h3>
   
   <!-- Contenedor principal -->
-  <div class="space-y-3">
+  <div class="space-y-2 lg:grid lg:grid-cols-2 lg:gap-2 lg:space-y-0 xl:space-y-2 xl:block">
     <!-- Email Automático -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-      <div class="flex items-center gap-2 text-blue-800">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 24 24">
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-1.5 lg:p-1 xl:p-1.5">
+      <div class="flex items-center gap-1 text-blue-800">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 lg:w-3 lg:h-3 xl:w-3 xl:h-3" viewBox="0 0 24 24">
           <path d="M1.5 6.75A2.25 2.25 0 013.75 4.5h16.5a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0120.25 19.5H3.75A2.25 2.25 0 011.5 17.25V6.75zm2.776-.75A.026.026 0 004.25 6l7.75 5.167L19.75 6a.026.026 0 00-.026 0H4.276z"/>
         </svg>
-        <span class="font-medium">📧 Comprobante automático por Email</span>
+        <span class="font-medium text-xs lg:text-xs xl:text-sm">📧 Email automático</span>
       </div>
-      <p class="text-sm text-blue-700 mt-1">
-        Se enviará automáticamente al email proporcionado una vez creada la renta.
-      </p>
     </div>
 
     <!-- WhatsApp Automático -->
-    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
-      <div class="flex items-center gap-2 text-green-800">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 24 24">
+    <div class="bg-green-50 border border-green-200 rounded-lg p-1.5 lg:p-1 xl:p-1.5">
+      <div class="flex items-center gap-1 text-green-800">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 lg:w-3 lg:h-3 xl:w-3 xl:h-3" viewBox="0 0 24 24">
           <path d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z"/>
         </svg>
-        <span class="font-medium">📱 Comprobante automático por WhatsApp</span>
+        <span class="font-medium text-xs lg:text-xs xl:text-sm">📱 WhatsApp automático</span>
       </div>
-      <p class="text-sm text-green-700 mt-1">
-        Se enviará automáticamente al número de teléfono proporcionado una vez creada la renta.
-      </p>
     </div>
   </div>
 
@@ -220,13 +204,13 @@
         </div>
 
         <!-- Botones -->
-        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t mt-5 md:justify-end">
-          <a href="/rooms" class="w-full sm:w-auto px-6  border border-red-500 text-red-600 py-3  rounded-lg hover:bg-slate-50 active:scale-[0.98] transition inline-flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clip-rule="evenodd"/></svg>
+        <div class="flex flex-col sm:flex-row gap-2 pt-2 lg:pt-1.5 xl:pt-2 border-t mt-2 lg:mt-1.5 xl:mt-2 md:justify-end">
+          <a href="/rooms" class="w-full sm:w-auto px-4 lg:px-5 xl:px-6 border border-red-500 text-red-600 py-2 lg:py-1.5 xl:py-2 text-sm lg:text-xs xl:text-sm rounded-lg hover:bg-slate-50 active:scale-[0.98] transition inline-flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 lg:w-3 lg:h-3 xl:w-4 xl:h-4"><path fill-rule="evenodd" d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clip-rule="evenodd"/></svg>
             Cancelar
           </a>
-          <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-lg shadow-sm hover:shadow-md hover:bg-green-700 active:scale-[0.98] transition inline-flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5H12.75v6.75a.75.75 0 01-1.5 0V12.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"/></svg>
+          <button type="submit" class="w-full sm:w-auto px-4 lg:px-5 xl:px-6 py-2 lg:py-1.5 xl:py-2 text-sm lg:text-xs xl:text-sm bg-green-600 text-white rounded-lg shadow-sm hover:shadow-md hover:bg-green-700 active:scale-[0.98] transition inline-flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 lg:w-3 lg:h-3 xl:w-4 xl:h-4"><path d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5H12.75v6.75a.75.75 0 01-1.5 0V12.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"/></svg>
             Crear Renta
           </button>
         </div>
