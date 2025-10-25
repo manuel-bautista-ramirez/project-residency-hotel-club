@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageArea = document.getElementById('message-area');
     const messageText = document.getElementById('message-text');
     const resultsTable = document.getElementById('results-table');
+    const clearPreviewBtn = document.getElementById('clear-preview-btn');
     const notificationArea = document.getElementById('notification-area');
  
     // --- Estado de la UI ---
@@ -54,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const downloadBtn = document.getElementById('download-pdf-btn');
         if (downloadBtn) {
             downloadBtn.href = `/api/memberships/reports/download?period=${period}&date=${date}`;
+            downloadBtn.closest('div').classList.remove('hidden'); // Asegurarse de que el contenedor del botón sea visible
         }
 
         messageArea.classList.add('hidden');
@@ -133,6 +135,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Asigna la función de generar vista previa al botón principal.
     generateBtn.addEventListener('click', generateReportPreview);
  
+    // Asigna la función para limpiar la vista previa al nuevo botón.
+    if (clearPreviewBtn) {
+        clearPreviewBtn.addEventListener('click', () => {
+            // Muestra el mensaje inicial y oculta la tabla de resultados.
+            showMessage('Selecciona un tipo de reporte y una fecha para generar la vista previa', 'info');
+            // Ocultar el botón de descarga si está visible
+            document.getElementById('download-pdf-btn').closest('div').classList.add('hidden');
+        });
+    }
     // --- Inicialización ---
     // Esta sección se ejecuta una sola vez al cargar la página.
  

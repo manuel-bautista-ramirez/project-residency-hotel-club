@@ -163,3 +163,30 @@ export const renderEditMembership = async (req, res) => {
     });
   }
 };
+
+import { ManageModel } from "../models/modelManage.js";
+
+export const renderManageMembership = async (req, res) => {
+    try {
+        const userRole = req.session.user?.role || "Recepcionista";
+        const isAdmin = userRole === "Administrador";
+
+        const tiposMembresia = await ManageModel.getTiposMembresia();
+        const metodosPago = await ManageModel.getMetodosPago();
+
+        res.render("manageMembership", {
+            title: "Gestionar Configuración",
+            isAdmin,
+            userRole,
+            tiposMembresia,
+            metodosPago
+        });
+    } catch (error) {
+        console.error("Error al cargar la página de gestión de membresía:", error);
+        const statusCode = error.statusCode || 500;
+        res.status(statusCode).render('error', {
+            title: "Error",
+            message: error.message || "Error al cargar la página de gestión."
+        });
+    }
+};

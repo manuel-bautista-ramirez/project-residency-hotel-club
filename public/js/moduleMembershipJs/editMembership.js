@@ -1,39 +1,104 @@
-// Funciones de utilidad
 /**
  * Objeto MembershipUI que encapsula la lógica para la edición de membresías,
- * enfocándose específicamente en la gestión dinámica de los integrantes.
+ * incluyendo la validación del formulario y la gestión de integrantes.
  */
 const MembershipUI = {
   /**
-   * Inicializa el módulo. Su única tarea es vincular los eventos a los elementos del DOM.
+   * Inicializa el módulo.
    */
   init: function () {
+    this.cacheDOM();
     this.bindEvents();
+    this.bindInputFiltering();
+  },
+
+  /**
+   * Guarda referencias a los elementos del DOM para un acceso más rápido.
+   */
+  cacheDOM: function() {
+    this.form = document.getElementById("editMembershipForm");
+    this.integrantesContainer = document.getElementById("integrantesContainer");
+    this.addIntegranteBtn = document.getElementById("addIntegrante");
   },
 
   /**
    * Asigna los manejadores de eventos a los botones de "Agregar" y "Eliminar" integrantes.
    */
   bindEvents: function () {
-    const integrantesContainer = document.getElementById(
-      "integrantesContainer"
-    );
-    const addIntegranteBtn = document.getElementById("addIntegrante");
+    // Manejar envío del formulario
+    if (this.form) {
+      this.form.addEventListener('submit', (e) => {
+        // Prevenir el envío si la validación del formulario falla.
+        if (!Validator.validateForm(this.form)) {
+          e.preventDefault();
+          console.log("Validación del formulario de edición fallida.");
+        }
+      });
+    }
 
     // Manejar agregar integrantes
-    if (addIntegranteBtn && integrantesContainer) {
-      addIntegranteBtn.addEventListener("click", () => {
-        this.addIntegrante(integrantesContainer);
+    if (this.addIntegranteBtn && this.integrantesContainer) {
+      this.addIntegranteBtn.addEventListener("click", () => {
+        this.addIntegrante(this.integrantesContainer);
       });
 
-      // Asigna el evento de eliminación a los botones que ya existen en la página al cargar.
-      // Esto es para los integrantes que ya estaban registrados.
-      document.querySelectorAll(".remove-integrante").forEach((btn) => {
-        btn.addEventListener("click", function () {
-          this.closest(".integrante-item").remove();
-          MembershipUI.updateIntegrantesIndexes();
-        });
+      // Delegación de eventos para eliminar integrantes (existentes y nuevos)
+      this.integrantesContainer.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-integrante')) {
+          e.target.closest(".integrante-item").remove();
+          this.updateIntegrantesIndexes();
+        }
       });
+    }
+  },
+
+  /**
+   * Vincula los eventos de filtrado de entrada en tiempo real a los campos del formulario.
+   * Esto previene que el usuario ingrese caracteres no válidos.
+   */
+  bindInputFiltering: function() {
+    const filterInput = (inputElement, regex) => {
+        if (!inputElement) return;
+        inputElement.addEventListener('input', (e) => {
+            const originalValue = e.target.value;
+            const sanitizedValue = originalValue.replace(regex, '');
+            if (originalValue !== sanitizedValue) {
+                e.target.value = sanitizedValue;
+            }
+        });
+    };
+
+    const nombreCompletoInput = document.getElementById('nombre_completo');
+    const telefonoInput = document.getElementById('telefono');
+
+    // Filtrar nombre completo (solo letras, espacios y caracteres españoles)
+    filterInput(nombreCompletoInput, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g);
+
+    // Filtrar teléfono (solo números, máximo 10)
+    if (telefonoInput) {
+        telefonoInput.addEventListener('input', (e) => {
+            const originalValue = e.target.value;
+            let sanitizedValue = originalValue.replace(/[^0-9]/g, '');
+            if (sanitizedValue.length > 10) {
+                sanitizedValue = sanitizedValue.slice(0, 10);
+            }
+            if (originalValue !== sanitizedValue) {
+                e.target.value = sanitizedValue;
+            }
+        });
+    }
+
+    // Delegación de eventos para los campos de integrantes creados dinámicamente
+    if (this.integrantesContainer) {
+        this.integrantesContainer.addEventListener('input', (e) => {
+            if (e.target && e.target.name && e.target.name.includes('[nombre_completo]')) {
+                const originalValue = e.target.value;
+                const sanitizedValue = originalValue.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                if (originalValue !== sanitizedValue) {
+                    e.target.value = sanitizedValue;
+                }
+            }
+        });
     }
   },
 
@@ -51,27 +116,9 @@ const MembershipUI = {
         return;
     }
 
-    const index = document.querySelectorAll(".integrante-item").length;
     const clone = template.content.cloneNode(true);
-
-    // Actualiza los nombres de los inputs en el clon para que tengan el índice correcto.
-    // Por ejemplo, cambia 'integrantes[__INDEX__][nombre]' a 'integrantes[2][nombre]'.
-    // Esto es crucial para que el backend reciba los datos como un array.
-    const inputs = clone.querySelectorAll('[name*="__INDEX__"]');
-    inputs.forEach(input => {
-        input.name = input.name.replace('__INDEX__', index);
-    });
-
-    // Asigna el evento de clic al botón de eliminar del *nuevo* elemento que acabamos de crear.
-    const removeBtn = clone.querySelector(".remove-integrante");
-    if (removeBtn) {
-      removeBtn.addEventListener("click", function () {
-        this.closest(".integrante-item").remove();
-        MembershipUI.updateIntegrantesIndexes();
-      });
-    }
-
     container.appendChild(clone);
+    this.updateIntegrantesIndexes();
   },
 
   /**
@@ -83,11 +130,12 @@ const MembershipUI = {
   updateIntegrantesIndexes: function () {
     // Itera sobre todos los elementos de integrante que quedan en el DOM.
     document.querySelectorAll(".integrante-item").forEach((item, index) => {
-      const inputs = item.querySelectorAll("input");
+      const inputs = item.querySelectorAll("input, select");
       inputs.forEach((input) => {
         const name = input.getAttribute("name");
         if (name) {
-          input.setAttribute("name", name.replace(/\[\d+\]/, `[${index}]`));
+          // Reemplaza el número entre corchetes (o __INDEX__) por el nuevo índice.
+          input.setAttribute("name", name.replace(/\[.*?\]/, `[${index}]`));
         }
       });
     });

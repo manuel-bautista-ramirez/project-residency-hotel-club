@@ -40,6 +40,11 @@ routerApi.get("/:id_activa/integrantes", (req, res) =>
   listMembershipController.getIntegrantesAPI(req, res)
 );
 
+// GET /api/memberships/:id_activa/payments
+// Obtiene el historial de pagos de una membresía específica.
+routerApi.get("/:id_activa/payments", bind(listMembershipController, "getPaymentsHistoryAPI"));
+
+
 // GET /api/memberships/details/:id
 // Obtiene todos los detalles de una membresía específica para mostrar en una vista de detalle o modal.
 routerApi.get("/details/:id", (req, res) =>

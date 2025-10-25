@@ -86,12 +86,21 @@ const _getReportDateRange = (period, date) => {
       break;
     }
     case "weekly": {
-      const week = parseInt(date.substring(5));
-      const firstDay = new Date(year, 0, 1 + (week - 1) * 7);
-      const dayOfWeek = firstDay.getDay();
-      const adjustment = dayOfWeek <= 4 ? 1 - dayOfWeek : 8 - dayOfWeek; // Adjust to start of the week (Monday)
-      startDate = new Date(year, 0, firstDay.getDate() + adjustment);
-      endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6);
+      // --- CORRECCIÓN ---
+      // La lógica anterior era imprecisa. Esta nueva implementación calcula correctamente
+      // el inicio (lunes) y fin (domingo) de la semana ISO 8601.
+      const week = parseInt(date.substring(5), 10);
+      
+      // Calcula el primer día del año.
+      const firstDayOfYear = new Date(year, 0, 1);
+      // El día de la semana del 1 de enero (0=Domingo, 1=Lunes, ...).
+      const firstDayOfWeek = firstDayOfYear.getDay();
+      // Ajuste para encontrar el lunes de la primera semana del año.
+      // Si el 1 de enero es martes (2), necesitamos retroceder 1 día. Si es domingo (0), retrocedemos 6.
+      const dayOffset = (firstDayOfWeek === 0 ? -6 : 1 - firstDayOfWeek);
+      
+      startDate = new Date(year, 0, 1 + dayOffset + (week - 1) * 7);
+      endDate = new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000);
       break;
     }
     default:
@@ -565,55 +574,93 @@ export const MembershipService = {
    * @param {object} renewalData - Los datos del formulario de renovación.
    * @returns {Promise<void>}
    */
-  async renewMembership(oldMembershipId, renewalData) {
+  async renewMembership(id_activa, renewalData) {
     const {
       id_cliente,
       nombre_completo,
       telefono,
       correo,
       id_tipo_membresia,
-      fecha_inicio,
-      fecha_fin,
       id_metodo_pago,
+      integrantes,
     } = renewalData;
 
-    // 1. Actualizar datos del cliente
+    // 1. Obtener la membresía existente para obtener el id_membresia (contrato)
+    const oldMembership = await MembershipModel.getMembresiaById(id_activa);
+    if (!oldMembership) {
+      throw new Error("La membresía que intenta renovar no existe.");
+    }
+
+    // 2. Recalcular precio y fecha de fin en el servidor para seguridad.
+    const { precio_final, fecha_fin } = await this.calculateMembershipDetails(
+      id_tipo_membresia,
+      renewalData.fecha_inicio,
+      0 // Descuento no aplica en renovación por ahora
+    );
+
+    // 3. Actualizar datos del cliente
     await MembershipModel.updateClient({
       id_cliente,
       nombre_completo,
       telefono,
       correo,
     });
-
-    // 2. Desactivar la membresía antigua
-    await MembershipModel.updateEstadoMembresia(oldMembershipId, 'Vencida');
-
-    // 3. Crear el nuevo contrato de membresía
-    const id_membresia = await MembershipModel.createMembershipContract({
-      id_cliente,
-      id_tipo_membresia,
-      fecha_inicio,
-      fecha_fin,
+    
+    // 4. Actualizar la membresía activa existente con los nuevos datos de renovación
+    await updateMembershipById(id_activa, {
+      membershipData: {
+        nombre_completo,
+        telefono,
+        correo,
+        estado: 'Activa', // Se reactiva la membresía
+        fecha_inicio: renewalData.fecha_inicio,
+        fecha_fin: fecha_fin, // Fecha calculada
+        id_tipo_membresia: id_tipo_membresia, // Pasar el nuevo tipo para actualizar el contrato
+        precio_final: precio_final, // Precio calculado
+      },
+      tipo: (await MembershipModel.getTipoMembresiaById(id_tipo_membresia)).nombre.includes('Familiar') ? 'Familiar' : 'Individual',
+      integrantes: integrantes || []
     });
 
-    // 4. Activar la nueva membresía
-    const tipoMembresia = await MembershipModel.getTipoMembresiaById(id_tipo_membresia);
-    const precio_final = tipoMembresia.precio;
-
-    const id_activa_nueva = await MembershipModel.activateMembership({
-      id_cliente,
-      id_membresia,
-      fecha_inicio,
-      fecha_fin,
-      precio_final,
-    });
-
-    // 5. Registrar el pago
+    // 5. Registrar el nuevo pago de la renovación
     await MembershipModel.recordPayment({
-      id_activa: id_activa_nueva,
+      id_activa: id_activa,
       id_metodo_pago,
       monto: precio_final,
     });
+
+    // 6. Regenerar el archivo QR (buena práctica, aunque el payload no cambie)
+    const payloadQR = await this.generateQRPayload(id_activa);
+    const qrPath = await this.generateQRCode(
+      payloadQR,
+      id_activa,
+      nombre_completo
+    );
+    await MembershipModel.updateQRPath(id_activa, qrPath);
+
+    // 7. Enviar el nuevo comprobante de renovación
+    const [tipoMembresia, integrantesDB, metodoPagoInfo] = await Promise.all([
+        MembershipModel.getTipoMembresiaById(id_tipo_membresia),
+        MembershipModel.getIntegrantesByActiva(id_activa),
+        MembershipModel.getMetodoPagoById(id_metodo_pago)
+    ]);
+
+    const precioEnLetras = this.convertirNumeroALetras(parseFloat(precio_final));
+    
+    await this.sendMembershipReceipts(
+      { nombre_completo, correo, telefono }, // Datos del cliente
+      tipoMembresia,                         // Datos del tipo de membresía
+      id_activa,
+      renewalData.fecha_inicio,
+      fecha_fin,                             // Fecha de fin calculada
+      integrantesDB,                         // Integrantes actualizados desde la BD
+      metodoPagoInfo.nombre,                 // Nombre del método de pago
+      precio_final,
+      precioEnLetras
+    );
+
+    // Devolver datos para una posible respuesta de la API
+    return { id_activa, qr_path: qrPath };
   },
 
   /**
@@ -847,6 +894,23 @@ export const MembershipService = {
     }
     return await modelList.getIntegrantesByMembresia(id_activa);
   },
+
+  /**
+   * Obtiene el historial de pagos de una membresía.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<Array<object>>} Un array con los pagos.
+   * @throws {Error} Si `id_activa` no se proporciona.
+   */
+  async getPaymentsHistory(id_activa) {
+    if (!id_activa) {
+      const error = new Error("El parámetro id_activa es requerido");
+      error.statusCode = 400;
+      throw error;
+    }
+    // Reutilizamos el método del modelo que ya existe.
+    return await modelList.getPagosMembresia(id_activa);
+  },
+
 
   /**
    * Obtiene los detalles completos de una membresía para una respuesta de API.

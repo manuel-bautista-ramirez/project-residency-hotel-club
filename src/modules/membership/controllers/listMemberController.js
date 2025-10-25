@@ -136,6 +136,27 @@ const listMembershipController = {
   },
 
   /**
+   * Endpoint de API para obtener el historial de pagos de una membresía.
+   * @async
+   * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `id_activa` en `req.params`.
+   * @param {import('express').Response} res - El objeto de respuesta de Express.
+   */
+  async getPaymentsHistoryAPI(req, res) {
+    try {
+      const { id_activa } = req.params;
+      const payments = await MembershipService.getPaymentsHistory(id_activa);
+      res.json(payments);
+    } catch (error) {
+      console.error("Error al obtener historial de pagos:", error);
+      const statusCode = error.statusCode || 500;
+      res.status(statusCode).json({
+        error: error.message || "Error interno del servidor al obtener el historial de pagos",
+      });
+    }
+  },
+
+
+  /**
    * Endpoint de API para obtener los detalles completos de una membresía.
    * @async
    * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `id` en `req.params`.

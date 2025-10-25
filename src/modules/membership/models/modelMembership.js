@@ -151,7 +151,7 @@ const MembershipModel = {
    */
   async getTiposMembresia() {
     const [rows] = await pool.query(
-      `SELECT id_tipo_membresia, nombre, precio, max_integrantes 
+      `SELECT id_tipo_membresia, nombre, precio, max_integrantes
        FROM tipos_membresia 
        ORDER BY nombre`
     );
@@ -246,6 +246,18 @@ const MembershipModel = {
       `SELECT id_metodo_pago, nombre FROM metodos_pago ORDER BY nombre`
     );
     return rows;
+  },
+
+  /**
+   * Obtiene un método de pago por su ID.
+   * @param {number} id_metodo_pago - El ID del método de pago.
+   * @returns {Promise<object|null>} El objeto del método de pago o null si no se encuentra.
+   */
+  async getMetodoPagoById(id_metodo_pago) {
+    const [rows] = await pool.query(
+      `SELECT * FROM metodos_pago WHERE id_metodo_pago = ?`, [id_metodo_pago]
+    );
+    return rows[0] || null;
   },
 
   /**

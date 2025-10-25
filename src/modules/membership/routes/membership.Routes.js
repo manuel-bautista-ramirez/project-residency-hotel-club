@@ -5,18 +5,22 @@
  * como para exponer una API interna (endpoints para acciones específicas).
  */
 import express from "express";
+
 import { authMiddleware } from "../../../middlewares/validation/accessDenied.js";
+
 import {
   renderMembershipHome,
   renderMembershipCreate,
   renderEditMembership,
   renderRenewMembership,
+  renderManageMembership
 } from "../controllers/membershipController.js";
 import { reportsController } from "../controllers/reportsController.js";
 import { MembershipController } from "../controllers/createMemberController.js";
 import { listMembershipController } from "../controllers/listMemberController.js";
 import { editMemberController } from "../controllers/editMemberController.js";
 import { deleteMemberController } from "../controllers/deleteMemberController.js";
+import { manageController } from "../controllers/manageController.js";
 
 const routerMembership = express.Router();
 
@@ -46,6 +50,9 @@ routerMembership.get("/renew/:id", renderRenewMembership);
 
 // Renderiza la página para la visualización de reportes.
 routerMembership.get("/reports", bind(reportsController, "renderReports"));
+
+// Renderiza la página para la gestión de membresías.
+routerMembership.get("/manageMembership", renderManageMembership);
 
 // ===================================================================
 // 2. RUTAS DE API Y DATOS - Endpoints para la API interna (JSON, archivos)
@@ -128,5 +135,22 @@ routerMembership.get("/tipos_membresia/:id", (req, res) => {
   }
   res.status(501).json({ error: "Not implemented" });
 });
+
+// ===================================================================
+// 5. RUTAS DE API PARA CONFIGURACIÓN (SOLO ADMINS)
+// ===================================================================
+
+const adminOnly = roleMiddleware('Administrador');
+
+// --- Tipos de Membresía ---
+routerMembership.post("/api/types", adminOnly, bind(manageController, "createTipoMembresia"));
+routerMembership.put("/api/types/:id", adminOnly, bind(manageController, "updateTipoMembresia"));
+routerMembership.delete("/api/types/:id", adminOnly, bind(manageController, "deleteTipoMembresia"));
+
+// --- Métodos de Pago ---
+routerMembership.post("/api/payment-methods", adminOnly, bind(manageController, "createMetodoPago"));
+routerMembership.put("/api/payment-methods/:id", adminOnly, bind(manageController, "updateMetodoPago"));
+routerMembership.delete("/api/payment-methods/:id", adminOnly, bind(manageController, "deleteMetodoPago"));
+
 
 export { routerMembership as membershipRoutes };

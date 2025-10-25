@@ -3,13 +3,13 @@
  * Es el punto de entrada para toda la lógica del script.
  */
 document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('renewMembershipForm');
     const tipoMembresiaSelect = document.getElementById('id_tipo_membresia');
     const fechaInicioInput = document.getElementById('fecha_inicio');
     const fechaFinInput = document.getElementById('fecha_fin');
     const precioFinalInput = document.getElementById('precio_final');
     const integrantesSection = document.getElementById('integrantesSection');
     const integrantesContainer = document.getElementById('integrantesContainer');
-    const addIntegranteBtn = document.getElementById('addIntegranteBtn');
     let maxIntegrantes = 1;
 
     /**
@@ -67,66 +67,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
         updateCalculatedDetails(); // Recalcular precio y fecha al cambiar tipo
 
-        integrantesContainer.innerHTML = ""; // Limpiar integrantes al cambiar
-
         if (tipoNombre.includes('familiar') && integrantesSection) {
             integrantesSection.classList.remove('hidden');
             
-            // Siempre añadir un mínimo de 3 campos de integrante no eliminables para membresías familiares
-            const minFixedIntegrantes = 3; 
-            for (let i = 0; i < minFixedIntegrantes; i++) {
-                addIntegrante(false); // Añadir campos no eliminables
+            // Si no hay integrantes ya cargados (ej. cambiando de Individual a Familiar), añadir los campos por defecto.
+            if (integrantesContainer.children.length === 0) {
+                // El número de campos a mostrar se basa en el máximo permitido por el tipo de membresía.
+                // Se resta 1 porque el titular ya cuenta como un integrante.
+                const camposAAnadir = maxIntegrantes > 1 ? maxIntegrantes - 1 : 0;
+                for (let i = 0; i < camposAAnadir; i++) {
+                    addIntegrante();
+                }
             }
 
-            // Si el tipo de membresía permite más de 3 integrantes adicionales, mostrar el botón "Agregar Integrante"
-            if (maxIntegrantes - 1 > minFixedIntegrantes) {
-                addIntegranteBtn.classList.remove('hidden');
-            } else {
-                addIntegranteBtn.classList.add('hidden');
-            }
+            // Re-indexar los integrantes existentes para asegurar que los nombres son correctos
+            updateIntegrantesIndexes();
         } else {
+            integrantesContainer.innerHTML = ""; // Limpiar integrantes si se cambia a un tipo no familiar
             integrantesSection.classList.add('hidden');
-            addIntegranteBtn.classList.add('hidden'); // Ocultar el botón si no es membresía familiar
         }
     }
 
     /**
      * Añade un nuevo campo de integrante al formulario.
      */
-    function addIntegrante(isRemovable = true) { // Por defecto, los nuevos integrantes son eliminables
+    function addIntegrante() {
         const template = document.getElementById('integrante-template');
         if (!template) return;
 
-        // Si se está añadiendo un integrante eliminable, verificar el límite de integrantes adicionales
-        if (isRemovable && maxIntegrantes > 1 && currentCount >= (maxIntegrantes - 1)) {
-            alert(`Se permite un máximo de ${maxIntegrantes - 1} integrantes adicionales para este tipo de membresía.`);
-            return;
-        }
-
         const clone = template.content.cloneNode(true);
-        const index = Date.now(); // Usar timestamp para un índice único y evitar colisiones
-
-        clone.querySelectorAll('[name*="__INDEX__"]').forEach(input => {
-            input.name = input.name.replace('__INDEX__', index);
-        });
-
-        const removeBtn = clone.querySelector('.remove-integrante');
-        if (removeBtn) { // Asegurarse de que el botón existe en la plantilla
-            if (isRemovable) {
-                removeBtn.addEventListener('click', function() {
-                    this.closest('.integrante-item').remove();
-                    updateIntegrantesIndexes();
-                    // Re-evaluar la visibilidad del botón "Agregar Integrante" después de eliminar
-                    if (maxIntegrantes - 1 > integrantesContainer.querySelectorAll('.integrante-item').length) {
-                        addIntegranteBtn.classList.remove('hidden');
-                    }
-                });
-            } else {
-                removeBtn.remove(); // Eliminar el botón si el campo no es eliminable
-            }
-        }
-
-
 
         integrantesContainer.appendChild(clone);
         updateIntegrantesIndexes();
@@ -145,22 +114,76 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    /**
+     * Vincula los eventos de filtrado de entrada en tiempo real a los campos del formulario.
+     * Esto previene que el usuario ingrese caracteres no válidos.
+     */
+    function bindInputFiltering() {
+        const filterInput = (inputElement, regex) => {
+            if (!inputElement) return;
+            inputElement.addEventListener('input', (e) => {
+                const originalValue = e.target.value;
+                const sanitizedValue = originalValue.replace(regex, '');
+                if (originalValue !== sanitizedValue) {
+                    e.target.value = sanitizedValue;
+                }
+            });
+        };
+
+        const nombreCompletoInput = document.getElementById('nombre_completo');
+        const telefonoInput = document.getElementById('telefono');
+
+        // Filtrar nombre completo (solo letras, espacios y caracteres españoles)
+        filterInput(nombreCompletoInput, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g);
+
+        // Filtrar teléfono (solo números, máximo 10)
+        // y validar longitud al salir del campo.
+        if (telefonoInput) {
+            // Evento 'input': se ejecuta mientras el usuario escribe.
+            telefonoInput.addEventListener('input', (e) => {
+                const originalValue = e.target.value;
+                let sanitizedValue = originalValue.replace(/[^0-9]/g, '');
+                if (sanitizedValue.length > 10) {
+                    sanitizedValue = sanitizedValue.slice(0, 10);
+                }
+                if (originalValue !== sanitizedValue) {
+                    e.target.value = sanitizedValue;
+                }
+            });
+
+            // Evento 'blur': se ejecuta cuando el usuario sale del campo.
+            telefonoInput.addEventListener('blur', (e) => {
+                const currentValue = e.target.value;
+                // Si el campo no está vacío pero no tiene 10 dígitos, se limpia.
+                if (currentValue.length > 0 && currentValue.length < 10) {
+                    e.target.value = ''; // Limpiar el campo.
+                }
+            });
+        }
+
+        // Delegación de eventos para los campos de integrantes creados dinámicamente
+        if (integrantesContainer) {
+            integrantesContainer.addEventListener('input', (e) => {
+                // Validar si el campo es un nombre de integrante
+                if (e.target && e.target.name && e.target.name.includes('[nombre_completo]')) {
+                    const originalValue = e.target.value;
+                    const sanitizedValue = originalValue.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                    if (originalValue !== sanitizedValue) {
+                        e.target.value = sanitizedValue;
+                    }
+                }
+            });
+        }
+    }
+
     // --- VINCULACIÓN DE EVENTOS ---
 
-    // Delegación de eventos para botones de eliminar
-    if (integrantesContainer) {
-        integrantesContainer.addEventListener('click', function(e) {
-            if (e.target.closest('.remove-integrante')) {
-                // Solo eliminar si el botón de eliminar está presente en el elemento clicado
-                const removeBtnClicked = e.target.closest('.remove-integrante');
-                if (!removeBtnClicked) return; 
-
-                removeBtnClicked.closest('.integrante-item').remove();
-                updateIntegrantesIndexes();
-                // Re-evaluar la visibilidad del botón "Agregar Integrante" después de eliminar
-                if (maxIntegrantes - 1 > integrantesContainer.querySelectorAll('.integrante-item').length) {
-                    addIntegranteBtn.classList.remove('hidden');
-                }
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Prevenir el envío si la validación falla
+            if (!Validator.validateForm(form)) {
+                e.preventDefault();
+                console.log("Validación del formulario fallida.");
             }
         });
     }
@@ -176,9 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (fechaInicioInput) {
         fechaInicioInput.addEventListener('change', updateCalculatedDetails);
     }
-    if (addIntegranteBtn) {
-        addIntegranteBtn.addEventListener('click', () => addIntegrante(true)); // Los nuevos integrantes son eliminables
-    }
 
     /**
      * Llama a la función una vez al cargar la página para establecer el valor inicial
@@ -186,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function initializeForm() {
         handleTipoMembresiaChange(); // Esto también llama a updateCalculatedDetails
+        bindInputFiltering(); // Añadir los listeners de validación en tiempo real
     }
 
     initializeForm();
