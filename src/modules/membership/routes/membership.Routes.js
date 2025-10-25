@@ -6,7 +6,7 @@
  */
 import express from "express";
 
-import { authMiddleware } from "../../../middlewares/validation/accessDenied.js";
+import { authMiddleware, roleMiddleware} from "../../../middlewares/validation/accessDenied.js";
 
 import {
   renderMembershipHome,
