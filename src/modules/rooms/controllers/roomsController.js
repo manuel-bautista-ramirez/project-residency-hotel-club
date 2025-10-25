@@ -381,7 +381,8 @@ export const renderAllRentas = async (req, res) => {
 
     console.log('🔍 Usuario en renderAllRentas:', user);
     console.log('🔍 Rol del usuario:', user.role);
-    console.log(rentasFormateadas);
+    console.log('📊 Total de rentas:', rentasFormateadas.length);
+    console.log('📋 Rentas:', rentasFormateadas);
     res.render("showRent", {
       title: "Listado de habitaciones rentadas",
       allRentas: rentasFormateadas,

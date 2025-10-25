@@ -1,6 +1,9 @@
-<div class="max-w-7xl mx-auto px-3 sm:px-4 pt-24 sm:pt-28 pb-24">
+<div class="max-w-7xl mx-auto px-3 sm:px-4 {{#if allRentas.length}}pt-24 sm:pt-28 pb-24{{else}}pt-16 sm:pt-20{{/if}}">
+  {{#if allRentas.length}}
   {{>buttons}}
+  {{/if}}
 
+  {{#if allRentas.length}}
   <!-- Filtros -->
   <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -11,9 +14,13 @@
                class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
       </div>
       <!-- Rango de fechas (ingreso) -->
-      <div class="flex flex-col gap-1 md:col-span-2 max-w-sm">
+      <div class="flex flex-col gap-1">
         <label for="rentFrom" class="text-xs font-medium text-slate-600">Ingreso desde</label>
         <input id="rentFrom" type="date" class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label for="rentTo" class="text-xs font-medium text-slate-600">Ingreso hasta</label>
+        <input id="rentTo" type="date" class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
       </div>
     </div>
     <div class="mt-3 flex items-center justify-between gap-2">
@@ -172,6 +179,29 @@
     </article>
     {{/each}}
   </section>
+  {{else}}
+  <!-- Mensaje cuando no hay rentas -->
+  <section class="flex flex-col items-center justify-center px-3" style="height: calc(100vh - 140px); max-height: calc(100vh - 140px); overflow: hidden;">
+    <div class="text-center max-w-sm -mt-6 sm:-mt-12">
+      <div class="mb-3 sm:mb-6 inline-flex items-center justify-center w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-blue-100">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 sm:w-10 sm:h-10 text-blue-600">
+          <path d="M11.25 4.533A9.707 9.707 0 006 3a9.735 9.735 0 00-3.25.555.75.75 0 00-.5.707v14.25a.75.75 0 001 .707A8.237 8.237 0 016 18.75c1.995 0 3.823.707 5.25 1.886V4.533zM12.75 20.636A8.214 8.214 0 0118 18.75c.966 0 1.89.166 2.75.47a.75.75 0 001-.708V4.262a.75.75 0 00-.5-.707A9.735 9.735 0 0018 3a9.707 9.707 0 00-5.25 1.533v16.103z"/>
+        </svg>
+      </div>
+      <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">No hay rentas</h2>
+      <p class="text-gray-600 mb-3 sm:mb-6 text-xs sm:text-sm md:text-base px-1 leading-tight sm:leading-normal">
+        Aún no hay rentas en el sistema. Renta una habitación para verlas aquí.
+      </p>
+      <a href="/rooms" class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-1.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 text-xs sm:text-base">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 sm:w-5 sm:h-5">
+          <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/>
+          <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z"/>
+        </svg>
+        <span>Ver Habitaciones</span>
+      </a>
+    </div>
+  </section>
+  {{/if}}
 </div>
 
 <!-- Modal de confirmación de eliminación -->
@@ -233,11 +263,10 @@
     const rows = Array.from(document.querySelectorAll('.rent-reveal'));
     // Filtros
     const q = document.getElementById('rentSearch');
-    // const pay = document.getElementById('rentPayType'); // removed
     const from = document.getElementById('rentFrom');
+    const to = document.getElementById('rentTo');
     const reset = document.getElementById('rentReset');
     const count = document.getElementById('rentCount');
-    // removed salida filters
     // Vista y paginación
     const tableSection = document.getElementById('tableSection');
     const cardsSection = document.getElementById('cardsSection');
@@ -380,16 +409,32 @@
 
     // --- Filtrado ---
     function norm(str) { return (str || '').toString().trim().toLowerCase(); }
-    function inRange(dateStr, fromStr) {
-      if (!fromStr) return true;
+    function inRange(dateStr, fromStr, toStr) {
+      if (!fromStr && !toStr) return true;
       const d = new Date(dateStr);
-      if (Number.isNaN(d)) return false;
-      if (fromStr && d < new Date(fromStr)) return false;
+      if (Number.isNaN(d.getTime())) return false;
+      
+      // Normalizar fechas a medianoche para comparación solo de día
+      const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      
+      if (fromStr) {
+        const fromDate = new Date(fromStr);
+        const fromOnly = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+        if (dateOnly < fromOnly) return false;
+      }
+      
+      if (toStr) {
+        const toDate = new Date(toStr);
+        const toOnly = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
+        if (dateOnly > toOnly) return false;
+      }
+      
       return true;
     }
     function applyFilters() {
       const text = norm(q.value);
       const f = from.value;
+      const t = to.value;
       let visible = 0;
       rows.forEach(el => {
         const d = {
@@ -404,7 +449,7 @@
         const hayTexto = !text || (
           d.nombre.includes(text) || d.hab.includes(text) || d.monto.includes(text) || d.letras.includes(text)
         );
-        const hayFechaIn = inRange(d.ingreso, f);
+        const hayFechaIn = inRange(d.ingreso, f, t);
         const show = hayTexto && hayFechaIn;
         el.classList.toggle('hidden', !show);
         if (show) visible++;
@@ -417,10 +462,12 @@
     ['input','change'].forEach(evt => {
       q.addEventListener(evt, applyFilters);
       from.addEventListener(evt, applyFilters);
+      to.addEventListener(evt, applyFilters);
     });
     reset.addEventListener('click', () => {
       q.value = '';
       from.value = '';
+      to.value = '';
       applyFilters();
     });
     // Inicial
@@ -518,23 +565,42 @@
     function setView(view) {
       // view: 'table' | 'cards'
       if (!tableSection || !cardsSection) return;
-      if (view === 'table') {
-        tableSection.classList.remove('hidden');
-        cardsSection.classList.add('hidden');
-        if (btnViewTable && btnViewCards) {
-          btnViewTable.classList.add('bg-blue-600','text-white');
-          btnViewCards.classList.remove('bg-blue-600','text-white');
-          btnViewCards.classList.add('bg-white','text-slate-700');
+      
+      // En pantallas grandes (lg), permitir cambio manual
+      // En pantallas pequeñas, siempre mostrar cards
+      const isLargeScreen = window.innerWidth >= 1024;
+      
+      if (isLargeScreen) {
+        // Solo en pantallas grandes permitimos el toggle manual
+        if (view === 'table') {
+          tableSection.classList.remove('hidden', 'lg:block');
+          tableSection.classList.add('block');
+          cardsSection.classList.add('hidden');
+          cardsSection.classList.remove('block', 'lg:hidden');
+          if (btnViewTable && btnViewCards) {
+            btnViewTable.classList.add('bg-blue-600','text-white');
+            btnViewCards.classList.remove('bg-blue-600','text-white');
+            btnViewCards.classList.add('bg-white','text-slate-700');
+          }
+        } else {
+          tableSection.classList.add('hidden');
+          tableSection.classList.remove('block', 'lg:block');
+          cardsSection.classList.remove('hidden', 'lg:hidden');
+          cardsSection.classList.add('block');
+          if (btnViewTable && btnViewCards) {
+            btnViewCards.classList.add('bg-blue-600','text-white');
+            btnViewTable.classList.remove('bg-blue-600','text-white');
+            btnViewTable.classList.add('bg-white','text-slate-700');
+          }
         }
       } else {
-        tableSection.classList.add('hidden');
+        // En móvil/tablet, siempre cards (restaurar clases responsive)
+        tableSection.classList.remove('block');
+        tableSection.classList.add('hidden', 'lg:block');
         cardsSection.classList.remove('hidden');
-        if (btnViewTable && btnViewCards) {
-          btnViewCards.classList.add('bg-blue-600','text-white');
-          btnViewTable.classList.remove('bg-blue-600','text-white');
-          btnViewTable.classList.add('bg-white','text-slate-700');
-        }
+        cardsSection.classList.add('block', 'lg:hidden');
       }
+      
       // Recalcular paginación con la nueva vista
       page = 1;
       applySortAndPaginate();
@@ -542,33 +608,20 @@
     if (btnViewTable) btnViewTable.addEventListener('click', () => setView('table'));
     if (btnViewCards) btnViewCards.addEventListener('click', () => setView('cards'));
 
-    // CSV export (filtradas, sin limitar por paginación)
-    function exportCSV() {
-      const visible = rows.filter(el => !el.classList.contains('hidden'));
-      const header = ['Nombre del cliente','Número de habitación','Fecha de Ingreso','Fecha de Salida','Tipo de Pago','Monto','Monto en letras'];
-      const lines = [header.join(',')];
-      visible.forEach(el => {
-        const vals = [el.dataset.nombre, el.dataset.hab, el.dataset.ingreso, el.dataset.salida, el.dataset.pago, el.dataset.monto, el.dataset.letras]
-          .map(v => '"' + (v || '').toString().replace(/"/g,'""') + '"');
-        lines.push(vals.join(','));
-      });
-      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'rentas.csv';
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-    }
-    // Botón export (lo añadimos al lado derecho de paginación)
-    const exportBtn = document.createElement('button');
-    exportBtn.innerHTML = '<i class="fa-solid fa-file-export mr-1.5"></i> Exportar CSV';
-    exportBtn.className = 'px-3 py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 inline-flex items-center';
-    const pagControls = document.getElementById('rentPageNext')?.parentElement?.parentElement;
-    if (pagControls) { pagControls.appendChild(exportBtn); exportBtn.addEventListener('click', exportCSV); }
-
     // Inicializar vista según breakpoint (cards en móvil/tablet, tabla en escritorio)
-    const prefersTable = window.matchMedia('(min-width: 1024px)').matches; // lg
-    setView(prefersTable ? 'table' : 'cards');
+    const mediaQuery = window.matchMedia('(min-width: 1024px)'); // lg breakpoint
+    
+    // Función para actualizar vista según tamaño de pantalla
+    function updateViewOnResize() {
+      const prefersTable = mediaQuery.matches;
+      setView(prefersTable ? 'table' : 'cards');
+    }
+    
+    // Inicializar vista
+    updateViewOnResize();
+    
+    // Escuchar cambios de tamaño de pantalla
+    mediaQuery.addEventListener('change', updateViewOnResize);
   });
 
   // Función para confirmar y marcar renta como desocupada
