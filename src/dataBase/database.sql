@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS reservaciones (
     REFERENCES medios_mensajes (id_medio_mensaje)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de reservaciones con enganche/anticipo, rutas de archivos PDF y QR';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS rentas (
@@ -129,9 +129,9 @@ CREATE TABLE IF NOT EXISTS rentas (
   monto DECIMAL(10,2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  pdf_path VARCHAR(500) NULL COMMENT 'Ruta del archivo PDF generado',
-  qr_path VARCHAR(500) NULL COMMENT 'Ruta del archivo QR generado',
-  estado ENUM('activa', 'finalizada', 'cancelada') DEFAULT 'activa' COMMENT 'Estado de la renta: activa (en curso), finalizada (desocupada), cancelada (eliminada)',
+  pdf_path VARCHAR(500) NULL,
+  qr_path VARCHAR(500) NULL,
+  estado ENUM('activa', 'finalizada', 'cancelada') DEFAULT 'activa',
   fecha_salida_real DATETIME NULL COMMENT 'Fecha y hora real en que se desocupó la habitación',
   
   PRIMARY KEY (id),
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS rentas (
     REFERENCES medios_mensajes (id_medio_mensaje)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de rentas con sistema de desocupación y rutas de archivos PDF y QR';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 CREATE TABLE IF NOT EXISTS pdf_registry (

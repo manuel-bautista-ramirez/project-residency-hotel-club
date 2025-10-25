@@ -404,45 +404,53 @@ export const deleteIdRenta = async (req, res) => {
     const rentaId = Number(req.params.id);
     if (Number.isNaN(rentaId)) return res.status(400).send("ID inválido");
 
-    // Obtener datos de la renta antes de eliminarla para borrar archivos
+    // Obtener datos de la renta antes de eliminarla para borrar archivos Y liberar habitación
     console.log(`Obteniendo datos de la renta ${rentaId}...`);
     const { pool } = await import("../../../dataBase/connectionDataBase.js");
-    const [rentas] = await pool.query("SELECT pdf_path, qr_path FROM rentas WHERE id = ?", [rentaId]);
+    const [rentas] = await pool.query("SELECT pdf_path, qr_path, habitacion_id FROM rentas WHERE id = ?", [rentaId]);
     
+    if (rentas.length === 0) {
+      return res.status(404).send("Renta no encontrada");
+    }
+
+    const renta = rentas[0];
+    const habitacionId = renta.habitacion_id;
+
     // Eliminar PDF y QR de la renta si existen
-    if (rentas.length > 0) {
-      const renta = rentas[0];
-      const fs = await import("fs");
-      const fsPromises = fs.promises;
-      
-      if (renta.pdf_path) {
-        try {
-          if (fs.default.existsSync(renta.pdf_path)) {
-            await fsPromises.unlink(renta.pdf_path);
-            console.log(` PDF de renta eliminado: ${renta.pdf_path}`);
-          }
-        } catch (error) {
-          console.error(`Error al eliminar PDF de renta:`, error.message);
+    const fs = await import("fs");
+    const fsPromises = fs.promises;
+    
+    if (renta.pdf_path) {
+      try {
+        if (fs.default.existsSync(renta.pdf_path)) {
+          await fsPromises.unlink(renta.pdf_path);
+          console.log(` PDF de renta eliminado: ${renta.pdf_path}`);
         }
-      }
-      
-      if (renta.qr_path) {
-        try {
-          if (fs.default.existsSync(renta.qr_path)) {
-            await fsPromises.unlink(renta.qr_path);
-            console.log(` QR de renta eliminado: ${renta.qr_path}`);
-          }
-        } catch (error) {
-          console.error(`Error al eliminar QR de renta:`, error.message);
-        }
+      } catch (error) {
+        console.error(`Error al eliminar PDF de renta:`, error.message);
       }
     }
+    
+    if (renta.qr_path) {
+      try {
+        if (fs.default.existsSync(renta.qr_path)) {
+          await fsPromises.unlink(renta.qr_path);
+          console.log(` QR de renta eliminado: ${renta.qr_path}`);
+        }
+      } catch (error) {
+        console.error(`Error al eliminar QR de renta:`, error.message);
+      }
+    }
+
+    // Liberar la habitación poniéndola en estado "limpieza"
+    console.log(` Liberando habitación ${habitacionId} y poniéndola en estado "limpieza"...`);
+    await pool.query('UPDATE habitaciones SET estado = "limpieza" WHERE id = ?', [habitacionId]);
 
     // Eliminar la renta de la base de datos
     console.log(` Eliminando renta ${rentaId} de la base de datos...`);
     const success = await deleteByIdRenta(rentaId);
     if (success) {
-      console.log(`Renta ${rentaId} eliminada exitosamente`);
+      console.log(`✅ Renta ${rentaId} eliminada exitosamente y habitación liberada`);
       res.redirect("/rooms/list/rentas"); // Ajusta la ruta según tu vista de rentas
     } else {
       res.status(500).send("No se pudo eliminar la renta");

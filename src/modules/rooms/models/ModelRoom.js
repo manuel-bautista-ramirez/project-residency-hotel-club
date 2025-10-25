@@ -8,39 +8,61 @@ export const getHabitaciones = async () => {
       SELECT
         h.*,
         CASE
-          -- Si hay una renta activa HOY, está ocupada
+          -- Si hay una renta activa y ya pasó la hora de entrada (12:00), está ocupada
           WHEN EXISTS (
             SELECT 1 FROM rentas re
             WHERE re.habitacion_id = h.id
-            AND CURDATE() BETWEEN DATE(re.fecha_ingreso) AND DATE(re.fecha_salida)
+            AND re.estado = 'activa'
+            AND (
+              -- Si la fecha de ingreso es hoy, verificar que ya sean las 12:00 o más
+              (DATE(re.fecha_ingreso) = CURDATE() AND CURTIME() >= '12:00:00')
+              OR
+              -- Si ya pasó la fecha de ingreso, está ocupada
+              (DATE(re.fecha_ingreso) < CURDATE() AND CURDATE() <= DATE(re.fecha_salida))
+            )
           ) THEN 'ocupado'
 
-          -- Si hay una reservación activa HOY, está ocupada
+          -- Si hay una reservación activa y ya pasó la hora de entrada (12:00), está ocupada
           WHEN EXISTS (
             SELECT 1 FROM reservaciones r
             WHERE r.habitacion_id = h.id
-            AND CURDATE() BETWEEN DATE(r.fecha_ingreso) AND DATE(r.fecha_salida)
+            AND (
+              -- Si la fecha de ingreso es hoy, verificar que ya sean las 12:00 o más
+              (DATE(r.fecha_ingreso) = CURDATE() AND CURTIME() >= '12:00:00')
+              OR
+              -- Si ya pasó la fecha de ingreso, está ocupada
+              (DATE(r.fecha_ingreso) < CURDATE() AND CURDATE() <= DATE(r.fecha_salida))
+            )
           ) THEN 'ocupado'
+
+          -- Si el estado manual es limpieza, mantener limpieza
+          WHEN h.estado = 'limpieza' THEN 'limpieza'
 
           -- Si el estado fue cambiado manualmente a disponible, respetarlo
           WHEN h.estado = 'disponible' THEN 'disponible'
 
-          -- Si una renta ya venció (fecha_salida pasó), automáticamente pasa a limpieza
+          -- Si una renta ya venció (fecha_salida pasó o es hoy después de las 11:59), pasa a limpieza
           WHEN EXISTS (
             SELECT 1 FROM rentas re
             WHERE re.habitacion_id = h.id
-            AND DATE(re.fecha_salida) < CURDATE()
+            AND re.estado = 'activa'
+            AND (
+              DATE(re.fecha_salida) < CURDATE()
+              OR
+              (DATE(re.fecha_salida) = CURDATE() AND CURTIME() >= '12:00:00')
+            )
           ) THEN 'limpieza'
 
-          -- Si una reservación ya venció (fecha_salida pasó), automáticamente pasa a limpieza
+          -- Si una reservación ya venció (fecha_salida pasó o es hoy después de las 11:59), pasa a limpieza
           WHEN EXISTS (
             SELECT 1 FROM reservaciones r
             WHERE r.habitacion_id = h.id
-            AND DATE(r.fecha_salida) < CURDATE()
+            AND (
+              DATE(r.fecha_salida) < CURDATE()
+              OR
+              (DATE(r.fecha_salida) = CURDATE() AND CURTIME() >= '12:00:00')
+            )
           ) THEN 'limpieza'
-
-          -- Si el estado manual es limpieza, mantener limpieza
-          WHEN h.estado = 'limpieza' THEN 'limpieza'
 
           -- De lo contrario, está disponible
           ELSE 'disponible'
@@ -72,10 +94,11 @@ export const checkRoomAvailability = async (roomId, fechaIngreso, fechaSalida, e
     const query = `
       SELECT
         (
-          -- Verificar si hay rentas en conflicto
+          -- Verificar si hay rentas ACTIVAS en conflicto (excluir finalizadas y canceladas)
           (SELECT COUNT(*)
            FROM rentas
            WHERE habitacion_id = ?
+           AND estado = 'activa'
            AND (? < fecha_salida AND ? > fecha_ingreso)
            ${excludeRentId ? 'AND id != ?' : ''}
           ) +
@@ -288,6 +311,7 @@ export const finalizarRenta = async (id) => {
     await connection.beginTransaction();
     
     // 1. Obtener información de la renta
+    console.log(`🔍 Buscando renta con id: ${id}`);
     const [renta] = await connection.query(
       'SELECT habitacion_id FROM rentas WHERE id = ?',
       [id]
@@ -298,27 +322,40 @@ export const finalizarRenta = async (id) => {
     }
     
     const habitacionId = renta[0].habitacion_id;
+    console.log(`🔍 Habitación ID encontrada: ${habitacionId}`);
     
     // 2. Actualizar la renta como finalizada
-    await connection.query(
+    console.log(`📝 Actualizando renta ${id} a estado 'finalizada'...`);
+    const [rentaResult] = await connection.query(
       `UPDATE rentas 
        SET estado = 'finalizada', 
            fecha_salida_real = NOW() 
        WHERE id = ?`,
       [id]
     );
+    console.log(`✅ Renta actualizada. Filas afectadas: ${rentaResult.affectedRows}`);
     
     // 3. Marcar la habitación como "limpieza" (no disponible directamente)
-    await connection.query(
+    console.log(`🧹 Cambiando habitación ${habitacionId} a estado 'limpieza'...`);
+    const [habResult] = await connection.query(
       'UPDATE habitaciones SET estado = "limpieza" WHERE id = ?',
       [habitacionId]
     );
+    console.log(`✅ Habitación actualizada. Filas afectadas: ${habResult.affectedRows}`);
+    
+    // Verificar el estado actual
+    const [habCheck] = await connection.query(
+      'SELECT id, numero, estado FROM habitaciones WHERE id = ?',
+      [habitacionId]
+    );
+    console.log(`🔍 Estado actual de la habitación:`, habCheck[0]);
     
     await connection.commit();
+    console.log(`✅ Transacción completada exitosamente`);
     return true;
   } catch (error) {
     await connection.rollback();
-    console.error('Error al finalizar renta:', error);
+    console.error('❌ Error al finalizar renta:', error);
     throw error;
   } finally {
     connection.release();
