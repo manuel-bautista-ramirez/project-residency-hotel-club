@@ -513,6 +513,7 @@ export const renderFormEditarReservacion = async (req, res) => {
       reservacion,
       habitaciones,
       user: req.session.user,
+      showNavbar: true 
     });
   } catch (err) {
     console.error("Error en renderFormEditarReservacion:", err);
@@ -907,6 +908,7 @@ export const renderCalendario = (req, res) => {
   res.render("calendar", {
     title: "Calendario de Habitaciones",
     showFooter: true,
+    showNavbar: true, 
   });
 };
 
