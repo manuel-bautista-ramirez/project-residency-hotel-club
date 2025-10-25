@@ -151,11 +151,53 @@ const MembershipModel = {
    */
   async getTiposMembresia() {
     const [rows] = await pool.query(
-      `SELECT id_tipo_membresia, nombre, precio, max_integrantes 
+      `SELECT *
        FROM tipos_membresia 
        ORDER BY nombre`
     );
     return rows;
+  },
+
+  /**
+   * Crea un nuevo tipo de membresía.
+   * @param {object} data - Datos del tipo de membresía.
+   * @returns {Promise<object>} El nuevo tipo de membresía creado.
+   */
+  async createTipoMembresia(data) {
+    const { nombre, duracion_dias, max_integrantes, precio, activo } = data;
+    const [result] = await pool.query(
+      "INSERT INTO tipos_membresia (nombre, duracion_dias, max_integrantes, precio, activo) VALUES (?, ?, ?, ?, ?)",
+      [nombre, duracion_dias, max_integrantes, precio, activo]
+    );
+    return { id: result.insertId, ...data };
+  },
+
+  /**
+   * Actualiza un tipo de membresía existente.
+   * @param {number} id - ID del tipo de membresía a actualizar.
+   * @param {object} data - Datos a actualizar.
+   * @returns {Promise<boolean>} `true` si la actualización fue exitosa.
+   */
+  async updateTipoMembresia(id, data) {
+    const { nombre, duracion_dias, max_integrantes, precio, activo } = data;
+    const [result] = await pool.query(
+      "UPDATE tipos_membresia SET nombre = ?, duracion_dias = ?, max_integrantes = ?, precio = ?, activo = ? WHERE id_tipo_membresia = ?",
+      [nombre, duracion_dias, max_integrantes, precio, activo, id]
+    );
+    return result.affectedRows > 0;
+  },
+
+  /**
+   * Elimina un tipo de membresía.
+   * @param {number} id - ID del tipo de membresía a eliminar.
+   * @returns {Promise<boolean>} `true` si la eliminación fue exitosa.
+   */
+  async deleteTipoMembresia(id) {
+    const [result] = await pool.query(
+      "DELETE FROM tipos_membresia WHERE id_tipo_membresia = ?",
+      [id]
+    );
+    return result.affectedRows > 0;
   },
 
   /**
@@ -243,9 +285,51 @@ const MembershipModel = {
    */
   async getMetodosPago() {
     const [rows] = await pool.query(
-      `SELECT id_metodo_pago, nombre FROM metodos_pago ORDER BY nombre`
+      `SELECT * FROM metodos_pago ORDER BY nombre`
     );
     return rows;
+  },
+
+  /**
+   * Crea un nuevo método de pago.
+   * @param {object} data - Datos del método de pago.
+   * @returns {Promise<object>} El nuevo método de pago creado.
+   */
+  async createMetodoPago(data) {
+    const { nombre, descripcion, activo } = data;
+    const [result] = await pool.query(
+      "INSERT INTO metodos_pago (nombre, descripcion, activo) VALUES (?, ?, ?)",
+      [nombre, descripcion, activo]
+    );
+    return { id: result.insertId, ...data };
+  },
+
+  /**
+   * Actualiza un método de pago existente.
+   * @param {number} id - ID del método de pago a actualizar.
+   * @param {object} data - Datos a actualizar.
+   * @returns {Promise<boolean>} `true` si la actualización fue exitosa.
+   */
+  async updateMetodoPago(id, data) {
+    const { nombre, descripcion, activo } = data;
+    const [result] = await pool.query(
+      "UPDATE metodos_pago SET nombre = ?, descripcion = ?, activo = ? WHERE id_metodo_pago = ?",
+      [nombre, descripcion, activo, id]
+    );
+    return result.affectedRows > 0;
+  },
+
+  /**
+   * Elimina un método de pago.
+   * @param {number} id - ID del método de pago a eliminar.
+   * @returns {Promise<boolean>} `true` si la eliminación fue exitosa.
+   */
+  async deleteMetodoPago(id) {
+    const [result] = await pool.query(
+      "DELETE FROM metodos_pago WHERE id_metodo_pago = ?",
+      [id]
+    );
+    return result.affectedRows > 0;
   },
 
   /**

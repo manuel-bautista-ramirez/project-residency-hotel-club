@@ -160,14 +160,23 @@ export const renderEditMembership = async (req, res) => {
   }
 };
 
+import { MembershipModel } from "../models/modelMembership.js";
+
 export const renderManageMembership = async (req, res) => {
     try {
         const userRole = req.session.user?.role || "Recepcionista";
         const isAdmin = userRole === "Administrador";
+
+        // Obtener los datos directamente del modelo
+        const tiposMembresia = await MembershipModel.getTiposMembresia();
+        const metodosPago = await MembershipModel.getMetodosPago();
+
         res.render("manageMembership", {
-            title: "Gestionar Membresía",
+            title: "Gestionar Configuración",
             isAdmin,
-            userRole
+            userRole,
+            tiposMembresia,
+            metodosPago
         });
     } catch (error) {
         console.error("Error al cargar la página de gestión de membresía:", error);
