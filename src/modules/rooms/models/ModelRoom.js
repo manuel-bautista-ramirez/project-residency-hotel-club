@@ -235,20 +235,23 @@ export const deletebyReservation = async (id) => {
   }
 };
 
-// get all rentas created
+// get all rentas created (solo activas)
 export const getAllRentas = async () => {
   const [rows] = await pool.query(`
     SELECT re.id AS id_renta,
           h.numero AS numero_habitacion,
+          h.id AS habitacion_id,
           h.estado,
           re.nombre_cliente,
           re.fecha_ingreso,
           re.fecha_salida,
           re.tipo_pago,
           re.monto,
-          re.monto_letras
+          re.monto_letras,
+          COALESCE(re.estado, 'activa') AS estado_renta
     FROM rentas re
     INNER JOIN habitaciones h ON re.habitacion_id = h.id
+    WHERE COALESCE(re.estado, 'activa') = 'activa'
     ORDER BY re.fecha_ingreso DESC
   `);
   return rows;
@@ -275,6 +278,50 @@ export const deleteByIdRenta = async (id) => {
   } catch (err) {
     console.error("Error deleting renta:", err);
     return false;
+  }
+};
+
+// Marcar renta como finalizada y liberar habitación
+export const finalizarRenta = async (id) => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    
+    // 1. Obtener información de la renta
+    const [renta] = await connection.query(
+      'SELECT habitacion_id FROM rentas WHERE id = ?',
+      [id]
+    );
+    
+    if (renta.length === 0) {
+      throw new Error('Renta no encontrada');
+    }
+    
+    const habitacionId = renta[0].habitacion_id;
+    
+    // 2. Actualizar la renta como finalizada
+    await connection.query(
+      `UPDATE rentas 
+       SET estado = 'finalizada', 
+           fecha_salida_real = NOW() 
+       WHERE id = ?`,
+      [id]
+    );
+    
+    // 3. Marcar la habitación como "limpieza" (no disponible directamente)
+    await connection.query(
+      'UPDATE habitaciones SET estado = "limpieza" WHERE id = ?',
+      [habitacionId]
+    );
+    
+    await connection.commit();
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error al finalizar renta:', error);
+    throw error;
+  } finally {
+    connection.release();
   }
 };
 

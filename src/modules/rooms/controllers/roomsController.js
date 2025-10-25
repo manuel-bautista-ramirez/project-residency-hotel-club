@@ -19,6 +19,7 @@ import {
   deleteByIdRenta,
   updateReservation,
   updateRent,
+  finalizarRenta,
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 // Para obtener __dirname en ES modules
@@ -355,7 +356,7 @@ export const deleteByIdResevation = async (req, res) => {
 
 export const renderAllRentas = async (req, res) => {
   try {
-    const user = req.session.user || { role: "Administrador" };
+    const user = req.session.user || { role: "Usuario" };
     const allRentas = await getAllRentas();
 
     // Formatear fechas sin ajuste de zona horaria
@@ -378,6 +379,8 @@ export const renderAllRentas = async (req, res) => {
       fecha_salida: formatDateForDisplay(renta.fecha_salida),
     }));
 
+    console.log('🔍 Usuario en renderAllRentas:', user);
+    console.log('🔍 Rol del usuario:', user.role);
     console.log(rentasFormateadas);
     res.render("showRent", {
       title: "Listado de habitaciones rentadas",
@@ -395,7 +398,7 @@ export const renderAllRentas = async (req, res) => {
   }
 };
 
-// delete by id renta
+// delete by id renta (eliminación permanente)
 export const deleteIdRenta = async (req, res) => {
   try {
     const rentaId = Number(req.params.id);
@@ -447,6 +450,32 @@ export const deleteIdRenta = async (req, res) => {
   } catch (err) {
     console.error("Error deleting renta:", err);
     res.status(500).send("Error al eliminar la renta");
+  }
+};
+
+// Marcar renta como desocupada (finalizada) y liberar habitación
+export const marcarComoDesocupada = async (req, res) => {
+  try {
+    const rentaId = Number(req.params.id);
+    if (Number.isNaN(rentaId)) {
+      return res.status(400).json({ error: "ID inválido" });
+    }
+
+    console.log(`Marcando renta ${rentaId} como desocupada...`);
+    
+    // Llamar a la función del modelo que finaliza la renta y libera la habitación
+    const success = await finalizarRenta(rentaId);
+    
+    if (success) {
+      console.log(`✅ Renta ${rentaId} marcada como finalizada y habitación liberada`);
+      res.redirect("/rooms/list/rentas");
+    } else {
+      console.error(`❌ No se pudo finalizar la renta ${rentaId}`);
+      res.status(500).json({ error: "No se pudo marcar como desocupada" });
+    }
+  } catch (err) {
+    console.error("Error al marcar renta como desocupada:", err);
+    res.status(500).json({ error: "Error al marcar como desocupada la habitación" });
   }
 };
 

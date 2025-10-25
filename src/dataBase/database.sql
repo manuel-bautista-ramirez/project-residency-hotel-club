@@ -131,10 +131,15 @@ CREATE TABLE IF NOT EXISTS rentas (
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   pdf_path VARCHAR(500) NULL COMMENT 'Ruta del archivo PDF generado',
   qr_path VARCHAR(500) NULL COMMENT 'Ruta del archivo QR generado',
+  estado ENUM('activa', 'finalizada', 'cancelada') DEFAULT 'activa' COMMENT 'Estado de la renta: activa (en curso), finalizada (desocupada), cancelada (eliminada)',
+  fecha_salida_real DATETIME NULL COMMENT 'Fecha y hora real en que se desocupó la habitación',
+  
   PRIMARY KEY (id),
   INDEX idx_habitacion (habitacion_id),
   INDEX idx_usuario (usuario_id),
   INDEX idx_medio_mensaje (id_medio_mensaje),
+  INDEX idx_rentas_estado (estado),
+  
   CONSTRAINT fk_rentas_habitacion
     FOREIGN KEY (habitacion_id)
     REFERENCES habitaciones (id)
@@ -150,7 +155,7 @@ CREATE TABLE IF NOT EXISTS rentas (
     REFERENCES medios_mensajes (id_medio_mensaje)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de rentas con rutas de archivos PDF y QR';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabla de rentas con sistema de desocupación y rutas de archivos PDF y QR';
 
 
 CREATE TABLE IF NOT EXISTS pdf_registry (

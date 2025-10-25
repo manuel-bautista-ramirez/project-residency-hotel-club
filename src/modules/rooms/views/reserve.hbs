@@ -235,505 +235,620 @@
 </div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const overlay = document.getElementById('loadingOverlay');
-    const skeleton = document.getElementById('reserveSkeleton');
-    const form = document.getElementById('formReserve');
-    const hideOverlay = () => overlay && overlay.classList.add('hidden');
-    // Dynamic center: set available height between navbar and footer on desktop
-    const centerRoot = document.getElementById('center-root');
-    function applyDesktopCenter() {
-      if (!centerRoot) return;
-      const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
-      if (!isDesktop) {
-        centerRoot.style.height = '';
-        centerRoot.style.minHeight = '';
-        return;
-      }
-      const nav = document.querySelector('nav');
-      const footer = document.querySelector('footer');
-      const navStyle = nav ? getComputedStyle(nav) : null;
-      const footStyle = footer ? getComputedStyle(footer) : null;
-      const navIsFixed = navStyle ? (navStyle.position === 'fixed' || (navStyle.position === 'sticky' && navStyle.top === '0px')) : false;
-      const footIsFixed = footStyle ? (footStyle.position === 'fixed' || (footStyle.position === 'sticky' && footStyle.bottom === '0px')) : false;
-      const navH = navIsFixed && nav ? nav.offsetHeight : 0;
-      const footH = footIsFixed && footer ? footer.offsetHeight : 0;
-      const available = Math.max(window.innerHeight - navH - footH, 360);
-      centerRoot.style.height = available + 'px';
-      centerRoot.style.minHeight = available + 'px';
+document.addEventListener("DOMContentLoaded", () => {
+  const overlay = document.getElementById('loadingOverlay');
+  const skeleton = document.getElementById('reserveSkeleton');
+  const form = document.getElementById('formReserve');
+  const hideOverlay = () => overlay && overlay.classList.add('hidden');
+  
+  // Dynamic center: set available height between navbar and footer on desktop
+  const centerRoot = document.getElementById('center-root');
+  function applyDesktopCenter() {
+    if (!centerRoot) return;
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+    if (!isDesktop) {
+      centerRoot.style.height = '';
+      centerRoot.style.minHeight = '';
+      return;
     }
-    applyDesktopCenter();
-    window.addEventListener('resize', applyDesktopCenter);
-    const roomId = Number(document.getElementById("room_id").value);
-    const checkInInput = document.getElementById("fecha_ingreso");
-    const checkOutInput = document.getElementById("fecha_salida");
-    const priceField = document.getElementById("price");
-    const priceTextField = document.getElementById("price_text");
-    const engancheField = document.getElementById("enganche");
-    const engancheTextField = document.getElementById("enganche_text");
-    const durationDisplay = document.getElementById("duration-display");
-    const nightsCount = document.getElementById("nights-count");
-    const submitButton = document.querySelector('button[type="submit"]');
+    const nav = document.querySelector('nav');
+    const footer = document.querySelector('footer');
+    const navStyle = nav ? getComputedStyle(nav) : null;
+    const footStyle = footer ? getComputedStyle(footer) : null;
+    const navIsFixed = navStyle ? (navStyle.position === 'fixed' || (navStyle.position === 'sticky' && navStyle.top === '0px')) : false;
+    const footIsFixed = footStyle ? (footStyle.position === 'fixed' || (footStyle.position === 'sticky' && footStyle.bottom === '0px')) : false;
+    const navH = navIsFixed && nav ? nav.offsetHeight : 0;
+    const footH = footIsFixed && footer ? footer.offsetHeight : 0;
+    const available = Math.max(window.innerHeight - navH - footH, 360);
+    centerRoot.style.height = available + 'px';
+    centerRoot.style.minHeight = available + 'px';
+  }
+  applyDesktopCenter();
+  window.addEventListener('resize', applyDesktopCenter);
+  
+  const roomId = Number(document.getElementById("room_id").value);
+  const checkInInput = document.getElementById("fecha_ingreso");
+  const checkOutInput = document.getElementById("fecha_salida");
+  const priceField = document.getElementById("price");
+  const priceTextField = document.getElementById("price_text");
+  const engancheField = document.getElementById("enganche");
+  const engancheTextField = document.getElementById("enganche_text");
+  const durationDisplay = document.getElementById("duration-display");
+  const nightsCount = document.getElementById("nights-count");
+  const submitButton = document.querySelector('button[type="submit"]');
+
+  // ============================================
+  // VALIDACIÓN: Solo reservaciones desde MAÑANA en adelante
+  // ============================================
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  
+  // Mañana (check-in mínimo)
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowYear = tomorrow.getFullYear();
+  const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+  const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0');
+  const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
+
+  // Pasado mañana (check-out mínimo)
+  const dayAfterTomorrow = new Date(today);
+  dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+  const dayAfterYear = dayAfterTomorrow.getFullYear();
+  const dayAfterMonth = String(dayAfterTomorrow.getMonth() + 1).padStart(2, '0');
+  const dayAfterDay = String(dayAfterTomorrow.getDate()).padStart(2, '0');
+  const dayAfterTomorrowStr = `${dayAfterYear}-${dayAfterMonth}-${dayAfterDay}`;
+
+  console.log('📅 Fechas iniciales:', {
+    hoy: `${year}-${month}-${day}`,
+    mañana: tomorrowStr,
+    pasadoMañana: dayAfterTomorrowStr
+  });
+
+  // Establecer fecha mínima de ingreso = MAÑANA
+  checkInInput.setAttribute('min', tomorrowStr);
+  checkInInput.value = tomorrowStr; // Establecer mañana por defecto
+
+  // Establecer fecha mínima de salida = PASADO MAÑANA
+  checkOutInput.setAttribute('min', dayAfterTomorrowStr);
+  checkOutInput.value = dayAfterTomorrowStr; // Establecer pasado mañana por defecto
+
+  // Validar si el usuario intenta seleccionar HOY
+  checkInInput.addEventListener('change', function() {
+    const selectedDate = new Date(this.value);
+    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (selectedDate <= todayMidnight) {
+      showNotification('Las reservaciones solo se pueden hacer desde mañana en adelante', 'warning');
+      this.value = tomorrowStr;
+    }
+  });
+
+  // Actualizar fecha mínima de salida cuando cambia entrada
+  checkInInput.addEventListener('input', function() {
+    const checkInDate = new Date(this.value);
+    const nextDay = new Date(checkInDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    checkOutInput.min = nextDay.toISOString().split('T')[0];
+
+    if (checkOutInput.value && checkOutInput.value <= this.value) {
+      checkOutInput.value = nextDay.toISOString().split('T')[0];
+    }
+  });
+
+  // Reveal flow: hide overlay and skeleton, show form
+  setTimeout(() => {
+    // El formulario ya está visible por defecto ahora
+    if (skeleton) skeleton.classList.add('hidden');
 
     // ============================================
-    // VALIDACIÓN: Solo reservaciones desde MAÑANA en adelante
+    // CALCULAR PRECIO AUTOMÁTICAMENTE al cargar
     // ============================================
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    
-    // Mañana (check-in mínimo)
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowYear = tomorrow.getFullYear();
-    const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
-    const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0');
-    const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
+    const initialCheckIn = checkInInput.value;
+    const initialCheckOut = checkOutInput.value;
 
-    // Pasado mañana (check-out mínimo)
-    const dayAfterTomorrow = new Date(today);
-    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-    const dayAfterYear = dayAfterTomorrow.getFullYear();
-    const dayAfterMonth = String(dayAfterTomorrow.getMonth() + 1).padStart(2, '0');
-    const dayAfterDay = String(dayAfterTomorrow.getDate()).padStart(2, '0');
-    const dayAfterTomorrowStr = `${dayAfterYear}-${dayAfterMonth}-${dayAfterDay}`;
-
-    console.log('📅 Fechas iniciales:', {
-      hoy: `${year}-${month}-${day}`,
-      mañana: tomorrowStr,
-      pasadoMañana: dayAfterTomorrowStr
-    });
-
-    // Establecer fecha mínima de ingreso = MAÑANA
-    checkInInput.setAttribute('min', tomorrowStr);
-    checkInInput.value = tomorrowStr; // Establecer mañana por defecto
-
-    // Establecer fecha mínima de salida = PASADO MAÑANA
-    checkOutInput.setAttribute('min', dayAfterTomorrowStr);
-    checkOutInput.value = dayAfterTomorrowStr; // Establecer pasado mañana por defecto
-
-    // Validar si el usuario intenta seleccionar HOY
-    checkInInput.addEventListener('change', function() {
-      const selectedDate = new Date(this.value);
-      const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-      if (selectedDate <= todayMidnight) {
-        showNotification('⚠️ Las reservaciones solo se pueden hacer desde mañana en adelante', 'error');
-        this.value = tomorrowStr;
-      }
-    });
-
-    // Actualizar fecha mínima de salida cuando cambia entrada
-    checkInInput.addEventListener('input', function() {
-      const checkInDate = new Date(this.value);
-      const nextDay = new Date(checkInDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      checkOutInput.min = nextDay.toISOString().split('T')[0];
-
-      if (checkOutInput.value && checkOutInput.value <= this.value) {
-        checkOutInput.value = nextDay.toISOString().split('T')[0];
-      }
-    });
-
-    // Reveal flow: hide overlay and skeleton, show form
-    setTimeout(() => {
-      // El formulario ya está visible por defecto ahora
-      if (skeleton) skeleton.classList.add('hidden');
-
-      // ============================================
-      // CALCULAR PRECIO AUTOMÁTICAMENTE al cargar
-      // ============================================
-      const initialCheckIn = checkInInput.value;
-      const initialCheckOut = checkOutInput.value;
-
-      if (initialCheckIn && initialCheckOut) {
-        const nights = updateDurationDisplay(initialCheckIn, initialCheckOut);
-        // Verificar disponibilidad y ajustar fechas si es necesario
-        checkAvailability(initialCheckIn, initialCheckOut).then(async isAvailable => {
-          if (isAvailable) {
-            fetchPrice(initialCheckIn, nights);
-          } else {
-            // Habitación no disponible, buscar primera fecha disponible
-            showNotification('⚠️ La habitación no está disponible para las fechas por defecto. Buscando fechas disponibles...', 'warning');
-            await findNextAvailableDate();
-          }
-        });
-      }
-    }, 350);
-
-    // Show notification function
-    function showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
-      notification.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-white font-medium transition-all duration-300 ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error' ? 'bg-red-500' :
-        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
-      }`;
-      notification.textContent = message;
-      notification.setAttribute('role', 'status');
-      document.body.appendChild(notification);
-
-      setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 300);
-      }, 4000);
-    }
-
-    // Calculate nights between dates
-    function calculateNights(checkIn, checkOut) {
-      if (!checkIn || !checkOut) return 0;
-      const start = new Date(checkIn);
-      const end = new Date(checkOut);
-      const diffTime = Math.abs(end - start);
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    }
-
-    // Update duration display
-    function updateDurationDisplay(checkIn, checkOut) {
-      const nights = calculateNights(checkIn, checkOut);
-      if (nights > 0) {
-        nightsCount.textContent = nights;
-        durationDisplay.classList.remove('hidden');
-        durationDisplay.classList.add('flex');
-      } else {
-        durationDisplay.classList.add('hidden');
-        durationDisplay.classList.remove('flex');
-      }
-      return nights;
-    }
-
-    // Fetch price from API
-    async function fetchPrice(checkIn, nights = 1) {
-      if (!checkIn) {
-        console.log('⚠️ fetchPrice: checkIn está vacío');
-        return;
-      }
-
-      const month = new Date(checkIn).getMonth() + 1;
-      console.log('💰 Calculando precio para:', { checkIn, nights, month, roomId });
-      
-      submitButton.disabled = true;
-      submitButton.textContent = 'Calculando precio...';
-
-      try {
-        const url = `/api/rooms/${roomId}/price?month=${month}`;
-        console.log('📡 Llamando a:', url);
-        
-        const res = await fetch(url);
-        const json = await res.json();
-        
-        console.log('📥 Respuesta del servidor:', json);
-        
-        const pricePerNight = json.price ?? 0;
-        const totalPrice = pricePerNight * nights;
-
-        console.log('💵 Precio calculado:', { pricePerNight, totalPrice });
-
-        priceField.value = totalPrice.toFixed(2);
-        priceTextField.value = numberToWords(totalPrice);
-
-        console.log('✅ Campos actualizados:', {
-          priceField: priceField.value,
-          priceTextField: priceTextField.value
-        });
-
-        showNotification(`Precio calculado: $${totalPrice.toFixed(2)} por ${nights} noche(s)`, 'success');
-      } catch (err) {
-        showNotification('Error al obtener el precio', 'error');
-        console.error("❌ Error obteniendo precio:", err);
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Crear reservación';
-      }
-    }
-
-    // Add time to date
-    // Check-in: 12:00 PM (mediodía)
-    // Check-out: 11:59 AM (para permitir nuevas reservaciones/rentas el mismo día a las 12:00 PM)
-    function addTimeToDate(dateStr, isCheckout = false) {
-      if (!dateStr) return '';
-      
-      // Extraer año, mes y día directamente del string YYYY-MM-DD
-      // Sin usar new Date() para evitar problemas de zona horaria
-      const [year, month, day] = dateStr.split('-');
-      
-      // Check-out a las 11:59 AM, Check-in a las 12:00 PM
-      const time = isCheckout ? '11:59:00' : '12:00:00';
-      return `${year}-${month}-${day} ${time}`;
-    }
-
-    // Find next available date
-    async function findNextAvailableDate() {
-      console.log('🔍 Buscando primera fecha disponible...');
-      const maxDaysToCheck = 30; // Buscar hasta 30 días en el futuro
-      
-      // Empezar desde mañana
-      let checkDate = new Date(today);
-      checkDate.setDate(checkDate.getDate() + 1);
-      
-      for (let i = 0; i < maxDaysToCheck; i++) {
-        // Formatear fecha sin usar toISOString() para evitar problemas de zona horaria
-        const year = checkDate.getFullYear();
-        const month = String(checkDate.getMonth() + 1).padStart(2, '0');
-        const day = String(checkDate.getDate()).padStart(2, '0');
-        const checkInStr = `${year}-${month}-${day}`;
-        
-        // Calcular fecha de salida (día siguiente)
-        const checkOutDate = new Date(checkDate);
-        checkOutDate.setDate(checkOutDate.getDate() + 1);
-        const outYear = checkOutDate.getFullYear();
-        const outMonth = String(checkOutDate.getMonth() + 1).padStart(2, '0');
-        const outDay = String(checkOutDate.getDate()).padStart(2, '0');
-        const checkOutStr = `${outYear}-${outMonth}-${outDay}`;
-        
-        const checkInWithTime = addTimeToDate(checkInStr);
-        const checkOutWithTime = addTimeToDate(checkOutStr, true);
-        
-        console.log(`📅 Verificando fecha ${i + 1}:`, {
-          checkIn: checkInWithTime,
-          checkOut: checkOutWithTime
-        });
-        
-        try {
-          const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
-          const res = await fetch(url);
-          const json = await res.json();
-          
-          console.log(`  → Disponible: ${json.available}`);
-          
-          if (json.available) {
-            // Encontramos una fecha disponible
-            console.log(`✅ Fecha disponible encontrada: ${checkInStr}`);
-            checkInInput.value = checkInStr;
-            checkOutInput.value = checkOutStr;
-            checkOutInput.setAttribute('min', checkOutStr);
-            
-            const nights = updateDurationDisplay(checkInStr, checkOutStr);
-            await fetchPrice(checkInStr, nights);
-            showNotification(`✅ Primera fecha disponible: ${checkInStr}`, 'success');
-            return;
-          }
-        } catch (err) {
-          console.error("❌ Error verificando fecha:", checkInStr, err);
+    if (initialCheckIn && initialCheckOut) {
+      const nights = updateDurationDisplay(initialCheckIn, initialCheckOut);
+      // Verificar disponibilidad y ajustar fechas si es necesario
+      checkAvailability(initialCheckIn, initialCheckOut).then(async isAvailable => {
+        if (isAvailable) {
+          fetchPrice(initialCheckIn, nights);
+        } else {
+          // Habitación no disponible, buscar primera fecha disponible
+          showNotification('La habitación no está disponible para las fechas por defecto. Buscando fechas disponibles...', 'warning');
+          await findNextAvailableDate();
         }
-        
-        // Avanzar al siguiente día
-        currentDate.setDate(currentDate.getDate() + 1);
+      });
+    }
+  }, 350);
+
+  // Show notification function - VERSIÓN RESPONSIVE PROFESIONAL
+  function showNotification(message, type = 'info') {
+    // Remover notificaciones anteriores
+    const existingNotifications = document.querySelectorAll('.professional-notification');
+    existingNotifications.forEach(notification => {
+      notification.classList.add('opacity-0', 'translate-y-[-100%]', 'sm:translate-x-full');
+      setTimeout(() => notification.remove(), 300);
+    });
+
+    const notification = document.createElement('div');
+    
+    // Configuración Tailwind responsive por tipo
+    const config = {
+      success: {
+        bgColor: 'bg-white',
+        borderColor: 'border-l-4 border-l-green-500',
+        iconColor: 'text-green-500',
+        icon: `
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        `
+      },
+      error: {
+        bgColor: 'bg-white',
+        borderColor: 'border-l-4 border-l-red-500',
+        iconColor: 'text-red-500',
+        icon: `
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        `
+      },
+      warning: {
+        bgColor: 'bg-white',
+        borderColor: 'border-l-4 border-l-amber-500',
+        iconColor: 'text-amber-500',
+        icon: `
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+        `
+      },
+      info: {
+        bgColor: 'bg-white',
+        borderColor: 'border-l-4 border-l-blue-500',
+        iconColor: 'text-blue-500',
+        icon: `
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        `
       }
+    };
+
+    const { bgColor, borderColor, iconColor, icon } = config[type];
+
+    // Clases responsive para diferentes dispositivos
+    notification.className = `
+      professional-notification 
+      fixed z-50 
+      ${bgColor} ${borderColor} 
+      shadow-lg 
+      w-[95vw] max-w-sm
+      mx-auto
+      left-1/2 transform -translate-x-1/2
+      sm:left-auto sm:right-4 sm:translate-x-0
+      top-4
+      sm:top-4
+      rounded-lg
+      sm:rounded-r-lg
+      px-3 py-3
+      sm:px-4 sm:py-3
+      transition-all duration-300 ease-in-out
+      border border-gray-200
+      translate-y-[-100%] opacity-0
+      sm:translate-x-full sm:opacity-0
+    `.replace(/\s+/g, ' ').trim();
+    
+    notification.innerHTML = `
+      <div class="flex items-start gap-2 sm:gap-3">
+        <div class="flex-shrink-0 ${iconColor} mt-0.5">
+          ${icon}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs sm:text-sm font-medium text-gray-900 leading-tight sm:leading-normal">${message}</p>
+          <p class="text-[10px] sm:text-xs text-gray-500 mt-1">${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        <button class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors duration-200 ml-1">
+          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Animación de entrada responsive
+    setTimeout(() => {
+      notification.classList.remove('translate-y-[-100%]', 'opacity-0', 'sm:translate-x-full', 'sm:opacity-0');
+      notification.classList.add('translate-y-0', 'opacity-100', 'sm:translate-x-0', 'sm:opacity-100');
+    }, 10);
+
+    // Auto-remove después de 4 segundos
+    const autoRemove = setTimeout(() => {
+      notification.classList.remove('translate-y-0', 'opacity-100', 'sm:translate-x-0', 'sm:opacity-100');
+      notification.classList.add('translate-y-[-100%]', 'opacity-0', 'sm:translate-x-full', 'sm:opacity-0');
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 300);
+    }, 4000);
+
+    // Permitir cerrar manualmente
+    const closeBtn = notification.querySelector('button');
+    closeBtn.addEventListener('click', () => {
+      clearTimeout(autoRemove);
+      notification.classList.remove('translate-y-0', 'opacity-100', 'sm:translate-x-0', 'sm:opacity-100');
+      notification.classList.add('translate-y-[-100%]', 'opacity-0', 'sm:translate-x-full', 'sm:opacity-0');
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 300);
+    });
+
+    // Pausar auto-remove al hacer hover
+    notification.addEventListener('mouseenter', () => {
+      clearTimeout(autoRemove);
+    });
+
+    notification.addEventListener('mouseleave', () => {
+      const newAutoRemove = setTimeout(() => {
+        notification.classList.remove('translate-y-0', 'opacity-100', 'sm:translate-x-0', 'sm:opacity-100');
+        notification.classList.add('translate-y-[-100%]', 'opacity-0', 'sm:translate-x-full', 'sm:opacity-0');
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 300);
+      }, 3000);
       
-      // No se encontró fecha disponible en los próximos 30 días
-      console.log('❌ No se encontró fecha disponible en 30 días');
-      showNotification('⚠️ No hay fechas disponibles en los próximos 30 días', 'error');
+      notification.dataset.autoRemove = newAutoRemove;
+    });
+  }
+
+  // Calculate nights between dates
+  function calculateNights(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return 0;
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const diffTime = Math.abs(end - start);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  // Update duration display
+  function updateDurationDisplay(checkIn, checkOut) {
+    const nights = calculateNights(checkIn, checkOut);
+    if (nights > 0) {
+      nightsCount.textContent = nights;
+      durationDisplay.classList.remove('hidden');
+      durationDisplay.classList.add('flex');
+    } else {
+      durationDisplay.classList.add('hidden');
+      durationDisplay.classList.remove('flex');
+    }
+    return nights;
+  }
+
+  // Fetch price from API
+  async function fetchPrice(checkIn, nights = 1) {
+    if (!checkIn) {
+      console.log('⚠️ fetchPrice: checkIn está vacío');
+      return;
     }
 
-    // Check room availability
-    async function checkAvailability(checkIn, checkOut) {
-      if (!checkIn || !checkOut) return false;
+    const month = new Date(checkIn).getMonth() + 1;
+    console.log('💰 Calculando precio para:', { checkIn, nights, month, roomId });
+    
+    submitButton.disabled = true;
+    submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+    submitButton.textContent = 'Calculando precio...';
 
+    try {
+      const url = `/api/rooms/${roomId}/price?month=${month}`;
+      console.log('📡 Llamando a:', url);
+      
+      const res = await fetch(url);
+      const json = await res.json();
+      
+      console.log('📥 Respuesta del servidor:', json);
+      
+      const pricePerNight = json.price ?? 0;
+      const totalPrice = pricePerNight * nights;
+
+      console.log('💵 Precio calculado:', { pricePerNight, totalPrice });
+
+      priceField.value = totalPrice.toFixed(2);
+      priceTextField.value = numberToWords(totalPrice);
+
+      console.log('✅ Campos actualizados:', {
+        priceField: priceField.value,
+        priceTextField: priceTextField.value
+      });
+
+      showNotification(`Precio calculado: $${totalPrice.toFixed(2)} por ${nights} noche(s)`, 'success');
+    } catch (err) {
+      showNotification('Error al obtener el precio', 'error');
+      console.error("❌ Error obteniendo precio:", err);
+    } finally {
+      submitButton.disabled = false;
+      submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      submitButton.textContent = 'Crear reservación';
+    }
+  }
+
+  // Add time to date
+  function addTimeToDate(dateStr, isCheckout = false) {
+    if (!dateStr) return '';
+    
+    const [year, month, day] = dateStr.split('-');
+    const time = isCheckout ? '11:59:00' : '12:00:00';
+    return `${year}-${month}-${day} ${time}`;
+  }
+
+  // Find next available date
+  async function findNextAvailableDate() {
+    console.log('🔍 Buscando primera fecha disponible...');
+    const maxDaysToCheck = 30;
+    
+    let currentDate = new Date(today);
+    currentDate.setDate(currentDate.getDate() + 1);
+    
+    for (let i = 0; i < maxDaysToCheck; i++) {
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const checkInStr = `${year}-${month}-${day}`;
+      
+      const checkOutDate = new Date(currentDate);
+      checkOutDate.setDate(checkOutDate.getDate() + 1);
+      const outYear = checkOutDate.getFullYear();
+      const outMonth = String(checkOutDate.getMonth() + 1).padStart(2, '0');
+      const outDay = String(checkOutDate.getDate()).padStart(2, '0');
+      const checkOutStr = `${outYear}-${outMonth}-${outDay}`;
+      
+      const checkInWithTime = addTimeToDate(checkInStr);
+      const checkOutWithTime = addTimeToDate(checkOutStr, true);
+      
+      console.log(`📅 Verificando fecha ${i + 1}:`, {
+        checkIn: checkInWithTime,
+        checkOut: checkOutWithTime
+      });
+      
       try {
-        // Add time to dates (12:00 PM for both check-in and check-out)
-        const checkInWithTime = addTimeToDate(checkIn);
-        const checkOutWithTime = addTimeToDate(checkOut, true);
-
         const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
         const res = await fetch(url);
         const json = await res.json();
-
-        if (!json.available) {
-          showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta.", 'error');
-          checkInInput.value = "";
-          checkOutInput.value = "";
-          priceField.value = "";
-          priceTextField.value = "";
-          durationDisplay.classList.add('hidden');
-          durationDisplay.classList.remove('flex');
-          return false;
+        
+        console.log(`  → Disponible: ${json.available}`);
+        
+        if (json.available) {
+          console.log(`✅ Fecha disponible encontrada: ${checkInStr}`);
+          checkInInput.value = checkInStr;
+          checkOutInput.value = checkOutStr;
+          checkOutInput.setAttribute('min', checkOutStr);
+          
+          const nights = updateDurationDisplay(checkInStr, checkOutStr);
+          await fetchPrice(checkInStr, nights);
+          showNotification(`Primera fecha disponible: ${checkInStr}`, 'success');
+          return;
         }
-
-        showNotification("Habitación disponible para las fechas seleccionadas", 'success');
-        return true;
       } catch (err) {
-        showNotification('Error al verificar disponibilidad', 'error');
-        console.error("Error verificando disponibilidad:", err);
-        return false;
+        console.error("❌ Error verificando fecha:", checkInStr, err);
       }
+      
+      currentDate.setDate(currentDate.getDate() + 1);
     }
+    
+    console.log('❌ No se encontró fecha disponible en 30 días');
+    showNotification('No hay fechas disponibles en los próximos 30 días', 'error');
+  }
 
-    // Convert number to words in Spanish
-    function numberToWords(num) {
-      const unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
-      const especiales = ["diez", "once", "doce", "trece", "catorce", "quince",
-                          "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
-      const decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta",
-                       "sesenta", "setenta", "ochenta", "noventa"];
-      const centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos",
-                        "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
+  // Check room availability
+  async function checkAvailability(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return false;
 
-      if (num === 0) return "cero pesos";
-      if (num === 100) return "cien pesos";
+    try {
+      const checkInWithTime = addTimeToDate(checkIn);
+      const checkOutWithTime = addTimeToDate(checkOut, true);
 
-      let words = "";
-      let originalNum = Math.floor(num);
+      const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
+      const res = await fetch(url);
+      const json = await res.json();
 
-      if (originalNum >= 1000000) {
-        return originalNum + " pesos";
-      }
-
-      if (originalNum >= 1000) {
-        const miles = Math.floor(originalNum / 1000);
-        if (miles === 1) {
-          words += "mil";
-        } else {
-          words += numberToWords(miles).replace(" pesos", "") + " mil";
-        }
-        originalNum = originalNum % 1000;
-        if (originalNum > 0) words += " ";
-      }
-
-      if (originalNum >= 100) {
-        words += centenas[Math.floor(originalNum / 100)];
-        originalNum = originalNum % 100;
-        if (originalNum > 0) words += " ";
-      }
-
-      if (originalNum >= 20) {
-        words += decenas[Math.floor(originalNum / 10)];
-        if (originalNum % 10 > 0) words += " y " + unidades[originalNum % 10];
-      } else if (originalNum >= 10) {
-        words += especiales[originalNum - 10];
-      } else if (originalNum > 0) {
-        words += unidades[originalNum];
-      }
-
-      return words + " pesos";
-    }
-
-    // Validate form before submission
-    async function validateForm() {
-      const checkIn = checkInInput.value;
-      const checkOut = checkOutInput.value;
-
-      if (!checkIn || !checkOut) {
-        showNotification('Por favor seleccione las fechas de entrada y salida', 'warning');
-        return false;
-      }
-
-      if (new Date(checkOut) <= new Date(checkIn)) {
-        showNotification('La fecha de salida debe ser posterior a la fecha de entrada', 'error');
-        return false;
-      }
-
-      if (!priceField.value || priceField.value === '0.00') {
-        showNotification('El precio no ha sido calculado correctamente', 'error');
-        return false;
-      }
-
-      // Verificar disponibilidad una última vez antes de enviar
-      const isAvailable = await checkAvailability(checkIn, checkOut);
-      if (!isAvailable) {
-        return false;
-      }
-
-      return true;
-    }
-
-    // Event listeners
-    checkInInput.addEventListener("change", async (e) => {
-      const checkIn = e.target.value;
-      const checkOut = checkOutInput.value;
-
-      // Update checkout minimum date
-      checkOutInput.min = checkIn;
-
-      if (checkOut && new Date(checkOut) <= new Date(checkIn)) {
+      if (!json.available) {
+        showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta.", 'error');
+        checkInInput.value = "";
         checkOutInput.value = "";
         priceField.value = "";
         priceTextField.value = "";
         durationDisplay.classList.add('hidden');
-        showNotification('Por favor seleccione una nueva fecha de salida', 'info');
-      } else if (checkIn && checkOut) {
-        const nights = updateDurationDisplay(checkIn, checkOut);
-        const isAvailable = await checkAvailability(checkIn, checkOut);
-        if (isAvailable) {
-          await fetchPrice(checkIn, nights);
-        }
-      } else if (checkIn) {
-        // Solo mostrar mensaje, NO calcular precio
-        showNotification('Por favor seleccione una fecha de salida', 'info');
+        durationDisplay.classList.remove('flex');
+        return false;
       }
-    });
 
-    checkOutInput.addEventListener("change", async (e) => {
-      const checkIn = checkInInput.value;
-      const checkOut = e.target.value;
+      showNotification("Habitación disponible para las fechas seleccionadas", 'success');
+      return true;
+    } catch (err) {
+      showNotification('Error al verificar disponibilidad', 'error');
+      console.error("Error verificando disponibilidad:", err);
+      return false;
+    }
+  }
 
-      if (checkIn && checkOut) {
-        if (new Date(checkOut) <= new Date(checkIn)) {
-          showNotification('La fecha de salida debe ser posterior a la fecha de entrada', 'error');
-          e.target.value = "";
-          return;
-        }
+  // Convert number to words in Spanish
+  function numberToWords(num) {
+    const unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
+    const especiales = ["diez", "once", "doce", "trece", "catorce", "quince",
+                        "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
+    const decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta",
+                     "sesenta", "setenta", "ochenta", "noventa"];
+    const centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos",
+                      "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
 
-        const nights = updateDurationDisplay(checkIn, checkOut);
-        const isAvailable = await checkAvailability(checkIn, checkOut);
-        if (isAvailable) {
-          await fetchPrice(checkIn, nights);
-        }
+    if (num === 0) return "cero pesos";
+    if (num === 100) return "cien pesos";
+
+    let words = "";
+    let originalNum = Math.floor(num);
+
+    if (originalNum >= 1000000) {
+      return originalNum + " pesos";
+    }
+
+    if (originalNum >= 1000) {
+      const miles = Math.floor(originalNum / 1000);
+      if (miles === 1) {
+        words += "mil";
+      } else {
+        words += numberToWords(miles).replace(" pesos", "") + " mil";
       }
-    });
+      originalNum = originalNum % 1000;
+      if (originalNum > 0) words += " ";
+    }
 
-    // Convertir enganche a letras automáticamente
-    engancheField.addEventListener("input", (e) => {
-      const amount = parseFloat(e.target.value) || 0;
-      engancheTextField.value = amount > 0 ? numberToWords(amount) : '';
-    });
+    if (originalNum >= 100) {
+      words += centenas[Math.floor(originalNum / 100)];
+      originalNum = originalNum % 100;
+      if (originalNum > 0) words += " ";
+    }
 
-    // Form submission validation
-    document.getElementById('formReserve').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    if (originalNum >= 20) {
+      words += decenas[Math.floor(originalNum / 10)];
+      if (originalNum % 10 > 0) words += " y " + unidades[originalNum % 10];
+    } else if (originalNum >= 10) {
+      words += especiales[originalNum - 10];
+    } else if (originalNum > 0) {
+      words += unidades[originalNum];
+    }
 
-      const isValid = await validateForm();
-      if (!isValid) {
+    return words + " pesos";
+  }
+
+  // Validate form before submission
+  async function validateForm() {
+    const checkIn = checkInInput.value;
+    const checkOut = checkOutInput.value;
+
+    if (!checkIn || !checkOut) {
+      showNotification('Por favor seleccione las fechas de entrada y salida', 'warning');
+      return false;
+    }
+
+    if (new Date(checkOut) <= new Date(checkIn)) {
+      showNotification('La fecha de salida debe ser posterior a la fecha de entrada', 'error');
+      return false;
+    }
+
+    if (!priceField.value || priceField.value === '0.00') {
+      showNotification('El precio no ha sido calculado correctamente', 'error');
+      return false;
+    }
+
+    const isAvailable = await checkAvailability(checkIn, checkOut);
+    if (!isAvailable) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // Event listeners
+  checkInInput.addEventListener("change", async (e) => {
+    const checkIn = e.target.value;
+    const checkOut = checkOutInput.value;
+
+    checkOutInput.min = checkIn;
+
+    if (checkOut && new Date(checkOut) <= new Date(checkIn)) {
+      checkOutInput.value = "";
+      priceField.value = "";
+      priceTextField.value = "";
+      durationDisplay.classList.add('hidden');
+      showNotification('Por favor seleccione una nueva fecha de salida', 'info');
+    } else if (checkIn && checkOut) {
+      const nights = updateDurationDisplay(checkIn, checkOut);
+      const isAvailable = await checkAvailability(checkIn, checkOut);
+      if (isAvailable) {
+        await fetchPrice(checkIn, nights);
+      }
+    } else if (checkIn) {
+      showNotification('Por favor seleccione una fecha de salida', 'info');
+    }
+  });
+
+  checkOutInput.addEventListener("change", async (e) => {
+    const checkIn = checkInInput.value;
+    const checkOut = e.target.value;
+
+    if (checkIn && checkOut) {
+      if (new Date(checkOut) <= new Date(checkIn)) {
+        showNotification('La fecha de salida debe ser posterior a la fecha de entrada', 'error');
+        e.target.value = "";
         return;
       }
 
-      // Add time to hidden inputs
-      const checkInWithTime = addTimeToDate(checkInInput.value);
-      const checkOutWithTime = addTimeToDate(checkOutInput.value, true);
-
-      console.log('Enviando fechas con hora:');
-      console.log('fecha_ingreso:', checkInWithTime);
-      console.log('fecha_salida:', checkOutWithTime);
-
-      // Update the HIDDEN input values with time before submitting
-      const hiddenCheckIn = document.getElementById('fecha_ingreso_with_time');
-      const hiddenCheckOut = document.getElementById('fecha_salida_with_time');
-
-      if (hiddenCheckIn) hiddenCheckIn.value = checkInWithTime;
-      if (hiddenCheckOut) hiddenCheckOut.value = checkOutWithTime;
-
-      // Mostrar overlay con mensaje de creación
-      submitButton.disabled = true;
-      submitButton.textContent = 'Creando reservación...';
-      
-      if (overlay) {
-        overlay.classList.remove('hidden');
-        const loadingMsg = document.getElementById('loadingMessage');
-        if (loadingMsg) loadingMsg.textContent = '✨ Creando reservación...';
+      const nights = updateDurationDisplay(checkIn, checkOut);
+      const isAvailable = await checkAvailability(checkIn, checkOut);
+      if (isAvailable) {
+        await fetchPrice(checkIn, nights);
       }
-      
-      // Submit the form
-      e.target.submit();
-    });
-
-    // Phone number formatting
-    document.getElementById('telefono').addEventListener('input', (e) => {
-      let value = e.target.value.replace(/\D/g, '');
-      if (value.length > 10) value = value.slice(0, 10);
-      e.target.value = value;
-    });
-
-    console.log('Sistema de renta inicializado correctamente');
+    }
   });
+
+  // Convertir enganche a letras automáticamente
+  engancheField.addEventListener("input", (e) => {
+    const amount = parseFloat(e.target.value) || 0;
+    engancheTextField.value = amount > 0 ? numberToWords(amount) : '';
+  });
+
+  // Form submission validation
+  document.getElementById('formReserve').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const isValid = await validateForm();
+    if (!isValid) {
+      return;
+    }
+
+    const checkInWithTime = addTimeToDate(checkInInput.value);
+    const checkOutWithTime = addTimeToDate(checkOutInput.value, true);
+
+    console.log('Enviando fechas con hora:');
+    console.log('fecha_ingreso:', checkInWithTime);
+    console.log('fecha_salida:', checkOutWithTime);
+
+    const hiddenCheckIn = document.getElementById('fecha_ingreso_with_time');
+    const hiddenCheckOut = document.getElementById('fecha_salida_with_time');
+
+    if (hiddenCheckIn) hiddenCheckIn.value = checkInWithTime;
+    if (hiddenCheckOut) hiddenCheckOut.value = checkOutWithTime;
+
+    submitButton.disabled = true;
+    submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+    submitButton.textContent = 'Creando reservación...';
+    
+    if (overlay) {
+      overlay.classList.remove('hidden');
+      const loadingMsg = document.getElementById('loadingMessage');
+      if (loadingMsg) loadingMsg.textContent = 'Creando reservación...';
+    }
+    
+    e.target.submit();
+  });
+
+  // Phone number formatting
+  document.getElementById('telefono').addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 10) value = value.slice(0, 10);
+    e.target.value = value;
+  });
+
+  console.log('Sistema de reservación inicializado correctamente');
+});
 </script>

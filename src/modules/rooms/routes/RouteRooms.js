@@ -19,6 +19,7 @@ import {
   deleteByIdResevation,
   changesStatus,
   deleteIdRenta,
+  marcarComoDesocupada,
   handleCreateReservation,
   apiCheckAvailability,
   apiGetPriceByMonth,
@@ -73,6 +74,7 @@ routerRoom.post("/api/rooms/convertReservationToRent/:id", handleConvertReservat
 
 routerRoom.post("/rooms/delete/:id", deleteByIdResevation);
 routerRoom.post("/rentas/eliminar/:id", deleteIdRenta);
+routerRoom.post("/rooms/desocupar/:id", marcarComoDesocupada);
 
 // ----- CALENDARIO -----
 routerRoom.get("/rooms/calendario", renderCalendarioRooms);

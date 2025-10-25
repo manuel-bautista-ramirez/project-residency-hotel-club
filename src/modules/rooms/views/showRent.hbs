@@ -94,10 +94,16 @@
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.monto_letras}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">
             <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
+              <button type="button" onclick="confirmarDesocupar({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
+                <i class="fa-solid fa-door-open"></i>
+                <span>Desocupar</span>
+              </button>
+              {{#if (eq @root.user.role 'Administrador')}}
               <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
                 <i class="fa-solid fa-trash-can"></i>
                 <span>Eliminar</span>
               </button>
+              {{/if}}
             </div>
           </td>
         </tr>
@@ -150,11 +156,17 @@
             <div class="capitalize">{{this.monto_letras}}</div>
           </div>
         </div>
-        <div class="pt-2">
-          <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="confirmarDesocupar({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+            <i class="fa-solid fa-door-open"></i>
+            <span>Desocupar</span>
+          </button>
+          {{#if (eq @root.user.role 'Administrador')}}
+          <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
             <i class="fa-solid fa-trash-can"></i>
             <span>Eliminar</span>
           </button>
+          {{/if}}
         </div>
       </div>
     </article>
@@ -558,4 +570,16 @@
     const prefersTable = window.matchMedia('(min-width: 1024px)').matches; // lg
     setView(prefersTable ? 'table' : 'cards');
   });
+
+  // Función para confirmar y marcar renta como desocupada
+  function confirmarDesocupar(idRenta, habitacion, cliente) {
+    if (confirm(`¿Estás seguro de marcar como DESOCUPADA la habitación ${habitacion}?\n\nCliente: ${cliente}\n\nLa renta se marcará como finalizada y la habitación pasará a estado "LIMPIEZA". El registro se mantendrá para reportes.`)) {
+      // Crear formulario para enviar POST
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/rooms/desocupar/${idRenta}`;
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
 </script>
