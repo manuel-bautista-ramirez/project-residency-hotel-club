@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Lógica para Tipos de Membresía
+  // --- LÓGICA PARA TIPOS DE MEMBRESÍA ---
   const tipoMembresiaModal = document.getElementById('tipoMembresiaModal');
   const addTipoMembresiaBtn = document.getElementById('addTipoMembresiaBtn');
   const cancelTipoBtn = document.getElementById('cancelTipoBtn');
@@ -10,10 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     tipoMembresiaForm.reset();
     document.getElementById('tipoId').value = data.id_tipo_membresia || '';
     document.getElementById('tipoNombre').value = data.nombre || '';
-    document.getElementById('tipoDuracion').value = data.duracion_dias || '';
+    document.getElementById('tipoDescripcion').value = data.descripcion || '';
     document.getElementById('tipoMaxIntegrantes').value = data.max_integrantes || '';
     document.getElementById('tipoPrecio').value = data.precio || '';
-    document.getElementById('tipoActivo').value = data.activo ? 'true' : 'false';
     document.getElementById('tipoModalTitleText').textContent = data.id_tipo_membresia ? 'Editar Tipo de Membresía' : 'Nuevo Tipo de Membresía';
     tipoMembresiaModal.classList.remove('hidden');
   };
@@ -23,20 +22,16 @@ document.addEventListener('DOMContentLoaded', () => {
   addTipoMembresiaBtn.addEventListener('click', () => openTipoModal());
   cancelTipoBtn.addEventListener('click', closeTipoModal);
 
-  tiposMembresiaTableBody.addEventListener('click', async (event) => {
+  tiposMembresiaTableBody.addEventListener('click', (event) => {
     const editBtn = event.target.closest('.edit-tipo-btn');
     if (editBtn) {
-      const id = editBtn.dataset.id;
-      // Aquí deberíamos obtener los datos del tipo por ID desde la API,
-      // pero por simplicidad, los tomamos de la tabla (requiere que todos los datos estén ahí)
       const row = editBtn.closest('tr');
       const data = {
-        id_tipo_membresia: id,
+        id_tipo_membresia: row.dataset.id,
         nombre: row.cells[0].textContent,
-        duracion_dias: row.cells[1].textContent,
+        descripcion: row.cells[1].textContent,
         max_integrantes: row.cells[2].textContent,
         precio: parseFloat(row.cells[3].textContent.replace('$', '')),
-        activo: row.cells[4].textContent.trim() === 'Activo'
       };
       openTipoModal(data);
     }
@@ -47,9 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const id = document.getElementById('tipoId').value;
     const formData = new FormData(tipoMembresiaForm);
     const data = Object.fromEntries(formData.entries());
-
-    // Convertir 'activo' a booleano
-    data.activo = data.activo === 'true';
 
     const url = id ? `/memberships/api/types/${id}` : '/memberships/api/types';
     const method = id ? 'PUT' : 'POST';
@@ -62,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (response.ok) {
-        window.location.reload(); // Recargar para ver los cambios
+        window.location.reload();
       } else {
         const error = await response.json();
         alert(`Error: ${error.message}`);
@@ -72,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Lógica para Métodos de Pago (similar a la de tipos de membresía)
+  // --- LÓGICA PARA MÉTODOS DE PAGO ---
   const metodoPagoModal = document.getElementById('metodoPagoModal');
   const addMetodoPagoBtn = document.getElementById('addMetodoPagoBtn');
   const cancelMetodoBtn = document.getElementById('cancelMetodoBtn');
@@ -83,8 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
     metodoPagoForm.reset();
     document.getElementById('metodoId').value = data.id_metodo_pago || '';
     document.getElementById('metodoNombre').value = data.nombre || '';
-    document.getElementById('metodoDescripcion').value = data.descripcion || '';
-    document.getElementById('metodoActivo').value = data.activo ? 'true' : 'false';
     document.getElementById('metodoModalTitleText').textContent = data.id_metodo_pago ? 'Editar Método de Pago' : 'Nuevo Método de Pago';
     metodoPagoModal.classList.remove('hidden');
   };
@@ -97,13 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
   metodosPagoTableBody.addEventListener('click', (event) => {
     const editBtn = event.target.closest('.edit-metodo-btn');
     if (editBtn) {
-      const id = editBtn.dataset.id;
       const row = editBtn.closest('tr');
       const data = {
-        id_metodo_pago: id,
+        id_metodo_pago: row.dataset.id,
         nombre: row.cells[0].textContent,
-        descripcion: row.cells[1].textContent,
-        activo: row.cells[2].textContent.trim() === 'Activo'
       };
       openMetodoModal(data);
     }
@@ -114,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const id = document.getElementById('metodoId').value;
     const formData = new FormData(metodoPagoForm);
     const data = Object.fromEntries(formData.entries());
-    data.activo = data.activo === 'true';
 
     const url = id ? `/memberships/api/payment-methods/${id}` : '/memberships/api/payment-methods';
     const method = id ? 'PUT' : 'POST';
@@ -137,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Lógica para la Eliminación (común para ambos)
+  // --- LÓGICA PARA ELIMINACIÓN (COMÚN) ---
   const deleteConfirmModal = document.getElementById('deleteConfirmModal');
   const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
   const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');

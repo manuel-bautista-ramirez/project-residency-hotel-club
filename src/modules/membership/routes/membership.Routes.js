@@ -150,4 +150,5 @@ routerMembership.post("/api/payment-methods", adminOnly, bind(manageController, 
 routerMembership.put("/api/payment-methods/:id", adminOnly, bind(manageController, "updateMetodoPago"));
 routerMembership.delete("/api/payment-methods/:id", adminOnly, bind(manageController, "deleteMetodoPago"));
 
+
 export { routerMembership as membershipRoutes };

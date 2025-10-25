@@ -160,16 +160,15 @@ export const renderEditMembership = async (req, res) => {
   }
 };
 
-import { MembershipModel } from "../models/modelMembership.js";
+import { ManageModel } from "../models/modelManage.js";
 
 export const renderManageMembership = async (req, res) => {
     try {
         const userRole = req.session.user?.role || "Recepcionista";
         const isAdmin = userRole === "Administrador";
 
-        // Obtener los datos directamente del modelo
-        const tiposMembresia = await MembershipModel.getTiposMembresia();
-        const metodosPago = await MembershipModel.getMetodosPago();
+        const tiposMembresia = await ManageModel.getTiposMembresia();
+        const metodosPago = await ManageModel.getMetodosPago();
 
         res.render("manageMembership", {
             title: "Gestionar Configuración",

@@ -37,33 +37,20 @@
             <table class="w-full border-collapse">
                 <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
                     <tr>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Nombre
-                        </th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Duración
-                            (días)</th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Máx.
-                            Integrantes</th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-right font-semibold text-gray-700">Precio
-                        </th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">Estado
-                        </th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">
-                            Acciones</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Nombre</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Descripción</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Máx. Integrantes</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-right font-semibold text-gray-700">Precio</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200" id="tiposMembresiaTableBody">
                     {{#each tiposMembresia}}
                     <tr class="hover:bg-gray-50 transition-colors duration-200" data-id="{{this.id_tipo_membresia}}">
                         <td class="px-6 py-4 text-gray-800 font-semibold">{{this.nombre}}</td>
-                        <td class="px-6 py-4 text-gray-700">{{this.duracion_dias}}</td>
+                        <td class="px-6 py-4 text-gray-700">{{this.descripcion}}</td>
                         <td class="px-6 py-4 text-gray-700">{{this.max_integrantes}}</td>
                         <td class="px-6 py-4 text-right font-bold text-gray-800">${{this.precio}}</td>
-                        <td class="px-6 py-4 text-center">
-                            <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{#if this.activo}}bg-green-100 text-green-800{{else}}bg-red-100 text-red-800{{/if}}">
-                                {{#if this.activo}}Activo{{else}}Inactivo{{/if}}
-                            </span>
-                        </td>
                         <td class="px-6 py-4 text-center">
                             <div class="flex justify-center space-x-2">
                                 <button
@@ -106,27 +93,14 @@
             <table class="w-full border-collapse">
                 <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
                     <tr>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Nombre
-                        </th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">
-                            Descripción</th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">Estado
-                        </th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">
-                            Acciones</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Nombre</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200" id="metodosPagoTableBody">
                     {{#each metodosPago}}
                     <tr class="hover:bg-gray-50 transition-colors duration-200" data-id="{{this.id_metodo_pago}}">
                         <td class="px-6 py-4 text-gray-800 font-semibold">{{this.nombre}}</td>
-                        <td class="px-6 py-4 text-gray-700">{{this.descripcion}}</td>
-                        <td class="px-6 py-4 text-center">
-                            <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{#if this.activo}}bg-green-100 text-green-800{{else}}bg-red-100 text-red-800{{/if}}">
-                                {{#if this.activo}}Activo{{else}}Inactivo{{/if}}
-                            </span>
-                        </td>
                         <td class="px-6 py-4 text-center">
                             <div class="flex justify-center space-x-2">
                                 <button
@@ -168,40 +142,28 @@
                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300">
             </div>
 
+            <div class="space-y-2">
+                <label for="tipoDescripcion" class="block text-sm font-semibold text-gray-700">Descripción</label>
+                <textarea id="tipoDescripcion" name="descripcion" rows="3"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300 resize-none"></textarea>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-2">
-                    <label for="tipoDuracion" class="block text-sm font-semibold text-gray-700">Duración (días)
-                        *</label>
-                    <input type="number" id="tipoDuracion" name="duracion_dias" min="1" required
-                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300">
-                </div>
-
-                <div class="space-y-2">
-                    <label for="tipoMaxIntegrantes" class="block text-sm font-semibold text-gray-700">Máx. Integrantes
-                        *</label>
+                    <label for="tipoMaxIntegrantes" class="block text-sm font-semibold text-gray-700">Máx. Integrantes *</label>
                     <input type="number" id="tipoMaxIntegrantes" name="max_integrantes" min="1" required
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300">
                 </div>
-            </div>
-
-            <div class="space-y-2">
-                <label for="tipoPrecio" class="block text-sm font-semibold text-gray-700">Precio *</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span class="text-gray-500 font-medium">$</span>
+                <div class="space-y-2">
+                    <label for="tipoPrecio" class="block text-sm font-semibold text-gray-700">Precio *</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span class="text-gray-500 font-medium">$</span>
+                        </div>
+                        <input type="number" id="tipoPrecio" name="precio" step="0.01" min="0" required
+                            class="pl-10 w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300">
                     </div>
-                    <input type="number" id="tipoPrecio" name="precio" step="0.01" min="0" required
-                        class="pl-10 w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300">
                 </div>
-            </div>
-
-            <div class="space-y-2">
-                <label for="tipoActivo" class="block text-sm font-semibold text-gray-700">Estado</label>
-                <select id="tipoActivo" name="activo"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300 appearance-none bg-white">
-                    <option value="true">Activo</option>
-                    <option value="false">Inactivo</option>
-                </select>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
@@ -234,21 +196,6 @@
                 <label for="metodoNombre" class="block text-sm font-semibold text-gray-700">Nombre *</label>
                 <input type="text" id="metodoNombre" name="nombre" required
                     class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 hover:border-gray-300">
-            </div>
-
-            <div class="space-y-2">
-                <label for="metodoDescripcion" class="block text-sm font-semibold text-gray-700">Descripción</label>
-                <textarea id="metodoDescripcion" name="descripcion" rows="3"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 hover:border-gray-300 resize-none"></textarea>
-            </div>
-
-            <div class="space-y-2">
-                <label for="metodoActivo" class="block text-sm font-semibold text-gray-700">Estado</label>
-                <select id="metodoActivo" name="activo"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 hover:border-gray-300 appearance-none bg-white">
-                    <option value="true">Activo</option>
-                    <option value="false">Inactivo</option>
-                </select>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
