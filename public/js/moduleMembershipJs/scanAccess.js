@@ -106,9 +106,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let id_activa;
         try {
+            // Intenta decodificar el JSON primero.
             const qrData = JSON.parse(rawValue);
-            id_activa = qrData.id_activa;
+            // Si es un objeto y tiene la propiedad id_activa, la usamos.
+            if (typeof qrData === 'object' && qrData.id_activa) {
+                id_activa = qrData.id_activa;
+            } else {
+                // Si el JSON no tiene el formato esperado, usamos el valor crudo.
+                id_activa = rawValue;
+            }
         } catch (error) {
+            // Si no es un JSON válido, asumimos que es un ID simple.
             id_activa = rawValue;
         }
 
