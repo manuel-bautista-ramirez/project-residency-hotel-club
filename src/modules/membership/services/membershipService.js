@@ -1131,9 +1131,12 @@ export const MembershipService = {
     }
 
     // 3. Si está activa, registrar la entrada.
+    // Truncar el area_acceso para asegurar que no exceda el límite de la BD.
+    const areaAcceso = details.tipo_membresia.substring(0, 50);
+
     await modelAccess.recordEntry({
       id_activa: id_activa,
-      area_acceso: details.tipo_membresia
+      area_acceso: areaAcceso
     });
 
     // 4. Devolver resultado exitoso.
