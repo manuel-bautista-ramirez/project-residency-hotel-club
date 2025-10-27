@@ -190,3 +190,30 @@ export const renderManageMembership = async (req, res) => {
         });
     }
 };
+
+/**
+ * Renderiza la página para el escaneo de códigos QR y la visualización del historial de acceso.
+ * @param {import('express').Request} req - El objeto de solicitud de Express.
+ * @param {import('express').Response} res - El objeto de respuesta de Express.
+ */
+export const renderScanAccess = async (req, res) => {
+    try {
+        const userRole = req.session.user?.role || "Recepcionista";
+        const isAdmin = userRole === "Administrador";
+
+        // Por ahora, solo renderizamos la vista. La carga de datos del historial
+        // se hará a través de una API desde el frontend.
+        res.render("scanAccess", {
+            title: "Control de Acceso - Escanear QR",
+            isAdmin,
+            userRole,
+            showFooter: true,
+        });
+    } catch (error) {
+        console.error("Error al cargar la página de control de acceso:", error);
+        res.status(500).render('error500', {
+            title: "Error",
+            message: "No se pudo cargar la página de control de acceso."
+        });
+    }
+};

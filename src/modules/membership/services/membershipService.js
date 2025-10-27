@@ -7,6 +7,7 @@
 
 import { MembershipModel } from "../models/modelMembership.js";
 import { modelList } from "../models/modelList.js";
+import { modelAccess } from "../models/modelAccess.js";
 import { deleteMembershipById } from "../models/modelDelete.js";
 import { updateMembershipById } from "../models/modelEdit.js";
 import { generarQRArchivo } from "../utils/qrGenerator.js";
@@ -1096,5 +1097,64 @@ export const MembershipService = {
       MembershipModel.getTiposMembresia(),
     ]);
     return { membresia, tiposMembresia };
+  },
+
+  /**
+   * Procesa un escaneo de QR, valida la membresía y registra la entrada.
+   * @param {number} id_activa - El ID de la membresía activa escaneada.
+   * @returns {Promise<object>} Un objeto con el estado y los detalles de la membresía.
+   */
+  async processScan(id_activa) {
+    // 1. Obtener detalles de la membresía.
+    const details = await this.getMembershipDetailsForAPI(id_activa);
+
+    // Si no se encuentra, el método anterior ya arroja un error 404.
+
+    // 2. Validar si la membresía está activa.
+    const hoy = new Date();
+    const fechaFin = new Date(details.fecha_fin);
+
+    // Ajustar la fecha de fin para que incluya todo el día.
+    fechaFin.setHours(23, 59, 59, 999);
+
+    if (fechaFin < hoy) {
+      // Membresía expirada
+      return {
+        status: 'expired',
+        details: {
+          nombre_completo: details.nombre_completo,
+          fecha_inicio: details.fecha_inicio,
+          fecha_fin: details.fecha_fin,
+          tipo_membresia: details.tipo_membresia,
+        }
+      };
+    }
+
+    // 3. Si está activa, registrar la entrada.
+    await modelAccess.recordEntry({
+      id_activa: id_activa,
+      area_acceso: details.tipo_membresia
+    });
+
+    // 4. Devolver resultado exitoso.
+    return {
+      status: 'active',
+      details: {
+        nombre_completo: details.nombre_completo,
+        fecha_inicio: details.fecha_inicio,
+        fecha_fin: details.fecha_fin,
+        tipo_membresia: details.tipo_membresia,
+        integrantes: details.integrantes || []
+      }
+    };
+  },
+
+  /**
+   * Obtiene el historial de accesos para una fecha específica.
+   * @param {string} date - La fecha en formato YYYY-MM-DD.
+   * @returns {Promise<Array<object>>} Un array con los registros del historial.
+   */
+  async getAccessHistoryByDate(date) {
+    return await modelAccess.getEntriesByDate(date);
   }
 };

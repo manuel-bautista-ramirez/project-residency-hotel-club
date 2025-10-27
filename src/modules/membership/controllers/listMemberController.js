@@ -64,6 +64,39 @@ const listMembershipController = {
   },
 
   /**
+   * Obtiene el historial de accesos para una fecha específica.
+   * @async
+   * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `date` en `req.query`.
+   * @param {import('express').Response} res - El objeto de respuesta de Express.
+   */
+  async getAccessHistory(req, res) {
+    try {
+      const { date } = req.query;
+
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Se requiere una fecha válida en formato YYYY-MM-DD.'
+        });
+      }
+
+      const history = await MembershipService.getAccessHistoryByDate(date);
+
+      res.json({
+        success: true,
+        data: history
+      });
+
+    } catch (error) {
+      console.error("Error al obtener el historial de accesos:", error);
+      res.status(500).json({
+        success: false,
+        message: 'Error interno del servidor al obtener el historial.'
+      });
+    }
+  },
+
+  /**
    * Endpoint de API para obtener la lista de membresías en formato JSON.
    * @async
    * @param {import('express').Request} req - El objeto de solicitud de Express.
@@ -182,6 +215,54 @@ const listMembershipController = {
       const statusCode = error.statusCode || 500;
       res.status(statusCode).json({
         error: error.message || "Error interno del servidor al obtener los detalles de la membresía",
+      });
+    }
+  },
+
+  /**
+   * Procesa el escaneo de un QR, valida la membresía y registra la entrada.
+   * @async
+   * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `id_activa` en `req.body`.
+   * @param {import('express').Response} res - El objeto de respuesta de Express.
+   */
+  async scanMembershipQR(req, res) {
+    try {
+      const { id_activa } = req.body;
+
+      if (!id_activa) {
+        return res.status(400).json({
+          success: false,
+          status: 'error',
+          message: 'No se proporcionó un ID de membresía.'
+        });
+      }
+
+      // Llama al servicio para procesar el escaneo.
+      const result = await MembershipService.processScan(id_activa);
+
+      // El servicio devolverá un objeto con el estado y los detalles.
+      res.json({
+        success: true,
+        ...result
+      });
+
+    } catch (error)
+     {
+      // Manejar errores específicos, como membresía no encontrada.
+      if (error.statusCode === 404) {
+        return res.status(404).json({
+          success: false,
+          status: 'not_found',
+          message: error.message
+        });
+      }
+
+      // Error genérico del servidor.
+      console.error("Error al procesar el escaneo QR:", error);
+      res.status(500).json({
+        success: false,
+        status: 'error',
+        message: 'Error interno del servidor al procesar el escaneo.'
       });
     }
   },
