@@ -201,8 +201,22 @@
     }, 5000);
   }
 
-  // Función para inicializar la página
-  function initializePage() {
+  // Revela tarjetas de habitación con intersección (stagger natural por scroll)
+  document.addEventListener('DOMContentLoaded', () => {
+    // Verificar si hay parámetro de éxito en la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const successType = urlParams.get('success');
+
+    if (successType === 'renta') {
+      showNotification('✅ Renta creada exitosamente', 'success');
+      // Limpiar el parámetro de la URL sin recargar la página
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (successType === 'reservacion') {
+      showNotification('✅ Reservación creada exitosamente', 'success');
+      // Limpiar el parámetro de la URL sin recargar la página
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     const cards = document.querySelectorAll('.room-card');
     const overlay = document.getElementById('loadingOverlay');
     const skeletons = document.getElementById('roomsSkeletons');
@@ -227,49 +241,6 @@
         if (grid) grid.classList.add('grid');
       }, 1200);
     }
-  }
-
-  // Revela tarjetas de habitación con intersección (stagger natural por scroll)
-  document.addEventListener('DOMContentLoaded', () => {
-    // Verificar si hay parámetro de éxito en la URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const successType = urlParams.get('success');
-    
-    if (successType === 'renta') {
-      showNotification('✅ Renta creada exitosamente', 'success');
-      // Limpiar el parámetro de la URL sin recargar la página
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (successType === 'reservacion') {
-      showNotification('✅ Reservación creada exitosamente', 'success');
-      // Limpiar el parámetro de la URL sin recargar la página
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
-    // Inicializar página
-    initializePage();
-  });
-
-  // Detectar cuando se vuelve a la página usando el botón atrás del navegador
-  window.addEventListener('pageshow', (event) => {
-    // Si la página se carga desde la caché del navegador (bfcache)
-    if (event.persisted) {
-      // Ocultar overlay inmediatamente
-      const overlay = document.getElementById('loadingOverlay');
-      const skeletons = document.getElementById('roomsSkeletons');
-      const grid = document.getElementById('roomsGrid');
-      
-      if (overlay) overlay.classList.add('hidden');
-      if (skeletons) skeletons.classList.add('hidden');
-      if (grid) {
-        grid.classList.remove('hidden');
-        grid.classList.add('grid');
-      }
-    }
-  });
-
-  // Inicializar IntersectionObserver para animaciones
-  document.addEventListener('DOMContentLoaded', () => {
-    const cards = document.querySelectorAll('.room-card');
 
     if (!('IntersectionObserver' in window) || cards.length === 0) {
       cards.forEach(c => c.classList.remove('opacity-0', 'translate-y-2'));

@@ -10,7 +10,7 @@ export const pool = mysql2.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  timezone: 'Z' // Usar UTC para evitar conversiones automáticas de zona horaria
+  timezone: 'America/Mexico_City' // Establecer la zona horaria para todas las conexiones
 });
 
 // Función para probar la conexión con la base de datos.

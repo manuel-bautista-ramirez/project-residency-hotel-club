@@ -821,30 +821,21 @@ export const MembershipService = {
       const diasRestantes = membresia.dias_restantes;
       const diasParaIniciar = membresia.dias_para_iniciar;
 
-      let statusClass, statusText;
+      let statusClass = '';
+      let statusText = '';
 
-      // Prioridad 1: Respetar el estado de la base de datos si no es 'Activa'.
-      if (membresia.estado !== 'Activa') {
-        statusText = membresia.estado; // 'Inactiva', 'Vencida', etc.
-        if (membresia.estado === 'Inactiva') {
-          statusClass = 'bg-gray-100 text-gray-800';
-        } else if (membresia.estado === 'Vencida') {
-          statusClass = 'bg-red-100 text-red-800';
-        } else {
-          statusClass = 'bg-gray-100 text-gray-800'; // Default para otros estados
-        }
+      if (diasParaIniciar > 0) {
+        statusClass = 'bg-blue-100 text-blue-800';
+        statusText = 'Programada';
+      } else if (diasRestantes <= 0) {
+        statusClass = 'bg-red-100 text-red-800';
+        statusText = 'Vencida';
+      } else if (diasRestantes <= 8) {
+        statusClass = 'bg-yellow-100 text-yellow-800';
+        statusText = 'Por Vencer';
       } else {
-        // Prioridad 2: Si es 'Activa', calcular el estado visual basado en fechas.
-        if (diasParaIniciar > 0) {
-          statusClass = 'bg-blue-100 text-blue-800';
-          statusText = 'Programada';
-        } else if (diasRestantes <= 8) {
-          statusClass = 'bg-yellow-100 text-yellow-800';
-          statusText = 'Por Vencer';
-        } else {
-          statusClass = 'bg-green-100 text-green-800';
-          statusText = 'Activa';
-        }
+        statusClass = 'bg-green-100 text-green-800';
+        statusText = 'Activa';
       }
 
       return {
@@ -1010,7 +1001,7 @@ export const MembershipService = {
       nombre_completo,
       telefono,
       correo,
-      estado, // Asegurarse de que el estado se pasa
+      estado,
       fecha_inicio,
       fecha_fin,
       precio_final: parseFloat(precio_final)
@@ -1119,42 +1110,51 @@ export const MembershipService = {
       throw error;
     }
 
-    // Usar un método que obtenga detalles y estado.
+    // Obtener todos los detalles, incluyendo el campo 'estado'
     const membershipDetails = await modelList.getMembresiaDetalles(id_activa);
 
     if (!membershipDetails) {
       return {
         status: 'not_found',
-        message: 'No se encontró ninguna membresía con este código QR.'
+        message: 'Datos no encontrados'
       };
     }
 
-    const isActive = membershipDetails.dias_restantes > 0;
+    // Crear un objeto base para la respuesta de detalles.
+    const detailsResponse = {
+      titular: membershipDetails.titular,
+      tipo_membresia: membershipDetails.tipo_membresia,
+      fecha_inicio: membershipDetails.fecha_inicio,
+      fecha_fin: membershipDetails.fecha_fin,
+    };
 
-    if (!isActive) {
+    // 1. PRIMERA VALIDACIÓN: El estado en la base de datos debe ser 'Activa'.
+    if (membershipDetails.estado !== 'Activa') {
+      return {
+        status: 'inactive',
+        message: `La membresía se encuentra inactiva (${membershipDetails.estado}).`,
+        details: detailsResponse
+      };
+    }
+
+    // 2. SEGUNDA VALIDACIÓN: La fecha de vencimiento debe ser vigente.
+    if (membershipDetails.dias_restantes <= 0) {
       return {
         status: 'expired',
         message: 'Esta membresía ha expirado.',
-        details: {
-          titular: membershipDetails.titular,
-          tipo_membresia: membershipDetails.tipo_membresia,
-          fecha_inicio: membershipDetails.fecha_inicio,
-          fecha_fin: membershipDetails.fecha_fin,
-        }
+        details: detailsResponse
       };
     }
 
-    // Si está activa, registrar la entrada en la tabla 'registro_entradas'.
+    // Si ambas validaciones pasan, la membresía es válida.
+    // Registrar la entrada en la tabla 'registro_entradas'.
     await MembershipModel.recordAccess(id_activa, membershipDetails.tipo_membresia);
 
     return {
       status: 'active',
       message: 'Acceso autorizado.',
       details: {
-        titular: membershipDetails.titular,
-        tipo_membresia: membershipDetails.tipo_membresia,
-        fecha_inicio: membershipDetails.fecha_inicio,
-        fecha_fin: membershipDetails.fecha_fin,
+        ...detailsResponse,
         integrantes: membershipDetails.integrantes,
       }
     };

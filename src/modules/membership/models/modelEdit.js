@@ -45,31 +45,24 @@ async function updateMembershipById(id, data) {
     const { id_cliente, id_membresia } = membership[0];
 
     // 2. Actualizar la información del cliente en la tabla clientes
-    const clienteData = {};
-    if (data.membershipData.nombre_completo) clienteData.nombre_completo = data.membershipData.nombre_completo;
-    if (data.membershipData.telefono) clienteData.telefono = data.membershipData.telefono;
-    if (data.membershipData.correo) clienteData.correo = data.membershipData.correo;
+    const clienteData = {
+      nombre_completo: data.membershipData.nombre_completo,
+      telefono: data.membershipData.telefono,
+      correo: data.membershipData.correo
+    };
 
-    // Solo ejecutar la actualización si hay datos que cambiar
-    if (Object.keys(clienteData).length > 0) {
-      await connection.query(
-        "UPDATE clientes SET ? WHERE id_cliente = ?",
-        [clienteData, id_cliente]
-      );
-    }
+    await connection.query(
+      "UPDATE clientes SET ? WHERE id_cliente = ?",
+      [clienteData, id_cliente]
+    );
 
     // 3. Actualizar la información de la membresía en membresias_activas
-    const membresiaData = {};
-    if (data.membershipData.estado) membresiaData.estado = data.membershipData.estado;
-    if (data.membershipData.fecha_inicio) membresiaData.fecha_inicio = data.membershipData.fecha_inicio;
-    if (data.membershipData.fecha_fin) membresiaData.fecha_fin = data.membershipData.fecha_fin;
-    if (data.membershipData.precio_final) membresiaData.precio_final = data.membershipData.precio_final;
-
-    if (Object.keys(membresiaData).length === 0) {
-      // Si no hay datos de membresía para actualizar, podemos evitar la consulta.
-      // O lanzar un error si se espera que siempre haya algo que actualizar.
-      // Por ahora, lo dejamos pasar, pero es bueno tenerlo en cuenta.
-    }
+    const membresiaData = {
+      estado: data.membershipData.estado,
+      fecha_inicio: data.membershipData.fecha_inicio,
+      fecha_fin: data.membershipData.fecha_fin,
+      precio_final: data.membershipData.precio_final
+    };
 
     const [membershipResult] = await connection.query(
       "UPDATE membresias_activas SET ? WHERE id_activa = ?",

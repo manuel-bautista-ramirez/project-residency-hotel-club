@@ -1,26 +1,19 @@
-<div class="max-w-7xl mx-auto px-3 sm:px-4 {{#if allReservationes.length}}pt-24 sm:pt-28 pb-24{{else}}pt-16 sm:pt-20{{/if}}">
-  {{#if allReservationes.length}}
+<div class="max-w-7xl mx-auto px-3 sm:px-4 pt-24 sm:pt-28 pb-24">
   {{>buttons}}
-  {{/if}}
 
-  {{#if allReservationes.length}}
   <!-- Filtros -->
   <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       <!-- Búsqueda libre -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
         <label for="reservationSearch" class="text-xs font-medium text-slate-600">Buscar (cliente, habitación, fechas)</label>
         <input id="reservationSearch" type="text" placeholder="Escribe para filtrar..."
                class="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
       </div>
       <!-- Rango de fechas (ingreso) -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1 sm:col-span-2 lg:col-span-2">
         <label for="reservationFrom" class="text-xs font-medium text-slate-600">Ingreso desde</label>
-        <input id="reservationFrom" type="date" class="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
-      </div>
-      <div class="flex flex-col gap-1">
-        <label for="reservationTo" class="text-xs font-medium text-slate-600">Ingreso hasta</label>
-        <input id="reservationTo" type="date" class="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
+        <input id="reservationFrom" type="date" class="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full lg:max-w-sm">
       </div>
     </div>
     <div class="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -201,29 +194,6 @@
     </article>
     {{/each}}
   </section>
-  {{else}}
-  <!-- Mensaje cuando no hay reservaciones -->
-  <section class="flex flex-col items-center justify-center px-3" style="height: calc(100vh - 140px); max-height: calc(100vh - 140px); overflow: hidden;">
-    <div class="text-center max-w-sm -mt-6 sm:-mt-12">
-      <div class="mb-3 sm:mb-6 inline-flex items-center justify-center w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-blue-100">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 sm:w-10 sm:h-10 text-blue-600">
-          <path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
-        </svg>
-      </div>
-      <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">No hay reservaciones</h2>
-      <p class="text-gray-600 mb-3 sm:mb-6 text-xs sm:text-sm md:text-base px-1 leading-tight sm:leading-normal">
-        Aún no hay reservaciones en el sistema. Reserva una habitación para verlas aquí.
-      </p>
-      <a href="/rooms" class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-1.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 text-xs sm:text-base">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 sm:w-5 sm:h-5">
-          <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/>
-          <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z"/>
-        </svg>
-        <span>Ver Habitaciones</span>
-      </a>
-    </div>
-  </section>
-  {{/if}}
 </div>
 
 <!-- Modal de confirmación de eliminación -->
@@ -289,7 +259,6 @@
     // Filtros
     const q = document.getElementById('reservationSearch');
     const from = document.getElementById('reservationFrom');
-    const to = document.getElementById('reservationTo');
     const reset = document.getElementById('reservationReset');
     const count = document.getElementById('reservationCount');
     
@@ -407,26 +376,11 @@
     // --- Funciones auxiliares ---
     function norm(str) { return (str || '').toString().trim().toLowerCase(); }
     
-    function inRange(dateStr, fromStr, toStr) {
-      if (!fromStr && !toStr) return true;
+    function inRange(dateStr, fromStr) {
+      if (!fromStr) return true;
       const d = new Date(dateStr);
       if (Number.isNaN(d.getTime())) return false;
-      
-      // Normalizar fechas a medianoche para comparación solo de día
-      const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      
-      if (fromStr) {
-        const fromDate = new Date(fromStr);
-        const fromOnly = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-        if (dateOnly < fromOnly) return false;
-      }
-      
-      if (toStr) {
-        const toDate = new Date(toStr);
-        const toOnly = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-        if (dateOnly > toOnly) return false;
-      }
-      
+      if (fromStr && d < new Date(fromStr)) return false;
       return true;
     }
     
@@ -434,7 +388,6 @@
     function applyFilters() {
       const text = norm(q.value);
       const f = from.value;
-      const t = to.value;
       let visible = 0;
       
       rows.forEach(el => {
@@ -453,7 +406,7 @@
           d.ingreso.includes(text) ||
           d.salida.includes(text)
         );
-        const hayFechaIn = inRange(d.ingreso, f, t);
+        const hayFechaIn = inRange(d.ingreso, f);
         const show = hayTexto && hayFechaIn;
         
         el.classList.toggle('hidden', !show);
@@ -474,13 +427,11 @@
     ['input','change'].forEach(evt => {
       q.addEventListener(evt, applyFilters);
       from.addEventListener(evt, applyFilters);
-      to.addEventListener(evt, applyFilters);
     });
     
     reset.addEventListener('click', () => {
       q.value = '';
       from.value = '';
-      to.value = '';
       applyFilters();
     });
     

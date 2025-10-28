@@ -29,7 +29,7 @@ const showResultModal = (data) => {
     if (data.status === 'active') {
         modalHeaderClass = 'bg-gradient-to-r from-green-500 to-green-600';
         icon = 'fa-solid fa-check-circle';
-    } else if (data.status === 'expired') {
+    } else if (data.status === 'expired' || data.status === 'inactive') {
         modalHeaderClass = 'bg-gradient-to-r from-red-500 to-red-600';
         icon = 'fa-solid fa-times-circle';
     } else { // not_found
@@ -48,23 +48,27 @@ const showResultModal = (data) => {
             </div>
         ` : '';
 
+    // Refuerzo de la lógica de visualización:
+    // Se genera el HTML de los detalles si existen, independientemente del estado.
+    const detailsHtml = details && details.titular
+        ? `
+            <div class="space-y-2 text-gray-700">
+                <p><strong class="font-semibold">Titular:</strong> ${details.titular}</p>
+                <p><strong class="font-semibold">Tipo:</strong> ${details.tipo_membresia}</p>
+                <p><strong class="font-semibold">Inicio:</strong> ${formatDate(details.fecha_inicio)}</p>
+                <p><strong class="font-semibold">Vencimiento:</strong> ${formatDate(details.fecha_fin)}</p>
+            </div>
+            ${integrantesList}
+        `
+        : `<p class="text-center text-gray-600">${data.message || 'No se pudo obtener información detallada.'}</p>`;
+
     modalContent.innerHTML = `
         <div class="p-6 text-white text-center rounded-t-2xl ${modalHeaderClass}">
             <i class="${icon} text-5xl mb-3"></i>
             <h2 class="text-2xl font-bold">${data.message || 'Resultado del Escaneo'}</h2>
         </div>
         <div class="p-6">
-            ${details.titular ? `
-                <div class="space-y-2 text-gray-700">
-                    <p><strong class="font-semibold">Titular:</strong> ${details.titular}</p>
-                    <p><strong class="font-semibold">Tipo:</strong> ${details.tipo_membresia}</p>
-                    <p><strong class="font-semibold">Inicio:</strong> ${formatDate(details.fecha_inicio)}</p>
-                    <p><strong class="font-semibold">Vencimiento:</strong> ${formatDate(details.fecha_fin)}</p>
-                </div>
-                ${integrantesList}
-            ` : `
-                <p class="text-center text-gray-600">${data.message || 'No se pudo obtener información detallada.'}</p>
-            `}
+            ${detailsHtml}
             <button id="close-modal-btn" class="mt-6 w-full bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cerrar</button>
         </div>
     `;
