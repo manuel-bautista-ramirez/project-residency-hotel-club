@@ -51,7 +51,7 @@ const showResultModal = (data) => {
     modalContent.innerHTML = `
         <div class="p-6 text-white text-center rounded-t-2xl ${modalHeaderClass}">
             <i class="${icon} text-5xl mb-3"></i>
-            <h2 class="text-2xl font-bold">${data.message}</h2>
+            <h2 class="text-2xl font-bold">${data.message || 'Resultado del Escaneo'}</h2>
         </div>
         <div class="p-6">
             ${details.titular ? `
@@ -62,7 +62,9 @@ const showResultModal = (data) => {
                     <p><strong class="font-semibold">Vencimiento:</strong> ${formatDate(details.fecha_fin)}</p>
                 </div>
                 ${integrantesList}
-            ` : ''}
+            ` : `
+                <p class="text-center text-gray-600">${data.message || 'No se pudo obtener información detallada.'}</p>
+            `}
             <button id="close-modal-btn" class="mt-6 w-full bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cerrar</button>
         </div>
     `;
@@ -126,23 +128,46 @@ const updateHistoryTable = async (date) => {
  */
 qrForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const qrId = qrInput.value.trim();
-    if (!qrId) return;
+    let rawInput = qrInput.value.trim();
+    if (!rawInput) return;
+
+    let membershipId;
+
+    // Intenta parsear el input como JSON (del escáner QR).
+    try {
+        const qrData = JSON.parse(rawInput);
+        if (qrData && qrData.id_activa) {
+            membershipId = qrData.id_activa;
+        } else {
+            // Si el JSON no tiene el formato esperado, intenta usar el input como está.
+            membershipId = rawInput;
+        }
+    } catch (error) {
+        // Si no es un JSON válido, asume que es una entrada manual (solo números).
+        membershipId = rawInput;
+    }
+
+    // Si después de todo el proceso no tenemos un ID válido, no hacemos nada.
+    if (!membershipId) {
+        showResultModal({ status: 'not_found', message: 'ID de membresía inválido.' });
+        return;
+    }
 
     try {
-        const response = await fetch(`/api/memberships/qr-info/${qrId}`);
+        const response = await fetch(`/api/memberships/qr-info/${membershipId}`);
         const result = await response.json();
 
-        if (result.success) {
+        if (response.ok && result.success) {
             showResultModal(result.data);
             if (result.data.status === 'active') {
                 // Si el acceso fue exitoso, recargar el historial del día actual
                 updateHistoryTable(datePicker.value);
             }
         } else {
+            // Maneja tanto los errores de la API como los 'not_found' del servicio.
             showResultModal({
                 status: 'not_found',
-                message: result.message || 'Error desconocido'
+                message: result.message || 'Datos no encontrados.'
             });
         }
     } catch (error) {
@@ -153,6 +178,19 @@ qrForm.addEventListener('submit', async (e) => {
         });
     }
 });
+
+/**
+ * Filtra la entrada en tiempo real para permitir solo números en el campo de texto.
+ * Esto no previene que el escáner pegue el JSON completo.
+ */
+qrInput.addEventListener('input', () => {
+    // Permite que el campo esté temporalmente vacío o contenga el JSON.
+    // Esta validación se enfoca en la escritura manual.
+    if (!qrInput.value.startsWith('{')) {
+        qrInput.value = qrInput.value.replace(/[^0-9]/g, '');
+    }
+});
+
 
 /**
  * Maneja el cambio de fecha en el selector de historial.
