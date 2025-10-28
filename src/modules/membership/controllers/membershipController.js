@@ -4,7 +4,7 @@
  * @module controllers/membershipController
  */
 
-import { MembershipService } from "../services/membershipService.js";
+import { MembershipModel } from "../models/modelMembership.js";
 
 /**
  * Renderiza la página principal (home) del área de membresías.
@@ -56,14 +56,17 @@ export const renderMembershipCreate = async (req, res) => {
   try {
     const userRole = req.session.user?.role || "Recepcionista";
     const isAdmin = userRole === "Administrador";
-    // Llama al servicio para obtener los datos necesarios para los selectores del formulario.
-    const pageData = await MembershipService.getDataForCreatePage();
+    // Obtiene los datos necesarios para los selectores del formulario.
+    const tiposMembresia = await MembershipModel.getTiposMembresia();
+    const tiposPago = await MembershipModel.getMetodosPago();
 
     res.render("membershipCreate", {
       title: "Crear Membresía",
       isAdmin,
       userRole,
-      ...pageData,
+      tiposMembresia,
+      tiposPago,
+      showFooter: true,
     });
   } catch (error) {
     // En caso de error al obtener los datos, renderiza una página de error.
@@ -88,16 +91,26 @@ export const renderRenewMembership = async (req, res) => {
     const isAdmin = userRole === "Administrador";
     const { id } = req.params;
     // Obtiene los datos de la membresía específica y los catálogos para el formulario.
-    const pageData = await MembershipService.getDataForRenewPage(id);
+    const membresia = await MembershipModel.getMembresiaConPago(id);
+    
+    if (!membresia) {
+      return res.status(404).render('error', {
+        title: "Error",
+        message: "Membresía no encontrada"
+      });
+    }
+
+    const tiposMembresia = await MembershipModel.getTiposMembresia();
+    const tiposPago = await MembershipModel.getMetodosPago();
 
     res.render("renewalMembership", {
       title: "Renovar Membresía",
       isAdmin,
       showFooter: true,
       userRole,
-      membership: pageData.membresia,
-      tiposMembresia: pageData.tiposMembresia,
-      tiposPago: pageData.tiposPago,
+      membership: membresia,
+      tiposMembresia: tiposMembresia,
+      tiposPago: tiposPago,
       // Helpers de Handlebars específicos para esta vista.
       helpers: {
         formatDate: (date) => {
@@ -134,15 +147,24 @@ export const renderEditMembership = async (req, res) => {
     const isAdmin = userRole === "Administrador";
     const { id } = req.params;
     // Obtiene los datos de la membresía a editar.
-    const pageData = await MembershipService.getDataForEditPage(id);
+    const membresia = await MembershipModel.getMembresiaById(id);
+    
+    if (!membresia) {
+      return res.status(404).render('error500', {
+        title: "Error",
+        message: "Membresía no encontrada"
+      });
+    }
+
+    const tiposMembresia = await MembershipModel.getTiposMembresia();
 
     res.render("editMembership", {
       title: "Editar Membresía",
       isAdmin,
       userRole,
       showFooter: true,
-      membership: pageData.membresia,
-      tiposMembresia: pageData.tiposMembresia,
+      membership: membresia,
+      tiposMembresia: tiposMembresia,
       // Helpers de Handlebars para formatear datos en la plantilla.
       helpers: {
         formatDate: (date) => {

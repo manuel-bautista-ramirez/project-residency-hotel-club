@@ -1,17 +1,16 @@
 import express from "express";
 import routerLogin from "../modules/login/routers/routerLogin.js";
 import { membershipApiRoutes, membershipRoutes } from "../modules/membership/routes/index.js";
-import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
-import { entriesRouter } from "../modules/entries/router/RouteDailyEntries.js";
-import { routerStore } from "../modules/store/routes/storeRoutes.js";
+
 
 // Rutas de módulos
 
 // Importar el servicio centralizado de WhatsApp
 //import whatsappService from '../services/whatsappService.js';
 
-// Importar y habilitar el servicio de correo electrónico
+/* Importar y habilitar el servicio de correo electrónico
 import emailService from '../services/emailService.js';
+*/
 
 const routerGlobal = express.Router();
 
@@ -42,13 +41,8 @@ routerGlobal.get('/', (req, res) => {
 
 // Rutas de módulos
 routerGlobal.use(routerLogin);
-routerGlobal.use(routerRoom);
 routerGlobal.use("/memberships", membershipRoutes);
 routerGlobal.use("/api/memberships", membershipApiRoutes);
-routerGlobal.use( entriesRouter);
-routerGlobal.use(routerStore);
-
-
 
 
 // Ruta para mostrar la página del QR (TEMPORALMENTE DESHABILITADA)

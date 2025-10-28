@@ -10,8 +10,8 @@ import { modelList } from "../models/modelList.js";
 import { deleteMembershipById } from "../models/modelDelete.js";
 import { updateMembershipById } from "../models/modelEdit.js";
 import { generarQRArchivo } from "../utils/qrGenerator.js";
-import emailService from "../../../services/emailService.js";
-import whatsappService from "../../../services/whatsappService.js";
+// import emailService from "../../../services/emailService.js";
+// import whatsappService from "../../../services/whatsappService.js";
 import QRCode from "qrcode";
 import path from "path";
 import fs from "fs";
@@ -377,7 +377,8 @@ export const MembershipService = {
           filename: `Comprobante-Membresia-${cliente.nombre_completo.replace(/\s/g, '_')}.pdf`,
           content: pdfBuffer,
         };
-        await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment); 
+        // await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment);
+        console.log('📧 Email service deshabilitado temporalmente'); 
       } catch (error) {
         console.error("❌ Error enviando comprobante por correo:", error.message);
       }
@@ -402,7 +403,8 @@ export const MembershipService = {
           total: parseFloat(precio_final).toFixed(2),
         };
         // Enviar usando la ruta del archivo
-        await whatsappService.enviarComprobanteMembresía(cliente.telefono, whatsappData, tempFilePath);
+        // await whatsappService.enviarComprobanteMembresía(cliente.telefono, whatsappData, tempFilePath);
+        console.log('📱 WhatsApp service deshabilitado temporalmente');
       } catch (error) {
         console.error("❌ Error enviando comprobante por WhatsApp:", error.message);
       } finally {

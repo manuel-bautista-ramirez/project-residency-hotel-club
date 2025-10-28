@@ -37,15 +37,17 @@ app.use((req, res, next) => {
 // Rutas globales
 app.use(routerGlobal);
 
-// Rutas para gestión de PDFs (ruta actualizada)
+/* Rutas para gestión de PDFs (ruta actualizada)
 import pdfRoutes from './src/modules/rooms/routes/pdfRoutes.js';
 app.use('/api/pdfs', pdfRoutes);
+*/
 
 
 
-// Importar e iniciar el servicio de cola de trabajos
+/* Importar e iniciar el servicio de cola de trabajos
 import jobQueueService from './src/services/jobQueueService.js';
 jobQueueService.startProcessing();
+*/
 
 // Iniciar servidor
 app.listen(app.get("port"), () => {
