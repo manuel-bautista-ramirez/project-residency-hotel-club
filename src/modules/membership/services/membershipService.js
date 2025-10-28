@@ -821,21 +821,30 @@ export const MembershipService = {
       const diasRestantes = membresia.dias_restantes;
       const diasParaIniciar = membresia.dias_para_iniciar;
 
-      let statusClass = '';
-      let statusText = '';
+      let statusClass, statusText;
 
-      if (diasParaIniciar > 0) {
-        statusClass = 'bg-blue-100 text-blue-800';
-        statusText = 'Programada';
-      } else if (diasRestantes <= 0) {
-        statusClass = 'bg-red-100 text-red-800';
-        statusText = 'Vencida';
-      } else if (diasRestantes <= 8) {
-        statusClass = 'bg-yellow-100 text-yellow-800';
-        statusText = 'Por Vencer';
+      // Prioridad 1: Respetar el estado de la base de datos si no es 'Activa'.
+      if (membresia.estado !== 'Activa') {
+        statusText = membresia.estado; // 'Inactiva', 'Vencida', etc.
+        if (membresia.estado === 'Inactiva') {
+          statusClass = 'bg-gray-100 text-gray-800';
+        } else if (membresia.estado === 'Vencida') {
+          statusClass = 'bg-red-100 text-red-800';
+        } else {
+          statusClass = 'bg-gray-100 text-gray-800'; // Default para otros estados
+        }
       } else {
-        statusClass = 'bg-green-100 text-green-800';
-        statusText = 'Activa';
+        // Prioridad 2: Si es 'Activa', calcular el estado visual basado en fechas.
+        if (diasParaIniciar > 0) {
+          statusClass = 'bg-blue-100 text-blue-800';
+          statusText = 'Programada';
+        } else if (diasRestantes <= 8) {
+          statusClass = 'bg-yellow-100 text-yellow-800';
+          statusText = 'Por Vencer';
+        } else {
+          statusClass = 'bg-green-100 text-green-800';
+          statusText = 'Activa';
+        }
       }
 
       return {
@@ -1001,7 +1010,7 @@ export const MembershipService = {
       nombre_completo,
       telefono,
       correo,
-      estado,
+      estado, // Asegurarse de que el estado se pasa
       fecha_inicio,
       fecha_fin,
       precio_final: parseFloat(precio_final)
