@@ -528,6 +528,54 @@ const MembershipModel = {
       throw error;
     }
   },
+
+  /**
+   * Inserta un registro en la tabla de historial de entradas.
+   * @param {number} id_activa - El ID de la membresía activa que ingresa.
+   * @param {string} area_acceso - El área de acceso (se usará el tipo de membresía).
+   * @returns {Promise<number>} El ID del registro de entrada creado.
+   */
+  async recordAccess(id_activa, area_acceso) {
+    try {
+      // Truncar area_acceso si es más largo de 50 caracteres para evitar errores de BD.
+      const truncatedArea = area_acceso.substring(0, 50);
+      const [result] = await pool.query(
+        `INSERT INTO registro_entradas (id_activa, area_acceso) VALUES (?, ?)`,
+        [id_activa, truncatedArea]
+      );
+      return result.insertId;
+    } catch (error) {
+      console.error("Error en recordAccess del modelo:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene el historial de entradas para una fecha específica.
+   * @param {string} date - La fecha en formato 'YYYY-MM-DD'.
+   * @returns {Promise<Array<object>>} Un array con los registros de entrada.
+   */
+  async getAccessLogByDate(date) {
+    try {
+      const [rows] = await pool.query(
+        `SELECT
+          re.id_entrada,
+          re.fecha_hora_entrada,
+          re.area_acceso,
+          c.nombre_completo AS titular
+        FROM registro_entradas re
+        JOIN membresias_activas ma ON re.id_activa = ma.id_activa
+        JOIN clientes c ON ma.id_cliente = c.id_cliente
+        WHERE DATE(re.fecha_hora_entrada) = ?
+        ORDER BY re.fecha_hora_entrada DESC`,
+        [date]
+      );
+      return rows;
+    } catch (error) {
+      console.error("Error en getAccessLogByDate del modelo:", error);
+      throw error;
+    }
+  }
 };
 
 export { MembershipModel };

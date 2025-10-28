@@ -1,0 +1,65 @@
+{{>navbar}}
+
+<div class="w-full max-w-6xl mx-auto mt-20 px-4 pb-12">
+    {{!-- Título y área de escaneo --}}
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl mb-4 shadow-lg">
+                <i class="fa-solid fa-qrcode text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Control de Acceso de Miembros</h1>
+            <p class="text-gray-600 mt-2 text-lg">Escanea el código QR para verificar el estado de la membresía y registrar el acceso.</p>
+        </div>
+
+        <form id="qr-scan-form" class="max-w-md mx-auto">
+            <label for="qr-code-input" class="block text-sm font-medium text-gray-700 mb-2 text-center">Coloca el cursor en el campo y escanea el QR:</label>
+            <input type="text" id="qr-code-input" name="qr_code"
+                   class="block w-full px-4 py-3 text-center text-lg text-gray-700 bg-gray-50 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
+                   placeholder="Esperando escaneo..." autocomplete="off" autofocus>
+        </form>
+    </div>
+
+    {{!-- Sección de Historial de Acceso --}}
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Historial de Entradas</h2>
+        <div class="mb-6">
+            <label for="history-date-picker" class="block text-sm font-medium text-gray-700 mb-2">Selecciona una fecha para ver el historial:</label>
+            <input type="date" id="history-date-picker" value="{{currentDate}}"
+                   class="block w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500">
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titular</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Membresía</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha y Hora de Entrada</th>
+                    </tr>
+                </thead>
+                <tbody id="access-history-table-body" class="bg-white divide-y divide-gray-200">
+                    {{#each accessLog}}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{this.titular}}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{this.area_acceso}}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{formatDate this.fecha_hora_entrada}}</td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-center text-gray-500">No hay registros para la fecha seleccionada.</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{{!-- Modal para mostrar los resultados del escaneo --}}
+<div id="qr-result-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+    <div id="modal-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 opacity-0">
+        {{!-- El contenido del modal se inyectará dinámicamente con JavaScript --}}
+    </div>
+</div>
+
+{{!-- Se añade el script para la lógica de esta página --}}
+<script src="/js/moduleMembershipJs/scan-qr.js" type="module"></script>

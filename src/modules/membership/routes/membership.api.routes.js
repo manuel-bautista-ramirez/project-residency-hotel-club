@@ -51,6 +51,14 @@ routerApi.get("/details/:id", (req, res) =>
   listMembershipController.getMembershipDetailsAPI(req, res)
 );
 
+// GET /api/memberships/qr-info/:id
+// Verifica el ID de un QR, registra el acceso si es válido y devuelve los detalles de la membresía.
+routerApi.get("/qr-info/:id", bind(listMembershipController, "getMembershipByQR"));
+
+// GET /api/memberships/access-history?date=YYYY-MM-DD
+// Obtiene el historial de entradas para una fecha específica.
+routerApi.get("/access-history", bind(listMembershipController, "getAccessHistoryAPI"));
+
 // ===================================================================
 // RUTAS DE LA API DE REPORTES
 // ===================================================================
@@ -66,14 +74,5 @@ routerApi.get("/reports/download", bind(reportsController, "downloadReportPDF"))
 // POST /api/memberships/validate-client
 // Valida si un cliente ya existe basado en su correo o teléfono y retorna el estado de su membresía.
 routerApi.post("/validate-client", bind(MembershipController, "validateClient"));
-
-// GET /api/memberships/history
-// Obtiene el historial de entradas para una fecha específica.
-routerApi.get("/history", bind(listMembershipController, "getAccessHistory"));
-
-// POST /api/memberships/scan
-// Procesa el escaneo de un QR, valida la membresía y registra la entrada.
-routerApi.post("/scan", bind(listMembershipController, "scanMembershipQR"));
-
 
 export { routerApi as membershipApiRoutes };

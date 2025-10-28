@@ -7,7 +7,6 @@
 
 import { MembershipModel } from "../models/modelMembership.js";
 import { modelList } from "../models/modelList.js";
-import { modelAccess } from "../models/modelAccess.js";
 import { deleteMembershipById } from "../models/modelDelete.js";
 import { updateMembershipById } from "../models/modelEdit.js";
 import { generarQRArchivo } from "../utils/qrGenerator.js";
@@ -1100,64 +1099,70 @@ export const MembershipService = {
   },
 
   /**
-   * Procesa un escaneo de QR, valida la membresía y registra la entrada.
+   * Procesa el escaneo de un QR, valida la membresía y registra el acceso.
    * @param {number} id_activa - El ID de la membresía activa escaneada.
-   * @returns {Promise<object>} Un objeto con el estado y los detalles de la membresía.
+   * @returns {Promise<object>} Un objeto con el estado y los datos de la membresía.
    */
-  async processScan(id_activa) {
-    // 1. Obtener detalles de la membresía.
-    const details = await this.getMembershipDetailsForAPI(id_activa);
+  async processQRScan(id_activa) {
+    if (!id_activa) {
+      const error = new Error("El ID de la membresía es requerido.");
+      error.statusCode = 400;
+      throw error;
+    }
 
-    // Si no se encuentra, el método anterior ya arroja un error 404.
+    // Usar un método que obtenga detalles y estado.
+    const membershipDetails = await modelList.getMembresiaDetalles(id_activa);
 
-    // 2. Validar si la membresía está activa.
-    const hoy = new Date();
-    const fechaFin = new Date(details.fecha_fin);
+    if (!membershipDetails) {
+      return {
+        status: 'not_found',
+        message: 'No se encontró ninguna membresía con este código QR.'
+      };
+    }
 
-    // Ajustar la fecha de fin para que incluya todo el día.
-    fechaFin.setHours(23, 59, 59, 999);
+    const isActive = membershipDetails.dias_restantes > 0;
 
-    if (fechaFin < hoy) {
-      // Membresía expirada
+    if (!isActive) {
       return {
         status: 'expired',
+        message: 'Esta membresía ha expirado.',
         details: {
-          nombre_completo: details.nombre_completo,
-          fecha_inicio: details.fecha_inicio,
-          fecha_fin: details.fecha_fin,
-          tipo_membresia: details.tipo_membresia,
+          titular: membershipDetails.titular,
+          tipo_membresia: membershipDetails.tipo_membresia,
+          fecha_inicio: membershipDetails.fecha_inicio,
+          fecha_fin: membershipDetails.fecha_fin,
         }
       };
     }
 
-    // 3. Si está activa, registrar la entrada.
-    // Truncar el area_acceso para asegurar que no exceda el límite de la BD.
-    const areaAcceso = details.tipo_membresia.substring(0, 50);
+    // Si está activa, registrar la entrada en la tabla 'registro_entradas'.
+    await MembershipModel.recordAccess(id_activa, membershipDetails.tipo_membresia);
 
-    await modelAccess.recordEntry({
-      id_activa: id_activa,
-      area_acceso: areaAcceso
-    });
-
-    // 4. Devolver resultado exitoso.
     return {
       status: 'active',
+      message: 'Acceso autorizado.',
       details: {
-        nombre_completo: details.nombre_completo,
-        fecha_inicio: details.fecha_inicio,
-        fecha_fin: details.fecha_fin,
-        tipo_membresia: details.tipo_membresia,
-        integrantes: details.integrantes || []
+        titular: membershipDetails.titular,
+        tipo_membresia: membershipDetails.tipo_membresia,
+        fecha_inicio: membershipDetails.fecha_inicio,
+        fecha_fin: membershipDetails.fecha_fin,
+        integrantes: membershipDetails.integrantes,
       }
     };
   },
 
   /**
-   * Obtiene el historial de accesos para una fecha específica.
+   * Obtiene el historial de acceso para una fecha específica.
    * @param {string} date - La fecha en formato YYYY-MM-DD.
-   * @returns {Promise<Array<object>>} Un array con los registros del historial.
+   * @returns {Promise<Array<object>>} Un array con los registros de acceso.
    */
-  async getAccessHistoryByDate(date) {
-    return await modelAccess.getEntriesByDate(date);
+  async getAccessHistory(date) {
+    if (!date) {
+        const error = new Error("La fecha es requerida.");
+        error.statusCode = 400;
+        throw error;
+    }
+    const accessLog = await MembershipModel.getAccessLogByDate(date);
+    return accessLog;
   }
 };

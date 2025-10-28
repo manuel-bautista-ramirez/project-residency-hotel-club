@@ -192,28 +192,44 @@ export const renderManageMembership = async (req, res) => {
 };
 
 /**
- * Renderiza la página para el escaneo de códigos QR y la visualización del historial de acceso.
+ * Renderiza la página para escanear QR y ver el historial de acceso.
+ * Carga el historial de acceso para el día actual por defecto.
+ * @async
  * @param {import('express').Request} req - El objeto de solicitud de Express.
  * @param {import('express').Response} res - El objeto de respuesta de Express.
  */
-export const renderScanAccess = async (req, res) => {
-    try {
-        const userRole = req.session.user?.role || "Recepcionista";
-        const isAdmin = userRole === "Administrador";
+export const renderScanQRPage = async (req, res) => {
+  try {
+    const userRole = req.session.user?.role || "Recepcionista";
+    const isAdmin = userRole === "Administrador";
 
-        // Por ahora, solo renderizamos la vista. La carga de datos del historial
-        // se hará a través de una API desde el frontend.
-        res.render("scanAccess", {
-            title: "Control de Acceso - Escanear QR",
-            isAdmin,
-            userRole,
-            showFooter: true,
-        });
-    } catch (error) {
-        console.error("Error al cargar la página de control de acceso:", error);
-        res.status(500).render('error500', {
-            title: "Error",
-            message: "No se pudo cargar la página de control de acceso."
-        });
-    }
+    // Obtener la fecha de hoy en formato YYYY-MM-DD.
+    const today = new Date().toISOString().split('T')[0];
+
+    // Llama al servicio para obtener el historial de acceso del día actual.
+    // Este método se implementará en el siguiente paso.
+    const accessLog = await MembershipService.getAccessHistory(today);
+
+    res.render("scanQR", {
+      title: "Control de Acceso - Escanear QR",
+      isAdmin,
+      userRole,
+      accessLog,
+      showFooter: true,
+      currentDate: today,
+      helpers: {
+        formatDate: (dateString) => {
+          if (!dateString) return '';
+          const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+          return new Date(dateString).toLocaleDateString('es-MX', options);
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error al cargar la página de control de acceso:", error);
+    res.status(500).render('error500', {
+        title: "Error",
+        message: "Error al cargar la página de control de acceso."
+    });
+  }
 };

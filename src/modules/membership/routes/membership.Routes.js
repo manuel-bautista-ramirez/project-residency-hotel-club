@@ -14,7 +14,7 @@ import {
   renderEditMembership,
   renderRenewMembership,
   renderManageMembership,
-  renderScanAccess
+  renderScanQRPage
 } from "../controllers/membershipController.js";
 import { reportsController } from "../controllers/reportsController.js";
 import { MembershipController } from "../controllers/createMemberController.js";
@@ -56,7 +56,7 @@ routerMembership.get("/reports", bind(reportsController, "renderReports"));
 routerMembership.get("/manageMembership", renderManageMembership);
 
 // Renderiza la página para escanear QR y ver el historial de acceso.
-routerMembership.get("/scanAccess", renderScanAccess);
+routerMembership.get("/scan-qr", renderScanQRPage);
 
 // ===================================================================
 // 2. RUTAS DE API Y DATOS - Endpoints para la API interna (JSON, archivos)

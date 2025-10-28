@@ -64,39 +64,6 @@ const listMembershipController = {
   },
 
   /**
-   * Obtiene el historial de accesos para una fecha específica.
-   * @async
-   * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `date` en `req.query`.
-   * @param {import('express').Response} res - El objeto de respuesta de Express.
-   */
-  async getAccessHistory(req, res) {
-    try {
-      const { date } = req.query;
-
-      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Se requiere una fecha válida en formato YYYY-MM-DD.'
-        });
-      }
-
-      const history = await MembershipService.getAccessHistoryByDate(date);
-
-      res.json({
-        success: true,
-        data: history
-      });
-
-    } catch (error) {
-      console.error("Error al obtener el historial de accesos:", error);
-      res.status(500).json({
-        success: false,
-        message: 'Error interno del servidor al obtener el historial.'
-      });
-    }
-  },
-
-  /**
    * Endpoint de API para obtener la lista de membresías en formato JSON.
    * @async
    * @param {import('express').Request} req - El objeto de solicitud de Express.
@@ -220,49 +187,55 @@ const listMembershipController = {
   },
 
   /**
-   * Procesa el escaneo de un QR, valida la membresía y registra la entrada.
+   * Endpoint de API para obtener y validar la información de una membresía desde un QR.
+   * Si la membresía es válida y está activa, registra una nueva entrada en el historial de acceso.
    * @async
-   * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `id_activa` en `req.body`.
+   * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `id` en `req.params`.
    * @param {import('express').Response} res - El objeto de respuesta de Express.
    */
-  async scanMembershipQR(req, res) {
+  async getMembershipByQR(req, res) {
     try {
-      const { id_activa } = req.body;
-
-      if (!id_activa) {
-        return res.status(400).json({
-          success: false,
-          status: 'error',
-          message: 'No se proporcionó un ID de membresía.'
-        });
-      }
-
-      // Llama al servicio para procesar el escaneo.
-      const result = await MembershipService.processScan(id_activa);
-
-      // El servicio devolverá un objeto con el estado y los detalles.
+      const { id } = req.params;
+      // Llama al servicio para procesar el QR. El servicio se encargará de la validación y el registro.
+      const result = await MembershipService.processQRScan(id);
       res.json({
         success: true,
-        ...result
+        data: result,
       });
+    } catch (error) {
+      console.error("Error al procesar el QR de la membresía:", error);
+      // Devuelve un estado de error específico si el servicio lo proporciona (ej. no encontrado).
+      const statusCode = error.statusCode || 500;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || "Error al procesar el código QR.",
+        error: error.message,
+      });
+    }
+  },
 
-    } catch (error)
-     {
-      // Manejar errores específicos, como membresía no encontrada.
-      if (error.statusCode === 404) {
-        return res.status(404).json({
-          success: false,
-          status: 'not_found',
-          message: error.message
-        });
-      }
-
-      // Error genérico del servidor.
-      console.error("Error al procesar el escaneo QR:", error);
+  /**
+   * Endpoint de API para obtener el historial de acceso de una fecha específica.
+   * @async
+   * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `date` en `req.query`.
+   * @param {import('express').Response} res - El objeto de respuesta de Express.
+   */
+  async getAccessHistoryAPI(req, res) {
+    try {
+      const { date } = req.query;
+      // Si no se proporciona una fecha, se usa el día actual.
+      const targetDate = date || new Date().toISOString().split('T')[0];
+      const accessLog = await MembershipService.getAccessHistory(targetDate);
+      res.json({
+        success: true,
+        data: accessLog,
+      });
+    } catch (error) {
+      console.error("Error en API de historial de acceso:", error);
       res.status(500).json({
         success: false,
-        status: 'error',
-        message: 'Error interno del servidor al procesar el escaneo.'
+        message: "Error al obtener el historial de acceso",
+        error: error.message,
       });
     }
   },
