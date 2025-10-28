@@ -381,7 +381,8 @@ export const renderAllRentas = async (req, res) => {
 
     console.log('🔍 Usuario en renderAllRentas:', user);
     console.log('🔍 Rol del usuario:', user.role);
-    console.log(rentasFormateadas);
+    console.log('📊 Total de rentas:', rentasFormateadas.length);
+    console.log('📋 Rentas:', rentasFormateadas);
     res.render("showRent", {
       title: "Listado de habitaciones rentadas",
       allRentas: rentasFormateadas,
@@ -512,6 +513,7 @@ export const renderFormEditarReservacion = async (req, res) => {
       reservacion,
       habitaciones,
       user: req.session.user,
+      showNavbar: true 
     });
   } catch (err) {
     console.error("Error en renderFormEditarReservacion:", err);
@@ -906,6 +908,7 @@ export const renderCalendario = (req, res) => {
   res.render("calendar", {
     title: "Calendario de Habitaciones",
     showFooter: true,
+    showNavbar: true, 
   });
 };
 
