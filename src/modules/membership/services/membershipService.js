@@ -1122,7 +1122,7 @@ export const MembershipService = {
 
     // Crear un objeto base para la respuesta de detalles.
     const detailsResponse = {
-      titular: membershipDetails.titular,
+      titular: membershipDetails.nombre_completo, // CORRECCIÓN: Usar nombre_completo
       tipo_membresia: membershipDetails.tipo_membresia,
       fecha_inicio: membershipDetails.fecha_inicio,
       fecha_fin: membershipDetails.fecha_fin,

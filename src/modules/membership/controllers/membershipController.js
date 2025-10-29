@@ -203,8 +203,8 @@ export const renderScanQRPage = async (req, res) => {
     const userRole = req.session.user?.role || "Recepcionista";
     const isAdmin = userRole === "Administrador";
 
-    // Obtener la fecha de hoy en formato YYYY-MM-DD.
-    const today = new Date().toISOString().split('T')[0];
+    // Solución definitiva para la fecha: Formatear la fecha usando la zona horaria correcta.
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
 
     // Llama al servicio para obtener el historial de acceso del día actual.
     // Este método se implementará en el siguiente paso.

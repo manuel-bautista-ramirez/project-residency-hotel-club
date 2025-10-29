@@ -48,10 +48,11 @@ const showResultModal = (data) => {
             </div>
         ` : '';
 
-    // Refuerzo de la lógica de visualización:
-    // Se genera el HTML de los detalles si existen, independientemente del estado.
-    const detailsHtml = details && details.titular
-        ? `
+    // Lógica de visualización mejorada:
+    // Construye el HTML de los detalles si los datos del titular están presentes.
+    let detailsHtml = `<p class="text-center text-gray-600">${data.message || 'No se pudo obtener información detallada.'}</p>`;
+    if (details && details.titular) {
+        detailsHtml = `
             <div class="space-y-2 text-gray-700">
                 <p><strong class="font-semibold">Titular:</strong> ${details.titular}</p>
                 <p><strong class="font-semibold">Tipo:</strong> ${details.tipo_membresia}</p>
@@ -59,8 +60,8 @@ const showResultModal = (data) => {
                 <p><strong class="font-semibold">Vencimiento:</strong> ${formatDate(details.fecha_fin)}</p>
             </div>
             ${integrantesList}
-        `
-        : `<p class="text-center text-gray-600">${data.message || 'No se pudo obtener información detallada.'}</p>`;
+        `;
+    }
 
     modalContent.innerHTML = `
         <div class="p-6 text-white text-center rounded-t-2xl ${modalHeaderClass}">
@@ -135,25 +136,30 @@ qrForm.addEventListener('submit', async (e) => {
     let rawInput = qrInput.value.trim();
     if (!rawInput) return;
 
-    let membershipId;
+    let membershipId = null;
 
-    // Intenta parsear el input como JSON (del escáner QR).
+    // Estrategia de extracción de ID robusta:
+    // 1. Intenta parsear como JSON.
     try {
         const qrData = JSON.parse(rawInput);
         if (qrData && qrData.id_activa) {
             membershipId = qrData.id_activa;
-        } else {
-            // Si el JSON no tiene el formato esperado, intenta usar el input como está.
-            membershipId = rawInput;
         }
     } catch (error) {
-        // Si no es un JSON válido, asume que es una entrada manual (solo números).
-        membershipId = rawInput;
+        // No es un JSON válido, se ignora el error y se pasa a la siguiente estrategia.
     }
 
-    // Si después de todo el proceso no tenemos un ID válido, no hacemos nada.
+    // 2. Si no se encontró ID, busca cualquier secuencia de números en el string.
     if (!membershipId) {
-        showResultModal({ status: 'not_found', message: 'ID de membresía inválido.' });
+        const match = rawInput.match(/\d+/);
+        if (match) {
+            membershipId = match[0];
+        }
+    }
+
+    // Si después de todos los intentos no hay un ID, muestra un error.
+    if (!membershipId) {
+        showResultModal({ status: 'not_found', message: 'No se pudo encontrar un ID de membresía válido en el código.' });
         return;
     }
 
@@ -182,19 +188,6 @@ qrForm.addEventListener('submit', async (e) => {
         });
     }
 });
-
-/**
- * Filtra la entrada en tiempo real para permitir solo números en el campo de texto.
- * Esto no previene que el escáner pegue el JSON completo.
- */
-qrInput.addEventListener('input', () => {
-    // Permite que el campo esté temporalmente vacío o contenga el JSON.
-    // Esta validación se enfoca en la escritura manual.
-    if (!qrInput.value.startsWith('{')) {
-        qrInput.value = qrInput.value.replace(/[^0-9]/g, '');
-    }
-});
-
 
 /**
  * Maneja el cambio de fecha en el selector de historial.
