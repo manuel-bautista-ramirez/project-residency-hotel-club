@@ -207,14 +207,14 @@ export const renderScanQRPage = async (req, res) => {
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
 
     // Llama al servicio para obtener el historial de acceso del día actual.
-    // Este método se implementará en el siguiente paso.
-    const accessLog = await MembershipService.getAccessHistory(today);
+    const historyData = await MembershipService.getAccessHistory(today, 1); // Carga la primera página
 
     res.render("scanQR", {
       title: "Control de Acceso - Escanear QR",
       isAdmin,
       userRole,
-      accessLog,
+      accessLog: historyData.logs,
+      pagination: historyData.pagination,
       showFooter: true,
       currentDate: today,
       helpers: {

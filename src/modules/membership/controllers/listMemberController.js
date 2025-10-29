@@ -222,13 +222,14 @@ const listMembershipController = {
    */
   async getAccessHistoryAPI(req, res) {
     try {
-      const { date } = req.query;
+      const { date, page } = req.query;
+      const pageNumber = parseInt(page) || 1;
       // Si no se proporciona una fecha, se usa el día actual.
-      const targetDate = date || new Date().toISOString().split('T')[0];
-      const accessLog = await MembershipService.getAccessHistory(targetDate);
+      const targetDate = date || new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+      const historyData = await MembershipService.getAccessHistory(targetDate, pageNumber);
       res.json({
         success: true,
-        data: accessLog,
+        data: historyData,
       });
     } catch (error) {
       console.error("Error en API de historial de acceso:", error);

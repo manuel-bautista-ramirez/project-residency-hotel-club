@@ -1161,17 +1161,27 @@ export const MembershipService = {
   },
 
   /**
-   * Obtiene el historial de acceso para una fecha específica.
+   * Obtiene el historial de acceso para una fecha específica, con paginación.
    * @param {string} date - La fecha en formato YYYY-MM-DD.
-   * @returns {Promise<Array<object>>} Un array con los registros de acceso.
+   * @param {number} page - El número de página.
+   * @returns {Promise<object>} Un objeto con los registros de acceso y la información de paginación.
    */
-  async getAccessHistory(date) {
+  async getAccessHistory(date, page = 1) {
     if (!date) {
         const error = new Error("La fecha es requerida.");
         error.statusCode = 400;
         throw error;
     }
-    const accessLog = await MembershipModel.getAccessLogByDate(date);
-    return accessLog;
+    const limit = 10; // Definir el número de registros por página
+    const { logs, total } = await MembershipModel.getAccessLogByDate(date, page, limit);
+
+    return {
+      logs,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalRecords: total
+      }
+    };
   }
 };

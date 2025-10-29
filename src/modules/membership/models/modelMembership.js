@@ -540,7 +540,7 @@ const MembershipModel = {
       // Truncar area_acceso si es más largo de 50 caracteres para evitar errores de BD.
       const truncatedArea = area_acceso.substring(0, 50);
       const [result] = await pool.query(
-        `INSERT INTO registro_entradas (id_activa, area_acceso) VALUES (?, ?)`,
+        `INSERT INTO registro_entradas (id_activa, fecha_hora_entrada, area_acceso) VALUES (?, NOW(), ?)`,
         [id_activa, truncatedArea]
       );
       return result.insertId;
@@ -551,13 +551,26 @@ const MembershipModel = {
   },
 
   /**
-   * Obtiene el historial de entradas para una fecha específica.
+   * Obtiene el historial de entradas para una fecha específica, con paginación.
    * @param {string} date - La fecha en formato 'YYYY-MM-DD'.
-   * @returns {Promise<Array<object>>} Un array con los registros de entrada.
+   * @param {number} page - El número de página a obtener.
+   * @param {number} limit - El número de registros por página.
+   * @returns {Promise<{logs: Array<object>, total: number}>} Un objeto con los registros y el conteo total.
    */
-  async getAccessLogByDate(date) {
+  async getAccessLogByDate(date, page = 1, limit = 10) {
     try {
-      const [rows] = await pool.query(
+      const offset = (page - 1) * limit;
+
+      // Consulta para obtener el total de registros para esa fecha
+      const [[{ total }]] = await pool.query(
+        `SELECT COUNT(*) as total
+         FROM registro_entradas
+         WHERE DATE(fecha_hora_entrada) = ?`,
+        [date]
+      );
+
+      // Consulta para obtener los registros de la página actual
+      const [logs] = await pool.query(
         `SELECT
           re.id_entrada,
           re.fecha_hora_entrada,
@@ -567,10 +580,12 @@ const MembershipModel = {
         JOIN membresias_activas ma ON re.id_activa = ma.id_activa
         JOIN clientes c ON ma.id_cliente = c.id_cliente
         WHERE DATE(re.fecha_hora_entrada) = ?
-        ORDER BY re.fecha_hora_entrada DESC`,
-        [date]
+        ORDER BY re.fecha_hora_entrada DESC
+        LIMIT ? OFFSET ?`,
+        [date, limit, offset]
       );
-      return rows;
+
+      return { logs, total };
     } catch (error) {
       console.error("Error en getAccessLogByDate del modelo:", error);
       throw error;

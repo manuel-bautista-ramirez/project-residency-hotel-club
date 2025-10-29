@@ -17,6 +17,15 @@ const modal = $('#qr-result-modal');
 const modalContent = $('#modal-content');
 const datePicker = $('#history-date-picker');
 const historyTableBody = $('#access-history-table-body');
+const prevPageBtn = $('#prev-page-btn');
+const nextPageBtn = $('#next-page-btn');
+const tableFooter = $('#table-footer');
+const recordCountEl = $('#record-count');
+const totalRecordsEl = $('#total-records');
+const currentPageEl = $('#current-page');
+const totalPagesEl = $('#total-pages');
+
+let currentPage = 1;
 
 /**
  * Muestra el modal de resultados con la información de la membresía.
@@ -97,18 +106,41 @@ const hideResultModal = () => {
 };
 
 /**
- * Actualiza la tabla de historial de acceso con los datos de una fecha específica.
- * @param {string} date - La fecha en formato YYYY-MM-DD.
+ * Actualiza los controles de paginación (botones y texto).
+ * @param {object} pagination - El objeto de paginación de la API.
  */
-const updateHistoryTable = async (date) => {
+const updatePaginationControls = (pagination) => {
+    if (!pagination || pagination.totalRecords === 0) {
+        tableFooter.classList.add('hidden');
+        return;
+    }
+
+    tableFooter.classList.remove('hidden');
+
+    currentPage = pagination.currentPage;
+    recordCountEl.textContent = (pagination.currentPage - 1) * 10 + pagination.logsCount;
+    totalRecordsEl.textContent = pagination.totalRecords;
+    currentPageEl.textContent = pagination.currentPage;
+    totalPagesEl.textContent = pagination.totalPages;
+
+    prevPageBtn.disabled = pagination.currentPage === 1;
+    nextPageBtn.disabled = pagination.currentPage === pagination.totalPages;
+};
+
+/**
+ * Actualiza la tabla de historial de acceso con los datos de una fecha y página específicas.
+ * @param {string} date - La fecha en formato YYYY-MM-DD.
+ * @param {number} page - El número de página a solicitar.
+ */
+const updateHistoryTable = async (date, page = 1) => {
     try {
-        const response = await fetch(`/api/memberships/access-history?date=${date}`);
+        const response = await fetch(`/api/memberships/access-history?date=${date}&page=${page}`);
         if (!response.ok) throw new Error('Error al cargar el historial.');
 
         const result = await response.json();
-        const logs = result.data;
+        const { logs, pagination } = result.data;
 
-        if (logs.length > 0) {
+        if (logs && logs.length > 0) {
             historyTableBody.innerHTML = logs.map(log => `
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${log.titular}</td>
@@ -119,9 +151,13 @@ const updateHistoryTable = async (date) => {
         } else {
             historyTableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">No hay registros para la fecha seleccionada.</td></tr>';
         }
+
+        updatePaginationControls({ ...pagination, logsCount: logs?.length || 0 });
+
     } catch (error) {
         console.error(error);
         historyTableBody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-red-500">Error al cargar el historial.</td></tr>';
+        tableFooter.classList.add('hidden');
     }
 };
 
@@ -195,9 +231,28 @@ qrForm.addEventListener('submit', async (e) => {
 datePicker.addEventListener('change', () => {
     const selectedDate = datePicker.value;
     if (selectedDate) {
-        updateHistoryTable(selectedDate);
+        updateHistoryTable(selectedDate, 1); // Al cambiar de fecha, volver a la página 1
     }
 });
+
+/**
+ * Maneja el clic en el botón de página anterior.
+ */
+prevPageBtn.addEventListener('click', () => {
+    if (currentPage > 1) {
+        updateHistoryTable(datePicker.value, currentPage - 1);
+    }
+});
+
+/**
+ * Maneja el clic en el botón de página siguiente.
+ */
+nextPageBtn.addEventListener('click', () => {
+    // La deshabilitación del botón ya previene ir más allá de la última página,
+    // pero esta comprobación es una seguridad adicional.
+    updateHistoryTable(datePicker.value, currentPage + 1);
+});
+
 
 /**
  * Cierra el modal si se hace clic fuera del contenido.
