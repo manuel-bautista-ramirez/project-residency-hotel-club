@@ -28,6 +28,23 @@ const totalPagesEl = $('#total-pages');
 let currentPage = 1;
 
 /**
+ * Convierte todas las fechas UTC de la tabla a la hora local del navegador.
+ */
+const renderDates = () => {
+    document.querySelectorAll('.fecha-local').forEach(celda => {
+        const isoString = celda.dataset.timestamp;
+        if (isoString) {
+            const fechaUTC = new Date(isoString);
+            const opciones = {
+                year: 'numeric', month: 'long', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', hour12: true
+            };
+            celda.textContent = fechaUTC.toLocaleString(undefined, opciones);
+        }
+    });
+};
+
+/**
  * Muestra el modal de resultados con la información de la membresía.
  * @param {object} data - Los datos de la membresía obtenidos de la API.
  */
@@ -145,7 +162,9 @@ const updateHistoryTable = async (date, page = 1) => {
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${log.titular}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.area_acceso}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(log.fecha_hora_entrada)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 fecha-local" data-timestamp="${log.fecha_hora_entrada}">
+                        Cargando...
+                    </td>
                 </tr>
             `).join('');
         } else {
@@ -153,6 +172,9 @@ const updateHistoryTable = async (date, page = 1) => {
         }
 
         updatePaginationControls({ ...pagination, logsCount: logs?.length || 0 });
+
+        // Renderizar las fechas recién agregadas
+        renderDates();
 
     } catch (error) {
         console.error(error);
@@ -261,6 +283,13 @@ modal.addEventListener('click', (e) => {
     if (e.target === modal) {
         hideResultModal();
     }
+});
+
+/**
+ * Ejecuta la conversión de fechas inicial cuando el DOM está completamente cargado.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    renderDates();
 });
 
 /**

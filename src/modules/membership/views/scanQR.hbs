@@ -41,7 +41,9 @@
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{this.titular}}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{this.area_acceso}}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{formatDate this.fecha_hora_entrada}}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 fecha-local" data-timestamp="{{this.fecha_hora_entrada}}">
+                            Cargando...
+                        </td>
                     </tr>
                     {{else}}
                     <tr>

@@ -1175,8 +1175,14 @@ export const MembershipService = {
     const limit = 10; // Definir el número de registros por página
     const { logs, total } = await MembershipModel.getAccessLogByDate(date, page, limit);
 
+    // Convertir fechas a formato ISO 8601 (UTC)
+    const formattedLogs = logs.map(log => ({
+      ...log,
+      fecha_hora_entrada: new Date(log.fecha_hora_entrada).toISOString()
+    }));
+
     return {
-      logs,
+      logs: formattedLogs,
       pagination: {
         currentPage: page,
         totalPages: Math.ceil(total / limit),

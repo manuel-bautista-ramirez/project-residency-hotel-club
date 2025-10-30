@@ -540,7 +540,7 @@ const MembershipModel = {
       // Truncar area_acceso si es más largo de 50 caracteres para evitar errores de BD.
       const truncatedArea = area_acceso.substring(0, 50);
       const [result] = await pool.query(
-        `INSERT INTO registro_entradas (id_activa, fecha_hora_entrada, area_acceso) VALUES (?, NOW(), ?)`,
+        `INSERT INTO registro_entradas (id_activa, area_acceso) VALUES (?, ?)`,
         [id_activa, truncatedArea]
       );
       return result.insertId;
