@@ -819,23 +819,36 @@ export const MembershipService = {
     // 3. Formatear los datos con la nueva lógica de estado
     const membresiasFormateadas = membresias.map((membresia) => {
       const diasRestantes = membresia.dias_restantes;
-      const diasParaIniciar = membresia.dias_para_iniciar;
-
       let statusClass = '';
       let statusText = '';
 
-      if (diasParaIniciar > 0) {
-        statusClass = 'bg-blue-100 text-blue-800';
-        statusText = 'Programada';
-      } else if (diasRestantes <= 0) {
-        statusClass = 'bg-red-100 text-red-800';
-        statusText = 'Vencida';
-      } else if (diasRestantes <= 8) {
-        statusClass = 'bg-yellow-100 text-yellow-800';
-        statusText = 'Por Vencer';
-      } else {
-        statusClass = 'bg-green-100 text-green-800';
-        statusText = 'Activa';
+      // La lógica ahora prioriza el 'estado' de la base de datos.
+      switch (membresia.estado) {
+        case 'Vencida':
+          statusClass = 'bg-red-100 text-red-800';
+          statusText = 'Vencida';
+          break;
+        case 'Inactiva':
+          statusClass = 'bg-gray-100 text-gray-800';
+          statusText = 'Inactiva';
+          break;
+        case 'Activa':
+          if (diasRestantes <= 0) {
+            // Caso borde: estado 'Activa' pero fecha ya pasó. Se considera vencida.
+            statusClass = 'bg-red-100 text-red-800';
+            statusText = 'Vencida';
+          } else if (diasRestantes <= 8) {
+            statusClass = 'bg-yellow-100 text-yellow-800';
+            statusText = 'Por Vencer';
+          } else {
+            statusClass = 'bg-green-100 text-green-800';
+            statusText = 'Activa';
+          }
+          break;
+        default:
+          // Fallback para cualquier otro estado inesperado.
+          statusClass = 'bg-gray-100 text-gray-800';
+          statusText = membresia.estado || 'Desconocido';
       }
 
       return {
