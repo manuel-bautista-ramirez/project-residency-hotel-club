@@ -113,3 +113,5 @@ const Validator = {
         errorContainer.classList.remove('hidden');
     }
 };
+
+export { Validator };
