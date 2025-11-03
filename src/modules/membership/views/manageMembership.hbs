@@ -58,11 +58,13 @@
                                     data-id="{{this.id_tipo_membresia}}" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </button>
+                                {{#isNotDefault this.nombre 'tipo'}}
                                 <button
                                     class="delete-tipo-btn action-btn bg-red-100 text-red-600 hover:bg-red-200 hover:scale-110 transition-all duration-200"
                                     data-id="{{this.id_tipo_membresia}}" data-nombre="{{this.nombre}}" title="Eliminar">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
+                                {{/isNotDefault}}
                             </div>
                         </td>
                     </tr>
@@ -108,11 +110,13 @@
                                     data-id="{{this.id_metodo_pago}}" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </button>
+                                {{#isNotDefault this.nombre 'metodo'}}
                                 <button
                                     class="delete-metodo-btn action-btn bg-red-100 text-red-600 hover:bg-red-200 hover:scale-110 transition-all duration-200"
                                     data-id="{{this.id_metodo_pago}}" data-nombre="{{this.nombre}}" title="Eliminar">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
+                                {{/isNotDefault}}
                             </div>
                         </td>
                     </tr>
@@ -237,4 +241,5 @@
     </div>
 </div>
 
-<script src="/js/moduleMembershipJs/manageTypes.js"></script>
+<script src="/js/moduleMembershipJs/manageTypes.js" type="module"></script>
+

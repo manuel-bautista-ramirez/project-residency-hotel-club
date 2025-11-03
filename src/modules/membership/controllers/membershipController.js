@@ -179,7 +179,22 @@ export const renderManageMembership = async (req, res) => {
             isAdmin,
             userRole,
             tiposMembresia,
-            metodosPago
+            metodosPago,
+            helpers: {
+                // Helper para verificar si un item NO es un valor por defecto
+                isNotDefault: function (name, type, options) {
+                    const defaultTipos = ['Familiar', 'Individual Alberca', 'Individual General', 'Individual Gym'];
+                    const defaultMetodos = ['Efectivo', 'Tarjeta de crédito', 'Tarjeta de débito', 'Transferencia bancaria'];
+
+                    if (type === 'tipo' && !defaultTipos.includes(name)) {
+                        return options.fn(this);
+                    }
+                    if (type === 'metodo' && !defaultMetodos.includes(name)) {
+                        return options.fn(this);
+                    }
+                    return options.inverse(this);
+                }
+            }
         });
     } catch (error) {
         console.error("Error al cargar la página de gestión de membresía:", error);
