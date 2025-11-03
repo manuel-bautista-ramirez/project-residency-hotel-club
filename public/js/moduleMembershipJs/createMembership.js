@@ -1,4 +1,5 @@
-// Funciones de utilidad
+import { Validator } from './validator.js';
+
 /**
  * Objeto MembershipUI que encapsula toda la lógica de la interfaz de usuario
  * para la creación de clientes y membresías. Sigue un patrón de módulo para organizar el código.

@@ -821,41 +821,38 @@ export const MembershipService = {
       const diasRestantes = membresia.dias_restantes;
       const diasParaIniciar = membresia.dias_para_iniciar;
       let statusClass = '';
-      let statusText = '';
+      let statusText = membresia.estado; // Empezar con el estado de la BD
 
-      // 1. Verificar si la membresía está programada para el futuro.
-      if (diasParaIniciar > 0) {
+      // Prioridad 1: Estados definitivos de la BD
+      if (membresia.estado === 'Cancelada') {
+        statusClass = 'bg-gray-100 text-gray-800';
+        statusText = 'Cancelada';
+      } else if (membresia.estado === 'Vencida') {
+        statusClass = 'bg-red-100 text-red-800';
+        statusText = 'Vencida';
+      }
+      // Prioridad 2: Membresías futuras
+      else if (diasParaIniciar > 0) {
         statusClass = 'bg-blue-100 text-blue-800';
         statusText = 'Programada';
-      } else {
-        // 2. Si no está programada, aplicar la lógica basada en el estado de la BD.
-        switch (membresia.estado) {
-          case 'Vencida':
-            statusClass = 'bg-red-100 text-red-800';
-            statusText = 'Vencida';
-            break;
-          case 'Inactiva':
-            statusClass = 'bg-gray-100 text-gray-800';
-            statusText = 'Inactiva';
-            break;
-          case 'Activa':
-            if (diasRestantes <= 0) {
-              // Caso borde: estado 'Activa' pero fecha ya pasó. Se considera vencida.
-              statusClass = 'bg-red-100 text-red-800';
-              statusText = 'Vencida';
-            } else if (diasRestantes <= 8) {
-              statusClass = 'bg-yellow-100 text-yellow-800';
-              statusText = 'Por Vencer';
-            } else {
-              statusClass = 'bg-green-100 text-green-800';
-              statusText = 'Activa';
-            }
-            break;
-          default:
-            // Fallback para cualquier otro estado inesperado.
-            statusClass = 'bg-gray-100 text-gray-800';
-            statusText = membresia.estado || 'Desconocido';
+      }
+      // Prioridad 3: Lógica basada en fechas para membresías activas
+      else if (membresia.estado === 'Activa') {
+        if (diasRestantes <= 0) {
+          statusClass = 'bg-red-100 text-red-800';
+          statusText = 'Vencida';
+        } else if (diasRestantes <= 8) {
+          statusClass = 'bg-yellow-100 text-yellow-800';
+          statusText = 'Por Vencer';
+        } else {
+          statusClass = 'bg-green-100 text-green-800';
+          statusText = 'Activa';
         }
+      }
+      // Fallback para cualquier otro caso
+      else {
+        statusClass = 'bg-gray-100 text-gray-800';
+        statusText = membresia.estado || 'Desconocido';
       }
 
       return {
@@ -1025,29 +1022,26 @@ export const MembershipService = {
       telefono,
       correo,
       estado,
-      fecha_inicio,
-      fecha_fin,
-      precio_final,
       integrantes
     } = data;
 
     // Validar que la membresía a actualizar existe
     const membresia = await this.getMembershipForEdit(id);
-    const tipo = membresia.tipo || 'Individual';
 
     const membershipData = {
       nombre_completo,
       telefono,
       correo,
       estado,
-      fecha_inicio,
-      fecha_fin,
-      precio_final: parseFloat(precio_final)
+      // CORRECCIÓN: Usar los valores existentes de la BD para los campos readonly.
+      fecha_inicio: membresia.fecha_inicio,
+      fecha_fin: membresia.fecha_fin,
+      precio_final: membresia.precio_final
     };
 
     const updateData = {
       membershipData,
-      tipo: tipo,
+      tipo: membresia.tipo || 'Individual',
       integrantes: integrantes || []
     };
 

@@ -62,6 +62,9 @@ const modelList = {
             case 'scheduled':
                 baseQuery += ` AND ma.fecha_inicio > CURDATE()`;
                 break;
+            case 'cancelled': // <-- CASO CORREGIDO
+                baseQuery += ` AND ma.estado = 'Cancelada'`;
+                break;
         }
     }
 

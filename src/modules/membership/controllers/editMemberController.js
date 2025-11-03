@@ -41,7 +41,9 @@ export const editMemberController = {
   async updateMembership(req, res) {
     try {
       const { id } = req.params;
-      await MembershipService.updateCompleteMembership(id, req.body);
+      // CORRECCIÓN: Se debe pasar directamente req.body, que contiene todos los datos del formulario.
+      // El servicio se encargará de estructurar los datos correctamente.
+      await MembershipService.updateCompleteMembership(id, req.body); 
       // Redirige a la lista de membresías con un mensaje de éxito en la URL.
       res.redirect("/memberships/listMembership?success=Membresía actualizada correctamente");
     } catch (error) {
