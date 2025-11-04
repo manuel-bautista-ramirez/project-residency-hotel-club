@@ -16,7 +16,5 @@ public/uploads/
 !public/uploads/**/.gitkeep
 
 # Archivos CSS
-public/css/
-!public/css/all.min.css
 *.css
-!public/css/all.min.css
+
