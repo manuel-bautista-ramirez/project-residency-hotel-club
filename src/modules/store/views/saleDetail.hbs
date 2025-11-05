@@ -1,0 +1,75 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 pb-20">
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b border-slate-200">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex items-center gap-3 mb-4">
+        <a href="/store/sales" class="text-blue-600 hover:text-blue-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path fill-rule="evenodd" d="M7.28 7.72a.75.75 0 010 1.06l-2.47 2.47H21a.75.75 0 010 1.5H4.81l2.47 2.47a.75.75 0 11-1.06 1.06l-3.75-3.75a.75.75 0 010-1.06l3.75-3.75a.75.75 0 011.06 0z" clip-rule="evenodd"/>
+          </svg>
+        </a>
+        <h1 class="text-3xl md:text-4xl font-bold text-blue-900">
+          Detalle de Venta <span class="text-blue-600">#{{sale.id}}</span>
+        </h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <!-- Información General -->
+      <div class="p-6 border-b border-slate-200">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div>
+            <h3 class="text-sm font-semibold text-slate-500 uppercase">Cliente</h3>
+            <p class="text-lg font-medium text-slate-800">{{sale.nombre_cliente}}</p>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-slate-500 uppercase">Fecha</h3>
+            <p class="text-lg font-medium text-slate-800">{{formatDate sale.fecha_venta}}</p>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-slate-500 uppercase">Total</h3>
+            <p class="text-2xl font-bold text-blue-600">${{sale.total}}</p>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-slate-500 uppercase">Método de Pago</h3>
+            <p class="text-lg font-medium text-slate-800 capitalize">{{sale.tipo_pago}}</p>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-slate-500 uppercase">Atendido por</h3>
+            <p class="text-lg font-medium text-slate-800">{{sale.usuario}}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Productos -->
+      <div class="p-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Productos Comprados</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="border-b-2 border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-slate-600">Producto</th>
+                <th class="px-4 py-3 text-center text-sm font-semibold text-slate-600">Cantidad</th>
+                <th class="px-4 py-3 text-right text-sm font-semibold text-slate-600">Precio Unitario</th>
+                <th class="px-4 py-3 text-right text-sm font-semibold text-slate-600">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {{#each sale.productos}}
+                <tr>
+                  <td class="px-4 py-4 text-sm text-slate-800 font-medium">{{this.producto_nombre}}</td>
+                  <td class="px-4 py-4 text-sm text-slate-700 text-center">{{this.cantidad}}</td>
+                  <td class="px-4 py-4 text-sm text-slate-700 text-right">${{this.precio_unitario}}</td>
+                  <td class="px-4 py-4 text-sm text-slate-800 font-bold text-right">${{this.subtotal}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
