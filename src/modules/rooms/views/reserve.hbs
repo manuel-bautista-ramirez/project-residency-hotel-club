@@ -547,7 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     submitButton.disabled = true;
     submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-    submitButton.textContent = 'Calculando precio...';
+   
 
     try {
       const url = `/api/rooms/${roomId}/price?month=${month}`;
@@ -578,7 +578,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       submitButton.disabled = false;
       submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
-      submitButton.textContent = 'Crear reservación';
+      submitButton.innerHTML = '<i class="fa-solid fa-plus"></i> Crear';
     }
   }
 

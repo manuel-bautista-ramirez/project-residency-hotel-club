@@ -663,11 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       showNotification('Error al obtener el precio de la habitación', 'error');
       console.error("Error obteniendo precio:", err);
-    } finally {
-      submitButton.disabled = false;
-      submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
-      submitButton.textContent = 'Crear Renta';
-    }
+    
   }
 
   // Add time to date

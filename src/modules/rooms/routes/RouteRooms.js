@@ -77,7 +77,7 @@ routerRoom.post("/rentas/eliminar/:id", deleteIdRenta);
 routerRoom.post("/rooms/desocupar/:id", marcarComoDesocupada);
 
 // ----- CALENDARIO -----
-routerRoom.get("/rooms/calendario", renderCalendarioRooms);
+routerRoom.get("/rooms/list/calendario", renderCalendarioRooms);
 routerRoom.get("/api/rooms/calendar-data", getCalendarData);
 
 // ----- API for promesas -----
