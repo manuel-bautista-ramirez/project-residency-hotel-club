@@ -5,8 +5,18 @@
 <div class="min-h-screen bg-gray-50 overflow-hidden">
   <div class="max-w-7xl mx-auto px-3 py-4">
     <!-- Encabezado compacto -->
-    <div class="mb-4">
+    <div class="mb-4 flex justify-between items-center">
       <h1 class="text-xl font-bold text-gray-900">Calendario</h1>
+      <button 
+        onclick="refreshCalendar()" 
+        class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors flex items-center gap-2"
+        title="Actualizar calendario"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        Actualizar
+      </button>
     </div>
 
     <!-- Estadísticas compactas -->
@@ -253,6 +263,30 @@
     });
 
     calendar.render();
+
+    // Verificar si se viene de una actualización y refrescar inmediatamente
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('updated') === 'true') {
+      console.log('🔄 Detectada actualización, refrescando calendario...');
+      setTimeout(function() {
+        calendar.refetchEvents();
+        // Limpiar el parámetro de la URL
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }, 1000);
+    }
+
+    // Actualización automática cada 30 segundos
+    setInterval(function() {
+      console.log('🔄 Actualizando eventos del calendario...');
+      calendar.refetchEvents();
+    }, 30000);
+
+    // Función global para actualizar manualmente el calendario
+    window.refreshCalendar = function() {
+      console.log('🔄 Actualizando calendario manualmente...');
+      calendar.refetchEvents();
+    };
 
     // Prevenir scroll
     document.body.style.overflow = 'hidden';

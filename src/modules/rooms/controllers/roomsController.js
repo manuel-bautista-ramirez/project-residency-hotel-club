@@ -512,6 +512,7 @@ export const renderFormEditarReservacion = async (req, res) => {
       reservacion,
       habitaciones,
       user: req.session.user,
+       showNavbar: true
     });
   } catch (err) {
     console.error("Error en renderFormEditarReservacion:", err);
@@ -1953,11 +1954,12 @@ export const handleConvertReservationToRent = async (req, res) => {
 
       console.log("Resultados de envío:", resultadosEnvio);
 
-      res.redirect("/rooms/list/rentas");
+      // Redirigir a la página principal de rooms
+      res.redirect("/rooms");
     } catch (pdfError) {
       console.error("Error al generar/enviar PDF:", pdfError);
       // Aunque falle el PDF, la renta ya se creó
-      res.redirect("/rooms/list/rentas");
+      res.redirect("/rooms");
     }
   } catch (error) {
     console.error("Error al convertir reservación a renta:", error);
