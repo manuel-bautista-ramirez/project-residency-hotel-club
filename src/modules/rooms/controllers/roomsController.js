@@ -950,17 +950,31 @@ export const fetchEventos = async (req, res) => {
   }
 };
 
-// API para obtener eventos en formato FullCalendar
+// API para obtener eventos en formato FullCalendar (solo próximos)
 export const getCalendarEvents = async (req, res) => {
   try {
     const { getAllRentas, getAllReservationes } = await import("../models/ModelRoom.js");
     
     // Obtener rentas y reservaciones
-    const rentas = await getAllRentas();
-    const reservaciones = await getAllReservationes();
+    const todasLasRentas = await getAllRentas();
+    const todasLasReservaciones = await getAllReservationes();
     
-    console.log(`📊 Rentas encontradas: ${rentas.length}`);
-    console.log(`📊 Reservaciones encontradas: ${reservaciones.length}`);
+    // Filtrar solo eventos futuros (desde hoy)
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Inicio del día actual
+    
+    const rentas = todasLasRentas.filter(renta => {
+      const fechaIngreso = new Date(renta.fecha_ingreso);
+      return fechaIngreso >= hoy;
+    });
+    
+    const reservaciones = todasLasReservaciones.filter(reservacion => {
+      const fechaIngreso = new Date(reservacion.fecha_ingreso);
+      return fechaIngreso >= hoy;
+    });
+    
+    console.log(`📊 Total rentas en BD: ${todasLasRentas.length}, Próximas: ${rentas.length}`);
+    console.log(`📊 Total reservaciones en BD: ${todasLasReservaciones.length}, Próximas: ${reservaciones.length}`);
     
     // Convertir rentas a formato FullCalendar
     const eventosRentas = rentas.map(renta => ({
