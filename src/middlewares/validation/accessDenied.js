@@ -1,3 +1,5 @@
+import { checkUserStillExists } from './userActiveCheck.js';
+
 /**
  * Middleware de autenticación para verificar si un usuario está autenticado.
  *
@@ -5,12 +7,17 @@
  * está autenticado, permite continuar con el siguiente controlador. De lo contrario,
  * responde con un estado 401 y renderiza una vista de acceso restringido.
  */
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
   const isAuthenticated = req.session?.user; // Verifica si hay un usuario en la sesión
   if (isAuthenticated) {
     console.log(`Usuario autenticado: ${req.session.user.username}`);
     req.user = req.session.user;
-    next(); // Continúa con el controlador si está autenticado
+    
+    // Verificar que el usuario aún existe en la base de datos
+    await checkUserStillExists(req, res, () => {
+      // Si llegamos aquí, el usuario existe y puede continuar
+      next();
+    });
   } else {
     console.log("Usuario no autenticado. Redirigiendo al login.");
     res.status(401).render("authMiddleware", {
