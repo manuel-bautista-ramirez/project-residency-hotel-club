@@ -41,6 +41,7 @@ import {
   // Funciones para calendario
   renderCalendarioRooms,
   getCalendarData,
+  getCalendarEvents,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -79,6 +80,7 @@ routerRoom.post("/rooms/desocupar/:id", marcarComoDesocupada);
 // ----- CALENDARIO -----
 routerRoom.get("/rooms/list/calendario", renderCalendarioRooms);
 routerRoom.get("/api/rooms/calendar-data", getCalendarData);
+routerRoom.get("/rooms/calendario/eventos", getCalendarEvents);
 
 // ----- API for promesas -----
 

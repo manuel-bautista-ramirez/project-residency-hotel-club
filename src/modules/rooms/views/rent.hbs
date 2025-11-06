@@ -260,115 +260,7 @@
 </div>
 
 <script>
-// Función mejorada para mostrar la animación de creación
-function showCreationAnimation() {
-  const overlay = document.getElementById('loadingOverlay');
-  const progressBar = document.getElementById('progressBar');
-  const loadingMessage = document.getElementById('loadingMessage');
-  const loadingSubtext = document.getElementById('loadingSubtext');
-  const successCheckmark = document.getElementById('successCheckmark');
-  
-  if (!overlay) return;
-  
-  // Mostrar overlay con animación
-  overlay.classList.remove('pointer-events-none', 'opacity-0');
-  overlay.classList.add('opacity-100');
-  
-  // Animación escalada del contenido
-  setTimeout(() => {
-    const content = overlay.querySelector('.transform');
-    if (content) {
-      content.classList.remove('scale-95');
-      content.classList.add('scale-100');
-    }
-  }, 50);
-  
-  // Animación de la barra de progreso
-  setTimeout(() => {
-    if (progressBar) {
-      progressBar.classList.remove('w-0');
-      progressBar.classList.add('w-3/4');
-    }
-  }, 100);
-  
-  // Cambiar mensaje después de un tiempo
-  setTimeout(() => {
-    if (loadingMessage) {
-      loadingMessage.textContent = 'Procesando pago...';
-      loadingMessage.classList.add('text-green-600');
-    }
-  }, 1500);
-  
-  // Mostrar subtítulo
-  setTimeout(() => {
-    if (loadingSubtext) {
-      loadingSubtext.classList.remove('opacity-0');
-      loadingSubtext.classList.add('opacity-100');
-    }
-  }, 2000);
-  
-  // Completar barra de progreso y mostrar checkmark
-  setTimeout(() => {
-    if (progressBar) {
-      progressBar.classList.remove('w-3/4');
-      progressBar.classList.add('w-full');
-    }
-    
-    // Ocultar spinner y mostrar checkmark
-    setTimeout(() => {
-      const spinner = overlay.querySelector('.animate-spin');
-      if (spinner) {
-        spinner.style.opacity = '0';
-      }
-      
-      if (successCheckmark) {
-        successCheckmark.classList.remove('opacity-0');
-        successCheckmark.classList.add('opacity-100');
-      }
-      
-      if (loadingMessage) {
-        loadingMessage.textContent = '¡Renta creada!';
-        loadingMessage.classList.remove('text-green-600');
-        loadingMessage.classList.add('text-green-600', 'font-semibold');
-      }
-    }, 500);
-  }, 2500);
-}
 
-// En el evento de envío del formulario, reemplazar el código existente por:
-document.getElementById('formRent')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const isValid = await validateForm();
-  if (!isValid) {
-    return;
-  }
-  
-  // Mostrar animación mejorada
-  showCreationAnimation();
-  
-  // Deshabilitar el botón de envío
-  const submitButton = document.querySelector('button[type="submit"]');
-  if (submitButton) {
-    submitButton.disabled = true;
-    submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-  }
-  
-  // Preparar datos del formulario
-  const checkInWithTime = addTimeToDate(checkInInput.value);
-  const checkOutWithTime = addTimeToDate(checkOutInput.value, true);
-  
-  document.getElementById('check_in_with_time').value = checkInWithTime;
-  document.getElementById('check_out_with_time').value = checkOutWithTime;
-  
-  // Enviar formulario después de un breve delay para que la animación se muestre
-  setTimeout(() => {
-    e.target.submit();
-  }, 3500); // Tiempo suficiente para completar la animación
-});
-</script>
-
-<script>
 document.addEventListener("DOMContentLoaded", () => {
   const overlay = document.getElementById('loadingOverlay');
   const skeleton = document.getElementById('rentSkeleton');
@@ -646,9 +538,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!checkIn) return;
 
     const month = new Date(checkIn).getMonth() + 1;
-    submitButton.disabled = true;
-    submitButton.classList.add('opacity-50', 'cursor-not-allowed');
-    submitButton.textContent = 'Calculando precio...';
 
     try {
       const res = await fetch(`/api/rooms/${roomId}/price?month=${month}`);
@@ -663,7 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       showNotification('Error al obtener el precio de la habitación', 'error');
       console.error("Error obteniendo precio:", err);
-    
+    }
   }
 
   // Add time to date

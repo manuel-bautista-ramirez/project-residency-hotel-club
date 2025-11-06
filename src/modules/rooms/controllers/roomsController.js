@@ -912,7 +912,7 @@ export const renderCalendario = (req, res) => {
 // Nuevo calendario mejorado con vista por habitación
 export const renderCalendarioRooms = (req, res) => {
   const user = req.session.user || {};
-  res.render("calendarRooms", {
+  res.render("calendar", {
     title: "Calendario de Habitaciones",
     showFooter: true,
     user: {
@@ -947,6 +947,64 @@ export const fetchEventos = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener los eventos" });
+  }
+};
+
+// API para obtener eventos en formato FullCalendar
+export const getCalendarEvents = async (req, res) => {
+  try {
+    const { getAllRentas, getAllReservationes } = await import("../models/ModelRoom.js");
+    
+    // Obtener rentas y reservaciones
+    const rentas = await getAllRentas();
+    const reservaciones = await getAllReservationes();
+    
+    console.log(`📊 Rentas encontradas: ${rentas.length}`);
+    console.log(`📊 Reservaciones encontradas: ${reservaciones.length}`);
+    
+    // Convertir rentas a formato FullCalendar
+    const eventosRentas = rentas.map(renta => ({
+      id: `renta-${renta.id_renta}`,
+      title: `${renta.nombre_cliente} - Hab. ${renta.numero_habitacion}`,
+      start: renta.fecha_ingreso,
+      end: renta.fecha_salida,
+      backgroundColor: '#10b981',
+      borderColor: '#059669',
+      extendedProps: {
+        tipo: 'renta',
+        correo: '', // Las rentas no tienen correo en esta consulta
+        telefono: '', // Las rentas no tienen teléfono en esta consulta
+        habitacion: renta.numero_habitacion,
+        precio: renta.monto
+      }
+    }));
+    
+    // Convertir reservaciones a formato FullCalendar
+    const eventosReservaciones = reservaciones.map(reservacion => ({
+      id: `reservacion-${reservacion.id_reservacion}`,
+      title: `${reservacion.nombre_cliente} - Hab. ${reservacion.numero_habitacion}`,
+      start: reservacion.fecha_ingreso,
+      end: reservacion.fecha_salida,
+      backgroundColor: '#3b82f6',
+      borderColor: '#2563eb',
+      extendedProps: {
+        tipo: 'reservacion',
+        correo: reservacion.correo || '',
+        telefono: reservacion.telefono || '',
+        habitacion: reservacion.numero_habitacion,
+        precio: reservacion.precio_total
+      }
+    }));
+    
+    // Combinar todos los eventos
+    const todosLosEventos = [...eventosRentas, ...eventosReservaciones];
+    
+    console.log(`📅 Total eventos para calendario: ${todosLosEventos.length}`);
+    
+    res.json(todosLosEventos);
+  } catch (error) {
+    console.error("❌ Error obteniendo eventos del calendario:", error);
+    res.status(500).json({ error: "Error al obtener eventos del calendario" });
   }
 };
 
