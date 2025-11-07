@@ -1,6 +1,30 @@
 // roomsController.js
 import path from "path";
 import { fileURLToPath } from "url";
+
+// Helper function para manejo seguro de fechas
+const formatearFechaSafe = (fecha, formato = 'iso') => {
+  if (!fecha) return null;
+  try {
+    const fechaObj = new Date(fecha);
+    // Verificar si la fecha es válida
+    if (isNaN(fechaObj.getTime())) {
+      console.warn(`Fecha inválida encontrada: ${fecha}`);
+      return null;
+    }
+    
+    switch (formato) {
+      case 'date':
+        return fechaObj.toISOString().split("T")[0];
+      case 'iso':
+      default:
+        return fechaObj.toISOString();
+    }
+  } catch (error) {
+    console.warn(`Error al formatear fecha: ${fecha}`, error);
+    return null;
+  }
+};
 import { pool } from "../../../dataBase/connectionDataBase.js";
 import {
   getHabitaciones,
@@ -153,21 +177,37 @@ export const handleCreateReservation = async (req, res) => {
       return res.status(401).send("Usuario no autenticado o ID inválido");
     }
 
-    // Formateo de fechas
+    // Validar y formatear fechas de forma segura
+    if (!fecha_ingreso || !fecha_salida) {
+      console.error("Fechas faltantes:", { fecha_ingreso, fecha_salida });
+      return res.status(400).send("Las fechas de ingreso y salida son requeridas");
+    }
+
     const fechaIngresoDate = new Date(fecha_ingreso);
     const fechaSalidaDate = new Date(fecha_salida);
+
+    // Validar que las fechas sean válidas
+    if (isNaN(fechaIngresoDate.getTime()) || isNaN(fechaSalidaDate.getTime())) {
+      console.error("Fechas inválidas:", { fecha_ingreso, fecha_salida });
+      return res.status(400).send("Las fechas proporcionadas no son válidas");
+    }
 
     fechaIngresoDate.setUTCHours(18, 0, 0, 0);
     fechaSalidaDate.setUTCHours(18, 0, 0, 0);
 
     const formatUTCForMySQL = (date) => {
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-      const day = String(date.getUTCDate()).padStart(2, "0");
-      const hours = String(date.getUTCHours()).padStart(2, "0");
-      const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-      const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      try {
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+        const day = String(date.getUTCDate()).padStart(2, "0");
+        const hours = String(date.getUTCHours()).padStart(2, "0");
+        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+        const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      } catch (error) {
+        console.error("Error al formatear fecha para MySQL:", error);
+        throw new Error("Error al formatear fecha");
+      }
     };
 
     const fecha_ingreso_formatted = formatUTCForMySQL(fechaIngresoDate);
@@ -284,15 +324,9 @@ export const renderAllRervationes = async (req, res) => {
 
     const reservacionesFormateadas = allReservationes.map((reservacion) => ({
       ...reservacion,
-      fecha_reserva: reservacion.fecha_reserva
-        ? new Date(reservacion.fecha_reserva).toISOString()
-        : null,
-      fecha_ingreso: reservacion.fecha_ingreso
-        ? new Date(reservacion.fecha_ingreso).toISOString()
-        : null,
-      fecha_salida: reservacion.fecha_salida
-        ? new Date(reservacion.fecha_salida).toISOString()
-        : null,
+      fecha_reserva: formatearFechaSafe(reservacion.fecha_reserva),
+      fecha_ingreso: formatearFechaSafe(reservacion.fecha_ingreso),
+      fecha_salida: formatearFechaSafe(reservacion.fecha_salida),
     }));
 
     res.render("showReservations", {
@@ -373,18 +407,30 @@ export const renderAllRentas = async (req, res) => {
     const user = req.session.user || { role: "Usuario" };
     const allRentas = await getAllRentas();
 
-    // Formatear fechas sin ajuste de zona horaria
+    // Formatear fechas sin ajuste de zona horaria de forma segura
     const formatDateForDisplay = (dateStr) => {
       if (!dateStr) return null;
-      // Extraer la fecha y hora directamente del string de MySQL
-      // Formato: "2025-10-11T12:00:00.000Z" → "11/10/2025 12:00"
-      const date = new Date(dateStr);
-      const day = String(date.getUTCDate()).padStart(2, '0');
-      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-      const year = date.getUTCFullYear();
-      const hours = String(date.getUTCHours()).padStart(2, '0');
-      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-      return `${day}/${month}/${year} ${hours}:${minutes}`;
+      try {
+        // Extraer la fecha y hora directamente del string de MySQL
+        // Formato: "2025-10-11T12:00:00.000Z" → "11/10/2025 12:00"
+        const date = new Date(dateStr);
+        
+        // Verificar si la fecha es válida
+        if (isNaN(date.getTime())) {
+          console.warn(`Fecha inválida en renta: ${dateStr}`);
+          return "Fecha inválida";
+        }
+        
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const year = date.getUTCFullYear();
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+      } catch (error) {
+        console.error(`Error al formatear fecha de renta: ${dateStr}`, error);
+        return "Error en fecha";
+      }
     };
 
     const rentasFormateadas = allRentas.map((renta) => ({
@@ -544,13 +590,9 @@ export const renderFormEditarReservacion = async (req, res) => {
     const reservacion = await findReservacionById(reservacionId);
     if (!reservacion) return res.status(404).send("Reservación no encontrada");
 
-    // Formatear fechas para inputs tipo date
-    reservacion.fecha_ingreso = reservacion.fecha_ingreso
-      .toISOString()
-      .split("T")[0];
-    reservacion.fecha_salida = reservacion.fecha_salida
-      .toISOString()
-      .split("T")[0];
+    // Formatear fechas para inputs tipo date de forma segura
+    reservacion.fecha_ingreso = formatearFechaSafe(reservacion.fecha_ingreso, 'date') || "";
+    reservacion.fecha_salida = formatearFechaSafe(reservacion.fecha_salida, 'date') || "";
 
     const habitaciones = await getHabitaciones();
 

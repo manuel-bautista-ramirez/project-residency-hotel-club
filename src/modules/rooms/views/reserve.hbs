@@ -61,7 +61,6 @@
                   <input
                     id="nombre_cliente"
                     name="nombre_cliente"
-                    required
                     class="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"
                     placeholder="Nombre completo"
                   />
@@ -79,7 +78,6 @@
                       id="correo"
                       name="correo"
                       type="email"
-                      required
                       class="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"
                       placeholder="correo@ejemplo.com"
                     />
@@ -96,7 +94,6 @@
                       id="telefono"
                       name="telefono"
                       type="tel"
-                      required
                       class="w-full pl-7 pr-2 py-1.5 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"
                       placeholder="10 dígitos"
                     />
@@ -120,7 +117,6 @@
                   <input
                     id="fecha_ingreso"
                     type="date"
-                    required
                     class="w-full pl-7 pr-1 py-1.5 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"
                   />
                   <input type="hidden" id="fecha_ingreso_with_time" name="fecha_ingreso" value=""/>
@@ -136,7 +132,6 @@
                   <input
                     id="fecha_salida"
                     type="date"
-                    required
                     class="w-full pl-7 pr-1 py-1.5 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"
                   />
                   <input type="hidden" id="fecha_salida_with_time" name="fecha_salida" value=""/>
@@ -161,7 +156,7 @@
                 <label for="enganche" class="block text-xs font-medium text-gray-700 mb-1">Enganche (Opcional)</label>
                 <div class="relative">
                   <span class="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
-                  <input id="enganche" name="enganche" type="number" step="0.01" min="0" placeholder="0.00" value="0"
+                  <input id="enganche" name="enganche" type="number" step="100" min="0" placeholder="500.00" value="500"
                     class="w-full pl-5 pr-2 py-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 text-slate-700 outline-none transition-colors duration-200"/>
                 </div>
               </div>
@@ -852,3 +847,10 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log('Sistema de reservación inicializado correctamente');
 });
 </script>
+
+<!-- Incluir validaciones del módulo de habitaciones -->
+<script src="/js/ModuleRooms/js/index.js"></script>
+<script src="/js/ModuleRooms/js/realTimeValidation.js"></script>
+<script src="/js/ModuleRooms/js/priceCalculationFix.js"></script>
+<script src="/js/ModuleRooms/js/priceIntegrationFix.js"></script>
+<script src="/js/ModuleRooms/js/finalValidation.js"></script>
