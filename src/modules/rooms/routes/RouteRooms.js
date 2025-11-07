@@ -42,6 +42,8 @@ import {
   renderCalendarioRooms,
   getCalendarData,
   getCalendarEvents,
+  // Función para finalizar rentas expiradas
+  finalizarRentasExpiradasController,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -104,5 +106,8 @@ routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-whatsapp", sendRes
 
 // ----- RUTAS PARA RECORDATORIOS -----
 routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-reminder", sendCheckInReminder);
+
+// ----- RUTA PARA FINALIZAR RENTAS EXPIRADAS -----
+routerRoom.post("/api/rooms/finalizar-rentas-expiradas", finalizarRentasExpiradasController);
 
 export { routerRoom };

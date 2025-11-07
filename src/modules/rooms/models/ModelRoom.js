@@ -41,7 +41,7 @@ export const getHabitaciones = async () => {
           -- Si el estado fue cambiado manualmente a disponible, respetarlo
           WHEN h.estado = 'disponible' THEN 'disponible'
 
-          -- Si una renta ya venció (fecha_salida pasó o es hoy después de las 11:59), pasa a limpieza
+          -- Si una renta ya venció (fecha_salida pasó o es hoy después de la hora de salida), pasa a limpieza
           WHEN EXISTS (
             SELECT 1 FROM rentas re
             WHERE re.habitacion_id = h.id
@@ -49,18 +49,18 @@ export const getHabitaciones = async () => {
             AND (
               DATE(re.fecha_salida) < CURDATE()
               OR
-              (DATE(re.fecha_salida) = CURDATE() AND CURTIME() >= '12:00:00')
+              (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida)
             )
           ) THEN 'limpieza'
 
-          -- Si una reservación ya venció (fecha_salida pasó o es hoy después de las 11:59), pasa a limpieza
+          -- Si una reservación ya venció (fecha_salida pasó o es hoy después de la hora de salida), pasa a limpieza
           WHEN EXISTS (
             SELECT 1 FROM reservaciones r
             WHERE r.habitacion_id = h.id
             AND (
               DATE(r.fecha_salida) < CURDATE()
               OR
-              (DATE(r.fecha_salida) = CURDATE() AND CURTIME() >= '12:00:00')
+              (DATE(r.fecha_salida) = CURDATE() AND NOW() >= r.fecha_salida)
             )
           ) THEN 'limpieza'
 
@@ -258,7 +258,7 @@ export const deletebyReservation = async (id) => {
   }
 };
 
-// get all rentas created (solo activas)
+// get all rentas created (activas y expiradas)
 export const getAllRentas = async () => {
   const [rows] = await pool.query(`
     SELECT re.id AS id_renta,
@@ -271,11 +271,39 @@ export const getAllRentas = async () => {
           re.tipo_pago,
           re.monto,
           re.monto_letras,
-          COALESCE(re.estado, 'activa') AS estado_renta
+          COALESCE(re.estado, 'activa') AS estado_renta,
+          CASE
+            -- Si la renta está marcada como finalizada
+            WHEN re.estado = 'finalizada' THEN 'expirada'
+            -- Si la fecha de salida ya pasó o es hoy después de la hora de salida
+            WHEN (
+              DATE(re.fecha_salida) < CURDATE()
+              OR 
+              (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida)
+            ) THEN 'expirada'
+            -- Si está dentro del período de renta
+            ELSE 'corriente'
+          END AS estado_tiempo,
+          -- Calcular días restantes o días vencidos
+          CASE
+            WHEN DATE(re.fecha_salida) < CURDATE() THEN 
+              CONCAT('Expiró hace ', DATEDIFF(CURDATE(), DATE(re.fecha_salida)), ' día(s)')
+            WHEN DATE(re.fecha_salida) = CURDATE() THEN
+              CASE
+                WHEN NOW() >= re.fecha_salida THEN 'Expiró hoy'
+                ELSE CONCAT('Expira hoy a las ', TIME_FORMAT(TIME(re.fecha_salida), '%H:%i'))
+              END
+            ELSE 
+              CONCAT('Expira en ', DATEDIFF(DATE(re.fecha_salida), CURDATE()), ' día(s)')
+          END AS tiempo_restante
     FROM rentas re
     INNER JOIN habitaciones h ON re.habitacion_id = h.id
-    WHERE COALESCE(re.estado, 'activa') = 'activa'
-    ORDER BY re.fecha_ingreso DESC
+    ORDER BY 
+      CASE WHEN re.estado = 'finalizada' OR 
+               (DATE(re.fecha_salida) < CURDATE() OR 
+                (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida))
+           THEN 1 ELSE 0 END,
+      re.fecha_ingreso DESC
   `);
   return rows;
 };
@@ -956,5 +984,74 @@ export const getRoomsCalendarData = async () => {
   } catch (err) {
     console.error("❌ Error en getRoomsCalendarData:", err);
     throw err;
+  }
+};
+
+// Función para actualizar habitaciones de rentas expiradas (sin marcar rentas como finalizadas)
+export const finalizarRentasExpiradas = async () => {
+  const connection = await pool.getConnection();
+  try {
+    console.log('🔍 Buscando rentas expiradas para actualizar habitaciones...');
+    
+    // Buscar rentas activas que ya expiraron
+    const [rentasExpiradas] = await connection.query(`
+      SELECT re.id, re.habitacion_id, re.nombre_cliente, re.fecha_salida, h.estado as estado_habitacion
+      FROM rentas re
+      INNER JOIN habitaciones h ON re.habitacion_id = h.id
+      WHERE re.estado = 'activa' 
+      AND (
+        DATE(re.fecha_salida) < CURDATE()
+        OR 
+        (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida)
+      )
+      AND h.estado != 'limpieza'
+    `);
+
+    if (rentasExpiradas.length === 0) {
+      console.log('✅ No hay habitaciones de rentas expiradas que actualizar');
+      return { actualizadas: 0, habitaciones: [] };
+    }
+
+    console.log(`📋 Encontradas ${rentasExpiradas.length} habitaciones de rentas expiradas:`, rentasExpiradas);
+
+    let actualizadasExitosas = 0;
+    const habitacionesActualizadas = [];
+
+    // Solo actualizar el estado de las habitaciones a "limpieza"
+    for (const renta of rentasExpiradas) {
+      try {
+        console.log(`🧹 Cambiando habitación ${renta.habitacion_id} a estado 'limpieza'...`);
+        const [result] = await connection.query(
+          'UPDATE habitaciones SET estado = "limpieza" WHERE id = ?',
+          [renta.habitacion_id]
+        );
+        
+        if (result.affectedRows > 0) {
+          actualizadasExitosas++;
+          habitacionesActualizadas.push({
+            renta_id: renta.id,
+            habitacion_id: renta.habitacion_id,
+            nombre_cliente: renta.nombre_cliente,
+            fecha_salida: renta.fecha_salida
+          });
+          console.log(`✅ Habitación ${renta.habitacion_id} actualizada a limpieza (renta ${renta.id})`);
+        }
+      } catch (error) {
+        console.error(`❌ Error al actualizar habitación de renta ${renta.id}:`, error);
+      }
+    }
+
+    console.log(`🎉 Proceso completado: ${actualizadasExitosas}/${rentasExpiradas.length} habitaciones actualizadas a limpieza`);
+    
+    return {
+      actualizadas: actualizadasExitosas,
+      habitaciones: habitacionesActualizadas
+    };
+
+  } catch (error) {
+    console.error('❌ Error en finalizarRentasExpiradas:', error);
+    throw error;
+  } finally {
+    connection.release();
   }
 };

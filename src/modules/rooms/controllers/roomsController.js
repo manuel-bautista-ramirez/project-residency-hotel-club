@@ -20,6 +20,7 @@ import {
   updateReservation,
   updateRent,
   finalizarRenta,
+  finalizarRentasExpiradas,
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 // Para obtener __dirname en ES modules
@@ -29,6 +30,18 @@ const __dirname = path.dirname(__filename);
 export const renderHabitacionesView = async (req, res) => {
   try {
     const user = req.session.user || { role: "Usuario" };
+    
+    // Actualizar habitaciones de rentas expiradas antes de cargar las habitaciones
+    try {
+      const resultado = await finalizarRentasExpiradas();
+      if (resultado.actualizadas > 0) {
+        console.log(`🔄 Se actualizaron automáticamente ${resultado.actualizadas} habitaciones de rentas expiradas a estado limpieza`);
+      }
+    } catch (error) {
+      console.error("⚠️ Error al actualizar habitaciones de rentas expiradas:", error);
+      // No interrumpir el flujo, solo registrar el error
+    }
+    
     const habitaciones = await getHabitaciones();
 
     res.render("ShowAllRooms", {
@@ -1964,5 +1977,29 @@ export const handleConvertReservationToRent = async (req, res) => {
   } catch (error) {
     console.error("Error al convertir reservación a renta:", error);
     res.status(500).send("Error al convertir la reservación a renta");
+  }
+};
+
+// Endpoint para actualizar habitaciones de rentas expiradas
+export const finalizarRentasExpiradasController = async (req, res) => {
+  try {
+    console.log('🔄 Ejecutando actualización manual de habitaciones de rentas expiradas...');
+    const resultado = await finalizarRentasExpiradas();
+    
+    res.json({
+      success: true,
+      message: `Se actualizaron ${resultado.actualizadas} habitaciones de rentas expiradas a estado limpieza`,
+      data: {
+        actualizadas: resultado.actualizadas,
+        habitaciones: resultado.habitaciones
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error en finalizarRentasExpiradasController:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al actualizar habitaciones de rentas expiradas',
+      details: error.message
+    });
   }
 };
