@@ -1,6 +1,7 @@
 // roomsController.js
 import path from "path";
 import { fileURLToPath } from "url";
+import { pool } from "../../../dataBase/connectionDataBase.js";
 import {
   getHabitaciones,
   findReservacionById,
@@ -455,9 +456,9 @@ export const deleteIdRenta = async (req, res) => {
       }
     }
 
-    // Liberar la habitación poniéndola en estado "limpieza"
-    console.log(` Liberando habitación ${habitacionId} y poniéndola en estado "limpieza"...`);
-    await pool.query('UPDATE habitaciones SET estado = "limpieza" WHERE id = ?', [habitacionId]);
+    // Liberar la habitación poniéndola en estado "disponible" (no "limpieza" porque la renta se está eliminando, no finalizando)
+    console.log(` Liberando habitación ${habitacionId} y poniéndola en estado "disponible"...`);
+    await pool.query('UPDATE habitaciones SET estado = "disponible" WHERE id = ?', [habitacionId]);
 
     // Eliminar la renta de la base de datos
     console.log(` Eliminando renta ${rentaId} de la base de datos...`);
@@ -482,7 +483,41 @@ export const marcarComoDesocupada = async (req, res) => {
       return res.status(400).json({ error: "ID inválido" });
     }
 
-    console.log(`Marcando renta ${rentaId} como desocupada...`);
+    console.log(`Verificando si la renta ${rentaId} puede ser desocupada...`);
+    
+    // Verificar si la renta ya está expirada
+    const [rentaInfo] = await pool.query(`
+      SELECT fecha_salida, estado,
+             CASE
+               WHEN estado = 'finalizada' THEN 'expirada'
+               WHEN (
+                 DATE(fecha_salida) < CURDATE()
+                 OR 
+                 (DATE(fecha_salida) = CURDATE() AND NOW() >= fecha_salida)
+               ) THEN 'expirada'
+               ELSE 'corriente'
+             END AS estado_tiempo
+      FROM rentas 
+      WHERE id = ?
+    `, [rentaId]);
+
+    if (rentaInfo.length === 0) {
+      console.error(`❌ Renta ${rentaId} no encontrada`);
+      return res.status(404).json({ error: "Renta no encontrada" });
+    }
+
+    const renta = rentaInfo[0];
+    
+    // Validar que la renta no esté expirada
+    if (renta.estado_tiempo === 'expirada') {
+      console.log(`⚠️ Intento de desocupar renta expirada ${rentaId}`);
+      return res.status(400).json({ 
+        error: "No se puede desocupar una renta que ya ha expirado",
+        details: "Esta renta ya venció y no puede ser desocupada manualmente"
+      });
+    }
+
+    console.log(`✅ Renta ${rentaId} está corriente, procediendo a marcar como desocupada...`);
     
     // Llamar a la función del modelo que finaliza la renta y libera la habitación
     const success = await finalizarRenta(rentaId);
@@ -973,39 +1008,57 @@ export const getCalendarEvents = async (req, res) => {
     const todasLasRentas = await getAllRentas();
     const todasLasReservaciones = await getAllReservationes();
     
-    // Filtrar solo eventos futuros (desde hoy)
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0); // Inicio del día actual
+    // Filtrar eventos relevantes para el calendario
+    const ahora = new Date();
     
+    // Para rentas: incluir las que están activas (no finalizadas) o que empezarán en el futuro
     const rentas = todasLasRentas.filter(renta => {
-      const fechaIngreso = new Date(renta.fecha_ingreso);
-      return fechaIngreso >= hoy;
+      const fechaSalida = new Date(renta.fecha_salida);
+      // Incluir si la fecha de salida es futura o si la renta está activa (corriente)
+      return fechaSalida >= ahora || renta.estado_tiempo === 'corriente';
     });
     
+    // Para reservaciones: incluir las que empezarán en el futuro
     const reservaciones = todasLasReservaciones.filter(reservacion => {
       const fechaIngreso = new Date(reservacion.fecha_ingreso);
-      return fechaIngreso >= hoy;
+      return fechaIngreso >= ahora;
     });
     
     console.log(`📊 Total rentas en BD: ${todasLasRentas.length}, Próximas: ${rentas.length}`);
     console.log(`📊 Total reservaciones en BD: ${todasLasReservaciones.length}, Próximas: ${reservaciones.length}`);
     
     // Convertir rentas a formato FullCalendar
-    const eventosRentas = rentas.map(renta => ({
-      id: `renta-${renta.id_renta}`,
-      title: `${renta.nombre_cliente} - Hab. ${renta.numero_habitacion}`,
-      start: renta.fecha_ingreso,
-      end: renta.fecha_salida,
-      backgroundColor: '#10b981',
-      borderColor: '#059669',
-      extendedProps: {
-        tipo: 'renta',
-        correo: '', // Las rentas no tienen correo en esta consulta
-        telefono: '', // Las rentas no tienen teléfono en esta consulta
-        habitacion: renta.numero_habitacion,
-        precio: renta.monto
+    const eventosRentas = rentas.map(renta => {
+      // Determinar colores según el estado de la renta
+      let backgroundColor, borderColor, title;
+      
+      if (renta.estado_tiempo === 'expirada') {
+        backgroundColor = '#ef4444'; // Rojo para expiradas
+        borderColor = '#dc2626';
+        title = `${renta.nombre_cliente} - Hab. ${renta.numero_habitacion} (EXPIRADA)`;
+      } else {
+        backgroundColor = '#10b981'; // Verde para corrientes
+        borderColor = '#059669';
+        title = `${renta.nombre_cliente} - Hab. ${renta.numero_habitacion}`;
       }
-    }));
+      
+      return {
+        id: `renta-${renta.id_renta}`,
+        title: title,
+        start: renta.fecha_ingreso,
+        end: renta.fecha_salida,
+        backgroundColor: backgroundColor,
+        borderColor: borderColor,
+        extendedProps: {
+          tipo: 'renta',
+          estado: renta.estado_tiempo || 'corriente',
+          correo: '', // Las rentas no tienen correo en esta consulta
+          telefono: '', // Las rentas no tienen teléfono en esta consulta
+          habitacion: renta.numero_habitacion,
+          precio: renta.monto
+        }
+      };
+    });
     
     // Convertir reservaciones a formato FullCalendar
     const eventosReservaciones = reservaciones.map(reservacion => ({
