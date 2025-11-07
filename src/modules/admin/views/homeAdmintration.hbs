@@ -1,372 +1,56 @@
-<style>
-/* Estilos personalizados para el panel de administración */
-.admin-card {
-  transition: all 0.3s ease;
-  border-left: 4px solid transparent;
-}
-
-.admin-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.admin-card.total { border-left-color: #3b82f6; }
-.admin-card.admins { border-left-color: #10b981; }
-.admin-card.users { border-left-color: #f59e0b; }
-.admin-card.active { border-left-color: #8b5cf6; }
-
-.stats-icon {
-  transition: transform 0.3s ease;
-}
-
-.admin-card:hover .stats-icon {
-  transform: scale(1.1);
-}
-
-.user-table {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.user-row {
-  transition: background-color 0.2s ease;
-}
-
-.user-row:hover {
-  background-color: #f8fafc;
-}
-
-.action-btn {
-  transition: all 0.2s ease;
-  padding: 8px;
-  border-radius: 6px;
-}
-
-.action-btn:hover {
-  transform: scale(1.1);
-}
-
-.edit-btn:hover {
-  background-color: #dbeafe;
-}
-
-.delete-btn:hover {
-  background-color: #fee2e2;
-}
-
-.create-btn {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  transition: all 0.3s ease;
-}
-
-.create-btn:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.modal-overlay {
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-content {
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(-20px) scale(0.95); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0) scale(1); 
-  }
-}
-
-.role-badge {
-  transition: all 0.2s ease;
-}
-
-.role-badge:hover {
-  transform: scale(1.05);
-}
-
-.admin-badge {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
-}
-
-.user-badge {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
-}
-
-.form-input {
-  transition: all 0.3s ease;
-}
-
-.form-input:focus {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-}
-
-.header-gradient {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.stats-container {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 16px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-/* Efectos adicionales */
-.pulse-effect {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-}
-
-.loading-spinner {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #3b82f6;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  animation: spin 1s linear infinite;
-  display: inline-block;
-  margin-right: 8px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Asegurar espacio para la barra de navegación */
-body {
-  padding-top: 0 !important;
-}
-
-.admin-container {
-  min-height: calc(100vh - 60px);
-  margin-top: 0;
-  padding-bottom: 4rem !important;
-}
-
-.user-table {
-  margin-bottom: 3rem;
-}
-
-/* Asegurar que el contenido no se corte por el footer */
-main, .main-content {
-  padding-bottom: 5rem !important;
-}
-
-/* Estilo específico para la tabla responsive */
-.table-container {
-  margin-bottom: 4rem;
-}
-
-.table-wrapper {
-  max-height: calc(100vh - 400px);
-  overflow-y: auto;
-  border-radius: 12px;
-}
-
-/* Scroll personalizado para la tabla */
-.table-wrapper::-webkit-scrollbar {
-  width: 8px;
-}
-
-.table-wrapper::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-.table-wrapper::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-.table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Ajuste dinámico basado en número de usuarios */
-.table-auto-height {
-  max-height: none;
-  overflow: visible;
-}
-
-/* Header fijo de la tabla */
-.table-header-fixed {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: linear-gradient(to right, #f8fafc, #e2e8f0);
-}
-
-/* Responsive improvements */
-@media (max-width: 768px) {
-  .stats-container {
-    padding: 1rem;
-  }
-  
-  .admin-card {
-    padding: 1rem;
-  }
-  
-  .modal-content {
-    margin: 1rem;
-    max-width: calc(100vw - 2rem);
-  }
-  
-  .create-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-  }
-  
-  /* Más espacio en móviles */
-  .admin-container {
-    padding-top: 6rem !important;
-    padding-bottom: 6rem !important;
-  }
-  
-  .table-container {
-    margin-bottom: 5rem;
-  }
-}
-
-/* Mejoras de accesibilidad */
-.action-btn:focus,
-.create-btn:focus,
-.form-input:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Estado de carga */
-.btn-loading {
-  position: relative;
-  color: transparent;
-}
-
-.btn-loading::after {
-  content: "";
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  top: 50%;
-  left: 50%;
-  margin-left: -8px;
-  margin-top: -8px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  border-top-color: transparent;
-  animation: spin 1s linear infinite;
-}
-
-/* Notificaciones toast */
-.toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #10b981;
-  color: white;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  animation: slideInRight 0.3s ease;
-}
-
-.toast.error {
-  background: #ef4444;
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-</style>
-
-<div class="container mx-auto px-4 pt-20 pb-16 admin-container">
+<div class="container mx-auto px-4 pt-12 pb-2">
   <!-- Header del Panel -->
-  <div class="mb-8 text-center">
-    <h1 class="text-4xl font-bold header-gradient mb-3">Panel de Administración</h1>
-    <p class="text-lg text-gray-600">Gestiona usuarios y configuraciones del sistema</p>
+  <div class="mb-3 text-center pt-4">
+    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">Panel de Administración</h1>
   </div>
 
   <!-- Estadísticas -->
-  <div class="stats-container">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div class="bg-white rounded-lg shadow-lg p-6 admin-card total">
+  <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 mb-2 shadow-sm">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+      <div class="bg-white rounded-lg shadow-md p-2 border-l-4 border-blue-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
         <div class="flex items-center">
-          <div class="p-3 rounded-full bg-blue-100 text-blue-600 stats-icon">
-            <i class="fas fa-users text-xl"></i>
+          <div class="p-1.5 rounded-full bg-blue-100 text-blue-600 transition-transform duration-300 group-hover:scale-110">
+            <i class="fas fa-users text-base"></i>
           </div>
-          <div class="ml-4">
-            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Usuarios</h3>
-            <p class="text-3xl font-bold text-gray-900">{{stats.total}}</p>
+          <div class="ml-2">
+            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Usuarios</h3>
+            <p class="text-xl font-bold text-gray-900">{{stats.total}}</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-lg p-6 admin-card admins">
+      <div class="bg-white rounded-lg shadow-md p-2  border-l-4 border-green-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
         <div class="flex items-center">
-          <div class="p-3 rounded-full bg-green-100 text-green-600 stats-icon">
-            <i class="fas fa-user-shield text-xl"></i>
+          <div class="p-1.5 rounded-full bg-green-100 text-green-600 transition-transform duration-300 group-hover:scale-110">
+            <i class="fas fa-user-shield text-base"></i>
           </div>
-          <div class="ml-4">
-            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Administradores</h3>
-            <p class="text-3xl font-bold text-gray-900">{{stats.administrators}}</p>
+          <div class="ml-2">
+            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Administradores</h3>
+            <p class="text-xl font-bold text-gray-900">{{stats.administrators}}</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-lg p-6 admin-card users">
+      <div class="bg-white rounded-lg shadow-md p-2 border-l-4 border-yellow-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
         <div class="flex items-center">
-          <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 stats-icon">
-            <i class="fas fa-user text-xl"></i>
+          <div class="p-1.5 rounded-full bg-yellow-100 text-yellow-600 transition-transform duration-300 group-hover:scale-110">
+            <i class="fas fa-user text-base"></i>
           </div>
-          <div class="ml-4">
-            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Usuarios Regulares</h3>
-            <p class="text-3xl font-bold text-gray-900">{{stats.regularUsers}}</p>
+          <div class="ml-2">
+            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Usuarios Regulares</h3>
+            <p class="text-xl font-bold text-gray-900">{{stats.regularUsers}}</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-lg p-6 admin-card active">
+      <div class="bg-white rounded-lg shadow-md p-2 border-l-4 border-purple-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
         <div class="flex items-center">
-          <div class="p-3 rounded-full bg-purple-100 text-purple-600 stats-icon">
-            <i class="fas fa-chart-line text-xl"></i>
+          <div class="p-1.5 rounded-full bg-purple-100 text-purple-600 transition-transform duration-300 group-hover:scale-110">
+            <i class="fas fa-chart-line text-base"></i>
           </div>
-          <div class="ml-4">
-            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Activos (30 días)</h3>
-            <p class="text-3xl font-bold text-gray-900">{{stats.recentlyActive}}</p>
+          <div class="ml-2">
+            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activos (30 días)</h3>
+            <p class="text-xl font-bold text-gray-900">{{stats.recentlyActive}}</p>
           </div>
         </div>
       </div>
@@ -374,91 +58,93 @@ main, .main-content {
   </div>
 
   <!-- Gestión de Usuarios -->
-  <div class="bg-white user-table table-container">
-    <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
-      <h2 class="text-xl font-bold text-gray-900">Gestión de Usuarios</h2>
+  <div class="bg-white rounded-2xl shadow-md mb-2 overflow-hidden">
+    <div class="px-3 py-2 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+      <h2 class="text-base font-bold text-gray-900">Gestión de Usuarios</h2>
       <button 
         onclick="showCreateUserModal()" 
-        class="create-btn text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center shadow-lg">
-        <i class="fas fa-plus mr-2"></i>
+        class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-3 py-1.5 rounded text-xs font-medium flex items-center shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <i class="fas fa-plus mr-1 text-xs"></i>
         Crear Usuario
       </button>
     </div>
 
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-          <tr>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">ID</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Usuario</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Rol</th>
-            <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          {{#each users}}
-          <tr class="user-row">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{this.id}}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <div class="flex-shrink-0 h-10 w-10">
-                  <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-md">
-                    <i class="fas fa-user text-white text-sm"></i>
+    <div id="tableWrapper">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
+            <tr>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">ID</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Usuario</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Rol</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200" id="usersTableBody">
+            {{#each users}}
+            <tr class="transition-colors duration-200 hover:bg-slate-50">
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm font-semibold text-gray-900">{{this.id}}</td>
+              <td class="px-3 py-1.5 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-5 w-5">
+                    <div class="h-5 w-5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-sm">
+                      <i class="fas fa-user text-white text-xs"></i>
+                    </div>
+                  </div>
+                  <div class="ml-1.5">
+                    <div class="text-sm font-bold text-gray-900">{{this.username}}</div>
                   </div>
                 </div>
-                <div class="ml-4">
-                  <div class="text-sm font-bold text-gray-900">{{this.username}}</div>
-                </div>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              {{#if (eq this.role 'Administrador')}}
-                <span class="role-badge admin-badge inline-flex px-3 py-1 text-xs font-bold rounded-full text-white">
-                  <i class="fas fa-shield-alt mr-1"></i>
-                  Administrador
-                </span>
-              {{else}}
-                <span class="role-badge user-badge inline-flex px-3 py-1 text-xs font-bold rounded-full text-white">
-                  <i class="fas fa-user mr-1"></i>
-                  Usuario
-                </span>
-              {{/if}}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
-              <button 
-                onclick="editUser({{this.id}})" 
-                class="action-btn edit-btn text-blue-600 hover:text-blue-900"
-                title="Editar usuario">
-                <i class="fas fa-edit text-lg"></i>
-              </button>
-              <button 
-                onclick="deleteUser({{this.id}}, '{{this.username}}')" 
-                class="action-btn delete-btn text-red-600 hover:text-red-900"
-                title="Eliminar usuario">
-                <i class="fas fa-trash text-lg"></i>
-              </button>
-            </td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
+              </td>
+              <td class="px-3 py-1.5 whitespace-nowrap">
+                {{#if (eq this.role 'Administrador')}}
+                  <span class="inline-flex px-1.5 py-0.5 text-xs font-bold rounded-full text-white bg-gradient-to-r from-green-500 to-green-600 shadow-sm transition-transform duration-200 hover:scale-105">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    Admin
+                  </span>
+                {{else}}
+                  <span class="inline-flex px-1.5 py-0.5 text-xs font-bold rounded-full text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm transition-transform duration-200 hover:scale-105">
+                    <i class="fas fa-user mr-1"></i>
+                    Usuario
+                  </span>
+                {{/if}}
+              </td>
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm font-medium space-x-1">
+                <button 
+                  onclick="editUser({{this.id}})" 
+                  class="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-all duration-200 hover:scale-110"
+                  title="Editar usuario">
+                  <i class="fas fa-edit text-sm"></i>
+                </button>
+                <button 
+                  onclick="deleteUser({{this.id}}, '{{this.username}}')" 
+                  class="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-all duration-200 hover:scale-110"
+                  title="Eliminar usuario">
+                  <i class="fas fa-trash text-sm"></i>
+                </button>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Modal para Crear/Editar Usuario -->
-<div id="userModal" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden z-50 modal-overlay">
-  <div class="flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full modal-content">
-      <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
+<div id="userModal" class="fixed inset-0 bg-gray-900 bg-opacity-10 hidden z-50 backdrop-blur-sm animate-fade-in">
+  <div class="flex items-center justify-center min-h-screen">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-slide-in overflow-hidden">
+   <div class="px-3 py-0 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl">
         <h3 id="modalTitle" class="text-xl font-bold text-gray-900">Crear Usuario</h3>
         <p class="text-sm text-gray-600 mt-1">Complete la información del usuario</p>
       </div>
       
-      <form id="userForm" class="px-6 py-6">
+      <form id="userForm" class="px-3 py-2 rounded-2xl">
         <input type="hidden" id="userId" name="userId">
         
-        <div class="mb-5">
+        <div class="mb-2">
           <label for="username" class="block text-sm font-bold text-gray-700 mb-2">
             <i class="fas fa-user mr-2 text-blue-500"></i>
             Nombre de Usuario
@@ -468,10 +154,10 @@ main, .main-content {
             id="username" 
             name="username" 
             required
-            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:-translate-y-0.5">
         </div>
 
-        <div class="mb-5">
+        <div class="mb-2">
           <label for="password" class="block text-sm font-bold text-gray-700 mb-2">
             <i class="fas fa-lock mr-2 text-blue-500"></i>
             Contraseña
@@ -480,14 +166,14 @@ main, .main-content {
             type="password" 
             id="password" 
             name="password" 
-            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:-translate-y-0.5">
           <p class="text-xs text-gray-500 mt-2 bg-gray-50 p-2 rounded">
             <i class="fas fa-info-circle mr-1"></i>
             Mínimo 6 caracteres. Déjalo vacío para mantener la contraseña actual al editar.
           </p>
         </div>
 
-        <div class="mb-6">
+        <div class="mb-2">
           <label for="role" class="block text-sm font-bold text-gray-700 mb-2">
             <i class="fas fa-user-tag mr-2 text-blue-500"></i>
             Rol
@@ -496,24 +182,24 @@ main, .main-content {
             id="role" 
             name="role" 
             required
-            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:-translate-y-0.5">
             <option value="">Selecciona un rol</option>
             <option value="Administrador">🛡️ Administrador</option>
             <option value="Usuario">👤 Usuario</option>
           </select>
         </div>
 
-        <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+        <div class="flex justify-end space-x-4 pt-2 border-t border-gray-200">
           <button 
             type="button" 
             onclick="closeUserModal()" 
-            class="px-6 py-3 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all">
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all duration-200">
             <i class="fas fa-times mr-2"></i>
             Cancelar
           </button>
           <button 
             type="submit" 
-            class="create-btn px-6 py-3 text-sm font-medium text-white rounded-lg shadow-lg">
+            class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-6 py-3 text-sm font-medium text-white rounded-lg shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
             <i class="fas fa-save mr-2"></i>
             <span id="submitButtonText">Crear Usuario</span>
           </button>
@@ -525,6 +211,103 @@ main, .main-content {
 
 <script>
 let isEditing = false;
+
+// Función para ajustar la altura de la tabla según el número de usuarios
+function adjustTableHeight() {
+  const tableWrapper = document.getElementById('tableWrapper');
+  const usersTableBody = document.getElementById('usersTableBody');
+  
+  if (!tableWrapper || !usersTableBody) {
+    console.log('Elementos no encontrados');
+    return;
+  }
+  
+  const userRows = usersTableBody.querySelectorAll('tr');
+  const userCount = userRows.length;
+  
+  console.log(`Ajustando tabla: ${userCount} usuarios encontrados`);
+  
+  // Si hay 5 o menos usuarios, mostrar todos sin restricciones de altura
+  if (userCount <= 5) {
+    console.log('Sin scroll - mostrando todos los usuarios');
+    // Sin restricciones de altura, contenido natural
+    tableWrapper.className = '';
+    tableWrapper.style.maxHeight = 'none';
+    tableWrapper.style.overflow = 'visible';
+    tableWrapper.style.overflowY = 'visible';
+  } else {
+    // Si hay más de 5 usuarios, activar scroll con altura limitada
+    console.log('Con scroll - más de 5 usuarios');
+    // Limpiar estilos inline primero
+    tableWrapper.style.maxHeight = '';
+    tableWrapper.style.overflow = '';
+    tableWrapper.style.overflowY = '';
+    // Aplicar clases de Tailwind para scroll
+    tableWrapper.className = 'max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100';
+  }
+}
+
+// Ejecutar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+  adjustTableHeight();
+});
+
+// También ejecutar cuando la página esté completamente cargada
+window.addEventListener('load', function() {
+  setTimeout(() => {
+    adjustTableHeight();
+  }, 200);
+});
+
+// Ejecutar después de un pequeño delay para asegurar renderizado completo
+setTimeout(() => {
+  adjustTableHeight();
+}, 500);
+
+// Ejecutar después de más tiempo para asegurar que todo esté listo
+setTimeout(() => {
+  adjustTableHeight();
+}, 1000);
+
+// Ejecutar después de aún más tiempo para casos de carga lenta
+setTimeout(() => {
+  adjustTableHeight();
+}, 2000);
+
+// Función para forzar el ajuste de la tabla (para debugging)
+window.forceTableAdjust = function() {
+  console.log('Forzando ajuste de tabla...');
+  adjustTableHeight();
+};
+
+// Función para actualizar la tabla después de operaciones CRUD
+function refreshTableHeight() {
+  setTimeout(() => {
+    adjustTableHeight();
+  }, 300);
+}
+
+// Observador de mutaciones para detectar cambios en la tabla
+if (typeof MutationObserver !== 'undefined') {
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList' && mutation.target.id === 'usersTableBody') {
+        console.log('Cambios detectados en la tabla');
+        setTimeout(() => {
+          adjustTableHeight();
+        }, 100);
+      }
+    });
+  });
+
+  // Observar cambios en el tbody de la tabla
+  document.addEventListener('DOMContentLoaded', function() {
+    const usersTableBody = document.getElementById('usersTableBody');
+    if (usersTableBody) {
+      observer.observe(usersTableBody, { childList: true, subtree: true });
+    }
+  });
+}
 
 // Función global para manejar respuestas de usuario eliminado
 function handleUserDeletedResponse(response, data) {
@@ -564,30 +347,52 @@ window.fetch = async function(...args) {
 // Función para mostrar notificaciones toast
 function showToast(message, type = 'success') {
   const toast = document.createElement('div');
-  toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+  const bgColor = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+  const icon = type === 'error' ? 'exclamation-circle' : 'check-circle';
+  
+  toast.className = `fixed top-5 right-5 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-out`;
   toast.innerHTML = `
     <div class="flex items-center">
-      <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} mr-2"></i>
-      ${message}
+      <i class="fas fa-${icon} mr-3"></i>
+      <span class="font-medium">${message}</span>
     </div>
   `;
   
   document.body.appendChild(toast);
   
+  // Animar entrada
   setTimeout(() => {
-    toast.style.animation = 'slideOutRight 0.3s ease forwards';
-    setTimeout(() => document.body.removeChild(toast), 300);
+    toast.classList.remove('translate-x-full');
+  }, 10);
+  
+  // Animar salida
+  setTimeout(() => {
+    toast.classList.add('translate-x-full');
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 300);
   }, 3000);
 }
 
 // Función para mostrar estado de carga en botones
 function setButtonLoading(button, loading = true) {
   if (loading) {
-    button.classList.add('btn-loading');
     button.disabled = true;
+    button.innerHTML = `
+      <div class="flex items-center justify-center">
+        <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+        Cargando...
+      </div>
+    `;
   } else {
-    button.classList.remove('btn-loading');
     button.disabled = false;
+    // Restaurar el contenido original del botón
+    const isSubmitBtn = button.type === 'submit';
+    if (isSubmitBtn) {
+      button.innerHTML = `<i class="fas fa-save mr-2"></i><span id="submitButtonText">Crear Usuario</span>`;
+    }
   }
 }
 
@@ -688,7 +493,10 @@ async function deleteUser(userId, username) {
       if (data.success) {
         showToast('Usuario eliminado exitosamente', 'success');
         closeConfirmModal();
-        setTimeout(() => location.reload(), 1000);
+        setTimeout(() => {
+          location.reload();
+          refreshTableHeight();
+        }, 1000);
       } else {
         showToast(data.message || 'Error al eliminar el usuario', 'error');
         setButtonLoading(deleteBtn, false);
@@ -746,7 +554,10 @@ document.getElementById('userForm').addEventListener('submit', async function(e)
     if (data.success) {
       showToast(data.message || (isEditing ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente'), 'success');
       closeUserModal();
-      setTimeout(() => location.reload(), 1000);
+      setTimeout(() => {
+        location.reload();
+        refreshTableHeight();
+      }, 1000);
     } else {
       showToast(data.message || 'Error al procesar la solicitud', 'error');
       setButtonLoading(submitBtn, false);
