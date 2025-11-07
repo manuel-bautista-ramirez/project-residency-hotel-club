@@ -1,5 +1,5 @@
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-20">
+<div class="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-20 sm:pt-5 pb-20">
   <!-- Loading Overlay -->
   <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
     <div class="flex flex-col items-center gap-3">
@@ -11,8 +11,12 @@
     </div>
   </div>
   <!-- Header -->
-  <header class="text-center py-3 sm:py-12">
-    <h1 class="text-2xl  font-extrabold text-blue-900 tracking-tight mb-6">Habitaciones</h1>
+  <header class="text-center py-2 sm:py-8 px-2">
+    <h1 class="text-2xl sm:text-4xl font-extrabold text-blue-900 tracking-tight mb-2 leading-tight">
+      <span class="block sm:inline">🏨</span>
+      <span class="block sm:inline">Habitaciones</span>
+    </h1>
+    <p class="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base px-4">Gestiona las habitaciones del hotel</p>
     {{>buttons}}
   </header>
 
@@ -75,54 +79,64 @@
   </section>
 
   <!-- Grid de Habitaciones -->
-  <section id="roomsGrid" class="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 hidden">
+  <section id="roomsGrid" class="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-0 hidden">
     {{#each habitaciones}}
-    <div class="group room-card bg-white rounded-xl shadow-lg overflow-hidden flex flex-col justify-between transform transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl opacity-0 translate-y-2">
-      <div class="p-3">
-        <h2 class="text-lg font-bold text-blue-900 mb-2 flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-blue-700 transition-transform duration-200 group-hover:scale-110"><path d="M3.75 4.5A2.25 2.25 0 016 2.25h12A2.25 2.25 0 0120.25 4.5v15a.75.75 0 01-.75.75H4.5a.75.75 0 01-.75-.75v-15zM6 6a.75.75 0 000 1.5h12A.75.75 0 0018 6H6z"/></svg>
+    <div class="group room-card bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col justify-between transform transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl opacity-0 translate-y-2">
+      <!-- Header de la card -->
+      <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white">
+        <h2 class="text-xl font-bold flex items-center gap-3">
+          <i class="fa-solid fa-bed text-2xl"></i>
           Habitación {{this.numero}}
         </h2>
-        <p class="text-gray-700 capitalize mb-2 flex items-center gap-2 transition-colors duration-200">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-slate-500 transition-transform duration-200 group-hover:rotate-6"><path d="M2.25 9A2.25 2.25 0 014.5 6.75h15A2.25 2.25 0 0121.75 9v8.25a.75.75 0 01-.75.75H3a.75.75 0 01-.75-.75V9zm3.75-3A2.25 2.25 0 018.25 3.75h7.5A2.25 2.25 0 0118 6h-12z"/></svg>
-          <span>Tipo: {{this.tipo}}</span>
-        </p>
-        <p class="font-semibold flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-slate-500 transition-transform duration-200 group-hover:-rotate-6"><path d="M12 2.25a9.75 9.75 0 110 19.5 9.75 9.75 0 010-19.5z"/></svg>
-          <span>Estado:</span>
-          {{#if (eq this.estado 'disponible')}}
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-200 text-gray-800 text-sm transition-colors duration-200">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-green-600"><path fill-rule="evenodd" d="M10.28 16.72a.75.75 0 01-1.06 0l-3.22-3.22a.75.75 0 111.06-1.06l2.69 2.69 6.19-6.19a.75.75 0 111.06 1.06l-6.72 6.72z" clip-rule="evenodd"/></svg>
-              Disponible
-            </span>
-          {{/if}}
-          {{#if (eq this.estado 'ocupado')}}
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-100 text-red-700 text-sm transition-colors duration-200">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-red-600"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 110 19.5 9.75 9.75 0 010-19.5zM9.53 8.47a.75.75 0 011.06 0L12 9.88l1.41-1.41a.75.75 0 111.06 1.06L13.06 11l1.41 1.41a.75.75 0 11-1.06 1.06L12 12.06l-1.41 1.41a.75.75 0 11-1.06-1.06L10.94 11 9.53 9.59a.75.75 0 010-1.06z" clip-rule="evenodd"/></svg>
-              Ocupado
-            </span>
-          {{/if}}
-          {{#if (eq this.estado 'limpieza')}}
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 text-sm cursor-pointer transition-transform duration-200 hover:scale-[1.02] animate-pulse"
-                  onclick="openModal({{this.id}})">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-orange-600"><path d="M4.5 3.75a.75.75 0 00-.75.75v1.5h16.5V4.5a.75.75 0 00-.75-.75h-15zM3 8.25h18v7.5A2.25 2.25 0 0118.75 18H5.25A2.25 2.25 0 013 15.75v-7.5z"/></svg>
-              Limpieza
-            </span>
-          {{/if}}
+        <p class="text-blue-100 mt-1 flex items-center gap-2">
+          <i class="fa-solid fa-home text-sm"></i>
+          <span class="capitalize">Tipo: {{this.tipo}}</span>
         </p>
       </div>
 
-      <div class="p-3 flex flex-wrap justify-center gap-2">
-        <a href="/rooms/reservar/{{this.id}}"
-           class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow text-sm w-full sm:w-auto text-center inline-flex items-center gap-2 transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
-           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M6.75 3a.75.75 0 01.75.75V5h9V3.75a.75.75 0 011.5 0V5h.75A2.25 2.25 0 0121 7.25v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.25A2.25 2.25 0 015.25 5H6V3.75A.75.75 0 016.75 3zM4.5 9v9.75c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V9H4.5z"/></svg>
-           Reservar
-        </a>
-        <a href="/rooms/rentar/{{this.id}}"
-           class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow text-sm w-full sm:w-auto text-center inline-flex items-center gap-2 transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
-           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a7.5 7.5 0 1115 0 .75.75 0 01-.75.75h-13.5a.75.75 0 01-.75-.75z"/></svg>
-           Rentar
-        </a>
+      <!-- Contenido de la card -->
+      <div class="p-4 flex-1">
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-info-circle text-gray-400"></i>
+            <span class="font-medium">Estado actual:</span>
+          </p>
+          {{#if (eq this.estado 'disponible')}}
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-100 text-green-800 font-medium border border-green-200">
+              <i class="fa-solid fa-check-circle text-green-600 text-lg"></i>
+              <span>Disponible</span>
+            </div>
+          {{/if}}
+          {{#if (eq this.estado 'ocupado')}}
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-100 text-red-800 font-medium border border-red-200">
+              <i class="fa-solid fa-user text-red-600 text-lg"></i>
+              <span>Ocupado</span>
+            </div>
+          {{/if}}
+          {{#if (eq this.estado 'limpieza')}}
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-100 text-orange-800 font-medium border border-orange-200 cursor-pointer hover:bg-orange-200 transition-all duration-200 animate-pulse"
+                  onclick="openModal({{this.id}})">
+              <i class="fa-solid fa-broom text-orange-600 text-lg"></i>
+              <span>En Limpieza</span>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="p-4 pt-0">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <a href="/rooms/reservar/{{this.id}}"
+             class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+             <i class="fa-solid fa-calendar-check text-lg"></i>
+             <span>Reservar</span>
+          </a>
+          <a href="/rooms/rentar/{{this.id}}"
+             class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+             <i class="fa-solid fa-key text-lg"></i>
+             <span>Rentar</span>
+          </a>
+        </div>
       </div>
     </div>
     {{/each}}

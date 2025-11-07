@@ -1,27 +1,57 @@
-<div class="mt-3 flex flex-wrap justify-center gap-3">
-  {{#if (eq user.role "Administrador")}}
+<div class="mt-4 px-2 sm:px-4 lg:px-0">
+  <!-- Botones en grid responsive -->
+  <div class="grid grid-cols-5 gap-1 sm:gap-3 w-full max-w-6xl mx-auto">
+    {{#if (eq user.role "Administrador")}}
+      <a
+        href="/rooms/precios"
+        class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
+      >
+        <i class="fa-solid fa-dollar-sign text-sm sm:text-lg"></i>
+        <span class="font-semibold text-xs sm:text-base leading-tight">
+          <span class="hidden sm:inline">Precios</span>
+          <span class="sm:hidden">Precios</span>
+        </span>
+      </a>
+      <a
+        href="/rooms/reportes"
+        class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
+      >
+        <i class="fa-solid fa-chart-line text-sm sm:text-lg"></i>
+        <span class="font-semibold text-xs sm:text-base leading-tight">
+          <span class="hidden sm:inline">Reportes</span>
+          <span class="sm:hidden">Reportes</span>
+        </span>
+      </a>
+    {{/if}}
     <a
-      href="/rooms/precios"
-      class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow transition w-full sm:w-auto text-center"
-    ><i class="fa-solid fa-dollar-sign"></i><span>Precios</span></a>
+      href="/rooms/list/reservations"
+      class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
+    >
+      <i class="fa-solid fa-calendar-check text-sm sm:text-lg"></i>
+      <span class="font-semibold text-xs sm:text-base leading-tight">
+        <span class="hidden sm:inline">Reservaciones</span>
+        <span class="sm:hidden">Reservas</span>
+      </span>
+    </a>
     <a
-      href="/rooms/reportes"
-      class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition w-full sm:w-auto text-center"
-    ><i class="fa-solid fa-chart-line"></i><span>Reportes</span></a>
-  {{/if}}
-  <a
-    href="/rooms/list/reservations"
-    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition w-full sm:w-auto text-center"
-  ><i class="fa-solid fa-calendar-check"></i><span>Reservaciones</span></a>
-  <a
-    href="/rooms/list/rentas"
-    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition w-full sm:w-auto text-center"
-  ><i class="fa-solid fa-key"></i><span>Rentas</span></a>
-
-  <a
-    href="/rooms/list/calendario"
-    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow transition w-full sm:w-auto text-center"
-  ><i class="fa-solid fa-calendar-days"></i><span>Calendario</span></a>
+      href="/rooms/list/rentas"
+      class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
+    >
+      <i class="fa-solid fa-key text-sm sm:text-lg"></i>
+      <span class="font-semibold text-xs sm:text-base leading-tight">
+        <span class="hidden sm:inline">Rentas</span>
+        <span class="sm:hidden">Rentas</span>
+      </span>
+    </a>
+    <a
+      href="/rooms/list/calendario"
+      class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
+    >
+      <i class="fa-solid fa-calendar text-sm sm:text-lg"></i>
+      <span class="font-semibold text-xs sm:text-base leading-tight">
+        <span class="hidden sm:inline">Calendario</span>
+        <span class="sm:hidden">Agenda</span>
+      </span>
+    </a>
+  </div>
 </div>
-
-
