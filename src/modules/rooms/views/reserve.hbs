@@ -844,6 +844,30 @@ document.addEventListener("DOMContentLoaded", () => {
     e.target.value = value;
   });
 
+
+  // VALIDAR QUE EL ENGANCHE NO SEA MAYOR QUE EL PRECIO TOTAL
+engancheField.addEventListener("input", ()=> {
+    const enganche = Number(engancheField.value)
+    const total = Number(priceField.value)  // la renta / precio calculado
+
+    if(enganche > total){
+        engancheField.value = total
+        showNotification("El enganche no puede ser mayor al precio total de la renta", "warning")
+    }
+})
+
+// y también al enviar el form
+form.addEventListener("submit", (e)=>{
+    const enganche = Number(engancheField.value)
+    const total = Number(priceField.value)
+
+    if(enganche > total){
+        e.preventDefault()
+        showNotification("Corrige el enganche. Es mayor que el precio total.", "error")
+    }
+})
+
+
   console.log('Sistema de reservación inicializado correctamente');
 });
 </script>
