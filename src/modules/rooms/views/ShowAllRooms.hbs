@@ -126,16 +126,26 @@
       <!-- Botones de acción -->
       <div class="p-4 pt-0">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {{! Botón de Reservar siempre activo }}
           <a href="/rooms/reservar/{{this.id}}"
              class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
              <i class="fa-solid fa-calendar-check text-lg"></i>
              <span>Reservar</span>
           </a>
-          <a href="/rooms/rentar/{{this.id}}"
-             class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
-             <i class="fa-solid fa-key text-lg"></i>
-             <span>Rentar</span>
-          </a>
+
+          {{! Botón de Rentar con validación de estado }}
+          {{#if (eq this.estado 'disponible')}}
+            <a href="/rooms/rentar/{{this.id}}"
+               class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+               <i class="fa-solid fa-key text-lg"></i>
+               <span>Rentar</span>
+            </a>
+          {{else}}
+            <span class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-400 text-white font-medium rounded-xl cursor-not-allowed">
+              <i class="fa-solid fa-key text-lg"></i>
+              <span>Rentar</span>
+            </span>
+          {{/if}}
         </div>
       </div>
     </div>

@@ -76,7 +76,7 @@ routerRoom.get("/rooms/confirmReservations/renta/:id", renderConvertReservationT
 routerRoom.post("/api/rooms/convertReservationToRent/:id", handleConvertReservationToRent);
 
 routerRoom.post("/rooms/delete/:id", deleteByIdResevation);
-routerRoom.post("/rentas/eliminar/:id", deleteIdRenta);
+routerRoom.post("/rooms/rentas/delete/:id", deleteIdRenta);
 routerRoom.post("/rooms/desocupar/:id", marcarComoDesocupada);
 
 // ----- CALENDARIO -----

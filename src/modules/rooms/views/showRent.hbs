@@ -309,7 +309,7 @@
     const clientNameSpan = document.getElementById('deleteClientName');
     
     if (modal && form) {
-      form.action = `/rentas/eliminar/${rentId}`;
+      form.action = `/rooms/rentas/delete/${rentId}`;
       roomNumberSpan.textContent = roomNumber;
       clientNameSpan.textContent = clientName;
       modal.classList.remove('hidden');
