@@ -29,6 +29,7 @@ import { pool } from "../../../dataBase/connectionDataBase.js";
 import {
   getHabitaciones,
   findReservacionById,
+  findRentaById,
   getAllReservationes,
   getAllRentas,
   deletebyReservation,
@@ -41,7 +42,7 @@ import {
   createMessageMethod,
   checkRoomAvailability,
   createRent,
-  deleteByIdRenta,
+  deleteByIdRenta as deleteRentaFromDB,
   updateReservation,
   updateRent,
   finalizarRenta,
@@ -402,6 +403,71 @@ export const deleteByIdResevation = async (req, res) => {
   }
 };
 
+// delete by id renta (eliminación permanente)
+export const deleteIdRenta = async (req, res) => {
+  try {
+    const rentaId = Number(req.params.id);
+    if (Number.isNaN(rentaId)) return res.status(400).send("ID inválido");
+
+    // 1. Obtener los datos de la renta ANTES de eliminarla
+    console.log(`Obteniendo datos de la renta ${rentaId}...`);
+    const renta = await findRentaById(rentaId);
+
+    if (!renta) {
+      return res.status(404).send("Renta no encontrada");
+    }
+
+    const habitacionId = renta.habitacion_id;
+
+    // 2. Eliminar archivos PDF y QR si existen
+    if (renta.pdf_path || renta.qr_path) {
+      const fs = await import("fs");
+      const fsPromises = fs.promises;
+
+      if (renta.pdf_path) {
+        try {
+          if (fs.default.existsSync(renta.pdf_path)) {
+            await fsPromises.unlink(renta.pdf_path);
+            console.log(`✅ PDF de renta eliminado: ${renta.pdf_path}`);
+          }
+        } catch (error) {
+          console.error(`❌ Error al eliminar PDF de renta:`, error.message);
+        }
+      }
+
+      if (renta.qr_path) {
+        try {
+          if (fs.default.existsSync(renta.qr_path)) {
+            await fsPromises.unlink(renta.qr_path);
+            console.log(`✅ QR de renta eliminado: ${renta.qr_path}`);
+          }
+        } catch (error) {
+          console.error(`❌ Error al eliminar QR de renta:`, error.message);
+        }
+      }
+    }
+
+    // 3. Liberar la habitación
+    console.log(`Liberando habitación ${habitacionId} y poniéndola en estado "disponible"...`);
+    const { pool } = await import("../../../dataBase/connectionDataBase.js");
+    await pool.query('UPDATE habitaciones SET estado = "disponible" WHERE id = ?', [habitacionId]);
+
+    // 4. Eliminar la renta de la base de datos
+    console.log(`Eliminando renta ${rentaId} de la base de datos...`);
+    const success = await deleteRentaFromDB(rentaId);
+
+    if (success) {
+      console.log(`🎉 Renta ${rentaId} eliminada exitosamente y habitación liberada`);
+      res.redirect("/rooms/list/rentas");
+    } else {
+      res.status(500).send("No se pudo eliminar la renta");
+    }
+  } catch (err) {
+    console.error("Error deleting renta:", err);
+    res.status(500).send("Error al eliminar la renta");
+  }
+};
+
 export const renderAllRentas = async (req, res) => {
   try {
     const user = req.session.user || { role: "Usuario" };
@@ -455,69 +521,6 @@ export const renderAllRentas = async (req, res) => {
   } catch (error) {
     console.error("Error al renderizar las rentas loco:", error.message);
     res.status(500).send("Error al cargar las rentas loco..");
-  }
-};
-
-// delete by id renta (eliminación permanente)
-export const deleteIdRenta = async (req, res) => {
-  try {
-    const rentaId = Number(req.params.id);
-    if (Number.isNaN(rentaId)) return res.status(400).send("ID inválido");
-
-    // Obtener datos de la renta antes de eliminarla para borrar archivos Y liberar habitación
-    console.log(`Obteniendo datos de la renta ${rentaId}...`);
-    const { pool } = await import("../../../dataBase/connectionDataBase.js");
-    const [rentas] = await pool.query("SELECT pdf_path, qr_path, habitacion_id FROM rentas WHERE id = ?", [rentaId]);
-    
-    if (rentas.length === 0) {
-      return res.status(404).send("Renta no encontrada");
-    }
-
-    const renta = rentas[0];
-    const habitacionId = renta.habitacion_id;
-
-    // Eliminar PDF y QR de la renta si existen
-    const fs = await import("fs");
-    const fsPromises = fs.promises;
-    
-    if (renta.pdf_path) {
-      try {
-        if (fs.default.existsSync(renta.pdf_path)) {
-          await fsPromises.unlink(renta.pdf_path);
-          console.log(` PDF de renta eliminado: ${renta.pdf_path}`);
-        }
-      } catch (error) {
-        console.error(`Error al eliminar PDF de renta:`, error.message);
-      }
-    }
-    
-    if (renta.qr_path) {
-      try {
-        if (fs.default.existsSync(renta.qr_path)) {
-          await fsPromises.unlink(renta.qr_path);
-          console.log(` QR de renta eliminado: ${renta.qr_path}`);
-        }
-      } catch (error) {
-        console.error(`Error al eliminar QR de renta:`, error.message);
-      }
-    }
-
-    // Liberar la habitación poniéndola en estado "disponible" (no "limpieza" porque la renta se está eliminando, no finalizando)
-    console.log(` Liberando habitación ${habitacionId} y poniéndola en estado "disponible"...`);
-    await pool.query('UPDATE habitaciones SET estado = "disponible" WHERE id = ?', [habitacionId]);
-
-    // Eliminar la renta de la base de datos
-    console.log(` Eliminando renta ${rentaId} de la base de datos...`);
-    const success = await deleteByIdRenta(rentaId);
-    if (success) {
-      console.log(`✅ Renta ${rentaId} eliminada exitosamente y habitación liberada`);
-      res.redirect("/rooms/list/rentas"); // Ajusta la ruta según tu vista de rentas
-    } else {
-      res.status(500).send("No se pudo eliminar la renta");
-    }
-  } catch (err) {
-    console.error("Error deleting renta:", err);
-    res.status(500).send("Error al eliminar la renta");
   }
 };
 
@@ -699,13 +702,13 @@ export const handleEditReservation = async (req, res) => {
       
       try {
         // Eliminar PDF anterior si existe
-        if (reservacionAnterior.pdf_path && fs.existsSync(reservacionAnterior.pdf_path)) {
+        if (reservacionAnterior.pdf_path && fs.default.existsSync(reservacionAnterior.pdf_path)) {
           fs.unlinkSync(reservacionAnterior.pdf_path);
           console.log(`PDF anterior eliminado: ${reservacionAnterior.pdf_path}`);
         }
         
         // Eliminar QR anterior si existe
-        if (reservacionAnterior.qr_path && fs.existsSync(reservacionAnterior.qr_path)) {
+        if (reservacionAnterior.qr_path && fs.default.existsSync(reservacionAnterior.qr_path)) {
           fs.unlinkSync(reservacionAnterior.qr_path);
           console.log(`QR anterior eliminado: ${reservacionAnterior.qr_path}`);
         }
@@ -945,27 +948,32 @@ export const handleCreateRenta = async (req, res) => {
     try {
       const { generateAndSendPDF } = await import("../utils/pdfGenerator.js");
       const { generarQR } = await import("../utils/qrGenerator.js");
-      const envioPdfService = await import("../utils/pdfEnvio.js").then(
+      const pdfEnvioService = await import("../utils/pdfEnvio.js").then(
         (module) => module.default
       );
 
-      // Generar PDF
       const qrPath = await generarQR(datosParaPDF, "renta");
-      // Generar QR
       const pdfPath = await generateAndSendPDF(datosParaPDF, "renta", qrPath);
 
       console.log("Comprobantes generados:");
       console.log("PDF:", pdfPath);
       console.log("QR:", qrPath);
 
+      // Guardar las rutas de los archivos en la base de datos
+      await updateRent(rent_id, {
+        pdf_path: pdfPath,
+        qr_path: qrPath,
+      });
+      console.log("Rutas de archivos guardadas en la base de datos para la renta.");
+
       // Opciones de envío
       const opcionesEnvio = {
-        sendEmail: send_email,
-        sendWhatsApp: send_whatsapp,
+        sendEmail: send_email === "on",
+        sendWhatsApp: send_whatsapp === "on",
       };
 
       // Enviar comprobante
-      const resultadosEnvio = await envioPdfService.enviarComprobanteRenta(
+      const resultadosEnvio = await pdfEnvioService.enviarComprobanteRenta(
         datosParaPDF,
         pdfPath,
         opcionesEnvio

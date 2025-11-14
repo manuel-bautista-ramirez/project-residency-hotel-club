@@ -321,6 +321,17 @@ export const getRoomNumberById = async (roomId) => {
   }
 };
 
+// Find Renta by ID
+export const findRentaById = async (id) => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM rentas WHERE id = ?", [id]);
+    return rows.length > 0 ? rows[0] : null;
+  } catch (err) {
+    console.error("Error findRentaById:", err);
+    return null;
+  }
+};
+
 // delete by id renta
 export const deleteByIdRenta = async (id) => {
   try {
