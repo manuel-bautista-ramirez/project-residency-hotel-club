@@ -4,7 +4,7 @@ import { executeQuery } from '../../../dataBase/connectionDataBase.js';
 export const getAllUsers = async () => {
   try {
     const rows = await executeQuery(
-      'SELECT id, username, role FROM users_hotel ORDER BY id DESC'
+      'SELECT id, username, email, role FROM users_hotel ORDER BY id DESC'
     );
     return rows;
   } catch (error) {
@@ -17,7 +17,7 @@ export const getAllUsers = async () => {
 export const findById = async (id) => {
   try {
     const rows = await executeQuery(
-      'SELECT id, username, password, role FROM users_hotel WHERE id = ?',
+      'SELECT id, username, email, password, role FROM users_hotel WHERE id = ?',
       [id]
     );
     return rows[0] || null;
@@ -41,6 +41,11 @@ export const updateUser = async (id, userData) => {
     if (userData.password !== undefined) {
       fields.push('password = ?');
       values.push(userData.password);
+    }
+    
+    if (userData.email !== undefined) {
+      fields.push('email = ?');
+      values.push(userData.email);
     }
     
     if (userData.role !== undefined) {

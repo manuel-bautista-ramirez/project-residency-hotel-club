@@ -9,7 +9,9 @@ import {
 } from '../models/model.js';
 import { 
   findUserByUsername, 
-  addUser 
+  findUserByEmail,
+  addUser,
+  addUserWithoutPassword 
 } from '../../login/models/userModel.js';
 
 // Mostrar el panel principal de administración
@@ -46,7 +48,7 @@ export const showCreateUserForm = async (req, res) => {
   });
 };
 
-// Crear nuevo usuario
+// Crear nuevo usuario (sin contraseña)
 export const createUserController = async (req, res) => {
   try {
     const { username, password, role } = req.body;
@@ -55,7 +57,7 @@ export const createUserController = async (req, res) => {
     if (!username || !password || !role) {
       return res.status(400).json({
         success: false,
-        message: 'Todos los campos son obligatorios'
+        message: 'Username, email y rol son obligatorios'
       });
     }
 
@@ -74,11 +76,12 @@ export const createUserController = async (req, res) => {
       });
     }
 
-    // Validar password
-    if (password.length < 6) {
+    // Validar email (password contiene el email en este caso)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(password)) {
       return res.status(400).json({
         success: false,
-        message: 'La contraseña debe tener al menos 6 caracteres'
+        message: 'El formato del email no es válido'
       });
     }
 
@@ -90,7 +93,7 @@ export const createUserController = async (req, res) => {
       });
     }
 
-    // Verificar si el usuario ya existe
+    // Verificar si el usuario ya existe (por username)
     const existingUser = await findUserByUsername(username);
     if (existingUser) {
       return res.status(400).json({
@@ -99,12 +102,21 @@ export const createUserController = async (req, res) => {
       });
     }
 
-    // Crear el usuario (addUser ya maneja el hash de bcrypt internamente)
-    await addUser(username, password, role);
+    // Verificar si el email ya existe
+    const existingEmail = await findUserByEmail(password);
+    if (existingEmail) {
+      return res.status(400).json({
+        success: false,
+        message: 'El email ya está registrado'
+      });
+    }
+
+    // Crear el usuario sin contraseña (password contiene el email)
+    await addUserWithoutPassword(username, password, role);
 
     res.json({
       success: true,
-      message: 'Usuario creado exitosamente'
+      message: `Usuario ${username} creado exitosamente. Debe usar recuperación de contraseña para acceder.`
     });
 
   } catch (error) {
@@ -193,11 +205,15 @@ export const updateUserController = async (req, res) => {
       });
     }
 
-    if (password && password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: 'La contraseña debe tener al menos 6 caracteres'
-      });
+    // Validar email si se proporciona (password contiene el email)
+    if (password) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(password)) {
+        return res.status(400).json({
+          success: false,
+          message: 'El formato del email no es válido'
+        });
+      }
     }
 
     if (role && !['Administrador', 'Usuario'].includes(role)) {
@@ -221,9 +237,9 @@ export const updateUserController = async (req, res) => {
     // Preparar datos de actualización
     const updateData = { username, role };
     
-    // Si se proporciona nueva contraseña, hashearla
+    // Si se proporciona nuevo email, agregarlo (password contiene el email)
     if (password && password.trim() !== '') {
-      updateData.password = await bcrypt.hash(password, 10);
+      updateData.email = password;
     }
 
     // Verificar si el username ya existe (excepto para el usuario actual)
@@ -233,6 +249,17 @@ export const updateUserController = async (req, res) => {
         return res.status(400).json({
           success: false,
           message: 'El nombre de usuario ya existe'
+        });
+      }
+    }
+
+    // Verificar si el email ya existe (excepto para el usuario actual)
+    if (password && password !== existingUser.email) {
+      const userWithSameEmail = await findUserByEmail(password);
+      if (userWithSameEmail && userWithSameEmail.id !== parseInt(id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'El email ya está registrado'
         });
       }
     }
