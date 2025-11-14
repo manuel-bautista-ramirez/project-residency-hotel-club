@@ -1062,11 +1062,8 @@ export const getCalendarEvents = async (req, res) => {
     const ahora = new Date();
     
     // Para rentas: incluir las que están activas (no finalizadas) o que empezarán en el futuro
-    const rentas = todasLasRentas.filter(renta => {
-      const fechaSalida = new Date(renta.fecha_salida);
-      // Incluir si la fecha de salida es futura o si la renta está activa (corriente)
-      return fechaSalida >= ahora || renta.estado_tiempo === 'corriente';
-    });
+    // Para rentas: incluir solo las que están activas (corrientes)
+    const rentas = todasLasRentas.filter(renta => renta.estado_tiempo === 'corriente');
     
     // Para reservaciones: incluir las que empezarán en el futuro
     const reservaciones = todasLasReservaciones.filter(reservacion => {
