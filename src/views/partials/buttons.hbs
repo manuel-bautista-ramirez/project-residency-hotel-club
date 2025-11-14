@@ -1,6 +1,9 @@
 <div class="mt-4 px-2 sm:px-4 lg:px-0">
   <!-- Botones en grid responsive -->
-  <div class="grid grid-cols-5 gap-1 sm:gap-3 w-full max-w-6xl mx-auto">
+  <div class="{{#if (eq user.role 'Administrador')}}grid grid-cols-5{{else}}flex justify-center{{/if}} gap-1 sm:gap-3 w-full max-w-6xl mx-auto">
+    {{#unless (eq user.role 'Administrador')}}
+    <div class="grid grid-cols-3 gap-1 sm:gap-3 justify-items-center">
+    {{/unless}}
     {{#if (eq user.role "Administrador")}}
       <a
         href="/rooms/precios"
@@ -53,5 +56,8 @@
         <span class="sm:hidden">Agenda</span>
       </span>
     </a>
+    {{#unless (eq user.role 'Administrador')}}
+    </div>
+    {{/unless}}
   </div>
 </div>
