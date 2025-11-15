@@ -1,18 +1,10 @@
-
-<div class="max-w-7xl mx-auto px-2 sm:px-20 pt-10 sm:pt-10 pb-0 sm:pb-10">
+<div class="max-w-7xl mx-auto px-2 sm:px-20 pt-16 sm:pt-10 pb-8 sm:pb-8">
   <!-- Header -->
-  <header class="text-center py-2 sm:py-4">
+  <header class="text-center py-2 sm:py-4 pb-8">
     <h1 id="pricesHeaderTitle" class="text-lg sm:text-xl lg:text-2xl font-extrabold text-blue-900 mb-1 sm:mb-2 opacity-0 translate-y-1 transition-all duration-500">
       Precios de Habitaciones
     </h1>
-    <div class="flex items-center justify-center">
-      <a id="pricesBackLink" href="/rooms" class="group inline-flex items-center gap-1.5 text-xs sm:text-sm text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-full border border-blue-200 transition-all duration-500 opacity-0 translate-y-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="w-4 h-4 sm:w-5 sm:h-5 opacity-90 transition-transform duration-200 group-hover:-translate-x-0.5 shrink-0">
-          <path d="M10.5 6l-6 6 6 6 1.06-1.06L7.62 13H21v-2H7.62l3.94-3.94L10.5 6z"/>
-        </svg>
-        <span class="font-medium">Volver</span>
-      </a>
-    </div>
+      {{>buttons}}
   </header>
 
   <!-- Loading Overlay (como en Habitaciones) -->
@@ -243,7 +235,7 @@
   </div>
 
   <!-- Spacer to avoid overlap with fixed/sticky footer on small screens -->
-  <div class="h-16 sm:h-20 md:h-24" style="padding-bottom: env(safe-area-inset-bottom);"></div>
+  <div class="pt-12" ></div>
 
 <script>
   // Variables globales
@@ -444,11 +436,11 @@
   // Event listeners para botones individuales de guardar
   document.addEventListener('click', (e) => {
     const button = e.target.closest('button');
-    
+
     if (button && button.textContent.includes('Guardar') && !button.textContent.includes('Todos')) {
       // Buscar el input: primero intentar en el mismo contenedor padre
       let input = button.parentElement?.querySelector('input[type="number"]');
-      
+
       // Si no lo encuentra, buscar en el contenedor padre del padre
       if (!input) {
         const parent = button.parentElement;
@@ -457,7 +449,7 @@
           input = grandParent?.querySelector('input[type="number"]');
         }
       }
-      
+
       if (input) {
         const tipo = input.dataset.tipo;
         const mes = input.dataset.mes;
