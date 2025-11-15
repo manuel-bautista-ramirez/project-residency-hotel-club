@@ -20,4 +20,4 @@ public/uploads/
 # Permitir librerías de terceros
 !public/js/**/fullcalendar*/**/*.css
 !public/js/**/lib/**/*.css
-
+.vscode*
