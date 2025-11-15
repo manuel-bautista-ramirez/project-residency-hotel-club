@@ -593,6 +593,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!dateStr) return '';
 
     const [year, month, day] = dateStr.split('-');
+    // Entrada a las 12:00:00, salida exactamente a las 11:59:00
+    // Formato: "YYYY-MM-DD HH:mm:ss" (espacio entre fecha y hora) para compatibilidad con backend
     const time = isCheckout ? '11:59:00' : '12:00:00';
     return `${year}-${month}-${day} ${time}`;
   }
