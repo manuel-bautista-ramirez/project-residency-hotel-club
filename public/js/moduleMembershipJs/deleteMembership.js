@@ -1,4 +1,14 @@
+/**
+ * Clase DeleteModal que encapsula la lógica para mostrar un modal de confirmación
+ * y manejar la eliminación de una membresía.
+ */
 class DeleteModal {
+  /**
+   * El constructor se encarga de inicializar la clase.
+   * 1. Busca y cachea los elementos del DOM que componen el modal.
+   * 2. Muestra un error en consola si el modal principal no se encuentra.
+   * 3. Llama al método init() para vincular los eventos.
+   */
   constructor() {
     this.modal = document.getElementById("deleteModal");
     if (!this.modal) {
@@ -16,6 +26,11 @@ class DeleteModal {
     this.init();
   }
 
+  /**
+   * Busca todos los botones con la clase '.delete-btn' y les añade un
+   * event listener. Al hacer clic, se previene la acción por defecto, se
+   * extraen los datos de la membresía y se muestra el modal de confirmación.
+   */
   init() {
     document.querySelectorAll(".delete-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -28,6 +43,12 @@ class DeleteModal {
     });
   }
 
+  /**
+   * Método privado y genérico para configurar y mostrar el modal.
+   * Recibe un objeto de configuración para definir el título, mensaje,
+   * ícono y botones, haciendo el modal reutilizable para diferentes
+   * estados (confirmación, proceso, éxito, error).
+   */
   _showModal(config) {
     this.title.textContent = config.title;
     this.message.innerHTML = config.message;
@@ -50,11 +71,19 @@ class DeleteModal {
     document.body.style.overflow = "hidden";
   }
 
+  /**
+   * Oculta el modal y restaura el scroll del cuerpo de la página.
+   */
   hideModal() {
     this.modal.classList.add("hidden");
     document.body.style.overflow = "auto";
   }
 
+  /**
+   * Muestra el estado inicial del modal: la confirmación de eliminación.
+   * Construye un mensaje personalizado, incluyendo una advertencia adicional
+   * si la membresía es de tipo "Familiar".
+   */
   showConfirmation(name, type) {
     let warningText = type === "Familiar" ? " Esta acción también eliminará todos los integrantes asociados." : "";
 
@@ -78,6 +107,13 @@ class DeleteModal {
     });
   }
 
+  /**
+   * Función asíncrona que se ejecuta cuando el usuario confirma la eliminación.
+   * 1. Muestra un estado de "Procesando" en el modal.
+   * 2. Envía una petición DELETE al servidor con el ID de la membresía.
+   * 3. Procesa la respuesta: si es exitosa, muestra un mensaje de éxito y
+   *    recarga la página. Si falla, muestra un mensaje de error.
+   */
   async confirmDelete() {
     if (!this.membershipId) return;
 
@@ -110,6 +146,9 @@ class DeleteModal {
     }
   }
 
+  /**
+   * Muestra el modal en su estado de "Éxito" después de una eliminación correcta.
+   */
   showSuccessMessage() {
     this._showModal({
       title: "¡Eliminado exitosamente!",
@@ -120,6 +159,10 @@ class DeleteModal {
     });
   }
 
+  /**
+   * Muestra el modal en su estado de "Error" si la petición al servidor falla.
+   * @param {string} errorMessage - El mensaje de error a mostrar.
+   */
   showErrorMessage(errorMessage) {
     this._showModal({
       title: "Error",
@@ -137,6 +180,11 @@ class DeleteModal {
   }
 }
 
+/**
+ * Punto de entrada del script.
+ * Se asegura de que el DOM esté completamente cargado antes de instanciar
+ * la clase DeleteModal para que comience a funcionar.
+ */
 document.addEventListener("DOMContentLoaded", () => {
   new DeleteModal();
 });

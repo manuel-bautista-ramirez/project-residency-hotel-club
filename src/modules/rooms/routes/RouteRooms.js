@@ -2,12 +2,13 @@
 import express from "express";
 import {
   authMiddleware,
-  roleMiddleware,
-} from "../../login/middlewares/accessDenied.js";
+
+} from "../../../middlewares/validation/accessDenied.js";
 
 import {
   renderHabitacionesView,
   renderFormEditarReservacion,
+  handleEditReservation,
   renderAllPriceView,
   renderAllRentas,
   renderReservacionesView,
@@ -18,6 +19,7 @@ import {
   deleteByIdResevation,
   changesStatus,
   deleteIdRenta,
+  marcarComoDesocupada,
   handleCreateReservation,
   apiCheckAvailability,
   apiGetPriceByMonth,
@@ -33,6 +35,15 @@ import {
   sendReservationReceiptByEmail,
   sendReservationReceiptByWhatsApp,
   sendCheckInReminder,
+  // Funciones para conversión de reservación a renta
+  renderConvertReservationToRent,
+  handleConvertReservationToRent,
+  // Funciones para calendario
+  renderCalendarioRooms,
+  getCalendarData,
+  getCalendarEvents,
+  // Función para finalizar rentas expiradas
+  finalizarRentasExpiradasController,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -58,12 +69,20 @@ routerRoom.get("/rooms/rentar/:id", renderFormRentar);
 routerRoom.post("/rooms/create-renta/:id", handleCreateRenta);
 
 routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
+routerRoom.post("/api/reservaciones/:id/editar", handleEditReservation);
+
+// ----- CONVERSIÓN DE RESERVACIÓN A RENTA -----
+routerRoom.get("/rooms/confirmReservations/renta/:id", renderConvertReservationToRent);
+routerRoom.post("/api/rooms/convertReservationToRent/:id", handleConvertReservationToRent);
 
 routerRoom.post("/rooms/delete/:id", deleteByIdResevation);
-routerRoom.post("/rentas/eliminar/:id", deleteIdRenta);
+routerRoom.post("/rooms/rentas/delete/:id", deleteIdRenta);
+routerRoom.post("/rooms/desocupar/:id", marcarComoDesocupada);
 
-// routerRoom.get("/rooms/calendario", renderCalendario)
-// routerRoom.get('/rooms/calendario', fetchEventos);
+// ----- CALENDARIO -----
+routerRoom.get("/rooms/list/calendario", renderCalendarioRooms);
+routerRoom.get("/api/rooms/calendar-data", getCalendarData);
+routerRoom.get("/rooms/calendario/eventos", getCalendarEvents);
 
 // ----- API for promesas -----
 
@@ -87,5 +106,8 @@ routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-whatsapp", sendRes
 
 // ----- RUTAS PARA RECORDATORIOS -----
 routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-reminder", sendCheckInReminder);
+
+// ----- RUTA PARA FINALIZAR RENTAS EXPIRADAS -----
+routerRoom.post("/api/rooms/finalizar-rentas-expiradas", finalizarRentasExpiradasController);
 
 export { routerRoom };

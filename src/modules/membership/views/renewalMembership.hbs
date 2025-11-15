@@ -1,135 +1,204 @@
+<!-- Navbar -->
+{{> navbar}}
 
+<div class="container mx-auto px-4 py-6 mt-20">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Renovar Membresía</h1>
+            <p class="text-gray-600 mt-2">Renovando la membresía #{{membership.id_activa}}</p>
+        </div>
 
+        <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+            <a href="/memberships/listMembership"
+                class="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-5 py-2.5 rounded-xl font-medium flex items-center transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl">
+                <i class="fas fa-arrow-left mr-2"></i> Volver
+            </a>
+        </div>
+    </div>
 
-    <!-- Navbar -->
-    {{> navbar}}
+    <!-- Formulario de renovación -->
+    <form id="renewMembershipForm" action="/memberships/renew/{{membership.id_activa}}" method="POST"
+        class="bg-white rounded-2xl shadow-xl p-8 mb-8 border-2 border-gray-200">
+        <input type="hidden" id="id_activa" name="id_activa" value="{{membership.id_activa}}">
+        <input type="hidden" name="id_cliente" value="{{membership.id_cliente}}">
 
-    <div class="container mx-auto px-4 py-6 mt-20">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-800">Renovar Membresía</h1>
-                <p class="text-gray-600 mt-2">Renovando la membresía #{{membership.id_activa}}</p>
+        <!-- Información del cliente -->
+        <div class="mb-8">
+            <div class="flex items-center mb-6">
+                <div class="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-xl mr-4 shadow-md">
+                    <i class="fas fa-user-circle text-white text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    Información del Cliente
+                </h2>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="space-y-2">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="nombre_completo">
+                        Nombre Completo *
+                    </label>
+                    <input type="text" id="nombre_completo" name="nombre_completo"
+                        value="{{membership.nombre_completo}}"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300"
+                        required>
+                </div>
 
-            <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
-                <a href="/memberships"
-                    class="bg-gray-600 hover:bg-gray-700 text-white px-5 py-2.5 rounded-lg font-medium flex items-center transition-colors">
-                    <i class="fas fa-arrow-left mr-2"></i> Volver
-                </a>
+                <div class="space-y-2">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="telefono">
+                        Teléfono
+                    </label>
+                    <input type="tel" id="telefono" name="telefono" value="{{membership.telefono}}"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="correo">
+                        Correo Electrónico
+                    </label>
+                    <input type="email" id="correo" name="correo" value="{{membership.correo}}"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300">
+                </div>
             </div>
         </div>
 
-        <!-- Formulario de renovación -->
-        <form id="renewMembershipForm" action="/memberships/renew/{{membership.id_activa}}" method="POST"
-            class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-green-100">
-            <input type="hidden" id="id_activa" name="id_activa" value="{{membership.id_activa}}">
-            <input type="hidden" name="id_cliente" value="{{membership.id_cliente}}">
-
-
-            <!-- Información del cliente -->
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-user-circle mr-2 text-green-500"></i> Información del Cliente
+        <!-- Información de la membresía -->
+        <div class="mb-8">
+            <div class="flex items-center mb-6">
+                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl mr-4 shadow-md">
+                    <i class="fas fa-id-card-alt text-white text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    Información de la Membresía
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="nombre_completo">
-                            Nombre Completo *
-                        </label>
-                        <input type="text" id="nombre_completo" name="nombre_completo"
-                            value="{{membership.nombre_completo}}"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-                            required>
-                    </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="id_tipo_membresia">
+                        Tipo de Membresía *
+                    </label>
+                    <select id="id_tipo_membresia" name="id_tipo_membresia"
+                        data-tipos-membresia="{{json tiposMembresia}}"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300 appearance-none bg-white"
+                        required>
+                        {{#each tiposMembresia}}
+                        <option value="{{this.id_tipo_membresia}}" data-max-integrantes="{{this.max_integrantes}}" {{#if
+                            (eq ../membership.tipo_membresia this.nombre)}}selected{{/if}}>
+                            {{this.nombre}} - ${{this.precio}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
 
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="telefono">
-                            Teléfono
-                        </label>
-                        <input type="tel" id="telefono" name="telefono" value="{{membership.telefono}}"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent">
-                    </div>
+                <div class="space-y-2">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="id_metodo_pago">
+                        Método de pago *
+                    </label>
+                    <select id="id_metodo_pago" name="id_metodo_pago"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300 appearance-none bg-white"
+                        required>
+                        {{#each tiposPago}}
+                        <option value="{{this.id_metodo_pago}}">
+                            {{this.nombre}}
+                        </option>
+                        {{/each}}
+                    </select>
+                </div>
 
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="correo">
-                            Correo Electrónico
-                        </label>
-                        <input type="email" id="correo" name="correo" value="{{membership.correo}}"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent">
+                <div class="space-y-2">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="fecha_inicio">
+                        Fecha de Inicio *
+                    </label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{formatDate (now)}}"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="fecha_fin">
+                        Fecha de Vencimiento
+                    </label>
+                    <input type="date" id="fecha_fin" name="fecha_fin"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-700 font-medium"
+                        readonly>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2" for="precio_final">
+                        Precio Final
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span class="text-gray-500 font-medium">$</span>
+                        </div>
+                        <input type="text" id="precio_final" name="precio_final"
+                            class="pl-10 w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-700 font-bold text-lg"
+                            readonly>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Información de la membresía -->
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-id-card-alt mr-2 text-green-500"></i> Información de la Membresía
+        <!-- Sección de integrantes (solo para membresías familiares) -->
+        <div id="integrantesSection" class="mb-8 hidden">
+            <div class="flex items-center mb-6">
+                <div class="bg-gradient-to-br from-purple-500 to-indigo-600 p-3 rounded-xl mr-4 shadow-md">
+                    <i class="fas fa-users text-white text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                    Integrantes
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="id_tipo_membresia">
-                            Tipo de Membresía *
-                        </label>
-                        <select id="id_tipo_membresia" name="id_tipo_membresia"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-                            required>
-                            {{#each tiposMembresia}}
-                            <option value="{{this.id_tipo_membresia}}" {{#if (eq ../membership.tipo_membresia this.nombre)}}selected{{/if}}>
-                                {{this.nombre}} - ${{this.precio}}
-                            </option>
-                            {{/each}}
-                        </select>
-                    </div>
+            </div>
 
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="fecha_inicio">
-                            Fecha de Inicio *
-                        </label>
-                        <input type="date" id="fecha_inicio" name="fecha_inicio"
-                            value="{{formatDate (now)}}"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100"
-                            readonly>
-                    </div>
-
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="fecha_fin">
-                            Fecha de Vencimiento
-                        </label>
-                        <input type="date" id="fecha_fin" name="fecha_fin"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100"
-                            readonly>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="id_metodo_pago">
-                            Método de pago *
-                        </label>
-                        <select id="id_metodo_pago" name="id_metodo_pago"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-                            required>
-                            {{#each tiposPago}}
-                            <option value="{{this.id_metodo_pago}}">
-                                {{this.nombre}}
-                            </option>
-                            {{/each}}
-                        </select>
+            <div id="integrantesContainer" class="space-y-4">
+                {{#each membership.integrantes}}
+                <div
+                    class="integrante-item bg-gradient-to-r from-gray-50 to-white p-6 rounded-2xl border-2 border-gray-200 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                        <div class="space-y-2">
+                            <label class="block text-gray-700 text-sm font-semibold mb-2">Nombre Completo</label>
+                            <input type="text" name="integrantes[{{@index}}][nombre_completo]"
+                                value="{{this.nombre_completo}}"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300"
+                                required>
+                        </div>
                     </div>
                 </div>
+                {{/each}}
             </div>
+            <p class="text-sm text-gray-500 mt-4 flex items-center">
+                <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                Agrega los nombres completos de los integrantes para la nueva membresía familiar.
+            </p>
+        </div>
 
-            <!-- Botones de acción -->
-            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-                <a href="/memberships"
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    <i class="fas fa-times mr-2"></i> Cancelar
-                </a>
-                <button type="submit"
-                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    <i class="fas fa-sync-alt mr-2"></i> Renovar Membresía
-                </button>
+        <!-- Botones de acción -->
+        <div class="flex justify-end space-x-4 pt-8 border-t-2 border-gray-200">
+            <a href="/memberships"
+                class="inline-flex items-center px-6 py-3 border-2 border-gray-300 shadow-sm text-sm font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transform hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-times mr-2"></i> Cancelar
+            </a>
+            <button type="submit"
+                class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-semibold rounded-xl shadow-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-sync-alt mr-2"></i> Renovar Membresía
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Template para un nuevo integrante -->
+<template id="integrante-template">
+    <div
+        class="integrante-item bg-gradient-to-r from-gray-50 to-white p-6 rounded-2xl border-2 border-gray-200 shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <div class="space-y-2">
+                <label class="block text-gray-700 text-sm font-semibold mb-2">Nombre Completo</label>
+                <input type="text" name="integrantes[__INDEX__][nombre_completo]"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300"
+                    required>
             </div>
-        </form>
+        </div>
     </div>
+</template>
 
-    <script src="/js/moduleMembershipJs/renewal.js"></script>
-</body>
+<script src="/js/moduleMembershipJs/validator.js"></script>
+<script src="/js/moduleMembershipJs/renewal.js"></script>

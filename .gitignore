@@ -1,24 +1,23 @@
-# Ignorar dependencias
-/node_modules/
+# Dependencias
+node_modules/
 
-# Ignorar variables de entorno
-
+# Variables de entorno
 .env
 
-/whatsapp_session/*
 
-# Ignorar archivos subidos (PDFs/QRs)
-public/uploads/receipts/*
-public/uploads/qrs/*
-public/uploads/rooms/qr/rentas/*
-public/uploads/rooms/qr/reservaciones/*
-public/uploads/rooms/pdf/rentas/*
-public/uploads/rooms/pdf/reservaciones/*
+# Sesiones de WhatsApp
+whatsapp_session/
 
-# Mantener placeholders
-!public/uploads/receipts/.gitkeep
-!public/uploads/qrs/.gitkeep
-!public/uploads/rooms/qr/rentas/.gitkeep
-!public/uploads/rooms/qr/reservaciones/.gitkeep
-!public/uploads/rooms/pdf/rentas/.gitkeep
-!public/uploads/rooms/pdf/reservaciones/.gitkeep
+# Archivos subidos
+public/uploads/
+!public/uploads/.gitkeep
+
+# Mantener estructura de directorios
+!public/uploads/**/.gitkeep
+
+# Archivos CSS (excepto librerías)
+*.css
+# Permitir librerías de terceros
+!public/js/**/fullcalendar*/**/*.css
+!public/js/**/lib/**/*.css
+

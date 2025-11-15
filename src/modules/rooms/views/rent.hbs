@@ -1,599 +1,769 @@
-{{>navbar}}
-
-<div id="center-root" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 overflow-x-hidden md:grid md:place-items-center lg:grid lg:place-items-center">
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
-    <div class="flex flex-col items-center gap-3">
-      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="img">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <p class="text-sm text-blue-900 font-medium">Cargando formulario...</p>
+<div id="center-root" class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-start justify-center pt-16 p-4">
+  <!-- Loading Overlay Mejorado -->
+  <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/90 backdrop-blur-md flex items-center justify-center transition-all duration-500 ease-out opacity-0 pointer-events-none">
+    <div class="flex flex-col items-center gap-4 transform scale-95 transition-all duration-500 ease-out">
+      <!-- Spinner mejorado con animación más suave -->
+      <div class="relative">
+        <div class="w-16 h-16 border-4 border-blue-100 rounded-full"></div>
+        <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+        <!-- Checkmark que aparecerá al final -->
+        <svg class="w-16 h-16 text-green-500 absolute top-0 left-0 opacity-0 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="successCheckmark">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      
+      <!-- Texto animado -->
+      <div class="text-center space-y-2">
+        <p id="loadingMessage" class="text-blue-800 font-medium text-lg transition-all duration-300">Creando renta...</p>
+        <p class="text-blue-600 text-sm opacity-0 transition-opacity duration-300 delay-1000" id="loadingSubtext">Redirigiendo al panel de control</p>
+      </div>
+      
+      <!-- Barra de progreso sutil -->
+      <div class="w-48 h-1 bg-blue-100 rounded-full overflow-hidden">
+        <div id="progressBar" class="h-full bg-blue-600 transition-all duration-1000 ease-out w-0"></div>
+      </div>
     </div>
   </div>
-  <div class="max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-4 pt-16 sm:pt-20 lg:pt-0 xl:pt-2 pb-24 sm:pb-20 lg:pb-0">
 
-    <!-- Skeleton while loading -->
-    <div id="rentSkeleton" class="bg-white rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 p-6 animate-pulse">
-      <div class="h-6 w-48 bg-slate-200 rounded mb-4"></div>
-      <div class="h-4 w-40 bg-slate-200 rounded mb-2"></div>
-      <div class="h-4 w-56 bg-slate-200 rounded mb-4"></div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="h-24 bg-slate-200 rounded"></div>
-        <div class="h-24 bg-slate-200 rounded"></div>
-      </div>
-      <div class="mt-4 h-10 bg-slate-200 rounded w-40"></div>
-    </div>
+  <div class="w-full max-w-4xl mx-auto p-2">
 
-    <!-- Form Container -->
     <form
       id="formRent"
       action="/rooms/create-renta/{{habitacion.id}}"
       method="POST"
-      class="bg-white rounded-lg sm:rounded-xl shadow-md overflow-hidden ring-1 ring-slate-100 transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-[1px] hidden"
-      aria-labelledby="form-title"
+      class="bg-white rounded-md border border-slate-300 shadow-sm transition-all duration-300"
     >
       <input type="hidden" id="room_id" value="{{habitacion.id}}">
 
-      <!-- Room Info Header -->
-      <div class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white px-3 py-3 sm:px-6 sm:py-4 lg:py-1.5">
-        <div class="mb-2 lg:mb-1 flex items-center justify-start gap-2">
-          <a href="/rooms" class="inline-flex items-center gap-2 text-sm sm:text-base hover:opacity-90 transition">
-            <!-- Back icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24">
+      <!-- Header compacto -->
+      <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-3 py-2 border-b border-blue-700 rounded-t-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 text-blue-200" viewBox="0 0 24 24">
+              <path d="M3.75 3a.75.75 0 000 1.5h.75v14.25A2.25 2.25 0 006.75 21h10.5A2.25 2.25 0 0019.5 18.75V4.5h.75a.75.75 0 000-1.5h-16.5zM9 6h6a.75.75 0 010 1.5H9A.75.75 0 019 6zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 9zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 12zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 15z"/>
+            </svg>
+            <span class="text-xs font-bold">Renta Hab. {{habitacion.numero}}</span>
+          </div>
+          <a href="/rooms" class="text-xs hover:opacity-90 transition opacity-80 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3" viewBox="0 0 24 24">
               <path fill-rule="evenodd" d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clip-rule="evenodd"/>
             </svg>
-            Volver
           </a>
         </div>
-
-        <h2 id="form-title" class="text-sm sm:text-lg md:text-xl lg:text-base font-bold flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 opacity-90" viewBox="0 0 24 24">
-            <path d="M3.75 3a.75.75 0 000 1.5h.75v14.25A2.25 2.25 0 006.75 21h10.5A2.25 2.25 0 0019.5 18.75V4.5h.75a.75.75 0 000-1.5h-16.5zM9 6h6a.75.75 0 010 1.5H9A.75.75 0 019 6zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 9zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 12zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 15z"/>
-          </svg>
-          Habitación {{habitacion.numero}} • {{habitacion.tipo}}
-        </h2>
-        <p class="text-blue-100 text-xs sm:text-sm lg:hidden">Complete los datos</p>
       </div>
 
-      <!-- Form Content -->
-      <div class="p-4 sm:p-6 md:p-6 lg:p-4">
-        <div class="space-y-5 sm:space-y-6 md:space-y-0 md:grid md:grid-cols-2 md:gap-5 lg:gap-6">
-          <!-- Columna izquierda: Cliente + Fechas -->
-          <div class="space-y-5 sm:space-y-6 lg:space-y-4">
-            <!-- Cliente -->
-            <section aria-labelledby="cliente-title" class="space-y-2 md:space-y-3">
-              <h3 id="cliente-title" class="text-sm sm:text-base md:text-lg lg:text-xs font-semibold text-gray-900 border-b border-gray-200 pb-2 md:pb-2 lg:pb-1 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4" viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0v1H5v-1z"/></svg>
-                Cliente
-              </h3>
+      <div class="p-3">
+        <input type="hidden" name="monto" value="0" />
+
+        <!-- Primera línea: Cliente y Fechas -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
+          
+          <!-- Cliente -->
+          <div class="border border-slate-200 rounded p-2">
+            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Cliente</h2>
+            
+            <div class="space-y-2">
               <div>
-                <label for="client_name" class="block text-sm lg:text-xs font-medium text-slate-700 mb-1 lg:mb-0.5">Nombre *</label>
-                <div class="relative group">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                    <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0v1H5v-1z" />
+                <label class="block text-xs text-gray-700 mb-1">Nombre *</label>
+                <div class="relative">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400">
+                    <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0v1H5v-1z"/>
                   </svg>
-                  <input id="client_name" name="client_name" required placeholder="Nombre completo"
-                    class="w-full pl-9 pr-3 py-3 lg:py-2 text-base lg:text-sm border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                  <input
+                    id="client_name"
+                    name="client_name"
+                    class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 outline-none"
+                    placeholder="Nombre completo"
+                  />
                 </div>
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+              <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label for="email" class="block text-sm lg:text-xs font-medium text-slate-700 mb-1">Email *</label>
-                  <div class="relative group">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <label class="block text-xs text-gray-700 mb-1">Email *</label>
+                  <div class="relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400">
                       <path d="M1.5 6.75A2.25 2.25 0 013.75 4.5h16.5a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0120.25 19.5H3.75A2.25 2.25 0 011.5 17.25V6.75zm2.776-.75A.026.026 0 004.25 6l7.75 5.167L19.75 6a.026.026 0 00-.026 0H4.276z"/>
                     </svg>
-                    <input id="email" name="email" type="email" required placeholder="email@ejemplo.com"
-                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 outline-none"
+                      placeholder="email@ejemplo.com"
+                    />
                   </div>
                 </div>
+
                 <div>
-                  <label for="phone" class="block text-sm lg:text-xs font-medium text-slate-700 mb-1">Teléfono *</label>
-                  <div class="relative group">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <label class="block text-xs text-gray-700 mb-1">Teléfono *</label>
+                  <div class="relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400">
                       <path d="M2.25 4.5A2.25 2.25 0 014.5 2.25h3A2.25 2.25 0 019.75 4.5v15A2.25 2.25 0 017.5 21.75h-3A2.25 2.25 0 012.25 19.5v-15zM6 18.75a.75.75 0 100 1.5.75.75 0 000-1.5z"/>
                     </svg>
-                    <input id="phone" name="phone" type="tel" maxlength="10" required placeholder="1234567890"
-                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      maxlength="10"
+                      class="w-full pl-7 pr-2 py-1 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 outline-none"
+                      placeholder="10 dígitos"
+                    />
                   </div>
                 </div>
               </div>
-            </section>
+            </div>
+          </div>
 
-            <!-- Fechas -->
-            <section aria-labelledby="fechas-title" class="space-y-2 md:space-y-3">
-              <h3 id="fechas-title" class="text-sm sm:text-base md:text-lg lg:text-xs font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4" viewBox="0 0 24 24"><path d="M6.75 3a.75.75 0 01.75.75V5h9V3.75a.75.75 0 011.5 0V5h.75A2.25 2.25 0 0121 7.25v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.25A2.25 2.25 0 015.25 5H6V3.75A.75.75 0 016.75 3zM4.5 9v9.75c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V9H4.5z"/></svg>
-                Fechas
-              </h3>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Fechas -->
+          <div class="border border-slate-200 rounded p-2">
+            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Fechas</h2>
+            
+            <div class="space-y-2">
+              <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label for="check_in" class="block text-sm font-medium text-slate-700 mb-1">Entrada *</label>
-                  <div class="relative group">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <label class="block text-xs text-gray-700 mb-1">Entrada</label>
+                  <div class="relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400">
                       <path d="M6.75 3a.75.75 0 01.75.75V5h9V3.75a.75.75 0 011.5 0V5h.75A2.25 2.25 0 0121 7.25v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.25A2.25 2.25 0 015.25 5H6V3.75A.75.75 0 016.75 3zM4.5 9v9.75c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V9H4.5z"/>
                     </svg>
-                    <input id="check_in" type="date" required
-                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                    <input
+                      id="check_in"
+                      type="date"
+                      class="w-full pl-7 pr-1 py-1 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 outline-none"
+                    />
                     <input type="hidden" id="check_in_with_time" name="check_in" value=""/>
                   </div>
                 </div>
+
                 <div>
-                  <label for="check_out" class="block text-sm font-medium text-slate-700 mb-1">Salida *</label>
-                  <div class="relative group">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <label class="block text-xs text-gray-700 mb-1">Salida</label>
+                  <div class="relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400">
                       <path d="M6.75 3a.75.75 0 01.75.75V5h9V3.75a.75.75 0 011.5 0V5h.75A2.25 2.25 0 0121 7.25v11.5A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75V7.25A2.25 2.25 0 015.25 5H6V3.75A.75.75 0 016.75 3zM4.5 9v9.75c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V9H4.5z"/>
                     </svg>
-                    <input id="check_out" type="date" required
-                      class="w-full pl-9 pr-3 py-3 lg:py-2 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
+                    <input
+                      id="check_out"
+                      type="date"
+                      class="w-full pl-7 pr-1 py-1 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 outline-none"
+                    />
                     <input type="hidden" id="check_out_with_time" name="check_out" value=""/>
                   </div>
                 </div>
               </div>
-              <div id="duration-display" class="hidden bg-blue-50 border rounded-md p-2">
-                <span class="text-blue-800 text-sm">Duración: <span id="nights-count" class="font-medium">0</span> noches</span>
+
+              <div id="duration-display" class="hidden bg-blue-50 border border-blue-200 rounded px-2 py-1">
+                <span class="text-blue-800 text-xs"><span id="nights-count" class="font-medium">0</span> noches</span>
               </div>
-            </section>
+            </div>
           </div>
-
-          <!-- Columna derecha: Precio + Pago -->
-          <div class="space-y-5 md:space-y-6">
-            <section aria-labelledby="precio-title" class="space-y-2 md:space-y-3">
-              <h3 id="precio-title" class="text-sm md:text-lg font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">Precio</h3>
-              <div class="relative group">
-
-                <span class="pointer-events-none absolute left-3 top-3.5 text-slate-400 text-sm transition-colors group-focus-within:text-blue-500">$</span>
-
-                <input id="price" name="price" type="number" readonly placeholder="0.00"
-                  class="w-full pl-8 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200"/>
-
-                <input id="price_text" name="price_text" type="text" placeholder="Precio en letras"
-                  class="w-full pl-8 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200 mt-3 tracking-widest text-base md:text-lg"/>
-              </div>
-            </section>
-
-            <section aria-labelledby="pago-title" class="space-y-2 md:space-y-3">
-              <h3 id="pago-title" class="text-sm md:text-lg font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">Pago</h3>
-              <div class="relative group">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <path d="M2.25 7.5A2.25 2.25 0 014.5 5.25h15a2.25 2.25 0 012.25 2.25v9A2.25 2.25 0 0119.5 18.75h-15A2.25 2.25 0 012.25 16.5v-9zM3.75 9h16.5V7.5a.75.75 0 00-.75-.75h-15a.75.75 0 00-.75.75V9z"/>
-                </svg>
-                <select id="payment_type" name="payment_type" required
-                  class="w-full pl-9 pr-8 py-3 border border-slate-300 rounded-lg bg-white/90 focus:bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-colors duration-200 appearance-none">
-                  <option value="">-- Seleccionar método de pago --</option>
-                  <option value="Card">Tarjeta</option>
-                  <option value="Transfer">Transferencia</option>
-                  <option value="Cash">Efectivo</option>
-                </select>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400">
-                  <path fill-rule="evenodd" d="M12 14.25l-5.47-5.47a.75.75 0 011.06-1.06L12 12.13l4.41-4.41a.75.75 0 111.06 1.06L12 14.25z" clip-rule="evenodd"/>
-                </svg>
-              </div>
-            </section>
-
-            <!-- Información de Envío Automático -->
-            <section aria-labelledby="envio-title" class="space-y-2 md:space-y-3">
-              <h3 id="envio-title" class="text-sm md:text-lg font-semibold text-gray-900 border-b pb-2 md:pb-2 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4" viewBox="0 0 24 24">
-                  <path d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z"/>
-                </svg>
-                Envío Automático
-              </h3>
-              <div class="bg-green-50 border border-green-200 rounded-lg p-3">
-                <div class="flex items-center gap-2 text-green-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5" viewBox="0 0 24 24">
-                    <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  <span class="font-medium">Comprobante automático por WhatsApp</span>
-                </div>
-                <p class="text-sm text-green-700 mt-1">
-                  Se enviará automáticamente al número de teléfono proporcionado una vez creada la renta.
-                </p>
-              </div>
-              <!-- Campos ocultos para mantener compatibilidad -->
-              <input type="hidden" name="send_whatsapp" value="on">
-            </section>
-          </div>
-
-
-
-
-
-
         </div>
 
+        <!-- Segunda línea: Pago, Método y Envío -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+          
+          <!-- Pago -->
+          <div class="border border-slate-200 rounded p-2">
+            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Pago</h2>
+            
+            <div class="space-y-2">
+              <div>
+                <label class="block text-xs text-gray-700 mb-1">Precio total</label>
+                <div class="relative">
+                  <span class="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                  <input id="price" name="price" type="number" readonly placeholder="0.00"
+                    class="w-full pl-5 pr-2 py-1 text-xs border border-slate-300 rounded bg-slate-50 text-slate-700 outline-none"/>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs text-gray-700 mb-1">En letras</label>
+                <input id="price_text" name="price_text" type="text" readonly placeholder="Precio en letras"
+                  class="w-full px-2 py-1 text-xs border border-slate-300 rounded bg-slate-50 text-slate-700 outline-none"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Método de pago -->
+          <div class="border border-slate-200 rounded p-2">
+            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Método</h2>
+            
+            <div class="relative">
+              <select id="payment_type" name="payment_type"
+                class="w-full pl-2 pr-6 py-1 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 outline-none appearance-none">
+                <option value="">Seleccionar...</option>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="transferencia">Transferencia</option>
+                <option value="efectivo">Efectivo</option>
+              </select>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400">
+                <path fill-rule="evenodd" d="M12 14.25l-5.47-5.47a.75.75 0 011.06-1.06L12 12.13l4.41-4.41a.75.75 0 111.06 1.06L12 14.25z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Envío Automático -->
+          <div class="border border-slate-200 rounded p-2">
+            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Envío</h2>
+            
+            <div class="space-y-2">
+              <div class="bg-blue-50 border border-blue-200 rounded px-2 py-1.5">
+                <div class="flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 text-blue-600" viewBox="0 0 24 24">
+                    <path d="M1.5 6.75A2.25 2.25 0 013.75 4.5h16.5a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0120.25 19.5H3.75A2.25 2.25 0 011.5 17.25V6.75zm2.776-.75A.026.026 0 004.25 6l7.75 5.167L19.75 6a.026.026 0 00-.026 0H4.276z"/>
+                  </svg>
+                  <span class="text-blue-800 text-xs font-medium">Email</span>
+                </div>
+                <p class="text-blue-700 text-xs mt-0.5">Automático</p>
+              </div>
+
+              <div class="bg-green-50 border border-green-200 rounded px-2 py-1.5">
+                <div class="flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 text-green-600" viewBox="0 0 24 24">
+                    <path d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z"/>
+                  </svg>
+                  <span class="text-green-800 text-xs font-medium">WhatsApp</span>
+                </div>
+                <p class="text-green-700 text-xs mt-0.5">Automático</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos ocultos -->
+        <input type="hidden" name="send_email" value="on">
+        <input type="hidden" name="send_whatsapp" value="on">
+
         <!-- Botones -->
-        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t mt-5 md:justify-end">
-          <a href="/rooms" class="w-full sm:w-auto px-6  border border-red-500 text-red-600 py-3  rounded-lg hover:bg-slate-50 active:scale-[0.98] transition inline-flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clip-rule="evenodd"/></svg>
+        <div class="flex gap-2 pt-2 border-t border-slate-200">
+          <a href="/rooms" class="flex-1 px-2 border border-red-500 text-red-600 py-1 rounded hover:bg-slate-50 transition inline-flex items-center justify-center gap-1 text-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
+              <path fill-rule="evenodd" d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z" clip-rule="evenodd"/>
+            </svg>
             Cancelar
           </a>
-          <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-lg shadow-sm hover:shadow-md hover:bg-green-700 active:scale-[0.98] transition inline-flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5H12.75v6.75a.75.75 0 01-1.5 0V12.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"/></svg>
-            Crear Renta
+          <button type="submit" class="flex-1 px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition inline-flex items-center justify-center gap-1 text-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
+              <path d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5H12.75v6.75a.75.75 0 01-1.5 0V12.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z"/>
+            </svg>
+            Crear
           </button>
         </div>
       </div>
-    </>
+    </form>
   </div>
 </div>
 
-{{>footer}}
-
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const overlay = document.getElementById('loadingOverlay');
-    const skeleton = document.getElementById('rentSkeleton');
-    const form = document.getElementById('formRent');
-    const hideOverlay = () => overlay && overlay.classList.add('hidden');
-    // Dynamic center: set available height between navbar and footer on desktop
-    const centerRoot = document.getElementById('center-root');
-    function applyDesktopCenter() {
-      if (!centerRoot) return;
-      const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
-      if (!isDesktop) {
-        centerRoot.style.height = '';
-        centerRoot.style.minHeight = '';
-        return;
-      }
-      const nav = document.querySelector('nav');
-      const footer = document.querySelector('footer');
-      const navStyle = nav ? getComputedStyle(nav) : null;
-      const footStyle = footer ? getComputedStyle(footer) : null;
-      const navIsFixed = navStyle ? (navStyle.position === 'fixed' || (navStyle.position === 'sticky' && navStyle.top === '0px')) : false;
-      const footIsFixed = footStyle ? (footStyle.position === 'fixed' || (footStyle.position === 'sticky' && footStyle.bottom === '0px')) : false;
-      const navH = navIsFixed && nav ? nav.offsetHeight : 0;
-      const footH = footIsFixed && footer ? footer.offsetHeight : 0;
-      const available = Math.max(window.innerHeight - navH - footH, 360);
-      centerRoot.style.height = available + 'px';
-      centerRoot.style.minHeight = available + 'px';
+
+document.addEventListener("DOMContentLoaded", () => {
+  const overlay = document.getElementById('loadingOverlay');
+  const skeleton = document.getElementById('rentSkeleton');
+  const form = document.getElementById('formRent');
+  const hideOverlay = () => overlay && overlay.classList.add('hidden');
+  
+  // Dynamic center: set available height between navbar and footer on desktop
+  const centerRoot = document.getElementById('center-root');
+  function applyDesktopCenter() {
+    if (!centerRoot) return;
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+    if (!isDesktop) {
+      centerRoot.style.height = '';
+      centerRoot.style.minHeight = '';
+      return;
     }
-    applyDesktopCenter();
-    window.addEventListener('resize', applyDesktopCenter);
-    const roomId = Number(document.getElementById("room_id").value);
-    const checkInInput = document.getElementById("check_in");
-    const checkOutInput = document.getElementById("check_out");
-    const priceField = document.getElementById("price");
-    const priceTextField = document.getElementById("price_text");
-    const durationDisplay = document.getElementById("duration-display");
-    const nightsCount = document.getElementById("nights-count");
-    const submitButton = document.querySelector('button[type="submit"]');
+    const nav = document.querySelector('nav');
+    const footer = document.querySelector('footer');
+    const navStyle = nav ? getComputedStyle(nav) : null;
+    const footStyle = footer ? getComputedStyle(footer) : null;
+    const navIsFixed = navStyle ? (navStyle.position === 'fixed' || (navStyle.position === 'sticky' && navStyle.top === '0px')) : false;
+    const footIsFixed = footStyle ? (footStyle.position === 'fixed' || (footStyle.position === 'sticky' && footStyle.bottom === '0px')) : false;
+    const navH = navIsFixed && nav ? nav.offsetHeight : 0;
+    const footH = footIsFixed && footer ? footer.offsetHeight : 0;
+    const available = Math.max(window.innerHeight - navH - footH, 360);
+    centerRoot.style.height = available + 'px';
+    centerRoot.style.minHeight = available + 'px';
+  }
+  applyDesktopCenter();
+  window.addEventListener('resize', applyDesktopCenter);
+  
+  const roomId = Number(document.getElementById("room_id").value);
+  const checkInInput = document.getElementById("check_in");
+  const checkOutInput = document.getElementById("check_out");
+  const priceField = document.getElementById("price");
+  const priceTextField = document.getElementById("price_text");
+  const durationDisplay = document.getElementById("duration-display");
+  const nightsCount = document.getElementById("nights-count");
+  const submitButton = document.querySelector('button[type="submit"]');
+  
+  // ============================================
+  // VALIDACIÓN: Check-in FIJO en HOY, Check-out modificable
+  // ============================================
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+  
+  console.log('📅 Fecha de HOY:', todayStr);
+  
+  // Check-in BLOQUEADO en HOY (no modificable)
+  checkInInput.value = todayStr;
+  checkInInput.setAttribute('min', todayStr);
+  checkInInput.setAttribute('max', todayStr);
+  checkInInput.setAttribute('readonly', 'readonly');
+  checkInInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+  
+  // Check-out por defecto MAÑANA (pero modificable)
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowYear = tomorrow.getFullYear();
+  const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+  const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0');
+  const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
+  
+  console.log('📅 Fecha de MAÑANA:', tomorrowStr);
+  
+  checkOutInput.setAttribute('min', tomorrowStr);
+  checkOutInput.value = tomorrowStr;
+  
+  // Prevenir cambios en el check-in
+  checkInInput.addEventListener('click', function(e) {
+    e.preventDefault();
+    showNotification('La fecha de entrada está establecida para hoy', 'info');
+  });
+  
+  checkInInput.addEventListener('keydown', function(e) {
+    e.preventDefault();
+  });
+
+  // Reveal flow: hide overlay and skeleton, show form
+  setTimeout(() => {
+    if (skeleton) skeleton.classList.add('hidden');
     
     // ============================================
-    // VALIDACIÓN: Solo rentas para el día de hoy
+    // CALCULAR PRECIO AUTOMÁTICAMENTE al cargar
     // ============================================
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const initialCheckIn = checkInInput.value;
+    const initialCheckOut = checkOutInput.value;
     
-    // Establecer fecha mínima y máxima = HOY
-    checkInInput.setAttribute('min', todayStr);
-    checkInInput.setAttribute('max', todayStr);
-    checkInInput.value = todayStr; // Establecer HOY por defecto
-    
-    // Fecha de salida mínima = mañana
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    checkOutInput.setAttribute('min', tomorrowStr);
-    checkOutInput.value = tomorrowStr; // Establecer mañana por defecto
-    
-    // Validar si el usuario intenta cambiar manualmente la fecha de entrada
-    checkInInput.addEventListener('change', function() {
-      if (this.value !== todayStr) {
-        showNotification('⚠️ Solo se pueden crear rentas para el día de hoy', 'error');
-        this.value = todayStr;
-      }
-    });
-    
-    // Actualizar fecha mínima de salida cuando cambia entrada
-    checkInInput.addEventListener('input', function() {
-      const checkInDate = new Date(this.value);
-      const nextDay = new Date(checkInDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      checkOutInput.min = nextDay.toISOString().split('T')[0];
-      
-      if (checkOutInput.value && checkOutInput.value <= this.value) {
-        checkOutInput.value = nextDay.toISOString().split('T')[0];
-      }
+    if (initialCheckIn && initialCheckOut) {
+      const nights = updateDurationDisplay(initialCheckIn, initialCheckOut);
+      checkAvailability(initialCheckIn, initialCheckOut).then(isAvailable => {
+        if (isAvailable) {
+          fetchPrice(initialCheckIn, nights);
+        }
+      });
+    }
+  }, 350);
+
+  // Show notification function - RESPONSIVE PARA TODOS LOS DISPOSITIVOS
+  function showNotification(message, type = 'info') {
+    // Remover notificaciones anteriores
+    const existingNotifications = document.querySelectorAll('.professional-notification');
+    existingNotifications.forEach(notification => {
+      notification.classList.add('opacity-0', 'translate-y-[-100%]', 'sm:translate-x-full');
+      setTimeout(() => notification.remove(), 300);
     });
 
-    // Reveal flow: hide overlay and skeleton, show form
+    const notification = document.createElement('div');
+    
+    // Configuración Tailwind responsive por tipo
+    const config = {
+      success: {
+        bgColor: 'bg-white',
+        borderColor: 'border-l-4 border-l-green-500',
+        iconColor: 'text-green-500',
+        icon: `
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        `
+      },
+      error: {
+        bgColor: 'bg-white',
+        borderColor: 'border-l-4 border-l-red-500',
+        iconColor: 'text-red-500',
+        icon: `
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        `
+      },
+      warning: {
+        bgColor: 'bg-white',
+        borderColor: 'border-l-4 border-l-amber-500',
+        iconColor: 'text-amber-500',
+        icon: `
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+        `
+      },
+      info: {
+        bgColor: 'bg-white',
+        borderColor: 'border-l-4 border-l-blue-500',
+        iconColor: 'text-blue-500',
+        icon: `
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        `
+      }
+    };
+
+    const { bgColor, borderColor, iconColor, icon } = config[type];
+
+    // Clases responsive para diferentes dispositivos
+    notification.className = `
+      professional-notification 
+      fixed z-50 
+      ${bgColor} ${borderColor} 
+      shadow-lg 
+      w-[95vw] max-w-sm
+      mx-auto
+      left-1/2 transform -translate-x-1/2
+      sm:left-auto sm:right-4 sm:translate-x-0
+      top-4
+      sm:top-4
+      rounded-lg
+      sm:rounded-r-lg
+      px-3 py-3
+      sm:px-4 sm:py-3
+      transition-all duration-300 ease-in-out
+      border border-gray-200
+      translate-y-[-100%] opacity-0
+      sm:translate-x-full sm:opacity-0
+    `.replace(/\s+/g, ' ').trim();
+    
+    notification.innerHTML = `
+      <div class="flex items-start gap-2 sm:gap-3">
+        <div class="flex-shrink-0 ${iconColor} mt-0.5">
+          ${icon}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs sm:text-sm font-medium text-gray-900 leading-tight sm:leading-normal">${message}</p>
+          <p class="text-[10px] sm:text-xs text-gray-500 mt-1">${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</p>
+        </div>
+        <button class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors duration-200 ml-1">
+          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Animación de entrada responsive
     setTimeout(() => {
-      hideOverlay();
-      if (skeleton) skeleton.classList.add('hidden');
-      if (form) form.classList.remove('hidden');
-      
-      // ============================================
-      // CALCULAR PRECIO AUTOMÁTICAMENTE al cargar
-      // ============================================
-      const initialCheckIn = checkInInput.value;
-      const initialCheckOut = checkOutInput.value;
-      
-      if (initialCheckIn && initialCheckOut) {
-        const nights = updateDurationDisplay(initialCheckIn, initialCheckOut);
-        // Calcular precio automáticamente
-        checkAvailability(initialCheckIn, initialCheckOut).then(isAvailable => {
-          if (isAvailable) {
-            fetchPrice(initialCheckIn, nights);
-          }
-        });
-      }
-    }, 350);
+      notification.classList.remove('translate-y-[-100%]', 'opacity-0', 'sm:translate-x-full', 'sm:opacity-0');
+      notification.classList.add('translate-y-0', 'opacity-100', 'sm:translate-x-0', 'sm:opacity-100');
+    }, 10);
 
-    // Show notification function
-    function showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
-      notification.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-white font-medium transition-all duration-300 ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error' ? 'bg-red-500' :
-        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
-      }`;
-      notification.textContent = message;
-      notification.setAttribute('role', 'status');
-      document.body.appendChild(notification);
-
+    // Auto-remove después de 4 segundos
+    const autoRemove = setTimeout(() => {
+      notification.classList.remove('translate-y-0', 'opacity-100', 'sm:translate-x-0', 'sm:opacity-100');
+      notification.classList.add('translate-y-[-100%]', 'opacity-0', 'sm:translate-x-full', 'sm:opacity-0');
       setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 300);
-      }, 4000);
-    }
-
-    // Calculate nights between dates
-    function calculateNights(checkIn, checkOut) {
-      if (!checkIn || !checkOut) return 0;
-      const start = new Date(checkIn);
-      const end = new Date(checkOut);
-      const diffTime = Math.abs(end - start);
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    }
-
-    // Update duration display
-    function updateDurationDisplay(checkIn, checkOut) {
-      const nights = calculateNights(checkIn, checkOut);
-      if (nights > 0) {
-        nightsCount.textContent = nights;
-        durationDisplay.classList.remove('hidden');
-        durationDisplay.classList.add('flex');
-      } else {
-        durationDisplay.classList.add('hidden');
-        durationDisplay.classList.remove('flex');
-      }
-      return nights;
-    }
-
-    // Fetch price from API
-    async function fetchPrice(checkIn, nights = 1) {
-      if (!checkIn) return;
-
-      const month = new Date(checkIn).getMonth() + 1;
-      submitButton.disabled = true;
-      submitButton.textContent = 'Calculando precio...';
-
-      try {
-        const res = await fetch(`/api/rooms/${roomId}/price?month=${month}`);
-        const json = await res.json();
-        const pricePerNight = json.price ?? 0;
-        const totalPrice = pricePerNight * nights;
-
-        priceField.value = totalPrice.toFixed(2);
-        priceTextField.value = numberToWords(totalPrice);
-
-        showNotification(`Precio calculado: $${totalPrice.toFixed(2)} por ${nights} noche(s)`, 'success');
-      } catch (err) {
-        showNotification('Error al obtener el precio', 'error');
-        console.error("Error obteniendo precio:", err);
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Crear Renta';
-      }
-    }
-
-    // Add time to date (12:00 PM noon in local time, accounting for UTC conversion)
-    function addTimeToDate(dateStr, isCheckout = false) {
-      if (!dateStr) return '';
-      // Create a date at noon local time
-      const date = new Date(`${dateStr}T12:00:00`);
-      // Format as ISO string but MySQL will interpret as local, so we need to format differently
-      // Get the date in YYYY-MM-DD HH:MM:SS format for MySQL
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day} 12:00:00`;
-    }
-
-    // Check room availability
-    async function checkAvailability(checkIn, checkOut) {
-      if (!checkIn || !checkOut) return false;
-
-      try {
-        // Add time to dates (12:00 PM for both check-in and check-out)
-        const checkInWithTime = addTimeToDate(checkIn);
-        const checkOutWithTime = addTimeToDate(checkOut, true);
-        
-        const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
-        const res = await fetch(url);
-        const json = await res.json();
-
-        if (!json.available) {
-          showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta.", 'error');
-          checkInInput.value = "";
-          checkOutInput.value = "";
-          priceField.value = "";
-          priceTextField.value = "";
-          durationDisplay.classList.add('hidden');
-          durationDisplay.classList.remove('flex');
-          return false;
+        if (notification.parentElement) {
+          notification.remove();
         }
+      }, 300);
+    }, 4000);
 
-        showNotification("Habitación disponible para las fechas seleccionadas", 'success');
-        return true;
-      } catch (err) {
-        showNotification('Error al verificar disponibilidad', 'error');
-        console.error("Error verificando disponibilidad:", err);
-        return false;
-      }
-    }
-
-    // Convert number to words in Spanish
-    function numberToWords(num) {
-      const unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
-      const especiales = ["diez", "once", "doce", "trece", "catorce", "quince",
-                          "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
-      const decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta",
-                       "sesenta", "setenta", "ochenta", "noventa"];
-      const centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos",
-                        "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
-
-      if (num === 0) return "cero pesos";
-      if (num === 100) return "cien pesos";
-
-      let words = "";
-      let originalNum = Math.floor(num);
-
-      if (originalNum >= 1000000) {
-        return originalNum + " pesos";
-      }
-
-      if (originalNum >= 1000) {
-        const miles = Math.floor(originalNum / 1000);
-        if (miles === 1) {
-          words += "mil";
-        } else {
-          words += numberToWords(miles).replace(" pesos", "") + " mil";
+    // Permitir cerrar manualmente
+    const closeBtn = notification.querySelector('button');
+    closeBtn.addEventListener('click', () => {
+      clearTimeout(autoRemove);
+      notification.classList.remove('translate-y-0', 'opacity-100', 'sm:translate-x-0', 'sm:opacity-100');
+      notification.classList.add('translate-y-[-100%]', 'opacity-0', 'sm:translate-x-full', 'sm:opacity-0');
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
         }
-        originalNum = originalNum % 1000;
-        if (originalNum > 0) words += " ";
-      }
+      }, 300);
+    });
 
-      if (originalNum >= 100) {
-        words += centenas[Math.floor(originalNum / 100)];
-        originalNum = originalNum % 100;
-        if (originalNum > 0) words += " ";
-      }
+    // Pausar auto-remove al hacer hover
+    notification.addEventListener('mouseenter', () => {
+      clearTimeout(autoRemove);
+    });
 
-      if (originalNum >= 20) {
-        words += decenas[Math.floor(originalNum / 10)];
-        if (originalNum % 10 > 0) words += " y " + unidades[originalNum % 10];
-      } else if (originalNum >= 10) {
-        words += especiales[originalNum - 10];
-      } else if (originalNum > 0) {
-        words += unidades[originalNum];
-      }
+    notification.addEventListener('mouseleave', () => {
+      const newAutoRemove = setTimeout(() => {
+        notification.classList.remove('translate-y-0', 'opacity-100', 'sm:translate-x-0', 'sm:opacity-100');
+        notification.classList.add('translate-y-[-100%]', 'opacity-0', 'sm:translate-x-full', 'sm:opacity-0');
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 300);
+      }, 3000);
+      
+      notification.dataset.autoRemove = newAutoRemove;
+    });
+  }
 
-      return words + " pesos";
+  // Calculate nights between dates
+  function calculateNights(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return 0;
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const diffTime = Math.abs(end - start);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  // Update duration display
+  function updateDurationDisplay(checkIn, checkOut) {
+    const nights = calculateNights(checkIn, checkOut);
+    if (nights > 0) {
+      nightsCount.textContent = nights;
+      durationDisplay.classList.remove('hidden');
+      durationDisplay.classList.add('flex');
+    } else {
+      durationDisplay.classList.add('hidden');
+      durationDisplay.classList.remove('flex');
     }
+    return nights;
+  }
 
-    // Validate form before submission
-    async function validateForm() {
-      const checkIn = checkInInput.value;
-      const checkOut = checkOutInput.value;
+  // Fetch price from API
+  async function fetchPrice(checkIn, nights = 1) {
+    if (!checkIn) return;
 
-      if (!checkIn || !checkOut) {
-        showNotification('Por favor seleccione las fechas de entrada y salida', 'warning');
-        return false;
-      }
+    const month = new Date(checkIn).getMonth() + 1;
 
-      if (new Date(checkOut) <= new Date(checkIn)) {
-        showNotification('La fecha de salida debe ser posterior a la fecha de entrada', 'error');
-        return false;
-      }
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/price?month=${month}`);
+      const json = await res.json();
+      const pricePerNight = json.price ?? 0;
+      const totalPrice = pricePerNight * nights;
 
-      if (!priceField.value || priceField.value === '0.00') {
-        showNotification('El precio no ha sido calculado correctamente', 'error');
-        return false;
-      }
+      priceField.value = totalPrice.toFixed(2);
+      priceTextField.value = numberToWords(totalPrice);
 
-      // Verificar disponibilidad una última vez antes de enviar
-      const isAvailable = await checkAvailability(checkIn, checkOut);
-      if (!isAvailable) {
-        return false;
-      }
-
-      return true;
+      showNotification(`Precio calculado: $${totalPrice.toFixed(2)} por ${nights} ${nights === 1 ? 'noche' : 'noches'}`, 'success');
+    } catch (err) {
+      showNotification('Error al obtener el precio de la habitación', 'error');
+      console.error("Error obteniendo precio:", err);
     }
+  }
 
-    // Event listeners
-    checkInInput.addEventListener("change", async (e) => {
-      const checkIn = e.target.value;
-      const checkOut = checkOutInput.value;
+  // Add time to date
+  function addTimeToDate(dateStr, isCheckout = false) {
+    if (!dateStr) {
+      console.log('⚠️ addTimeToDate: dateStr está vacío');
+      return '';
+    }
+    
+    const [year, month, day] = dateStr.split('-');
+    const time = isCheckout ? '11:59:00' : '12:00:00';
+    const result = `${year}-${month}-${day} ${time}`;
+    
+    console.log(`⏰ addTimeToDate(${dateStr}, isCheckout=${isCheckout}) → ${result}`);
+    
+    return result;
+  }
 
-      // Update checkout minimum date
-      checkOutInput.min = checkIn;
+  // Check room availability
+  async function checkAvailability(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return false;
 
-      if (checkOut && new Date(checkOut) <= new Date(checkIn)) {
+    try {
+      const checkInWithTime = addTimeToDate(checkIn);
+      const checkOutWithTime = addTimeToDate(checkOut, true);
+      
+      const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (!json.available) {
+        showNotification("La habitación no está disponible en las fechas seleccionadas. Ya existe una reservación o renta activa.", 'error');
+        checkInInput.value = "";
         checkOutInput.value = "";
         priceField.value = "";
         priceTextField.value = "";
         durationDisplay.classList.add('hidden');
-        showNotification('Por favor seleccione una nueva fecha de salida', 'info');
-      } else if (checkIn && checkOut) {
-        const nights = updateDurationDisplay(checkIn, checkOut);
-        const isAvailable = await checkAvailability(checkIn, checkOut);
-        if (isAvailable) {
-          await fetchPrice(checkIn, nights);
-        }
-      } else if (checkIn) {
-        // Solo mostrar mensaje, NO calcular precio
-        showNotification('Por favor seleccione una fecha de salida', 'info');
+        durationDisplay.classList.remove('flex');
+        return false;
       }
-    });
 
-    checkOutInput.addEventListener("change", async (e) => {
-      const checkIn = checkInInput.value;
-      const checkOut = e.target.value;
+      showNotification("Habitación disponible para las fechas seleccionadas", 'success');
+      return true;
+    } catch (err) {
+      showNotification('Error al verificar disponibilidad de la habitación', 'error');
+      console.error("Error verificando disponibilidad:", err);
+      return false;
+    }
+  }
 
-      if (checkIn && checkOut) {
-        if (new Date(checkOut) <= new Date(checkIn)) {
-          showNotification('La fecha de salida debe ser posterior a la fecha de entrada', 'error');
-          e.target.value = "";
-          return;
-        }
+  // Convert number to words in Spanish
+  function numberToWords(num) {
+    const unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve"];
+    const especiales = ["diez", "once", "doce", "trece", "catorce", "quince",
+                        "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
+    const decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta",
+                     "sesenta", "setenta", "ochenta", "noventa"];
+    const centenas = ["", "ciento", "doscientos", "trescientos", "cuatrocientos",
+                      "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"];
 
-        const nights = updateDurationDisplay(checkIn, checkOut);
-        const isAvailable = await checkAvailability(checkIn, checkOut);
-        if (isAvailable) {
-          await fetchPrice(checkIn, nights);
-        }
+    if (num === 0) return "cero pesos";
+    if (num === 100) return "cien pesos";
+
+    let words = "";
+    let originalNum = Math.floor(num);
+
+    if (originalNum >= 1000000) {
+      return originalNum + " pesos";
+    }
+
+    if (originalNum >= 1000) {
+      const miles = Math.floor(originalNum / 1000);
+      if (miles === 1) {
+        words += "mil";
+      } else {
+        words += numberToWords(miles).replace(" pesos", "") + " mil";
       }
-    });
+      originalNum = originalNum % 1000;
+      if (originalNum > 0) words += " ";
+    }
 
-    // Form submission validation
-    document.getElementById('formRent').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const isValid = await validateForm();
-      if (!isValid) {
+    if (originalNum >= 100) {
+      words += centenas[Math.floor(originalNum / 100)];
+      originalNum = originalNum % 100;
+      if (originalNum > 0) words += " ";
+    }
+
+    if (originalNum >= 20) {
+      words += decenas[Math.floor(originalNum / 10)];
+      if (originalNum % 10 > 0) words += " y " + unidades[originalNum % 10];
+    } else if (originalNum >= 10) {
+      words += especiales[originalNum - 10];
+    } else if (originalNum > 0) {
+      words += unidades[originalNum];
+    }
+
+    return words + " pesos";
+  }
+
+  // Validate form before submission
+  async function validateForm() {
+    const checkIn = checkInInput.value;
+    const checkOut = checkOutInput.value;
+
+    if (!checkIn || !checkOut) {
+      showNotification('Por favor seleccione las fechas de entrada y salida', 'warning');
+      return false;
+    }
+
+    if (new Date(checkOut) <= new Date(checkIn)) {
+      showNotification('La fecha de salida debe ser posterior a la fecha de entrada', 'error');
+      return false;
+    }
+
+    if (!priceField.value || priceField.value === '0.00') {
+      showNotification('El precio no ha sido calculado correctamente', 'error');
+      return false;
+    }
+
+    const isAvailable = await checkAvailability(checkIn, checkOut);
+    if (!isAvailable) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // Event listeners
+  checkInInput.addEventListener("change", async (e) => {
+    const checkIn = e.target.value;
+    const checkOut = checkOutInput.value;
+
+    checkOutInput.min = checkIn;
+
+    if (checkOut && new Date(checkOut) <= new Date(checkIn)) {
+      checkOutInput.value = "";
+      priceField.value = "";
+      priceTextField.value = "";
+      durationDisplay.classList.add('hidden');
+      showNotification('Por favor seleccione una nueva fecha de salida posterior a la entrada', 'info');
+    } else if (checkIn && checkOut) {
+      const nights = updateDurationDisplay(checkIn, checkOut);
+      const isAvailable = await checkAvailability(checkIn, checkOut);
+      if (isAvailable) {
+        await fetchPrice(checkIn, nights);
+      }
+    } else if (checkIn) {
+      showNotification('Por favor seleccione una fecha de salida', 'info');
+    }
+  });
+
+  checkOutInput.addEventListener("change", async (e) => {
+    const checkIn = checkInInput.value;
+    const checkOut = e.target.value;
+
+    if (checkIn && checkOut) {
+      if (new Date(checkOut) <= new Date(checkIn)) {
+        showNotification('La fecha de salida debe ser posterior a la fecha de entrada', 'error');
+        e.target.value = "";
         return;
       }
-      
-      // Add time to hidden inputs
-      const checkInWithTime = addTimeToDate(checkInInput.value);
-      const checkOutWithTime = addTimeToDate(checkOutInput.value, true);
-      
-      console.log('Enviando fechas con hora:');
-      console.log('check_in:', checkInWithTime);
-      console.log('check_out:', checkOutWithTime);
-      
-      // Update the HIDDEN input values with time before submitting
-      document.getElementById('check_in_with_time').value = checkInWithTime;
-      document.getElementById('check_out_with_time').value = checkOutWithTime;
-      
-      submitButton.disabled = true;
-      submitButton.textContent = 'Creando renta...';
-      if (overlay) overlay.classList.remove('hidden');
-      
-      // Submit the form
-      e.target.submit();
-    });
 
-    // Phone number formatting
-    document.getElementById('phone').addEventListener('input', (e) => {
-      let value = e.target.value.replace(/\D/g, '');
-      if (value.length > 10) value = value.slice(0, 10);
-      e.target.value = value;
-    });
-
-    console.log('Sistema de renta inicializado correctamente');
+      const nights = updateDurationDisplay(checkIn, checkOut);
+      const isAvailable = await checkAvailability(checkIn, checkOut);
+      if (isAvailable) {
+        await fetchPrice(checkIn, nights);
+      }
+    }
   });
+
+  // Form submission validation
+  document.getElementById('formRent').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const isValid = await validateForm();
+    if (!isValid) {
+      return;
+    }
+    
+    const checkInWithTime = addTimeToDate(checkInInput.value);
+    const checkOutWithTime = addTimeToDate(checkOutInput.value, true);
+    
+    console.log('Enviando fechas con hora:');
+    console.log('check_in:', checkInWithTime);
+    console.log('check_out:', checkOutWithTime);
+    
+    document.getElementById('check_in_with_time').value = checkInWithTime;
+    document.getElementById('check_out_with_time').value = checkOutWithTime;
+    
+    submitButton.disabled = true;
+    submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+    submitButton.textContent = 'Creando renta...';
+    
+    if (overlay) {
+      overlay.classList.remove('hidden');
+      const loadingMsg = document.getElementById('loadingMessage');
+      if (loadingMsg) loadingMsg.textContent = 'Creando renta...';
+    }
+    
+    e.target.submit();
+  });
+
+  // Phone number formatting
+  document.getElementById('phone').addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 10) value = value.slice(0, 10);
+    e.target.value = value;
+  });
+
+  console.log('Sistema de renta inicializado correctamente');
+});
 </script>
+
+<!-- Incluir validaciones del módulo de habitaciones -->
+<script src="/js/ModuleRooms/js/index.js"></script>
+<script src="/js/ModuleRooms/js/realTimeValidation.js"></script>
+<script src="/js/ModuleRooms/js/priceCalculationFix.js"></script>
+<script src="/js/ModuleRooms/js/priceIntegrationFix.js"></script>
+<script src="/js/ModuleRooms/js/finalValidation.js"></script>

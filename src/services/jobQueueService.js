@@ -1,6 +1,6 @@
 import { executeQuery } from '../dataBase/connectionDataBase.js';
 import connectivityService from './connectivityService.js';
-import whatsappService from './whatsappService.js';
+import whatsappService from './whatsappService.js'; // Servicio deshabilitado
 import emailService from './emailService.js';
 
 class JobQueueService {
@@ -107,10 +107,8 @@ class JobQueueService {
     try {
       // --- VERIFICACIÓN DE SERVICIO LISTO ---
       if (job.service.startsWith('whatsapp_') && !whatsappService.isConnected) {
-        console.log(`[JobQueue] WhatsApp no está listo. Pospuesta la tarea #${job.id}.`);
-        // Revertir el estado a 'pending' para que se reintente más tarde
-        await executeQuery("UPDATE job_queue SET status = 'pending' WHERE id = ?", [job.id]);
-        return;
+        console.log(`[JobQueue] WhatsApp no está listo (deshabilitado). Procesando tarea #${job.id} con servicio deshabilitado.`);
+        // Continuar con el procesamiento usando el servicio deshabilitado
       }
 
       let result;
@@ -120,7 +118,7 @@ class JobQueueService {
           result = await whatsappService.enviarComprobanteRenta(payload.telefono, payload.rentData, payload.pdfPath);
           break;
         case 'whatsapp_membresia':
-          result = await whatsappService.enviarComprobanteMembresia(payload.telefono, payload.clienteNombre, payload.numeroMembresia, payload.tipoMembresia, payload.fechaVencimiento, payload.total, payload.pdfPath);
+          result = await whatsappService.enviarComprobanteMembresía(payload.telefono, payload.membershipData, payload.pdfPath);
           break;
         case 'email':
           // El payload para el email son directamente las mailOptions

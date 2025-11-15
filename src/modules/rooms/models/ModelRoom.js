@@ -8,39 +8,61 @@ export const getHabitaciones = async () => {
       SELECT
         h.*,
         CASE
-          -- Si hay una renta activa HOY, está ocupada
+          -- Si hay una renta activa y ya pasó la hora de entrada (12:00), está ocupada
           WHEN EXISTS (
             SELECT 1 FROM rentas re
             WHERE re.habitacion_id = h.id
-            AND CURDATE() BETWEEN DATE(re.fecha_ingreso) AND DATE(re.fecha_salida)
+            AND re.estado = 'activa'
+            AND (
+              -- Si la fecha de ingreso es hoy, verificar que ya sean las 12:00 o más
+              (DATE(re.fecha_ingreso) = CURDATE() AND CURTIME() >= '12:00:00')
+              OR
+              -- Si ya pasó la fecha de ingreso, está ocupada
+              (DATE(re.fecha_ingreso) < CURDATE() AND CURDATE() <= DATE(re.fecha_salida))
+            )
           ) THEN 'ocupado'
 
-          -- Si hay una reservación activa HOY, está ocupada
+          -- Si hay una reservación activa y ya pasó la hora de entrada (12:00), está ocupada
           WHEN EXISTS (
             SELECT 1 FROM reservaciones r
             WHERE r.habitacion_id = h.id
-            AND CURDATE() BETWEEN DATE(r.fecha_ingreso) AND DATE(r.fecha_salida)
+            AND (
+              -- Si la fecha de ingreso es hoy, verificar que ya sean las 12:00 o más
+              (DATE(r.fecha_ingreso) = CURDATE() AND CURTIME() >= '12:00:00')
+              OR
+              -- Si ya pasó la fecha de ingreso, está ocupada
+              (DATE(r.fecha_ingreso) < CURDATE() AND CURDATE() <= DATE(r.fecha_salida))
+            )
           ) THEN 'ocupado'
+
+          -- Si el estado manual es limpieza, mantener limpieza
+          WHEN h.estado = 'limpieza' THEN 'limpieza'
 
           -- Si el estado fue cambiado manualmente a disponible, respetarlo
           WHEN h.estado = 'disponible' THEN 'disponible'
 
-          -- Si una renta ya venció (fecha_salida pasó), automáticamente pasa a limpieza
+          -- Si una renta ya venció (fecha_salida pasó o es hoy después de la hora de salida), pasa a limpieza
           WHEN EXISTS (
             SELECT 1 FROM rentas re
             WHERE re.habitacion_id = h.id
-            AND DATE(re.fecha_salida) < CURDATE()
+            AND re.estado = 'activa'
+            AND (
+              DATE(re.fecha_salida) < CURDATE()
+              OR
+              (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida)
+            )
           ) THEN 'limpieza'
 
-          -- Si una reservación ya venció (fecha_salida pasó), automáticamente pasa a limpieza
+          -- Si una reservación ya venció (fecha_salida pasó o es hoy después de la hora de salida), pasa a limpieza
           WHEN EXISTS (
             SELECT 1 FROM reservaciones r
             WHERE r.habitacion_id = h.id
-            AND DATE(r.fecha_salida) < CURDATE()
+            AND (
+              DATE(r.fecha_salida) < CURDATE()
+              OR
+              (DATE(r.fecha_salida) = CURDATE() AND NOW() >= r.fecha_salida)
+            )
           ) THEN 'limpieza'
-
-          -- Si el estado manual es limpieza, mantener limpieza
-          WHEN h.estado = 'limpieza' THEN 'limpieza'
 
           -- De lo contrario, está disponible
           ELSE 'disponible'
@@ -62,13 +84,21 @@ export const getHabitaciones = async () => {
 // Verificar disponibilidad de habitación en un rango de fechas
 export const checkRoomAvailability = async (roomId, fechaIngreso, fechaSalida, excludeReservationId = null, excludeRentId = null) => {
   try {
+    console.log('\n🔍 === VERIFICANDO DISPONIBILIDAD ===');
+    console.log('📅 Habitación ID:', roomId);
+    console.log('📅 Fecha Ingreso:', fechaIngreso);
+    console.log('📅 Fecha Salida:', fechaSalida);
+    console.log('📅 Excluir Reservación ID:', excludeReservationId);
+    console.log('📅 Excluir Renta ID:', excludeRentId);
+
     const query = `
       SELECT
         (
-          -- Verificar si hay rentas en conflicto
+          -- Verificar si hay rentas ACTIVAS en conflicto (excluir finalizadas y canceladas)
           (SELECT COUNT(*)
            FROM rentas
            WHERE habitacion_id = ?
+           AND estado = 'activa'
            AND (? < fecha_salida AND ? > fecha_ingreso)
            ${excludeRentId ? 'AND id != ?' : ''}
           ) +
@@ -87,8 +117,16 @@ export const checkRoomAvailability = async (roomId, fechaIngreso, fechaSalida, e
     params.push(roomId, fechaIngreso, fechaSalida);
     if (excludeReservationId) params.push(excludeReservationId);
 
+    console.log('📤 Parámetros de consulta:', params);
+
     const [rows] = await pool.query(query, params);
-    return rows[0].conflicts === 0; // true si está disponible, false si hay conflictos
+    const isAvailable = rows[0].conflicts === 0;
+    
+    console.log('🔢 Conflictos encontrados:', rows[0].conflicts);
+    console.log('✅ Disponible:', isAvailable);
+    console.log('=== FIN VERIFICACIÓN ===\n');
+    
+    return isAvailable; // true si está disponible, false si hay conflictos
   } catch (err) {
     console.error('Error checkRoomAvailability:', err);
     return false;
@@ -121,6 +159,8 @@ export const createReservation = async (reservationData) => {
     fecha_salida,
     monto,
     monto_letras,
+    enganche,
+    enganche_letras,
   } = reservationData;
   const usuarioIdInt = Number(usuario_id);
   try {
@@ -138,10 +178,13 @@ export const createReservation = async (reservationData) => {
     const id_medio_mensaje = medioResult.insertId;
 
     // 2. Insertar la reservación
+    const engancheAmount = enganche || 0;
+    const engancheText = enganche_letras || '';
+    
     const [result] = await pool.query(
       `INSERT INTO reservaciones
-       (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida ,monto, monto_letras)
-        VALUES (?, ?, ?, ?, CURDATE(), ?, ?, ?,?)`,
+       (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida, monto, monto_letras, enganche, enganche_letras)
+        VALUES (?, ?, ?, ?, CURDATE(), ?, ?, ?, ?, ?, ?)`,
       [
         habitacion_id,
         usuarioIdInt,
@@ -151,16 +194,26 @@ export const createReservation = async (reservationData) => {
         fecha_salida,
         monto,
         monto_letras,
+        engancheAmount,
+        engancheText,
       ]
     );
 
-    // 3. Cambiar el estado de la habitación a "ocupado"
-    await pool.query(
-      "UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?",
-      [habitacion_id]
-    );
+    // 3. Cambiar el estado de la habitación a "ocupado" solo si el check-in ya pasó
+    const checkInDate = new Date(fecha_ingreso);
+    const now = new Date();
+    
+    if (checkInDate <= now) {
+      console.log('🏠 Actualizando estado de habitación a "ocupado" (check-in ya pasó)');
+      await pool.query(
+        "UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?",
+        [habitacion_id]
+      );
+    } else {
+      console.log('📅 Check-in es futuro, estado de habitación no se cambia aún');
+    }
 
-    return { id: result.insertId, ...reservationData };
+    return result.insertId;
   } catch (err) {
     console.error("Error createReservation:", err);
     throw err; // Propagar el error para manejarlo en el controlador
@@ -205,21 +258,52 @@ export const deletebyReservation = async (id) => {
   }
 };
 
-// get all rentas created
+// get all rentas created (activas y expiradas)
 export const getAllRentas = async () => {
   const [rows] = await pool.query(`
     SELECT re.id AS id_renta,
           h.numero AS numero_habitacion,
+          h.id AS habitacion_id,
           h.estado,
           re.nombre_cliente,
           re.fecha_ingreso,
           re.fecha_salida,
           re.tipo_pago,
           re.monto,
-          re.monto_letras
+          re.monto_letras,
+          COALESCE(re.estado, 'activa') AS estado_renta,
+          CASE
+            -- Si la renta está marcada como finalizada
+            WHEN re.estado = 'finalizada' THEN 'expirada'
+            -- Si la fecha de salida ya pasó o es hoy después de la hora de salida
+            WHEN (
+              DATE(re.fecha_salida) < CURDATE()
+              OR 
+              (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida)
+            ) THEN 'expirada'
+            -- Si está dentro del período de renta
+            ELSE 'corriente'
+          END AS estado_tiempo,
+          -- Calcular días restantes o días vencidos
+          CASE
+            WHEN DATE(re.fecha_salida) < CURDATE() THEN 
+              CONCAT('Expiró hace ', DATEDIFF(CURDATE(), DATE(re.fecha_salida)), ' día(s)')
+            WHEN DATE(re.fecha_salida) = CURDATE() THEN
+              CASE
+                WHEN NOW() >= re.fecha_salida THEN 'Expiró hoy'
+                ELSE CONCAT('Expira hoy a las ', TIME_FORMAT(TIME(re.fecha_salida), '%H:%i'))
+              END
+            ELSE 
+              CONCAT('Expira en ', DATEDIFF(DATE(re.fecha_salida), CURDATE()), ' día(s)')
+          END AS tiempo_restante
     FROM rentas re
     INNER JOIN habitaciones h ON re.habitacion_id = h.id
-    ORDER BY re.fecha_ingreso DESC
+    ORDER BY 
+      CASE WHEN re.estado = 'finalizada' OR 
+               (DATE(re.fecha_salida) < CURDATE() OR 
+                (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida))
+           THEN 1 ELSE 0 END,
+      re.fecha_ingreso DESC
   `);
   return rows;
 };
@@ -237,6 +321,17 @@ export const getRoomNumberById = async (roomId) => {
   }
 };
 
+// Find Renta by ID
+export const findRentaById = async (id) => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM rentas WHERE id = ?", [id]);
+    return rows.length > 0 ? rows[0] : null;
+  } catch (err) {
+    console.error("Error findRentaById:", err);
+    return null;
+  }
+};
+
 // delete by id renta
 export const deleteByIdRenta = async (id) => {
   try {
@@ -248,12 +343,70 @@ export const deleteByIdRenta = async (id) => {
   }
 };
 
+// Marcar renta como finalizada y liberar habitación
+export const finalizarRenta = async (id) => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    
+    // 1. Obtener información de la renta
+    console.log(`🔍 Buscando renta con id: ${id}`);
+    const [renta] = await connection.query(
+      'SELECT habitacion_id FROM rentas WHERE id = ?',
+      [id]
+    );
+    
+    if (renta.length === 0) {
+      throw new Error('Renta no encontrada');
+    }
+    
+    const habitacionId = renta[0].habitacion_id;
+    console.log(`🔍 Habitación ID encontrada: ${habitacionId}`);
+    
+    // 2. Actualizar la renta como finalizada
+    console.log(`📝 Actualizando renta ${id} a estado 'finalizada'...`);
+    const [rentaResult] = await connection.query(
+      `UPDATE rentas 
+       SET estado = 'finalizada', 
+           fecha_salida_real = NOW() 
+       WHERE id = ?`,
+      [id]
+    );
+    console.log(`✅ Renta actualizada. Filas afectadas: ${rentaResult.affectedRows}`);
+    
+    // 3. Marcar la habitación como "limpieza" (no disponible directamente)
+    console.log(`🧹 Cambiando habitación ${habitacionId} a estado 'limpieza'...`);
+    const [habResult] = await connection.query(
+      'UPDATE habitaciones SET estado = "limpieza" WHERE id = ?',
+      [habitacionId]
+    );
+    console.log(`✅ Habitación actualizada. Filas afectadas: ${habResult.affectedRows}`);
+    
+    // Verificar el estado actual
+    const [habCheck] = await connection.query(
+      'SELECT id, numero, estado FROM habitaciones WHERE id = ?',
+      [habitacionId]
+    );
+    console.log(`🔍 Estado actual de la habitación:`, habCheck[0]);
+    
+    await connection.commit();
+    console.log(`✅ Transacción completada exitosamente`);
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    console.error('❌ Error al finalizar renta:', error);
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 // Edit one  Reservation by Id
 export const findReservacionById = async (id) => {
   try {
     const query = `
     SELECT res.id, res.nombre_cliente, res.fecha_reserva, res.fecha_ingreso, res.fecha_salida,
-          res.monto, res.monto_letras,
+          res.monto, res.monto_letras, res.enganche, res.pdf_path, res.qr_path,
           h.id AS habitacion_id, h.numero AS habitacion_numero, h.tipo AS habitacion_tipo,
           m.correo_cliente, m.telefono_cliente
     FROM reservaciones res
@@ -266,6 +419,81 @@ export const findReservacionById = async (id) => {
   } catch (err) {
     console.error("Error findReservacionById:", err);
     return null;
+  }
+};
+
+// Update Reservation
+export const updateReservation = async (id, reservationData) => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const {
+      nombre_cliente,
+      fecha_ingreso,
+      fecha_salida,
+      habitacion_id,
+      monto,
+      monto_letras,
+      pdf_path,
+      qr_path,
+    } = reservationData;
+
+    // Construir query dinámicamente según los campos proporcionados
+    let updateFields = [];
+    let updateValues = [];
+
+    if (nombre_cliente !== undefined) {
+      updateFields.push('nombre_cliente = ?');
+      updateValues.push(nombre_cliente);
+    }
+    if (fecha_ingreso !== undefined) {
+      updateFields.push('fecha_ingreso = ?');
+      updateValues.push(fecha_ingreso);
+    }
+    if (fecha_salida !== undefined) {
+      updateFields.push('fecha_salida = ?');
+      updateValues.push(fecha_salida);
+    }
+    if (habitacion_id !== undefined) {
+      updateFields.push('habitacion_id = ?');
+      updateValues.push(habitacion_id);
+    }
+    if (monto !== undefined) {
+      updateFields.push('monto = ?');
+      updateValues.push(monto);
+    }
+    if (monto_letras !== undefined) {
+      updateFields.push('monto_letras = ?');
+      updateValues.push(monto_letras);
+    }
+    if (pdf_path !== undefined) {
+      updateFields.push('pdf_path = ?');
+      updateValues.push(pdf_path);
+    }
+    if (qr_path !== undefined) {
+      updateFields.push('qr_path = ?');
+      updateValues.push(qr_path);
+    }
+
+    updateValues.push(id);
+
+    const updateReservacionQuery = `
+      UPDATE reservaciones 
+      SET ${updateFields.join(', ')}
+      WHERE id = ?
+    `;
+
+    await connection.query(updateReservacionQuery, updateValues);
+
+    await connection.commit();
+    return true;
+  } catch (err) {
+    await connection.rollback();
+    console.error("Error updateReservation:", err);
+    throw err;
+  } finally {
+    connection.release();
   }
 };
 
@@ -430,6 +658,7 @@ export const createRent = async ({
   console.log('📥 Fechas recibidas en el modelo:');
   console.log('  - check_in_date:', check_in_date, typeof check_in_date);
   console.log('  - check_out_date:', check_out_date, typeof check_out_date);
+  console.log('  - message_method_id:', message_method_id);
 
   // 0. Verificar disponibilidad de la habitación
   const isAvailable = await checkRoomAvailability(room_id, check_in_date, check_out_date);
@@ -437,6 +666,7 @@ export const createRent = async ({
     throw new Error('La habitación no está disponible para las fechas seleccionadas');
   }
 
+  // 2. Insertar la renta
   const params = [
     room_id,
     user_id,
@@ -460,40 +690,379 @@ export const createRent = async ({
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     params
   );
+
+  // 3. Actualizar estado de la habitación si el check-in es hoy y ya pasó la hora
+  const checkInDate = new Date(check_in_date);
+  const now = new Date();
+  
+  // Si la fecha de check-in es hoy o ya pasó, cambiar estado a "ocupado"
+  if (checkInDate <= now) {
+    console.log('🏠 Actualizando estado de habitación a "ocupado" (check-in ya pasó)');
+    await pool.query(
+      "UPDATE habitaciones SET estado = 'ocupado' WHERE id = ?",
+      [room_id]
+    );
+  } else {
+    console.log('📅 Check-in es futuro, estado de habitación no se cambia aún');
+  }
+
   return result.insertId;
 };
 
+// Update Rent
+export const updateRent = async (id, rentData) => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const {
+      nombre_cliente,
+      fecha_ingreso,
+      fecha_salida,
+      habitacion_id,
+      tipo_pago,
+      monto,
+      monto_letras,
+      pdf_path,
+      qr_path,
+    } = rentData;
+
+    // Construir query dinámicamente según los campos proporcionados
+    let updateFields = [];
+    let updateValues = [];
+
+    if (nombre_cliente !== undefined) {
+      updateFields.push('nombre_cliente = ?');
+      updateValues.push(nombre_cliente);
+    }
+    if (fecha_ingreso !== undefined) {
+      updateFields.push('fecha_ingreso = ?');
+      updateValues.push(fecha_ingreso);
+    }
+    if (fecha_salida !== undefined) {
+      updateFields.push('fecha_salida = ?');
+      updateValues.push(fecha_salida);
+    }
+    if (habitacion_id !== undefined) {
+      updateFields.push('habitacion_id = ?');
+      updateValues.push(habitacion_id);
+    }
+    if (tipo_pago !== undefined) {
+      updateFields.push('tipo_pago = ?');
+      updateValues.push(tipo_pago);
+    }
+    if (monto !== undefined) {
+      updateFields.push('monto = ?');
+      updateValues.push(monto);
+    }
+    if (monto_letras !== undefined) {
+      updateFields.push('monto_letras = ?');
+      updateValues.push(monto_letras);
+    }
+    if (pdf_path !== undefined) {
+      updateFields.push('pdf_path = ?');
+      updateValues.push(pdf_path);
+    }
+    if (qr_path !== undefined) {
+      updateFields.push('qr_path = ?');
+      updateValues.push(qr_path);
+    }
+
+    updateValues.push(id);
+
+    const updateRentQuery = `
+      UPDATE rentas 
+      SET ${updateFields.join(', ')}
+      WHERE id = ?
+    `;
+
+    await connection.query(updateRentQuery, updateValues);
+
+    await connection.commit();
+    return true;
+  } catch (err) {
+    await connection.rollback();
+    console.error("Error updateRent:", err);
+    throw err;
+  } finally {
+    connection.release();
+  }
+};
+
 /** Helpers **/
-// const nextId = (arr) => (!arr.length ? 1 : Math.max(...arr.map(x => Number(x.id))) + 1);
-// const numeroALetras = (num) =>
-//   new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(num);
 
-// /** Datos simulados **/
+// ===== FUNCIONES PARA REPORTES =====
 
-// --- Base de datos ---
-//  export const getEventosCalendario = async () => {
-//   try {
-//     const query = `
-//       SELECT r.id, r.nombre_cliente, m.correo_cliente, m.telefono_cliente, r.fecha_ingreso, r.fecha_salida, 'renta' AS tipo
-//       FROM rentas r
-//       INNER JOIN medios_mensajes m ON r.id_medio_mensaje = m.id_medio_mensaje
-//       UNION ALL
-//       SELECT res.id, res.nombre_cliente, m.correo_cliente, m.telefono_cliente, res.fecha_ingreso, res.fecha_salida, 'reserva' AS tipo
-//       FROM reservaciones res
-//       INNER JOIN medios_mensajes m ON res.id_medio_mensaje = m.id_medio_mensaje
-//     `;
-//     const [rows] = await pool.execute(query);
-//     return rows.map(evento => ({
-//       id: evento.id,
-//       title: evento.nombre_cliente,
-//       start: evento.fecha_ingreso,
-//       end: evento.fecha_salida ? new Date(new Date(evento.fecha_salida).getTime() + 24*60*60*1000).toISOString().split('T')[0] : evento.fecha_salida,
-//       tipo: evento.tipo,
-//       correo: evento.correo_cliente,
-//       telefono: evento.telefono_cliente
-//     }));
-//   } catch (err) {
-//     console.error("Error getEventosCalendario:", err);
-//     return [];
-//   }
-// }
+// Reporte de rentas por rango de fechas
+export const getReporteRentas = async (fechaInicio, fechaFin, filtros = {}) => {
+  try {
+    let query = `
+      SELECT 
+        r.id AS id_renta,
+        r.nombre_cliente,
+        h.numero AS numero_habitacion,
+        h.tipo AS tipo_habitacion,
+        r.fecha_ingreso,
+        r.fecha_salida,
+        r.tipo_pago,
+        r.monto,
+        r.monto_letras,
+        mm.correo_cliente,
+        mm.telefono_cliente
+      FROM rentas r
+      INNER JOIN habitaciones h ON r.habitacion_id = h.id
+      LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
+      WHERE DATE(r.fecha_ingreso) BETWEEN ? AND ?
+    `;
+    
+    const params = [fechaInicio, fechaFin];
+    
+    // Aplicar filtros opcionales
+    if (filtros.habitacion) {
+      query += ` AND h.numero = ?`;
+      params.push(filtros.habitacion);
+    }
+    if (filtros.cliente) {
+      query += ` AND r.nombre_cliente LIKE ?`;
+      params.push(`%${filtros.cliente}%`);
+    }
+    if (filtros.tipoPago) {
+      query += ` AND r.tipo_pago = ?`;
+      params.push(filtros.tipoPago);
+    }
+    
+    query += ` ORDER BY r.fecha_ingreso DESC`;
+    
+    const [rentas] = await pool.query(query, params);
+    
+    // Calcular estadísticas
+    const totalRentas = rentas.length;
+    const totalIngresos = rentas.reduce((sum, r) => sum + Number(r.monto), 0);
+    const promedioIngreso = totalRentas > 0 ? totalIngresos / totalRentas : 0;
+    
+    return {
+      tipo: 'rentas',
+      fechaInicio,
+      fechaFin,
+      datos: rentas,
+      estadisticas: {
+        totalRentas,
+        totalIngresos,
+        promedioIngreso
+      }
+    };
+  } catch (err) {
+    console.error("Error en getReporteRentas:", err);
+    throw err;
+  }
+};
+
+// Reporte de reservaciones por rango de fechas
+export const getReporteReservaciones = async (fechaInicio, fechaFin, filtros = {}) => {
+  try {
+    let query = `
+      SELECT 
+        r.id,
+        r.nombre_cliente,
+        h.numero AS numero_habitacion,
+        h.tipo AS tipo_habitacion,
+        r.fecha_ingreso,
+        r.fecha_salida,
+        r.monto,
+        r.enganche,
+        mm.correo_cliente,
+        mm.telefono_cliente
+      FROM reservaciones r
+      INNER JOIN habitaciones h ON r.habitacion_id = h.id
+      LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
+      WHERE DATE(r.fecha_ingreso) BETWEEN ? AND ?
+    `;
+    
+    const params = [fechaInicio, fechaFin];
+    
+    // Aplicar filtros opcionales
+    if (filtros.habitacion) {
+      query += ` AND h.numero = ?`;
+      params.push(filtros.habitacion);
+    }
+    if (filtros.cliente) {
+      query += ` AND r.nombre_cliente LIKE ?`;
+      params.push(`%${filtros.cliente}%`);
+    }
+    
+    query += ` ORDER BY r.fecha_ingreso DESC`;
+    
+    const [reservaciones] = await pool.query(query, params);
+    
+    // Calcular estadísticas
+    const totalReservaciones = reservaciones.length;
+    const totalMontoEsperado = reservaciones.reduce((sum, r) => sum + Number(r.monto), 0);
+    const totalEnganche = reservaciones.reduce((sum, r) => sum + Number(r.enganche || 0), 0);
+    
+    return {
+      tipo: 'reservaciones',
+      fechaInicio,
+      fechaFin,
+      datos: reservaciones,
+      estadisticas: {
+        totalReservaciones,
+        totalMontoEsperado,
+        totalEnganche,
+        pendientePorCobrar: totalMontoEsperado - totalEnganche
+      }
+    };
+  } catch (err) {
+    console.error("Error en getReporteReservaciones:", err);
+    throw err;
+  }
+};
+
+// Reporte consolidado (rentas + reservaciones)
+export const getReporteConsolidado = async (fechaInicio, fechaFin, filtros = {}) => {
+  try {
+    const reporteRentas = await getReporteRentas(fechaInicio, fechaFin, filtros);
+    const reporteReservaciones = await getReporteReservaciones(fechaInicio, fechaFin, filtros);
+    
+    return {
+      tipo: 'consolidado',
+      fechaInicio,
+      fechaFin,
+      rentas: reporteRentas,
+      reservaciones: reporteReservaciones,
+      estadisticas: {
+        totalOperaciones: reporteRentas.estadisticas.totalRentas + reporteReservaciones.estadisticas.totalReservaciones,
+        ingresosReales: reporteRentas.estadisticas.totalIngresos,
+        ingresosEsperados: reporteReservaciones.estadisticas.totalMontoEsperado,
+        totalGeneral: reporteRentas.estadisticas.totalIngresos + reporteReservaciones.estadisticas.totalMontoEsperado
+      }
+    };
+  } catch (err) {
+    console.error("Error en getReporteConsolidado:", err);
+    throw err;
+  }
+};
+
+// Obtener datos del calendario con rentas y reservaciones por habitación
+export const getRoomsCalendarData = async () => {
+  try {
+    // Obtener todas las habitaciones
+    const rooms = await getHabitaciones();
+    
+    console.log(`📊 Total habitaciones en modelo: ${rooms.length}`);
+
+    // Para cada habitación, obtener sus rentas y reservaciones
+    const roomsWithBookings = await Promise.all(
+      rooms.map(async (room) => {
+        // Obtener rentas
+        const [rentas] = await pool.query(
+          `SELECT r.*, mm.correo_cliente, mm.telefono_cliente
+           FROM rentas r
+           LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
+           WHERE r.habitacion_id = ?
+           ORDER BY r.fecha_ingreso`,
+          [room.id]
+        );
+
+        // Obtener reservaciones
+        const [reservaciones] = await pool.query(
+          `SELECT r.*, mm.correo_cliente, mm.telefono_cliente
+           FROM reservaciones r
+           LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
+           WHERE r.habitacion_id = ?
+           ORDER BY r.fecha_ingreso`,
+          [room.id]
+        );
+
+        if (rentas.length > 0 || reservaciones.length > 0) {
+          console.log(`🏠 Habitación ${room.numero}:`, {
+            rentas: rentas.length,
+            reservaciones: reservaciones.length
+          });
+        }
+
+        return {
+          id: room.id,
+          numero: room.numero,
+          tipo: room.tipo,
+          estado: room.estado,
+          rentas: rentas,
+          reservaciones: reservaciones,
+        };
+      })
+    );
+
+    return roomsWithBookings;
+  } catch (err) {
+    console.error("❌ Error en getRoomsCalendarData:", err);
+    throw err;
+  }
+};
+
+// Función para actualizar habitaciones de rentas expiradas (sin marcar rentas como finalizadas)
+export const finalizarRentasExpiradas = async () => {
+  const connection = await pool.getConnection();
+  try {
+    console.log('🔍 Buscando rentas expiradas para actualizar habitaciones...');
+    
+    // Buscar rentas activas que ya expiraron
+    const [rentasExpiradas] = await connection.query(`
+      SELECT re.id, re.habitacion_id, re.nombre_cliente, re.fecha_salida, h.estado as estado_habitacion
+      FROM rentas re
+      INNER JOIN habitaciones h ON re.habitacion_id = h.id
+      WHERE re.estado = 'activa' 
+      AND (
+        DATE(re.fecha_salida) < CURDATE()
+        OR 
+        (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida)
+      )
+      AND h.estado != 'limpieza'
+    `);
+
+    if (rentasExpiradas.length === 0) {
+      console.log('✅ No hay habitaciones de rentas expiradas que actualizar');
+      return { actualizadas: 0, habitaciones: [] };
+    }
+
+    console.log(`📋 Encontradas ${rentasExpiradas.length} habitaciones de rentas expiradas:`, rentasExpiradas);
+
+    let actualizadasExitosas = 0;
+    const habitacionesActualizadas = [];
+
+    // Solo actualizar el estado de las habitaciones a "limpieza"
+    for (const renta of rentasExpiradas) {
+      try {
+        console.log(`🧹 Cambiando habitación ${renta.habitacion_id} a estado 'limpieza'...`);
+        const [result] = await connection.query(
+          'UPDATE habitaciones SET estado = "limpieza" WHERE id = ?',
+          [renta.habitacion_id]
+        );
+        
+        if (result.affectedRows > 0) {
+          actualizadasExitosas++;
+          habitacionesActualizadas.push({
+            renta_id: renta.id,
+            habitacion_id: renta.habitacion_id,
+            nombre_cliente: renta.nombre_cliente,
+            fecha_salida: renta.fecha_salida
+          });
+          console.log(`✅ Habitación ${renta.habitacion_id} actualizada a limpieza (renta ${renta.id})`);
+        }
+      } catch (error) {
+        console.error(`❌ Error al actualizar habitación de renta ${renta.id}:`, error);
+      }
+    }
+
+    console.log(`🎉 Proceso completado: ${actualizadasExitosas}/${rentasExpiradas.length} habitaciones actualizadas a limpieza`);
+    
+    return {
+      actualizadas: actualizadasExitosas,
+      habitaciones: habitacionesActualizadas
+    };
+
+  } catch (error) {
+    console.error('❌ Error en finalizarRentasExpiradas:', error);
+    throw error;
+  } finally {
+    connection.release();
+  }
+};

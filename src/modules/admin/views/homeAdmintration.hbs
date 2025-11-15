@@ -1,0 +1,583 @@
+<div class="container mx-auto px-4 pt-12 pb-2">
+  <!-- Header del Panel -->
+  <div class="mb-3 text-center pt-4">
+    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">Panel de Administración</h1>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 mb-2 shadow-sm">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+      <div class="bg-white rounded-lg shadow-md p-2 border-l-4 border-blue-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+        <div class="flex items-center">
+          <div class="p-1.5 rounded-full bg-blue-100 text-blue-600 transition-transform duration-300 group-hover:scale-110">
+            <i class="fas fa-users text-base"></i>
+          </div>
+          <div class="ml-2">
+            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Usuarios</h3>
+            <p class="text-xl font-bold text-gray-900">{{stats.total}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-2  border-l-4 border-green-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+        <div class="flex items-center">
+          <div class="p-1.5 rounded-full bg-green-100 text-green-600 transition-transform duration-300 group-hover:scale-110">
+            <i class="fas fa-user-shield text-base"></i>
+          </div>
+          <div class="ml-2">
+            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Administradores</h3>
+            <p class="text-xl font-bold text-gray-900">{{stats.administrators}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-2 border-l-4 border-yellow-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+        <div class="flex items-center">
+          <div class="p-1.5 rounded-full bg-yellow-100 text-yellow-600 transition-transform duration-300 group-hover:scale-110">
+            <i class="fas fa-user text-base"></i>
+          </div>
+          <div class="ml-2">
+            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Usuarios Regulares</h3>
+            <p class="text-xl font-bold text-gray-900">{{stats.regularUsers}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-2 border-l-4 border-purple-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+        <div class="flex items-center">
+          <div class="p-1.5 rounded-full bg-purple-100 text-purple-600 transition-transform duration-300 group-hover:scale-110">
+            <i class="fas fa-chart-line text-base"></i>
+          </div>
+          <div class="ml-2">
+            <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activos (30 días)</h3>
+            <p class="text-xl font-bold text-gray-900">{{stats.recentlyActive}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gestión de Usuarios -->
+  <div class="bg-white rounded-2xl shadow-md mb-2 overflow-hidden">
+    <div class="px-3 py-2 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+      <h2 class="text-base font-bold text-gray-900">Gestión de Usuarios</h2>
+      <button 
+        onclick="showCreateUserModal()" 
+        class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-3 py-1.5 rounded text-xs font-medium flex items-center shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <i class="fas fa-plus mr-1 text-xs"></i>
+        Crear Usuario
+      </button>
+    </div>
+
+    <div id="tableWrapper">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
+            <tr>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Usuario</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Rol</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200" id="usersTableBody">
+            {{#each users}}
+            <tr class="transition-colors duration-200 hover:bg-slate-50">
+              <td class="px-3 py-1.5 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-5 w-5">
+                    <div class="h-5 w-5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-sm">
+                      <i class="fas fa-user text-white text-xs"></i>
+                    </div>
+                  </div>
+                  <div class="ml-1.5">
+                    <div class="text-sm font-bold text-gray-900">{{this.username}}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-3 py-1.5 whitespace-nowrap">
+                <div class="text-sm text-gray-900">{{this.email}}</div>
+              </td>
+              <td class="px-3 py-1.5 whitespace-nowrap">
+                {{#if (eq this.role 'Administrador')}}
+                  <span class="inline-flex px-1.5 py-0.5 text-xs font-bold rounded-full text-white bg-gradient-to-r from-green-500 to-green-600 shadow-sm transition-transform duration-200 hover:scale-105">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    Admin
+                  </span>
+                {{else}}
+                  <span class="inline-flex px-1.5 py-0.5 text-xs font-bold rounded-full text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm transition-transform duration-200 hover:scale-105">
+                    <i class="fas fa-user mr-1"></i>
+                    Usuario
+                  </span>
+                {{/if}}
+              </td>
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm font-medium space-x-1">
+                <button 
+                  onclick="editUser({{this.id}})" 
+                  class="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-all duration-200 hover:scale-110"
+                  title="Editar usuario">
+                  <i class="fas fa-edit text-sm"></i>
+                </button>
+                <button 
+                  onclick="deleteUser({{this.id}}, '{{this.username}}')" 
+                  class="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-all duration-200 hover:scale-110"
+                  title="Eliminar usuario">
+                  <i class="fas fa-trash text-sm"></i>
+                </button>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Crear/Editar Usuario -->
+<div id="userModal" class="fixed inset-0 bg-gray-900 bg-opacity-10 hidden z-50 backdrop-blur-sm animate-fade-in">
+  <div class="flex items-center justify-center min-h-screen">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-slide-in overflow-hidden">
+   <div class="px-3 py-0 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl">
+        <h3 id="modalTitle" class="text-xl font-bold text-gray-900">Crear Usuario</h3>
+        <p class="text-sm text-gray-600 mt-1">Complete la información del usuario</p>
+      </div>
+      
+      <form id="userForm" class="px-3 py-2 rounded-2xl">
+        <input type="hidden" id="userId" name="userId">
+        
+        <div class="mb-2">
+          <label for="username" class="block text-sm font-bold text-gray-700 mb-2">
+            <i class="fas fa-user mr-2 text-blue-500"></i>
+            Nombre de Usuario
+          </label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:-translate-y-0.5">
+        </div>
+
+        <div class="mb-2">
+          <label for="password" class="block text-sm font-bold text-gray-700 mb-2">
+            <i class="fas fa-envelope mr-2 text-blue-500"></i>
+            Correo Electrónico
+          </label>
+          <input 
+            type="email" 
+            id="password" 
+            name="password" 
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:-translate-y-0.5"
+            placeholder="usuario@ejemplo.com">
+          <p class="text-xs text-gray-500 mt-2 bg-blue-50 p-2 rounded">
+            <i class="fas fa-info-circle mr-1"></i>
+            El usuario usará recuperación de contraseña para acceder por primera vez.
+          </p>
+        </div>
+
+        <div class="mb-2">
+          <label for="role" class="block text-sm font-bold text-gray-700 mb-2">
+            <i class="fas fa-user-tag mr-2 text-blue-500"></i>
+            Rol
+          </label>
+          <select 
+            id="role" 
+            name="role" 
+            required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:-translate-y-0.5">
+            <option value="">Selecciona un rol</option>
+            <option value="Administrador">🛡️ Administrador</option>
+            <option value="Usuario">👤 Usuario</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end space-x-4 pt-2 border-t border-gray-200">
+          <button 
+            type="button" 
+            onclick="closeUserModal()" 
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all duration-200">
+            <i class="fas fa-times mr-2"></i>
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-6 py-3 text-sm font-medium text-white rounded-lg shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
+            <i class="fas fa-save mr-2"></i>
+            <span id="submitButtonText">Crear Usuario</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+let isEditing = false;
+
+// Función para ajustar la altura de la tabla según el número de usuarios
+function adjustTableHeight() {
+  const tableWrapper = document.getElementById('tableWrapper');
+  const usersTableBody = document.getElementById('usersTableBody');
+  
+  if (!tableWrapper || !usersTableBody) {
+    console.log('Elementos no encontrados');
+    return;
+  }
+  
+  const userRows = usersTableBody.querySelectorAll('tr');
+  const userCount = userRows.length;
+  
+  console.log(`Ajustando tabla: ${userCount} usuarios encontrados`);
+  
+  // Si hay 5 o menos usuarios, mostrar todos sin restricciones de altura
+  if (userCount <= 5) {
+    console.log('Sin scroll - mostrando todos los usuarios');
+    // Sin restricciones de altura, contenido natural
+    tableWrapper.className = '';
+    tableWrapper.style.maxHeight = 'none';
+    tableWrapper.style.overflow = 'visible';
+    tableWrapper.style.overflowY = 'visible';
+  } else {
+    // Si hay más de 5 usuarios, activar scroll con altura limitada
+    console.log('Con scroll - más de 5 usuarios');
+    // Limpiar estilos inline primero
+    tableWrapper.style.maxHeight = '';
+    tableWrapper.style.overflow = '';
+    tableWrapper.style.overflowY = '';
+    // Aplicar clases de Tailwind para scroll
+    tableWrapper.className = 'max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100';
+  }
+}
+
+// Ejecutar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+  adjustTableHeight();
+});
+
+// También ejecutar cuando la página esté completamente cargada
+window.addEventListener('load', function() {
+  setTimeout(() => {
+    adjustTableHeight();
+  }, 200);
+});
+
+// Ejecutar después de un pequeño delay para asegurar renderizado completo
+setTimeout(() => {
+  adjustTableHeight();
+}, 500);
+
+// Ejecutar después de más tiempo para asegurar que todo esté listo
+setTimeout(() => {
+  adjustTableHeight();
+}, 1000);
+
+// Ejecutar después de aún más tiempo para casos de carga lenta
+setTimeout(() => {
+  adjustTableHeight();
+}, 2000);
+
+// Función para forzar el ajuste de la tabla (para debugging)
+window.forceTableAdjust = function() {
+  console.log('Forzando ajuste de tabla...');
+  adjustTableHeight();
+};
+
+// Función para actualizar la tabla después de operaciones CRUD
+function refreshTableHeight() {
+  setTimeout(() => {
+    adjustTableHeight();
+  }, 300);
+}
+
+// Observador de mutaciones para detectar cambios en la tabla
+if (typeof MutationObserver !== 'undefined') {
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList' && mutation.target.id === 'usersTableBody') {
+        console.log('Cambios detectados en la tabla');
+        setTimeout(() => {
+          adjustTableHeight();
+        }, 100);
+      }
+    });
+  });
+
+  // Observar cambios en el tbody de la tabla
+  document.addEventListener('DOMContentLoaded', function() {
+    const usersTableBody = document.getElementById('usersTableBody');
+    if (usersTableBody) {
+      observer.observe(usersTableBody, { childList: true, subtree: true });
+    }
+  });
+}
+
+// Función global para manejar respuestas de usuario eliminado
+function handleUserDeletedResponse(response, data) {
+  if (response.status === 401 && (data?.userDeleted || data?.adminRevoked)) {
+    alert(data.message || 'Tu cuenta ha sido eliminada. Serás redirigido al login.');
+    window.location.href = '/login';
+    return true;
+  }
+  return false;
+}
+
+// Interceptar todas las peticiones fetch para manejar usuarios eliminados
+const originalFetch = window.fetch;
+window.fetch = async function(...args) {
+  try {
+    const response = await originalFetch.apply(this, args);
+    
+    // Si es una respuesta JSON, verificar si el usuario fue eliminado
+    if (response.headers.get('content-type')?.includes('application/json')) {
+      const clonedResponse = response.clone();
+      try {
+        const data = await clonedResponse.json();
+        if (handleUserDeletedResponse(response, data)) {
+          return response; // Detener el procesamiento
+        }
+      } catch (e) {
+        // No es JSON válido, continuar normalmente
+      }
+    }
+    
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Función para mostrar notificaciones toast
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  const bgColor = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+  const icon = type === 'error' ? 'exclamation-circle' : 'check-circle';
+  
+  toast.className = `fixed top-5 right-5 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-out`;
+  toast.innerHTML = `
+    <div class="flex items-center">
+      <i class="fas fa-${icon} mr-3"></i>
+      <span class="font-medium">${message}</span>
+    </div>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  // Animar entrada
+  setTimeout(() => {
+    toast.classList.remove('translate-x-full');
+  }, 10);
+  
+  // Animar salida
+  setTimeout(() => {
+    toast.classList.add('translate-x-full');
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 300);
+  }, 3000);
+}
+
+// Función para mostrar estado de carga en botones
+function setButtonLoading(button, loading = true) {
+  if (loading) {
+    button.disabled = true;
+    button.innerHTML = `
+      <div class="flex items-center justify-center">
+        <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+        Cargando...
+      </div>
+    `;
+  } else {
+    button.disabled = false;
+    // Restaurar el contenido original del botón
+    const isSubmitBtn = button.type === 'submit';
+    if (isSubmitBtn) {
+      button.innerHTML = `<i class="fas fa-save mr-2"></i><span id="submitButtonText">Crear Usuario</span>`;
+    }
+  }
+}
+
+function showCreateUserModal() {
+  isEditing = false;
+  document.getElementById('modalTitle').textContent = 'Crear Usuario';
+  document.getElementById('submitButtonText').textContent = 'Crear Usuario';
+  document.getElementById('userForm').reset();
+  document.getElementById('userId').value = '';
+  document.getElementById('password').required = true;
+  document.getElementById('password').placeholder = 'usuario@ejemplo.com';
+  document.getElementById('userModal').classList.remove('hidden');
+  
+  // Enfocar el primer campo
+  setTimeout(() => {
+    document.getElementById('username').focus();
+  }, 100);
+}
+
+function closeUserModal() {
+  document.getElementById('userModal').classList.add('hidden');
+}
+
+async function editUser(userId) {
+  try {
+    const response = await fetch(`/api/admin/users/${userId}`);
+    const data = await response.json();
+    
+    if (data.success) {
+      isEditing = true;
+      document.getElementById('modalTitle').textContent = 'Editar Usuario';
+      document.getElementById('submitButtonText').textContent = 'Actualizar Usuario';
+      document.getElementById('userId').value = data.user.id;
+      document.getElementById('username').value = data.user.username;
+      document.getElementById('role').value = data.user.role;
+      document.getElementById('password').value = data.user.email || '';
+      document.getElementById('password').required = false;
+      document.getElementById('userModal').classList.remove('hidden');
+    } else {
+      alert('Error al cargar los datos del usuario');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error al cargar los datos del usuario');
+  }
+}
+
+async function deleteUser(userId, username) {
+  // Crear modal de confirmación personalizado
+  const confirmModal = document.createElement('div');
+  confirmModal.className = 'fixed inset-0 bg-gray-900 bg-opacity-60 z-50 modal-overlay';
+  confirmModal.innerHTML = `
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full modal-content">
+        <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-red-50 to-pink-50 rounded-t-xl">
+          <h3 class="text-xl font-bold text-gray-900">
+            <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+            Confirmar Eliminación
+          </h3>
+        </div>
+        <div class="px-6 py-4">
+          <p class="text-gray-700 mb-4">
+            ¿Estás seguro de que quieres eliminar al usuario <strong>"${username}"</strong>?
+          </p>
+          <p class="text-sm text-red-600 bg-red-50 p-3 rounded">
+            <i class="fas fa-info-circle mr-1"></i>
+            Esta acción no se puede deshacer.
+          </p>
+        </div>
+        <div class="flex justify-end space-x-4 px-6 py-4 border-t border-gray-200">
+          <button onclick="closeConfirmModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-all">
+            <i class="fas fa-times mr-2"></i>Cancelar
+          </button>
+          <button onclick="confirmDelete(${userId})" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all">
+            <i class="fas fa-trash mr-2"></i>Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(confirmModal);
+  
+  window.closeConfirmModal = () => {
+    document.body.removeChild(confirmModal);
+  };
+  
+  window.confirmDelete = async (id) => {
+    const deleteBtn = confirmModal.querySelector('button[onclick*="confirmDelete"]');
+    setButtonLoading(deleteBtn, true);
+    
+    try {
+      const response = await fetch(`/api/admin/users/${id}`, {
+        method: 'DELETE'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        showToast('Usuario eliminado exitosamente', 'success');
+        closeConfirmModal();
+        setTimeout(() => {
+          location.reload();
+          refreshTableHeight();
+        }, 1000);
+      } else {
+        showToast(data.message || 'Error al eliminar el usuario', 'error');
+        setButtonLoading(deleteBtn, false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      if (error.status === 401) {
+        showToast('Tu cuenta ha sido eliminada. Serás redirigido al login.', 'error');
+        setTimeout(() => window.location.href = '/login', 2000);
+      } else {
+        showToast('Error al eliminar el usuario', 'error');
+        setButtonLoading(deleteBtn, false);
+      }
+    }
+  };
+}
+
+document.getElementById('userForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const submitBtn = this.querySelector('button[type="submit"]');
+  setButtonLoading(submitBtn, true);
+  
+  const formData = new FormData(this);
+  const userData = {
+    username: formData.get('username'),
+    password: formData.get('password'),
+    role: formData.get('role')
+  };
+  
+  try {
+    let response;
+    
+    if (isEditing) {
+      const userId = formData.get('userId');
+      response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+    } else {
+      response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+    }
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showToast(data.message || (isEditing ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente'), 'success');
+      closeUserModal();
+      setTimeout(() => {
+        location.reload();
+        refreshTableHeight();
+      }, 1000);
+    } else {
+      showToast(data.message || 'Error al procesar la solicitud', 'error');
+      setButtonLoading(submitBtn, false);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showToast('Error al procesar la solicitud', 'error');
+    setButtonLoading(submitBtn, false);
+  }
+});
+
+// Cerrar modal al hacer clic fuera de él
+document.getElementById('userModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeUserModal();
+  }
+});
+</script>

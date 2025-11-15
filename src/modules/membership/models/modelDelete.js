@@ -1,10 +1,24 @@
+/**
+ * @file modelDelete.js
+ * @description Modelo de datos para la eliminación transaccional de membresías.
+ * @module models/modelDelete
+ */
 import { pool } from "../../../dataBase/connectionDataBase.js";
 
+/**
+ * Elimina una membresía y todos sus datos relacionados (pagos, integrantes, contrato y, opcionalmente, el cliente)
+ * de forma segura dentro de una transacción de base de datos.
+ * @async
+ * @param {number} id - El ID de la membresía activa (`id_activa`) a eliminar.
+ * @returns {Promise<object>} El resultado de la operación de eliminación de la tabla `membresias_activas`.
+ * @throws {Error} Si la membresía no se encuentra o si ocurre un error durante la transacción.
+ *                 En caso de error, todos los cambios se revierten.
+ */
 async function deleteMembershipById(id) {
   let connection; // Definir la conexión fuera del bloque try
   try {
     connection = await pool.getConnection(); // Obtener una conexión del pool
-    await connection.beginTransaction(); // Iniciar la transacción
+    await connection.beginTransaction(); // Iniciar la transacción para garantizar la atomicidad.
 
     // 1. Primero obtener información de la membresía activa
     const [membresiaActiva] = await connection.query(
@@ -13,6 +27,7 @@ async function deleteMembershipById(id) {
     );
 
     if (membresiaActiva.length === 0) {
+      // Si no se encuentra, no hay nada que borrar. Lanzar un error.
       throw new Error("Membresía no encontrada");
     }
 
@@ -33,7 +48,7 @@ async function deleteMembershipById(id) {
       [id]
     );
 
-    // 5. Eliminar la membresía base (de la tabla membresias)
+    // 5. Eliminar el contrato de membresía base (de la tabla membresias)
     await connection.query("DELETE FROM membresias WHERE id_membresia = ?", [
       id_membresia,
     ]);
@@ -44,7 +59,7 @@ async function deleteMembershipById(id) {
       [id_cliente]
     );
 
-    // 7. Solo eliminar el cliente si no tiene otras membresías activas
+    // 7. Lógica de negocio: Solo eliminar el cliente si no tiene otras membresías activas.
     if (otrasMembresias[0].count === 0) {
       await connection.query("DELETE FROM clientes WHERE id_cliente = ?", [
         id_cliente,
@@ -52,13 +67,13 @@ async function deleteMembershipById(id) {
     }
 
     await connection.commit(); // Confirmar la transacción
-    return deleteMembresiaActiva;
+    return deleteMembresiaActiva; // Devolver el resultado de la eliminación principal.
 
   } catch (error) {
-    if (connection) await connection.rollback(); // Revertir en caso de error
+    if (connection) await connection.rollback(); // Si algo falla, revertir todos los cambios.
     throw error;
   } finally {
-    if (connection) connection.release(); // Liberar la conexión de vuelta al pool
+    if (connection) connection.release(); // Siempre liberar la conexión al finalizar.
   }
 }
 

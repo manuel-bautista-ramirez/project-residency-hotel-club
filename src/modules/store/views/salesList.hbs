@@ -1,0 +1,165 @@
+<!-- Header -->
+  <div class="bg-white shadow-sm border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex items-center gap-3 mb-4">
+        <a href="/store" class="text-blue-600 hover:text-blue-700 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path fill-rule="evenodd" d="M7.28 7.72a.75.75 0 010 1.06l-2.47 2.47H21a.75.75 0 010 1.5H4.81l2.47 2.47a.75.75 0 11-1.06 1.06l-3.75-3.75a.75.75 0 010-1.06l3.75-3.75a.75.75 0 011.06 0z" clip-rule="evenodd"/>
+          </svg>
+        </a>
+        <h1 class="text-3xl md:text-4xl font-bold text-blue-900">
+          📋 Ventas Realizadas
+        </h1>
+      </div>
+      
+      <div class="flex flex-wrap gap-3">
+        <a
+          href="/store/reports"
+          class="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-md transition-all"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+            <path fill-rule="evenodd" d="M2.25 2.25a.75.75 0 000 1.5H3v10.5a3 3 0 003 3h1.21l-1.172 3.513a.75.75 0 001.424.474l.329-.987h8.418l.33.987a.75.75 0 001.422-.474l-1.17-3.513H18a3 3 0 003-3V3.75h.75a.75.75 0 000-1.5H2.25zm6.54 15h6.42l.5 1.5H8.29l.5-1.5zm8.085-8.995a.75.75 0 10-.75-1.299 12.81 12.81 0 00-3.558 3.05L11.03 8.47a.75.75 0 00-1.06 0l-3 3a.75.75 0 101.06 1.06l2.47-2.47 1.617 1.618a.75.75 0 001.146-.102 11.312 11.312 0 013.612-3.321z" clip-rule="evenodd"/>
+          </svg>
+          Ver Reportes
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    {{#if sales}}
+      <!-- Tabla de ventas -->
+      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+              <tr>
+                <th class="px-6 py-4 text-left text-sm font-semibold">ID</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Cliente</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Fecha</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Tipo de Pago</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Productos</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Total</th>
+                <th class="px-6 py-4 text-left text-sm font-semibold">Usuario</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {{#each sales}}
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                    #{{this.id}}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    {{#if this.nombre_cliente}}
+                      {{this.nombre_cliente}}
+                    {{else}}
+                      <span class="text-gray-400 italic">Sin nombre</span>
+                    {{/if}}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    {{formatDate this.fecha_venta}}
+                  </td>
+                  <td class="px-6 py-4">
+                    {{#if (eq this.tipo_pago "efectivo")}}
+                      <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                        💵 Efectivo
+                      </span>
+                    {{else if (eq this.tipo_pago "transferencia")}}
+                      <span class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                        🏦 Transferencia
+                      </span>
+                    {{else if (eq this.tipo_pago "tarjeta")}}
+                      <span class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                        💳 Tarjeta
+                      </span>
+                    {{/if}}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    {{this.total_productos}}
+                  </td>
+                  <td class="px-6 py-4 text-sm font-bold text-blue-600">
+                    ${{this.total}}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    {{this.usuario}}
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center justify-center gap-2">
+                      <a
+                        href="/store/sales/{{this.id}}"
+                        class="inline-flex items-center justify-center p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+                        title="Ver detalle"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                          <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+                          <path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd"/>
+                        </svg>
+                      </a>
+                      
+                      {{#if this.pdf_path}}
+                        <a
+                          href="{{this.pdf_path}}"
+                          target="_blank"
+                          class="inline-flex items-center justify-center p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+                          title="Ver PDF"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                            <path fill-rule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zm6.905 9.97a.75.75 0 00-1.06 0l-3 3a.75.75 0 101.06 1.06l1.72-1.72V18a.75.75 0 001.5 0v-4.19l1.72 1.72a.75.75 0 101.06-1.06l-3-3z" clip-rule="evenodd"/>
+                            <path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z"/>
+                          </svg>
+                        </a>
+                      {{/if}}
+
+                      {{#if (eq ../user.role "Administrador")}}
+                        <button
+                          onclick="deleteSale({{this.id}})"
+                          class="inline-flex items-center justify-center p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+                          title="Eliminar"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                            <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 10-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z" clip-rule="evenodd"/>
+                          </svg>
+                        </button>
+                      {{/if}}
+                    </div>
+                  </td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {{else}}
+      <!-- Estado vacío -->
+      <div class="bg-white rounded-xl shadow-md p-12 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-20 h-20 text-gray-300 mx-auto mb-4">
+          <path fill-rule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0118 9.375v9.375a3 3 0 003-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 00-.673-.05A3 3 0 0015 1.5h-1.5a3 3 0 00-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6zM13.5 3A1.5 1.5 0 0012 4.5h4.5A1.5 1.5 0 0015 3h-1.5z" clip-rule="evenodd"/>
+          <path fill-rule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 013 20.625V9.375zM6 12a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V12zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75zM6 15a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V15zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75zM6 18a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V18zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75z" clip-rule="evenodd"/>
+        </svg>
+        <h3 class="text-xl font-bold text-gray-700 mb-2">No hay ventas registradas</h3>
+        <p class="text-gray-500 mb-6">Las ventas realizadas aparecerán aquí</p>
+        <a
+          href="/store"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+            <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z"/>
+          </svg>
+          Ir a la Tienda
+        </a>
+      </div>
+    {{/if}}
+
+  </div>
+
+
+<script>
+  function deleteSale(id) {
+    if (confirm('¿Estás seguro de eliminar esta venta? Se restaurará el stock de los productos.')) {
+      window.location.href = `/store/sales/delete/${id}`;
+    }
+  }
+</script>

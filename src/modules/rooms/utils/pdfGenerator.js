@@ -1,502 +1,601 @@
-import fs from 'fs';
-import path from 'path';
-import QRCode from 'qrcode';
-import directoryManager from '../../../utils/directoryManager.js';
-import pdfRegistry from '../models/pdfRegistry.js';
+import PDFDocument from "pdfkit";
+import fs from "fs";
+import path from "path";
+import validadorDirectorios from "./validadorDirectorios.js";
 
-class PDFGenerator {
-  constructor() {
-    this.ensureDirectories();
-  }
-
-  // Asegurar que existan los directorios necesarios
-  ensureDirectories() {
-    directoryManager.ensureDirectories();
-  }
-
-  // Generar código QR con información de la renta
-  async generateQRCode(rentData) {
+export const generateAndSendPDF = async (datos, tipo, qrPath = null) => {
+  return new Promise((resolve, reject) => {
     try {
-      const qrData = {
-        type: rentData.type || 'rent_receipt',
-        id: rentData.id,
-        client: rentData.client_name,
-        room: rentData.room_number,
-        checkIn: rentData.check_in,
-        checkOut: rentData.check_out,
-        total: rentData.total,
-        timestamp: new Date().toISOString()
+      // Validar tipo de documento
+      const normalizedTipo = tipo.toLowerCase();
+
+      // Mapeo consistente de tipos
+      const tipoMap = {
+        renta: "rentas",
+        reservacion: "reservaciones",
+        reservation: "reservaciones",
       };
 
-      const qrString = JSON.stringify(qrData);
+      const folderTipo = tipoMap[normalizedTipo];
 
+      if (!folderTipo) {
+        throw new Error(`Tipo de documento no válido: ${tipo}`);
+      }
 
-      const qrCodeDataURL = await QRCode.toDataURL(qrString, {
-        width: 200,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
+      // Validar y obtener ruta organizada usando el validador
+      const rutaBase = validadorDirectorios.obtenerRuta("pdf", folderTipo);
+      const fileName = `comprobante_${folderTipo}_${Date.now()}.pdf`;
+      const filePath = path.join(rutaBase, fileName);
+
+      console.log("=== GENERANDO PDF PROFESIONAL ===");
+      console.log("Tipo:", tipo);
+      console.log("Tipo normalizado:", folderTipo);
+      console.log("Ruta destino:", filePath);
+
+      // Validar que el directorio existe usando el validador
+      if (!validadorDirectorios.validarRutaEspecifica("pdf", folderTipo)) {
+        throw new Error(
+          `No se pudo validar/crear el directorio para PDF: ${rutaBase}`
+        );
+      }
+
+      const doc = new PDFDocument({
+        size: "A4",
+        margins: {
+          top: 30,
+          bottom: 30,
+          left: 40,
+          right: 40,
+        },
       });
-      console.log("Qr gerenerado exitoasamente.")
-       // Guardar en public/uploads/qrs/
-            const qrDir = path.join(process.cwd(), 'public', 'uploads', 'qrs');
-            if (!fs.existsSync(qrDir)) {
-              fs.mkdirSync(qrCodeDataURL, { recursive: true });
-            }
-      return qrCodeDataURL;
-    } catch (error) {
-      console.error('Error generando QR:', error);
-      return null;
-    }
-  }
 
-  // Generar HTML del comprobante
-  generateReceiptHTML(rentData, qrCodeDataURL) {
-    const formatDate = (dateString) => {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('es-MX', {
+      doc.pipe(fs.createWriteStream(filePath));
+
+      // Colores corporativos mejorados
+      const colors = {
+        primary: "#1a4d8f",
+        primaryLight: "#2c5aa0",
+        secondary: "#2c3e50",
+        success: "#27ae60",
+        successLight: "#2ecc71",
+        warning: "#f39c12",
+        danger: "#e74c3c",
+        light: "#f8f9fa",
+        lightGray: "#ecf0f1",
+        dark: "#2c3e50",
+        gray: "#7f8c8d",
+        white: "#ffffff",
+        gold: "#f1c40f",
+      };
+
+      // ===== ENCABEZADO COMPACTO =====
+      // Gradiente de fondo del encabezado
+      doc.rect(0, 0, doc.page.width, 100).fill(colors.primary);
+      doc.rect(0, 0, doc.page.width, 100).fillOpacity(0.1).fill(colors.primaryLight);
+      doc.fillOpacity(1);
+
+      // Borde decorativo superior
+      doc.rect(0, 0, doc.page.width, 4).fill(colors.gold);
+
+      // Nombre del hotel
+      doc
+        .fontSize(20)
+        .fillColor(colors.white)
+        .font("Helvetica-Bold")
+        .text("HOTEL RESIDENCY CLUB", 50, 20);
+
+      doc
+        .fontSize(9)
+        .fillColor(colors.lightGray)
+        .font("Helvetica")
+        .text("Tu hogar lejos de casa", 50, 42);
+
+      // Tipo de comprobante con badge
+      const tipoTexto = folderTipo === "rentas" ? "RENTA" : "RESERVACION";
+      const badgeWidth = 260;
+      const badgeX = (doc.page.width - badgeWidth) / 2;
+      
+      doc.roundedRect(badgeX, 60, badgeWidth, 30, 5)
+         .fill(colors.white);
+      
+      doc
+        .fontSize(13)
+        .fillColor(colors.primary)
+        .font("Helvetica-Bold")
+        .text(`COMPROBANTE DE ${tipoTexto}`, badgeX, 69, {
+          width: badgeWidth,
+          align: "center",
+        });
+
+      // Número de referencia
+      const referencia = `REF-${Date.now().toString().slice(-10)}`;
+
+      // ===== ESTADO DE LA TRANSACCIÓN =====
+      const estadoY = 110;
+      
+      // Badge de estado exitoso
+      doc.roundedRect(40, estadoY, doc.page.width - 80, 32, 6)
+         .fillAndStroke(colors.success, colors.successLight);
+
+      doc
+        .fontSize(13)
+        .fillColor(colors.white)
+        .font("Helvetica-Bold")
+        .text("TRANSACCION EXITOSA", 0, estadoY + 10, { align: "center" });
+
+      // ===== INFORMACIÓN DEL CLIENTE =====
+      const infoClienteY = 152;
+      
+      // Caja con sombra simulada
+      doc.rect(42, infoClienteY + 2, doc.page.width - 84, 80)
+         .fillOpacity(0.1)
+         .fill(colors.gray);
+      doc.fillOpacity(1);
+      
+      doc.roundedRect(40, infoClienteY, doc.page.width - 80, 80, 6)
+         .fillAndStroke(colors.light, colors.gray);
+
+      // Encabezado de sección
+      doc.rect(40, infoClienteY, doc.page.width - 80, 28)
+         .fill(colors.primaryLight);
+      
+      doc
+        .fontSize(12)
+        .fillColor(colors.white)
+        .font("Helvetica-Bold")
+        .text("INFORMACION DEL CLIENTE", 55, infoClienteY + 8);
+
+      const nombre =
+        datos.nombre ||
+        datos.client_name ||
+        datos.nombre_cliente ||
+        "No especificado";
+      const email = datos.email || datos.correo || "No especificado";
+      const telefono = datos.phone || datos.telefono || "No especificado";
+
+      // Información con mejor espaciado
+      const infoY = infoClienteY + 38;
+      doc
+        .fontSize(9)
+        .fillColor(colors.gray)
+        .font("Helvetica")
+        .text("Nombre:", 55, infoY);
+      
+      doc
+        .fontSize(10)
+        .fillColor(colors.dark)
+        .font("Helvetica-Bold")
+        .text(nombre, 120, infoY);
+
+      doc
+        .fontSize(9)
+        .fillColor(colors.gray)
+        .font("Helvetica")
+        .text("Email:", 55, infoY + 14);
+      
+      doc
+        .fontSize(10)
+        .fillColor(colors.dark)
+        .font("Helvetica")
+        .text(email, 120, infoY + 14);
+
+      doc
+        .fontSize(9)
+        .fillColor(colors.gray)
+        .font("Helvetica")
+        .text("Telefono:", 55, infoY + 28);
+      
+      doc
+        .fontSize(10)
+        .fillColor(colors.dark)
+        .font("Helvetica")
+        .text(telefono, 120, infoY + 28);
+
+      // ===== DETALLES DE LA TRANSACCIÓN =====
+      const detallesY = 242;
+      
+      // Calcular datos de pago primero para determinar el tamaño de la caja
+      const monto = datos.monto || datos.amount || datos.price || 0;
+      const enganche = datos.enganche || 0;
+      const saldoPendiente = monto - enganche;
+      const tieneEnganche = (tipo.toLowerCase() === "reservacion" || tipo.toLowerCase() === "reservation") && enganche > 0;
+      
+      // Altura dinámica: más alta si hay enganche
+      const detallesHeight = tieneEnganche ? 176 : 120;
+      
+      // Caja con sombra
+      doc.rect(42, detallesY + 2, doc.page.width - 84, detallesHeight)
+         .fillOpacity(0.1)
+         .fill(colors.gray);
+      doc.fillOpacity(1);
+      
+      doc.roundedRect(40, detallesY, doc.page.width - 80, detallesHeight, 6)
+         .fillAndStroke(colors.light, colors.gray);
+
+      // Encabezado de sección
+      doc.rect(40, detallesY, doc.page.width - 80, 28)
+         .fill(colors.primaryLight);
+      
+      doc
+        .fontSize(12)
+        .fillColor(colors.white)
+        .font("Helvetica-Bold")
+        .text("DETALLES DE LA TRANSACCION", 55, detallesY + 8);
+      const habitacion = datos.numero_habitacion || datos.habitacion_id || "No especificada";
+      const fechaEmision = new Date().toLocaleDateString("es-MX", {
         year: 'numeric',
         month: 'long',
-        day: 'numeric',
+        day: 'numeric'
+      });
+      const horaEmision = new Date().toLocaleTimeString("es-MX", {
         hour: '2-digit',
         minute: '2-digit'
       });
-    };
 
-    const calculateNights = (checkIn, checkOut) => {
-      if (!checkIn || !checkOut) return 0;
-      const start = new Date(checkIn);
-      const end = new Date(checkOut);
-      if (isNaN(start) || isNaN(end)) return 0;
-      const diffTime = Math.abs(end - start);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays;
-    };
+      // Detalles con diseño de tabla
+      let detY = detallesY + 38;
+      const lineHeight = 20;
+      
+      // Si es reservación con enganche, mostrar desglose
+      if (normalizedTipo === "reservacion" && enganche > 0) {
+        // Precio Total
+        doc.roundedRect(55, detY, doc.page.width - 110, 24, 4)
+           .fill(colors.white);
+        
+        doc
+          .fontSize(9)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Precio Total:", 65, detY + 6);
+        
+        doc
+          .fontSize(11)
+          .fillColor(colors.dark)
+          .font("Helvetica-Bold")
+          .text(`$${Number(monto).toLocaleString('es-MX')} MXN`, 0, detY + 6, {
+            align: "right",
+            width: doc.page.width - 105
+          });
 
-    const nights = calculateNights(rentData.check_in, rentData.check_out);
+        detY += 28;
 
-    return `
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Comprobante de Renta</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
+        // Enganche/Anticipo
+        doc.roundedRect(55, detY, doc.page.width - 110, 24, 4)
+           .fill(colors.white);
+        
+        doc
+          .fontSize(9)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Enganche/Anticipo:", 65, detY + 6);
+        
+        doc
+          .fontSize(11)
+          .fillColor(colors.success)
+          .font("Helvetica-Bold")
+          .text(`-$${Number(enganche).toLocaleString('es-MX')} MXN`, 0, detY + 6, {
+            align: "right",
+            width: doc.page.width - 105
+          });
 
-            body {
-                font-family: 'Arial', sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                padding: 20px;
-                min-height: 100vh;
-            }
+        detY += 28;
 
-            .receipt-container {
-                max-width: 600px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 15px;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-                overflow: hidden;
-            }
+        // Saldo Pendiente
+        doc.roundedRect(55, detY, doc.page.width - 110, 24, 4)
+           .fillAndStroke(colors.warning, colors.warning);
+        
+        doc
+          .fontSize(9)
+          .fillColor(colors.white)
+          .font("Helvetica-Bold")
+          .text("Saldo Pendiente:", 65, detY + 6);
+        
+        doc
+          .fontSize(12)
+          .fillColor(colors.white)
+          .font("Helvetica-Bold")
+          .text(`$${Number(saldoPendiente).toLocaleString('es-MX')} MXN`, 0, detY + 6, {
+            align: "right",
+            width: doc.page.width - 105
+          });
 
-            .header {
-                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                color: white;
-                padding: 30px;
-                text-align: center;
-                position: relative;
-            }
-
-            .header::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-                opacity: 0.3;
-            }
-
-            .hotel-name {
-                font-size: 28px;
-                font-weight: bold;
-                margin-bottom: 5px;
-                position: relative;
-                z-index: 1;
-            }
-
-            .receipt-title {
-                font-size: 18px;
-                opacity: 0.9;
-                position: relative;
-                z-index: 1;
-            }
-
-            .receipt-id {
-                position: absolute;
-                top: 15px;
-                right: 20px;
-                background: rgba(255,255,255,0.2);
-                padding: 5px 15px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: bold;
-            }
-
-            .content {
-                padding: 30px;
-            }
-
-            .client-info {
-                background: #f8f9fa;
-                border-radius: 10px;
-                padding: 20px;
-                margin-bottom: 25px;
-                border-left: 4px solid #4facfe;
-            }
-
-            .client-name {
-                font-size: 22px;
-                font-weight: bold;
-                color: #2c3e50;
-                margin-bottom: 10px;
-            }
-
-            .client-details {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 15px;
-                margin-top: 15px;
-            }
-
-            .detail-item {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .detail-label {
-                font-size: 12px;
-                color: #7f8c8d;
-                text-transform: uppercase;
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-
-            .detail-value {
-                font-size: 16px;
-                color: #2c3e50;
-                font-weight: 600;
-            }
-
-            .stay-info {
-                background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-                border-radius: 10px;
-                padding: 20px;
-                margin-bottom: 25px;
-                text-align: center;
-            }
-
-            .stay-dates {
-                display: grid;
-                grid-template-columns: 1fr auto 1fr;
-                gap: 15px;
-                align-items: center;
-                margin-bottom: 15px;
-            }
-
-            .date-box {
-                background: white;
-                border-radius: 8px;
-                padding: 15px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-
-            .date-label {
-                font-size: 12px;
-                color: #e67e22;
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-
-            .date-value {
-                font-size: 14px;
-                color: #2c3e50;
-                font-weight: 600;
-            }
-
-            .arrow {
-                font-size: 24px;
-                color: #e67e22;
-            }
-
-            .nights-info {
-                background: white;
-                border-radius: 8px;
-                padding: 10px;
-                display: inline-block;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-
-            .nights-number {
-                font-size: 24px;
-                font-weight: bold;
-                color: #e67e22;
-            }
-
-            .nights-text {
-                font-size: 12px;
-                color: #7f8c8d;
-            }
-
-            .payment-info {
-                background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-                border-radius: 10px;
-                padding: 20px;
-                margin-bottom: 25px;
-                text-align: center;
-            }
-
-            .total-amount {
-                font-size: 36px;
-                font-weight: bold;
-                color: #2c3e50;
-                margin-bottom: 10px;
-            }
-
-            .payment-method {
-                background: white;
-                border-radius: 8px;
-                padding: 10px 20px;
-                display: inline-block;
-                font-weight: 600;
-                color: #27ae60;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-
-            .qr-section {
-                text-align: center;
-                padding: 20px;
-                background: #f8f9fa;
-                border-radius: 10px;
-                margin-bottom: 20px;
-            }
-
-            .qr-title {
-                font-size: 16px;
-                font-weight: bold;
-                color: #2c3e50;
-                margin-bottom: 15px;
-            }
-
-            .qr-code {
-                display: inline-block;
-                padding: 15px;
-                background: white;
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            }
-
-            .qr-code img {
-                width: 150px;
-                height: 150px;
-            }
-
-            .footer {
-                text-align: center;
-                padding: 20px;
-                background: #ecf0f1;
-                color: #7f8c8d;
-                font-size: 12px;
-            }
-
-            .footer-note {
-                margin-bottom: 10px;
-                font-style: italic;
-            }
-
-            .timestamp {
-                font-weight: bold;
-                color: #95a5a6;
-            }
-
-            @media print {
-                body {
-                    background: white;
-                    padding: 0;
-                }
-
-                .receipt-container {
-                    box-shadow: none;
-                    max-width: none;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="receipt-container">
-            <div class="header">
-                <div class="receipt-id">#${rentData.id}</div>
-                <div class="hotel-name">Hotel Residency Club</div>
-                <div class="receipt-title">${rentData.type === 'reservation' ? 'Comprobante de Reservación' : 'Comprobante de Renta'}</div>
-            </div>
-
-            <div class="content">
-                <div class="client-info">
-                    <div class="client-name">${rentData.client_name}</div>
-                    <div class="client-details">
-                        <div class="detail-item">
-                            <div class="detail-label">Habitación</div>
-                            <div class="detail-value">#${rentData.room_number}</div>
-                        </div>
-                        <div class="detail-item">
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Teléfono</div>
-                  <div class="detail-value">${rentData.phone}</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="stay-info">
-              <div class="stay-dates">
-                <div class="date-box">
-                  <div class="date-label">CHECK-IN</div>
-                  <div class="date-value">${rentData.check_in ? formatDate(rentData.check_in) : '—'}</div>
-                </div>
-                <div class="nights-indicator">
-                  <div class="nights-value">${calculateNights(rentData.check_in, rentData.check_out)}</div>
-                  <div class="nights-label">NOCHES</div>
-                </div>
-                <div class="date-box">
-                  <div class="date-label">CHECK-OUT</div>
-                  <div class="date-value">${rentData.check_out ? formatDate(rentData.check_out) : '—'}</div>
-                </div>
-              </div>
-
-              <div class="price-section">
-                <div class="price-value">$${Number(rentData.total || 0).toFixed(2)} MXN</div>
-                <div class="payment-badge ${rentData.payment_method === 'Transferencia' ? 'transfer' : (rentData.payment_method === 'Tarjeta' || rentData.payment_method === 'Card' ? 'card' : 'cash')}">
-                  ${rentData.payment_method || 'Pendiente'}
-                </div>
-              </div>
-
-              ${rentData.type === 'reservation' && rentData.reservation_created_at ? `
-              <div class="qr-section">
-                <div class="qr-title">Fecha de Reservación</div>
-                <div class="footer-note">${formatDate(rentData.reservation_created_at)}</div>
-              </div>
-              ` : ''}
-
-              ${qrCodeDataURL ? `
-              <div class="qr-section">
-                <div class="qr-title">Código QR de Verificación</div>
-                <div class="qr-code">
-                    <img src="${qrCodeDataURL}" alt="QR Code" />
-                </div>
-              </div>
-              ` : ''}
-            </div>
-
-            <div class="footer">
-                <div class="footer-note">Gracias por elegir Hotel Residency Club</div>
-                <div class="timestamp">Generado el ${new Date().toLocaleString('es-MX')}</div>
-            </div>
-        </div>
-    </body>
-    </html>
-    `;
-  }
-
-  // Generar PDF usando Puppeteer
-  async generatePDF(rentData) {
-    try {
-      console.log(`🔄 Generando PDF para ${rentData.type === 'reservation' ? 'reservación' : 'renta'} ID:`, rentData.id);
-
-      // Generar código QR
-      const qrCodeDataURL = await this.generateQRCode(rentData);
-
-      // Generar HTML
-      const htmlContent = this.generateReceiptHTML(rentData, qrCodeDataURL);
-
-      // Importar Puppeteer dinámicamente
-      const puppeteer = await import('puppeteer');
-
-      // Lanzar navegador
-      const browser = await puppeteer.default.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      });
-
-      const page = await browser.newPage();
-
-      // Establecer contenido HTML
-      await page.setContent(htmlContent, {
-        waitUntil: 'networkidle0'
-      });
-
-      // Generar PDF
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '20px',
-          right: '20px',
-          bottom: '20px',
-          left: '20px'
-        }
-      });
-
-      await browser.close();
-
-      // Guardar PDF usando directoryManager
-      const timestamp = Date.now();
-      const fileName = directoryManager.generatePDFFileName(rentData.type || 'rent', rentData.id, timestamp);
-      const filePath = directoryManager.getPDFFilePath(rentData.type || 'rent', rentData.id, timestamp);
-
-      fs.writeFileSync(filePath, pdfBuffer);
-
-      console.log('✅ PDF generado exitosamente:', filePath);
-
-      // Registrar PDF en la base de datos
-      const qrData = await this.generateQRCode(rentData);
-      const registryResult = await pdfRegistry.registerPDF({
-        ...rentData, // Pasar todos los datos de la renta
-        file_name: fileName,
-        file_path: filePath,
-        qr_data: qrData // El QR ya generado
-      });
-
-      if (registryResult.success) {
-        console.log('✅ PDF registrado en base de datos - ID:', registryResult.registry_id);
+        detY += 28;
       } else {
-        console.warn('⚠️ Error registrando PDF:', registryResult.error);
+        // Monto destacado (sin enganche)
+        doc.roundedRect(55, detY, doc.page.width - 110, 24, 4)
+           .fill(colors.white);
+        
+        doc
+          .fontSize(9)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Monto Total:", 65, detY + 6);
+        
+        doc
+          .fontSize(12)
+          .fillColor(colors.success)
+          .font("Helvetica-Bold")
+          .text(`$${Number(monto).toLocaleString('es-MX')} MXN`, 0, detY + 6, {
+            align: "right",
+            width: doc.page.width - 105
+          });
+
+        detY += 28;
       }
 
-      return {
-        success: true,
-        filePath: filePath,
-        fileName: fileName,
-        fullPath: path.resolve(filePath),
-        registry_id: registryResult.registry_id
-      };
+      // Habitación
+      doc
+        .fontSize(9)
+        .fillColor(colors.gray)
+        .font("Helvetica")
+        .text("Habitacion:", 55, detY + 32);
+      
+      doc
+        .fontSize(10)
+        .fillColor(colors.dark)
+        .font("Helvetica-Bold")
+        .text(habitacion, 140, detY + 32);
 
+      // Fecha de emisión
+      doc
+        .fontSize(9)
+        .fillColor(colors.gray)
+        .font("Helvetica")
+        .text("Fecha de Emision:", 55, detY + 46);
+      
+      doc
+        .fontSize(10)
+        .fillColor(colors.dark)
+        .font("Helvetica")
+        .text(fechaEmision, 140, detY + 46);
+
+      // Hora de emisión
+      doc
+        .fontSize(9)
+        .fillColor(colors.gray)
+        .font("Helvetica")
+        .text("Hora de Emision:", 55, detY + 60);
+      
+      doc
+        .fontSize(10)
+        .fillColor(colors.dark)
+        .font("Helvetica")
+        .text(horaEmision, 140, detY + 60);
+
+      // Datos específicos según el tipo
+      if (normalizedTipo === "renta") {
+        const tipoPago =
+          datos.payment_type || datos.tipo_pago || "No especificado";
+        const checkIn =
+          datos.check_in || datos.fecha_ingreso || "No especificado";
+        const checkOut =
+          datos.check_out || datos.fecha_salida || "No especificado";
+
+        // Tipo de pago
+        doc
+          .fontSize(10)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Tipo de Pago:", 55, detY + 98);
+        
+        doc
+          .fontSize(11)
+          .fillColor(colors.dark)
+          .font("Helvetica-Bold")
+          .text(tipoPago, 165, detY + 98);
+
+        // Check-in
+        doc
+          .fontSize(10)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Check-in:", 55, detY + 118);
+        
+        doc
+          .fontSize(11)
+          .fillColor(colors.dark)
+          .font("Helvetica")
+          .text(checkIn, 165, detY + 118);
+
+        // Check-out
+        doc
+          .fontSize(10)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Check-out:", 300, detY + 118);
+        
+        doc
+          .fontSize(11)
+          .fillColor(colors.dark)
+          .font("Helvetica")
+          .text(checkOut, 380, detY + 118);
+      } else {
+        const fechaIngreso = datos.fecha_ingreso || "No especificado";
+        const fechaSalida = datos.fecha_salida || "No especificado";
+
+        // Fecha de ingreso
+        doc
+          .fontSize(10)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Fecha Ingreso:", 55, detY + 98);
+        
+        doc
+          .fontSize(11)
+          .fillColor(colors.dark)
+          .font("Helvetica")
+          .text(fechaIngreso, 165, detY + 98);
+
+        // Fecha de salida
+        doc
+          .fontSize(10)
+          .fillColor(colors.gray)
+          .font("Helvetica")
+          .text("Fecha Salida:", 300, detY + 98);
+        
+        doc
+          .fontSize(11)
+          .fillColor(colors.dark)
+          .font("Helvetica")
+          .text(fechaSalida, 400, detY + 98);
+      }
+
+      // ===== INFORMACIÓN IMPORTANTE =====
+      // Ajustar posición según si hay enganche
+      const resumenY = tieneEnganche ? 428 : 372;
+      
+      doc.roundedRect(40, resumenY, doc.page.width - 80, 55, 6)
+         .fillAndStroke(colors.warning, colors.warning);
+
+      doc
+        .fontSize(11)
+        .fillColor(colors.white)
+        .font("Helvetica-Bold")
+        .text("INFORMACION IMPORTANTE", 0, resumenY + 8, {
+          align: "center",
+        });
+
+      doc
+        .fontSize(8)
+        .fillColor(colors.white)
+        .font("Helvetica")
+        .text(
+          "Presente este documento al momento del check-in junto con identificacion oficial",
+          50,
+          resumenY + 26,
+          { width: doc.page.width - 100, align: "center" }
+        )
+        .text(
+          "Conserve este comprobante durante toda su estancia",
+          50,
+          resumenY + 38,
+          { width: doc.page.width - 100, align: "center" }
+        );
+
+      // ===== CÓDIGO QR =====
+      if (qrPath && fs.existsSync(qrPath)) {
+        try {
+          // Ajustar posición según si hay enganche
+          const qrSectionY = tieneEnganche ? 493 : 437;
+
+          // Caja para el QR con sombra
+          doc.rect(42, qrSectionY + 2, doc.page.width - 84, 120)
+             .fillOpacity(0.1)
+             .fill(colors.gray);
+          doc.fillOpacity(1);
+          
+          doc.roundedRect(40, qrSectionY, doc.page.width - 80, 120, 6)
+             .fillAndStroke(colors.light, colors.gray);
+
+          // Encabezado de sección
+          doc.rect(40, qrSectionY, doc.page.width - 80, 26)
+             .fill(colors.primaryLight);
+          
+          doc
+            .fontSize(11)
+            .fillColor(colors.white)
+            .font("Helvetica-Bold")
+            .text("CODIGO QR DE VERIFICACION", 55, qrSectionY + 7);
+
+          // QR centrado con marco elegante
+          const qrSize = 75;
+          const pageWidth = doc.page.width;
+          const xPosition = (pageWidth - qrSize) / 2;
+          const qrY = qrSectionY + 30;
+
+          // Marco blanco para el QR (sin borde para evitar solapamiento)
+          doc.roundedRect(xPosition - 5, qrY - 5, qrSize + 10, qrSize + 10, 4)
+             .fill(colors.white);
+
+          // QR centrado
+          doc.image(qrPath, xPosition, qrY, {
+            width: qrSize,
+            height: qrSize,
+            align: "center",
+          });
+
+          // Texto explicativo
+          doc
+            .fontSize(7)
+            .fillColor(colors.gray)
+            .font("Helvetica")
+            .text(
+              "Escanea este codigo para verificar la autenticidad del comprobante",
+              50,
+              qrY + qrSize + 5,
+              { 
+                align: "center",
+                width: doc.page.width - 100
+              }
+            );
+
+          console.log("✅ QR incluido en el PDF correctamente");
+        } catch (qrError) {
+          console.error("❌ Error al incluir QR en PDF:", qrError);
+        }
+      }
+
+      // ===== PIE DE PÁGINA =====
+      const footerY = 565;
+
+      // Línea decorativa
+      doc
+        .moveTo(40, footerY)
+        .lineTo(doc.page.width - 40, footerY)
+        .strokeColor(colors.primaryLight)
+        .lineWidth(1.5)
+        .stroke();
+
+      // Información de contacto en el footer
+      doc
+        .fontSize(7)
+        .fillColor(colors.gray)
+        .font("Helvetica")
+        .text(
+          "Hotel Residency Club  |  Tel: +52 (XXX) XXX-XXXX  |  Email: info@hotelresidencyclub.com",
+          0,
+          footerY + 8,
+          { align: "center" }
+        );
+
+      // Fecha y referencia
+      doc
+        .fontSize(7)
+        .fillColor(colors.gray)
+        .font("Helvetica")
+        .text(
+          `Generado: ${new Date().toLocaleDateString("es-MX", { year: 'numeric', month: 'long', day: 'numeric' })} • Ref: ${referencia}`,
+          0,
+          footerY + 20,
+          { align: "center" }
+        );
+
+      // Mensaje de agradecimiento
+      doc
+        .fontSize(8)
+        .fillColor(colors.primary)
+        .font("Helvetica-Bold")
+        .text(
+          "Gracias por elegirnos!",
+          0,
+          footerY + 35,
+          { align: "center" }
+        );
+
+      doc.end();
+
+      doc.on("end", () => {
+        console.log("✅ PDF profesional generado exitosamente en:", filePath);
+        resolve(filePath);
+      });
+
+      doc.on("error", (error) => {
+        console.error("❌ Error al generar PDF:", error);
+        reject(error);
+      });
     } catch (error) {
-      console.error('❌ Error generando PDF:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error("❌ Error en generateAndSendPDF:", error);
+      reject(error);
     }
-  }
-}
-
-export default new PDFGenerator();
+  });
+};

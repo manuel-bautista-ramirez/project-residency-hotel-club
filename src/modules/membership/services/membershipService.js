@@ -1,4 +1,10 @@
-// services/membershipService.js
+/**
+ * @file membershipService.js
+ * @description Servicio que encapsula toda la lógica de negocio para el módulo de membresías.
+ * Orquesta las llamadas a los modelos, procesa datos y se integra con servicios externos (email, QR, PDF).
+ * @module services/MembershipService
+ */
+
 import { MembershipModel } from "../models/modelMembership.js";
 import { modelList } from "../models/modelList.js";
 import { deleteMembershipById } from "../models/modelDelete.js";
@@ -12,6 +18,13 @@ import fs from "fs";
 import puppeteer from "puppeteer";
 import hbs from "handlebars";
 
+/**
+ * Valida los parámetros para la generación de un reporte.
+ * @private
+ * @param {string} period - El período del reporte ('monthly', 'biweekly', 'weekly').
+ * @param {string} date - La fecha específica para el período.
+ * @returns {string|null} Un mensaje de error si la validación falla, o null si es exitosa.
+ */
 const _validateReportParams = (period, date) => {
   if (!period || !date) {
     return "El período y la fecha son obligatorios.";
@@ -42,6 +55,13 @@ const _validateReportParams = (period, date) => {
   return null; // No hay errores
 };
 
+/**
+ * Calcula el rango de fechas (inicio y fin) para un reporte basado en el período y la fecha.
+ * @private
+ * @param {string} period - El período del reporte.
+ * @param {string} date - La fecha específica.
+ * @returns {{startDate: Date, endDate: Date}} Un objeto con las fechas de inicio y fin.
+ */
 const _getReportDateRange = (period, date) => {
   const year = parseInt(date.substring(0, 4));
   let startDate, endDate;
@@ -66,12 +86,21 @@ const _getReportDateRange = (period, date) => {
       break;
     }
     case "weekly": {
-      const week = parseInt(date.substring(5));
-      const firstDay = new Date(year, 0, 1 + (week - 1) * 7);
-      const dayOfWeek = firstDay.getDay();
-      const adjustment = dayOfWeek <= 4 ? 1 - dayOfWeek : 8 - dayOfWeek; // Adjust to start of the week (Monday)
-      startDate = new Date(year, 0, firstDay.getDate() + adjustment);
-      endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6);
+      // --- CORRECCIÓN ---
+      // La lógica anterior era imprecisa. Esta nueva implementación calcula correctamente
+      // el inicio (lunes) y fin (domingo) de la semana ISO 8601.
+      const week = parseInt(date.substring(5), 10);
+      
+      // Calcula el primer día del año.
+      const firstDayOfYear = new Date(year, 0, 1);
+      // El día de la semana del 1 de enero (0=Domingo, 1=Lunes, ...).
+      const firstDayOfWeek = firstDayOfYear.getDay();
+      // Ajuste para encontrar el lunes de la primera semana del año.
+      // Si el 1 de enero es martes (2), necesitamos retroceder 1 día. Si es domingo (0), retrocedemos 6.
+      const dayOffset = (firstDayOfWeek === 0 ? -6 : 1 - firstDayOfWeek);
+      
+      startDate = new Date(year, 0, 1 + dayOffset + (week - 1) * 7);
+      endDate = new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000);
       break;
     }
     default:
@@ -81,7 +110,16 @@ const _getReportDateRange = (period, date) => {
   return { startDate, endDate };
 };
 
+/**
+ * Objeto de servicio que contiene todos los métodos de lógica de negocio para las membresías.
+ * @type {object}
+ */
 export const MembershipService = {
+  /**
+   * Crea un registro de contrato de membresía.
+   * @param {object} membershipData - Datos del contrato.
+   * @returns {Promise<number>} El ID del contrato creado.
+   */
   async createMembershipContract(membershipData) {
     const { id_cliente, id_tipo_membresia, fecha_inicio, fecha_fin } =
       membershipData;
@@ -93,6 +131,14 @@ export const MembershipService = {
     });
   },
 
+  /**
+   * Genera un archivo de imagen QR, lo guarda en el servidor y devuelve la ruta web.
+   * Incluye un mecanismo de fallback para generar un QR con datos mínimos si falla el principal.
+   * @param {string} qrData - Los datos a codificar en el QR (generalmente un JSON).
+   * @param {number} membershipId - El ID de la membresía, usado para nombrar el archivo.
+   * @param {string} titularNombre - El nombre del titular, usado para nombrar el archivo.
+   * @returns {Promise<string>} La ruta web relativa al archivo QR (ej. /uploads/qrs/qr_123.png).
+   */
   async generateQRCode(qrData, membershipId, titularNombre) {
     try {
       // Validar que los datos no estén vacíos
@@ -173,6 +219,11 @@ export const MembershipService = {
     }
   },
 
+  /**
+   * Crea un registro de membresía activa.
+   * @param {object} activationData - Datos para la activación.
+   * @returns {Promise<number>} El ID de la membresía activa creada.
+   */
   async activateMembership(activationData) {
     const { id_cliente, id_membresia, fecha_inicio, fecha_fin, precio_final } =
       activationData;
@@ -185,6 +236,11 @@ export const MembershipService = {
     });
   },
 
+  /**
+   * Agrega los integrantes a una membresía familiar.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @param {Array<string|object>} integrantes - Array de nombres de integrantes o de objetos.
+   */
   async addFamilyMembers(id_activa, integrantes) {
     if (integrantes && integrantes.length > 0) {
       const integrantesData = integrantes.map((item) =>
@@ -199,6 +255,13 @@ export const MembershipService = {
     }
   },
 
+  /**
+   * Obtiene los detalles relacionados a una membresía recién creada (cliente, tipo, integrantes).
+   * @param {number} id_cliente - ID del cliente.
+   * @param {number} id_tipo_membresia - ID del tipo de membresía.
+   * @param {number} id_activa - ID de la membresía activa.
+   * @returns {Promise<{cliente: object, tipo: object, integrantesDB: Array<object>}>}
+   */
   async getMembershipDetails(id_cliente, id_tipo_membresia, id_activa) {
     const [cliente, tipo, integrantesDB] = await Promise.all([
       MembershipModel.getClienteById(id_cliente),
@@ -209,6 +272,12 @@ export const MembershipService = {
     return { cliente, tipo, integrantesDB };
   },
 
+  /**
+   * Genera el payload (contenido) para el código QR.
+   * Se mantiene simple (solo el ID) para que el QR sea pequeño y fácil de escanear.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<string>} Un string JSON con el ID de la membresía.
+   */
   async generateQRPayload(id_activa) {
     // The most robust QR payload is a simple, unique identifier.
     // All other details can be fetched from the server upon scanning.
@@ -219,6 +288,12 @@ export const MembershipService = {
     return JSON.stringify(qrData);
   },
 
+  /**
+   * Genera un buffer de PDF para un comprobante de membresía usando Puppeteer y una plantilla Handlebars.
+   * @private
+   * @param {object} data - Datos para rellenar la plantilla del comprobante.
+   * @returns {Promise<Buffer>} El buffer del archivo PDF generado.
+   */
   async _generateReceiptPDF(data) {
     try {
       const templatePath = path.resolve("src", "views", "partials", "membership-receipt-template.hbs");
@@ -254,6 +329,19 @@ export const MembershipService = {
     }
   },
 
+  /**
+   * Orquesta la generación y envío de comprobantes de membresía por correo electrónico y WhatsApp.
+   * @param {object} cliente - Objeto con los datos del cliente.
+   * @param {object} tipo - Objeto con los datos del tipo de membresía.
+   * @param {number} id_activa - ID de la membresía activa.
+   * @param {string} fecha_inicio - Fecha de inicio.
+   * @param {string} fecha_fin - Fecha de fin.
+   * @param {Array<object>} integrantesDB - Array de integrantes.
+   * @param {string} metodo_pago - Nombre del método de pago.
+   * @param {number} precio_final - Precio final pagado.
+   * @param {string} precioEnLetras - El precio final en texto.
+   * @returns {Promise<void>}
+   */
   async sendMembershipReceipts(
     cliente,
     tipo,
@@ -289,7 +377,7 @@ export const MembershipService = {
           filename: `Comprobante-Membresia-${cliente.nombre_completo.replace(/\s/g, '_')}.pdf`,
           content: pdfBuffer,
         };
-        await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment);
+        await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment); 
       } catch (error) {
         console.error("❌ Error enviando comprobante por correo:", error.message);
       }
@@ -328,6 +416,12 @@ export const MembershipService = {
     }
   },
 
+  /**
+   * Orquesta el proceso completo de creación de una nueva membresía.
+   * Este es un método central que llama a múltiples otros servicios y modelos en secuencia.
+   * @param {object} membershipData - Datos del formulario de creación de membresía.
+   * @returns {Promise<object>} Un objeto con todos los detalles de la membresía recién creada.
+   */
   async createCompleteMembership(membershipData) {
     const {
       id_cliente,
@@ -349,7 +443,7 @@ export const MembershipService = {
       descuento
     );
 
-    // 1️⃣ Crear contrato en membresias
+    // 1️ Crear contrato en membresias
     const id_membresia = await this.createMembershipContract({
       id_cliente,
       id_tipo_membresia,
@@ -357,7 +451,7 @@ export const MembershipService = {
       fecha_fin: authoritative_end_date, // Usar valor calculado
     });
 
-    // 2️⃣ Activar membresía
+    // 2️ Activar membresía
     const id_activa = await this.activateMembership({
       id_cliente,
       id_membresia,
@@ -366,30 +460,30 @@ export const MembershipService = {
       precio_final: authoritative_price, // Usar valor calculado
     });
 
-    // 3️⃣ Registrar integrantes
+    // 3️ Registrar integrantes
     await this.addFamilyMembers(id_activa, integrantes);
 
-    // 4️⃣ Obtener datos para el QR
+    // 4️ Obtener datos para el QR
     const { cliente, tipo, integrantesDB } = await this.getMembershipDetails(
       id_cliente,
       id_tipo_membresia,
       id_activa
     );
 
-    // 5️⃣ Armar payload del QR
+    // 5️ Armar payload del QR
     const payloadQR = await this.generateQRPayload(id_activa);
 
-    // 6️⃣ Generar archivo PNG del QR
+    // 6️ Generar archivo PNG del QR
     const qrPath = await this.generateQRCode(
       payloadQR,
       id_activa,
       cliente.nombre_completo
     );
 
-    // 7️⃣ Actualizar la ruta del QR en la base de datos
+    // 7️ Actualizar la ruta del QR en la base de datos
     await MembershipModel.updateQRPath(id_activa, qrPath);
 
-    // 8️⃣ Registrar el pago
+    // 8️  Registrar el pago
     if (metodo_pago) {
       await MembershipModel.recordPayment({
         id_activa,
@@ -398,12 +492,12 @@ export const MembershipService = {
       });
     }
 
-    // 9️⃣ Obtener información completa para el modal
+    // 9️ Obtener información completa para el modal
     const membresiaCompleta = await MembershipModel.getMembresiaConPago(
       id_activa
     );
 
-    // 🔟 Enviar comprobantes
+    // 10️ Enviar comprobantes
     const precioEnLetras = this.convertirNumeroALetras(parseFloat(authoritative_price));
     await this.sendMembershipReceipts(
       cliente,
@@ -433,6 +527,14 @@ export const MembershipService = {
     };
   },
 
+  /**
+   * Calcula los detalles de una membresía (fecha de fin y precio final) basándose en el tipo y un descuento.
+   * Se usa para previsualizaciones y como fuente autoritativa de precios para evitar manipulación del cliente.
+   * @param {number} id_tipo_membresia - ID del tipo de membresía.
+   * @param {string} fecha_inicio - Fecha de inicio.
+   * @param {number} [descuento=0] - Porcentaje de descuento a aplicar.
+   * @returns {Promise<{precio_final: string, fecha_fin: string}>}
+   */
   async calculateMembershipDetails(id_tipo_membresia, fecha_inicio, descuento = 0) {
     if (!id_tipo_membresia || !fecha_inicio) {
       throw new Error("El tipo de membresía y la fecha de inicio son requeridos.");
@@ -466,58 +568,107 @@ export const MembershipService = {
     };
   },
 
-  async renewMembership(oldMembershipId, renewalData) {
+  /**
+   * Orquesta el proceso de renovación de una membresía.
+   * @param {number} oldMembershipId - El ID de la membresía que se está renovando.
+   * @param {object} renewalData - Los datos del formulario de renovación.
+   * @returns {Promise<void>}
+   */
+  async renewMembership(id_activa, renewalData) {
     const {
       id_cliente,
       nombre_completo,
       telefono,
       correo,
       id_tipo_membresia,
-      fecha_inicio,
-      fecha_fin,
       id_metodo_pago,
+      integrantes,
     } = renewalData;
 
-    // 1. Actualizar datos del cliente
+    // 1. Obtener la membresía existente para obtener el id_membresia (contrato)
+    const oldMembership = await MembershipModel.getMembresiaById(id_activa);
+    if (!oldMembership) {
+      throw new Error("La membresía que intenta renovar no existe.");
+    }
+
+    // 2. Recalcular precio y fecha de fin en el servidor para seguridad.
+    const { precio_final, fecha_fin } = await this.calculateMembershipDetails(
+      id_tipo_membresia,
+      renewalData.fecha_inicio,
+      0 // Descuento no aplica en renovación por ahora
+    );
+
+    // 3. Actualizar datos del cliente
     await MembershipModel.updateClient({
       id_cliente,
       nombre_completo,
       telefono,
       correo,
     });
-
-    // 2. Desactivar la membresía antigua
-    await MembershipModel.updateEstadoMembresia(oldMembershipId, 'Vencida');
-
-    // 3. Crear el nuevo contrato de membresía
-    const id_membresia = await MembershipModel.createMembershipContract({
-      id_cliente,
-      id_tipo_membresia,
-      fecha_inicio,
-      fecha_fin,
+    
+    // 4. Actualizar la membresía activa existente con los nuevos datos de renovación
+    await updateMembershipById(id_activa, {
+      membershipData: {
+        nombre_completo,
+        telefono,
+        correo,
+        estado: 'Activa', // Se reactiva la membresía
+        fecha_inicio: renewalData.fecha_inicio,
+        fecha_fin: fecha_fin, // Fecha calculada
+        id_tipo_membresia: id_tipo_membresia, // Pasar el nuevo tipo para actualizar el contrato
+        precio_final: precio_final, // Precio calculado
+      },
+      tipo: (await MembershipModel.getTipoMembresiaById(id_tipo_membresia)).nombre.includes('Familiar') ? 'Familiar' : 'Individual',
+      integrantes: integrantes || []
     });
 
-    // 4. Activar la nueva membresía
-    const tipoMembresia = await MembershipModel.getTipoMembresiaById(id_tipo_membresia);
-    const precio_final = tipoMembresia.precio;
-
-    const id_activa_nueva = await MembershipModel.activateMembership({
-      id_cliente,
-      id_membresia,
-      fecha_inicio,
-      fecha_fin,
-      precio_final,
-    });
-
-    // 5. Registrar el pago
+    // 5. Registrar el nuevo pago de la renovación
     await MembershipModel.recordPayment({
-      id_activa: id_activa_nueva,
+      id_activa: id_activa,
       id_metodo_pago,
       monto: precio_final,
     });
+
+    // 6. Regenerar el archivo QR (buena práctica, aunque el payload no cambie)
+    const payloadQR = await this.generateQRPayload(id_activa);
+    const qrPath = await this.generateQRCode(
+      payloadQR,
+      id_activa,
+      nombre_completo
+    );
+    await MembershipModel.updateQRPath(id_activa, qrPath);
+
+    // 7. Enviar el nuevo comprobante de renovación
+    const [tipoMembresia, integrantesDB, metodoPagoInfo] = await Promise.all([
+        MembershipModel.getTipoMembresiaById(id_tipo_membresia),
+        MembershipModel.getIntegrantesByActiva(id_activa),
+        MembershipModel.getMetodoPagoById(id_metodo_pago)
+    ]);
+
+    const precioEnLetras = this.convertirNumeroALetras(parseFloat(precio_final));
+    
+    await this.sendMembershipReceipts(
+      { nombre_completo, correo, telefono }, // Datos del cliente
+      tipoMembresia,                         // Datos del tipo de membresía
+      id_activa,
+      renewalData.fecha_inicio,
+      fecha_fin,                             // Fecha de fin calculada
+      integrantesDB,                         // Integrantes actualizados desde la BD
+      metodoPagoInfo.nombre,                 // Nombre del método de pago
+      precio_final,
+      precioEnLetras
+    );
+
+    // Devolver datos para una posible respuesta de la API
+    return { id_activa, qr_path: qrPath };
   },
 
-  // Función para convertir número a palabras (básica)
+  /**
+   * Convierte un número a su representación en palabras en español (versión básica).
+   * @param {number} numero - El número a convertir.
+   * @returns {string} El número en palabras.
+   * @example convertirNumeroALetras(125) // "ciento veinticinco pesos"
+   */
   convertirNumeroALetras(numero) {
     const unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
     const decenas = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
@@ -549,6 +700,12 @@ export const MembershipService = {
     return resultado + ' pesos';
   },
 
+  /**
+   * Obtiene los datos para la vista previa de un reporte de ingresos.
+   * @param {string} period - El período del reporte.
+   * @param {string} date - La fecha del reporte.
+   * @returns {Promise<object>} Los datos de ingresos o un mensaje de que no hay datos.
+   */
   async getReportPreviewData(period, date) {
     const validationError = _validateReportParams(period, date);
     if (validationError) {
@@ -573,6 +730,12 @@ export const MembershipService = {
     return incomeData;
   },
 
+  /**
+   * Genera un reporte de ingresos en formato PDF.
+   * @param {string} period - El período del reporte.
+   * @param {string} date - La fecha del reporte.
+   * @returns {Promise<{pdf: Buffer, filename: string}>} El buffer del PDF y el nombre de archivo sugerido.
+   */
   async generateReportPDF(period, date) {
     const validationError = _validateReportParams(period, date);
     if (validationError) {
@@ -637,77 +800,49 @@ export const MembershipService = {
     return { pdf, filename };
   },
 
+  /**
+   * Obtiene y formatea los datos para la página de listado de membresías.
+   * Aplica filtros, búsqueda y añade lógica de presentación (clases CSS, textos de estado).
+   * @param {object} queryParams - Parámetros de la URL para filtrar y buscar.
+   * @param {string} [userRole='Recepcionista'] - El rol del usuario actual para determinar permisos.
+   * @returns {Promise<{memberships: Array<object>, estadisticas: object}>}
+   */
   async getMembershipListData(queryParams, userRole = 'Recepcionista') {
-    const { search, type, status } = queryParams;
     const isAdmin = userRole === 'Administrador';
 
-    // 1. Obtener estadísticas
+    // 1. Obtener estadísticas (puede que necesitemos ajustar esto más adelante si el rendimiento es un problema)
     const estadisticas = await modelList.getEstadisticasMembresias();
 
-    // 2. Obtener la lista de membresías según los filtros
-    let membresias;
-    if (search) {
-      membresias = await modelList.buscarMembresias(search);
-    } else if (type) {
-      membresias = await modelList.getMembresiasPorTipo(type);
-    } else if (status) {
-      membresias = await modelList.getMembresiasPorEstado(status);
-    } else {
-      membresias = await modelList.getMembresiasActivas();
-    }
+    // 2. Obtener la lista de membresías usando la nueva función centralizada
+    const membresias = await modelList.getAllMembresias(queryParams);
 
-    // 3. Formatear los datos (lógica de negocio y presentación)
+    // 3. Formatear los datos con la nueva lógica de estado
     const membresiasFormateadas = membresias.map((membresia) => {
       const diasRestantes = membresia.dias_restantes;
-      const estadoDB = membresia.estado;
+      const diasParaIniciar = membresia.dias_para_iniciar;
 
       let statusClass = '';
       let statusText = '';
-      let statusIcon = '';
 
-      if (estadoDB === 'Activa' && diasRestantes > 0) {
-        if (diasRestantes <= 7) {
-          statusClass = 'bg-amber-100 text-amber-800 border-amber-200';
-          statusText = `Por vencer (${diasRestantes} días)`;
-          statusIcon = 'fa-exclamation-triangle';
-        } else if (diasRestantes <= 20) {
-          statusClass = 'bg-green-100 text-green-800 border-green-200';
-          statusText = `Activa (${diasRestantes} días)`;
-          statusIcon = 'fa-check-circle';
-        } else {
-          statusClass = 'bg-emerald-100 text-emerald-800 border-emerald-200';
-          statusText = `Activa (${diasRestantes} días)`;
-          statusIcon = 'fa-check-circle';
-        }
-      } else if (estadoDB === 'Inactiva') {
-        statusClass = 'bg-gray-100 text-gray-800 border-gray-200';
-        statusText = 'Inactiva';
-        statusIcon = 'fa-ban';
-      } else { // Vencida
-        statusClass = 'bg-red-100 text-red-800 border-red-200';
+      if (diasParaIniciar > 0) {
+        statusClass = 'bg-blue-100 text-blue-800';
+        statusText = 'Programada';
+      } else if (diasRestantes <= 0) {
+        statusClass = 'bg-red-100 text-red-800';
         statusText = 'Vencida';
-        statusIcon = 'fa-times-circle';
+      } else if (diasRestantes <= 8) {
+        statusClass = 'bg-yellow-100 text-yellow-800';
+        statusText = 'Por Vencer';
+      } else {
+        statusClass = 'bg-green-100 text-green-800';
+        statusText = 'Activa';
       }
 
       return {
-        id: membresia.id_activa,
-        id_activa: membresia.id_activa,
-        fullName: membresia.nombre_completo,
-        phone: membresia.telefono,
-        email: membresia.correo,
-        type: membresia.tipo,
-        startDate: membresia.fecha_inicio,
-        endDate: membresia.fecha_fin,
-        status: membresia.estado,
-        daysUntilExpiry: diasRestantes,
-        members: membresia.total_integrantes + 1,
-        amount: membresia.precio_final,
-        isFamily: membresia.tipo === "Familiar",
-        integrantes: membresia.integrantes || [],
-        // Nuevos campos para la vista
-        statusClass: `status-badge ${statusClass} text-xs`,
+        ...membresia, // Incluir todos los campos originales
+        statusClass: statusClass,
         statusText: statusText,
-        statusIcon: `fas ${statusIcon}`,
+        isFamily: membresia.tipo_membresia === "Familiar", // <-- AÑADIR ESTA LÍNEA
         canRenew: isAdmin || diasRestantes <= 0,
       };
     });
@@ -718,30 +853,39 @@ export const MembershipService = {
     };
   },
 
-  async getFormattedMembresiasAPI(queryParams) {
-    const { memberships } = await this.getMembershipListData(queryParams);
+  /**
+   * Obtiene la lista de membresías formateada específicamente para una respuesta de API.
+   * @param {object} queryParams - Parámetros de la URL para filtrar y buscar.
+   * @returns {Promise<Array<object>>} La lista de membresías formateada.
+   */
+  async getFormattedMembresiasAPI(queryParams, userRole = 'Recepcionista') {
+    const { memberships } = await this.getMembershipListData(queryParams, userRole);    
+    const isAdmin = userRole === 'Administrador';
 
-    // Formato adicional específico para la API (ej. fechas)
     return memberships.map(membresia => {
-      const formatDate = (dateString) => {
-        if (!dateString) return "";
-        const date = new Date(dateString);
-        return date.toLocaleDateString("es-ES", {
-          year: "numeric", month: "short", day: "numeric",
-        });
-      };
-      return {
-        ...membresia,
-        startDate: formatDate(membresia.startDate),
-        endDate: formatDate(membresia.endDate),
-      };
+        return {
+            ...membresia,
+            isFamily: membresia.tipo_membresia === "Familiar",
+            canRenew: isAdmin || membresia.dias_restantes <= 0,
+            isAdmin: isAdmin
+        };
     });
   },
 
+  /**
+   * Obtiene las estadísticas de las membresías.
+   * @returns {Promise<object>} Un objeto con las estadísticas.
+   */
   async getEstadisticas() {
     return await modelList.getEstadisticasMembresias();
   },
 
+  /**
+   * Obtiene los integrantes de una membresía específica.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<Array<object>>} Un array con los integrantes.
+   * @throws {Error} Si `id_activa` no se proporciona.
+   */
   async getIntegrantes(id_activa) {
     if (!id_activa) {
       const error = new Error("El parámetro id_activa es requerido");
@@ -751,6 +895,29 @@ export const MembershipService = {
     return await modelList.getIntegrantesByMembresia(id_activa);
   },
 
+  /**
+   * Obtiene el historial de pagos de una membresía.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<Array<object>>} Un array con los pagos.
+   * @throws {Error} Si `id_activa` no se proporciona.
+   */
+  async getPaymentsHistory(id_activa) {
+    if (!id_activa) {
+      const error = new Error("El parámetro id_activa es requerido");
+      error.statusCode = 400;
+      throw error;
+    }
+    // Reutilizamos el método del modelo que ya existe.
+    return await modelList.getPagosMembresia(id_activa);
+  },
+
+
+  /**
+   * Obtiene los detalles completos de una membresía para una respuesta de API.
+   * @param {number} id - El ID de la membresía activa.
+   * @returns {Promise<object>} El objeto con los detalles de la membresía.
+   * @throws {Error} Si el ID no se proporciona o la membresía no se encuentra.
+   */
   async getMembershipDetailsForAPI(id) {
     if (!id) {
       const error = new Error("El parámetro id es requerido");
@@ -766,6 +933,12 @@ export const MembershipService = {
     return details;
   },
 
+  /**
+   * Orquesta la eliminación de una membresía llamando al modelo transaccional.
+   * @param {number} id - El ID de la membresía a eliminar.
+   * @returns {Promise<object>} El resultado de la operación de la base de datos.
+   * @throws {Error} Si el ID no se proporciona o la membresía no se encuentra.
+   */
   async deleteMembership(id) {
     if (!id) {
       const error = new Error("El ID de la membresía es requerido.");
@@ -781,6 +954,12 @@ export const MembershipService = {
     return result;
   },
 
+  /**
+   * Obtiene los datos de una membresía necesarios para poblar un formulario de edición.
+   * @param {number} id - El ID de la membresía.
+   * @returns {Promise<object>} El objeto de la membresía.
+   * @throws {Error} Si el ID no se proporciona o la membresía no se encuentra.
+   */
   async getMembershipForEdit(id) {
     if (!id) {
       const error = new Error("El ID de la membresía es requerido.");
@@ -796,6 +975,12 @@ export const MembershipService = {
     return membresia;
   },
 
+  /**
+   * Orquesta la actualización de una membresía llamando al modelo transaccional.
+   * @param {number} id - El ID de la membresía a actualizar.
+   * @param {object} data - Los nuevos datos de la membresía desde el formulario.
+   * @returns {Promise<object>} El resultado de la operación de la base de datos.
+   */
   async updateCompleteMembership(id, data) {
     const {
       nombre_completo,
@@ -831,6 +1016,12 @@ export const MembershipService = {
     return await updateMembershipById(id, updateData);
   },
 
+  /**
+   * Obtiene la ruta del archivo QR para una membresía específica.
+   * @param {number} id_activa - El ID de la membresía activa.
+   * @returns {Promise<string>} La ruta del archivo QR.
+   * @throws {Error} Si el ID no se proporciona o el QR no se encuentra.
+   */
   async getQRPath(id_activa) {
     if (!id_activa) {
       const error = new Error("El ID de la membresía es requerido.");
@@ -846,6 +1037,12 @@ export const MembershipService = {
     return membresia.qr_path;
   },
 
+  /**
+   * Obtiene los detalles de un tipo de membresía por su ID.
+   * @param {number} id - El ID del tipo de membresía.
+   * @returns {Promise<object>} El objeto del tipo de membresía.
+   * @throws {Error} Si el ID no se proporciona o el tipo no se encuentra.
+   */
   async getMembershipTypeById(id) {
     if (!id) {
       const error = new Error("El ID del tipo de membresía es requerido.");
@@ -861,6 +1058,10 @@ export const MembershipService = {
     return tipo;
   },
 
+  /**
+   * Obtiene todos los datos de catálogos necesarios para renderizar la página de creación.
+   * @returns {Promise<{tiposMembresia: Array, tiposPago: Array, precioFamiliar: number}>}
+   */
   async getDataForCreatePage() {
     const [tiposMembresia, tiposPago, precioFamiliar] = await Promise.all([
       MembershipModel.getTiposMembresia(),
@@ -870,6 +1071,11 @@ export const MembershipService = {
     return { tiposMembresia, tiposPago, precioFamiliar };
   },
 
+  /**
+   * Obtiene los datos necesarios para renderizar la página de renovación.
+   * @param {number} id - El ID de la membresía a renovar.
+   * @returns {Promise<{membresia: object, tiposMembresia: Array, tiposPago: Array}>}
+   */
   async getDataForRenewPage(id) {
     const [membresia, tiposMembresia, tiposPago] = await Promise.all([
       this.getMembershipForEdit(id), // Reutiliza el método existente que ya tiene validación
@@ -879,6 +1085,11 @@ export const MembershipService = {
     return { membresia, tiposMembresia, tiposPago };
   },
 
+  /**
+   * Obtiene los datos necesarios para renderizar la página de edición.
+   * @param {number} id - El ID de la membresía a editar.
+   * @returns {Promise<{membresia: object, tiposMembresia: Array}>}
+   */
   async getDataForEditPage(id) {
     const [membresia, tiposMembresia] = await Promise.all([
       this.getMembershipForEdit(id), // Reutiliza el método existente

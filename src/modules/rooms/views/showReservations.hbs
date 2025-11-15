@@ -1,9 +1,7 @@
-{{>navbar}}
-<link rel="stylesheet" href="/css/all.min.css">
-
 <div class="max-w-7xl mx-auto px-3 sm:px-4 pt-24 sm:pt-28 pb-24">
   {{>buttons}}
 
+  {{#if allReservationes}}
   <!-- Filtros -->
   <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -102,18 +100,21 @@
             </td>
             <td class="py-2.5 px-2">
               <div class="flex items-center justify-center gap-1 flex-wrap">
+                {{#if (eq @root.user.role 'Administrador')}}
                 <a href="/rooms/editar/{{this.id_reservacion}}"
                    class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-[0.7rem] rounded shadow-sm transition-colors"
                    title="Editar">
                   <i class="fa-solid fa-pen-to-square"></i>
                   <span class="hidden xl:inline">Editar</span>
                 </a>
+                {{/if}}
                 <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}"
                    class="inline-flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-[0.7rem] rounded shadow-sm transition-colors"
                    title="Confirmar">
                   <i class="fa-solid fa-check"></i>
                   <span class="hidden xl:inline">Confirmar</span>
                 </a>
+                {{#if (eq @root.user.role 'Administrador')}}
                 <button type="button" 
                         onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
                         class="inline-flex items-center gap-1 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-[0.7rem] rounded shadow-sm transition-colors"
@@ -121,6 +122,7 @@
                   <i class="fa-solid fa-trash-can"></i>
                   <span class="hidden xl:inline">Eliminar</span>
                 </button>
+                {{/if}}
               </div>
             </td>
           </tr>
@@ -170,20 +172,24 @@
           </div>
         </div>
         <div class="pt-2 border-t border-gray-100 flex flex-col xs:flex-row flex-wrap gap-2">
+          {{#if (eq @root.user.role 'Administrador')}}
           <a href="/rooms/editar/{{this.id_reservacion}}" class="flex-1 xs:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm shadow-sm transition-colors">
             <i class="fa-solid fa-pen-to-square"></i>
             <span>Editar</span>
           </a>
+          {{/if}}
           <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}" class="flex-1 xs:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm shadow-sm transition-colors">
             <i class="fa-solid fa-check"></i>
             <span>Confirmar</span>
           </a>
+          {{#if (eq @root.user.role 'Administrador')}}
           <button type="button" 
                   onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
                   class="flex-1 xs:flex-none w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
             <i class="fa-solid fa-trash-can"></i>
             <span>Eliminar</span>
           </button>
+          {{/if}}
         </div>
       </div>
     </article>
@@ -218,6 +224,18 @@
     </form>
   </div>
 </div>
+
+  {{else}}
+    <div class="text-center py-16">
+      <i class="fa-solid fa-calendar-xmark text-5xl text-slate-400"></i>
+      <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron reservaciones</h2>
+      <p class="mt-2 text-sm text-slate-500">Actualmente no hay reservaciones registradas.</p>
+      <a href="/rooms" class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Volver a Habitaciones</span>
+      </a>
+    </div>
+  {{/if}}
 
 <script>
   // Funciones para el modal de eliminación
@@ -542,5 +560,78 @@
     
     // Inicializar filtros
     applyFilters();
+    
+    // Validar botones de confirmar según fechas
+    validateConfirmButtons();
   });
+
+  // Función para validar y habilitar/deshabilitar botones de confirmar
+  function validateConfirmButtons() {
+    const now = new Date();
+    const confirmButtons = document.querySelectorAll('a[href*="/rooms/confirmReservations/renta/"]');
+    
+    confirmButtons.forEach(button => {
+      // Buscar el contenedor padre (tr para tabla, article para cards)
+      const row = button.closest('tr');
+      const card = button.closest('article');
+      const container = row || card;
+      
+      if (!container) return;
+      
+      const fechaIngresoStr = container.dataset.ingreso;
+      const fechaSalidaStr = container.dataset.salida;
+      
+      if (!fechaIngresoStr || !fechaSalidaStr) return;
+      
+      try {
+        // Parsear fechas desde el formato ISO que viene del servidor
+        const fechaIngreso = new Date(fechaIngresoStr);
+        const fechaSalida = new Date(fechaSalidaStr);
+        
+        // Calcular 30 minutos antes de la fecha de ingreso
+        const fechaHabilitacion = new Date(fechaIngreso.getTime() - (30 * 60 * 1000));
+        
+        // Verificar si estamos en el rango válido
+        const enRangoValido = now >= fechaHabilitacion && now <= fechaSalida;
+        
+        if (enRangoValido) {
+          // Habilitar botón
+          button.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          button.classList.add('hover:bg-green-700');
+          button.title = 'Confirmar reservación';
+          
+          // Remover indicador visual de deshabilitado si existe
+          const icon = button.querySelector('i');
+          if (icon) {
+            icon.classList.remove('opacity-60');
+          }
+        } else {
+          // Deshabilitar botón
+          button.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          button.classList.remove('hover:bg-green-700');
+          
+          // Agregar indicador visual de deshabilitado
+          const icon = button.querySelector('i');
+          if (icon) {
+            icon.classList.add('opacity-60');
+          }
+          
+          if (now < fechaHabilitacion) {
+            const tiempoRestante = Math.ceil((fechaHabilitacion - now) / (1000 * 60));
+            button.title = `Disponible en ${tiempoRestante} minutos (30 min antes del ingreso)`;
+          } else {
+            button.title = 'Reservación expirada - No se puede confirmar';
+          }
+        }
+      } catch (error) {
+        console.error('Error al validar fechas para botón:', error);
+        // En caso de error, deshabilitar por seguridad
+        button.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        button.title = 'Error al validar fechas';
+      }
+    });
+  }
+
+  // Actualizar validación cada minuto
+  setInterval(validateConfirmButtons, 60000);
 </script>

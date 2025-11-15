@@ -1,22 +1,18 @@
-import { makeWASocket, DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys';
-import QRCode from 'qrcode';
-import fs from 'fs';
-import path from 'path';
+// WhatsApp Service COMPLETAMENTE DESHABILITADO
+// Este archivo reemplaza temporalmente el servicio real para evitar inicialización
 
-class WhatsAppService {
+console.log('⚠️ WhatsApp Service DESHABILITADO - No se inicializará');
+
+class DisabledWhatsAppService {
   constructor() {
-    this.socket = null;
     this.isConnected = false;
     this.qrCode = null;
-    this.sessionPath = './whatsapp_session';
     this.userInfo = null;
-    this.qrRetryCount = 0;
-    this.maxQrRetries = 3;
     this.isInitializing = false;
-    this.onReadyCallbacks = [];
+    this.socket = null;
     
-    // Inicializar conexión después de un delay
-    setTimeout(() => this.initializeConnection(), 3000);
+    // NO inicializar nada automáticamente
+    console.log('🚫 WhatsApp Service: Inicialización omitida');
   }
 
   /**
@@ -390,7 +386,7 @@ ${estadoLinea}
   }
 }
 
-// Crear instancia única (singleton)
-const whatsappService = new WhatsAppService();
+// Crear instancia SIN inicialización automática
+const disabledWhatsAppService = new DisabledWhatsAppService();
 
-export default whatsappService;
+export default disabledWhatsAppService;

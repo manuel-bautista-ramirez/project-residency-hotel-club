@@ -1,9 +1,7 @@
-{{>navbar}}
-<link rel="stylesheet" href="/css/all.min.css">
-
 <div class="max-w-7xl mx-auto px-3 sm:px-4 pt-24 sm:pt-28 pb-24">
   {{>buttons}}
 
+  {{#if allRentas}}
   <!-- Filtros -->
   <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -71,6 +69,7 @@
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-door-closed text-[0.9rem]"></i> Habitación</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-day text-[0.9rem]"></i> Ingreso</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-check text-[0.9rem]"></i> Salida</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-clock text-[0.9rem]"></i> Estado</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-credit-card text-[0.9rem]"></i> Tipo de pago</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-coins text-[0.9rem]"></i> Monto</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-file-lines text-[0.9rem]"></i> Monto en letras</span></th>
@@ -92,15 +91,44 @@
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.numero_habitacion}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_ingreso}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_salida}}</td>
+          <td class="py-2 px-3 sm:py-3 sm:px-4">
+            {{#if (eq this.estado_tiempo 'corriente')}}
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                <i class="fa-solid fa-clock text-green-600"></i>
+                Corriente
+              </span>
+              <div class="text-xs text-gray-500 mt-1">{{this.tiempo_restante}}</div>
+            {{else}}
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                <i class="fa-solid fa-exclamation-triangle text-red-600"></i>
+                Expirada
+              </span>
+              <div class="text-xs text-gray-500 mt-1">{{this.tiempo_restante}}</div>
+            {{/if}}
+          </td>
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.tipo_pago}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.monto}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.monto_letras}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">
             <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
-              <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition">
+              {{#if (eq this.estado_tiempo 'corriente')}}
+                <button type="button" onclick="openDesocuparModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition w-24 sm:w-28">
+                  <i class="fa-solid fa-door-open"></i>
+                  <span>Desocupar</span>
+                </button>
+              {{else}}
+                <button type="button" disabled class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gray-400 text-gray-600 text-xs sm:text-sm rounded-lg shadow-sm cursor-not-allowed w-24 sm:w-28" title="No se puede desocupar una renta expirada">
+                  <i class="fa-solid fa-ban"></i>
+                  <span class="hidden sm:inline">Renta Expirada</span>
+                  <span class="sm:hidden">Expirada</span>
+                </button>
+              {{/if}}
+              {{#if (eq @root.user.role 'Administrador')}}
+              <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition w-24 sm:w-28">
                 <i class="fa-solid fa-trash-can"></i>
                 <span>Eliminar</span>
               </button>
+              {{/if}}
             </div>
           </td>
         </tr>
@@ -153,11 +181,45 @@
             <div class="capitalize">{{this.monto_letras}}</div>
           </div>
         </div>
-        <div class="pt-2">
-          <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+        <!-- Estado de la renta -->
+        <div class="border-t pt-3">
+          <div class="text-gray-500 text-xs inline-flex items-center gap-1.5 mb-2"><i class="fa-solid fa-clock"></i> Estado de la renta</div>
+          {{#if (eq this.estado_tiempo 'corriente')}}
+            <div class="inline-flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg w-full">
+              <i class="fa-solid fa-clock text-green-600"></i>
+              <div>
+                <div class="font-semibold">Corriente</div>
+                <div class="text-xs text-green-600">{{this.tiempo_restante}}</div>
+              </div>
+            </div>
+          {{else}}
+            <div class="inline-flex items-center gap-2 px-3 py-2 bg-red-100 text-red-800 text-sm font-medium rounded-lg w-full">
+              <i class="fa-solid fa-exclamation-triangle text-red-600"></i>
+              <div>
+                <div class="font-semibold">Expirada</div>
+                <div class="text-xs text-red-600">{{this.tiempo_restante}}</div>
+              </div>
+            </div>
+          {{/if}}
+        </div>
+        <div class="pt-2 flex gap-2">
+          {{#if (eq this.estado_tiempo 'corriente')}}
+            <button type="button" onclick="openDesocuparModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+              <i class="fa-solid fa-door-open"></i>
+              <span>Desocupar</span>
+            </button>
+          {{else}}
+            <button type="button" disabled class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-400 text-gray-600 rounded-lg text-sm shadow-sm cursor-not-allowed" title="No se puede desocupar una renta expirada">
+              <i class="fa-solid fa-ban"></i>
+              <span>Renta Expirada</span>
+            </button>
+          {{/if}}
+          {{#if (eq @root.user.role 'Administrador')}}
+          <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
             <i class="fa-solid fa-trash-can"></i>
             <span>Eliminar</span>
           </button>
+          {{/if}}
         </div>
       </div>
     </article>
@@ -181,17 +243,62 @@
     <form id="deleteForm" method="POST" class="flex flex-col gap-3 w-full">
       <div class="flex flex-col sm:flex-row justify-end gap-2">
         <button type="button" onclick="closeDeleteModal()"
-                class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-auto transition-colors">
+                class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
           <i class="fa-solid fa-xmark"></i> Cancelar
         </button>
         <button type="submit"
-                class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold w-full sm:w-auto transition-colors">
+                class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
           <i class="fa-solid fa-trash-can"></i> Eliminar
         </button>
       </div>
     </form>
   </div>
 </div>
+
+<!-- Modal para desocupar renta -->
+<div id="desocuparModal" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
+  <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
+    <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+      <i class="fa-solid fa-door-open text-green-600 text-2xl"></i>
+    </div>
+    <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Desocupar habitación?</h2>
+    <p class="mb-4 text-gray-600 text-sm sm:text-base text-center">
+      ¿Estás seguro de marcar como <span class="font-bold text-green-600">DESOCUPADA</span> la habitación <span id="desocuparRoomNumber" class="font-bold text-blue-600"></span>?
+    </p>
+    <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+      <p class="text-sm text-blue-800">
+        <i class="fa-solid fa-user text-blue-600"></i> <strong>Cliente:</strong> <span id="desocuparClientName" class="font-medium"></span>
+      </p>
+    </div>
+    <p class="mb-6 text-gray-600 text-xs sm:text-sm text-center">
+      <i class="fa-solid fa-info-circle text-blue-500"></i> La renta se marcará como finalizada y la habitación pasará a estado <strong>"LIMPIEZA"</strong>. El registro se mantendrá para reportes.
+    </p>
+    <form id="desocuparForm" method="POST" class="flex flex-col gap-3 w-full">
+      <div class="flex flex-col sm:flex-row justify-end gap-2">
+        <button type="button" onclick="closeDesocuparModal()"
+                class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
+          <i class="fa-solid fa-xmark"></i> Cancelar
+        </button>
+        <button type="submit"
+                class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
+          <i class="fa-solid fa-door-open"></i> Desocupar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  {{else}}
+    <div class="text-center py-16">
+      <i class="fa-solid fa-file-invoice-dollar text-5xl text-slate-400"></i>
+      <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron rentas</h2>
+      <p class="mt-2 text-sm text-slate-500">Actualmente no hay rentas registradas.</p>
+      <a href="/rooms" class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Volver a Habitaciones</span>
+      </a>
+    </div>
+  {{/if}}
 
 <script>
   // Funciones para el modal de eliminación
@@ -202,7 +309,7 @@
     const clientNameSpan = document.getElementById('deleteClientName');
     
     if (modal && form) {
-      form.action = `/rentas/eliminar/${rentId}`;
+      form.action = `/rooms/rentas/delete/${rentId}`;
       roomNumberSpan.textContent = roomNumber;
       clientNameSpan.textContent = clientName;
       modal.classList.remove('hidden');
@@ -217,6 +324,44 @@
       modal.classList.remove('flex');
     }
   }
+
+  // Funciones para el modal de desocupar
+  function openDesocuparModal(rentId, roomNumber, clientName) {
+    const modal = document.getElementById('desocuparModal');
+    const form = document.getElementById('desocuparForm');
+    const roomNumberSpan = document.getElementById('desocuparRoomNumber');
+    const clientNameSpan = document.getElementById('desocuparClientName');
+    
+    if (modal && form) {
+      form.action = `/rooms/desocupar/${rentId}`;
+      roomNumberSpan.textContent = roomNumber;
+      clientNameSpan.textContent = clientName;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  }
+
+  function closeDesocuparModal() {
+    const modal = document.getElementById('desocuparModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+
+  // Cerrar modales al hacer clic fuera de ellos
+  document.addEventListener('click', function(event) {
+    const deleteModal = document.getElementById('deleteModal');
+    const desocuparModal = document.getElementById('desocuparModal');
+    
+    if (deleteModal && event.target === deleteModal) {
+      closeDeleteModal();
+    }
+    
+    if (desocuparModal && event.target === desocuparModal) {
+      closeDesocuparModal();
+    }
+  });
 
   // Código principal
   document.addEventListener('DOMContentLoaded', () => {
@@ -561,4 +706,5 @@
     const prefersTable = window.matchMedia('(min-width: 1024px)').matches; // lg
     setView(prefersTable ? 'table' : 'cards');
   });
+
 </script>

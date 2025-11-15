@@ -1,31 +1,31 @@
 import express from "express";
-import { roleMiddleware, authMiddleware } from "../middlewares/accessDenied.js";
+import { roleMiddleware, authMiddleware } from "../../../middlewares/validation/accessDenied.js";
 import {
   loginUser,
-  sendPasswordResetLink,
-  resetPassword,
-  renderResetPasswordForm
+  sendPasswordResetCode,
+  verifyResetCode,
+  resetPasswordWithCode
 } from "../controllers/authControllerUsers.js";
 
 const router = express.Router();
 
 // =====================
-// Rutas de recuperación (PÚBLICAS, sin authMiddleware)
+// Rutas de recuperación por EMAIL (PÚBLICAS, sin authMiddleware)
 // =====================
 
-// Formulario para pedir recuperación
+// Formulario para pedir recuperación por email
 router.get("/password-reset/request", (req, res) =>
-  res.render("requestPassword")
+  res.render("requestPasswordEmail")
 );
 
-// Generar enlace de recuperación
-router.post("/password-reset/request", sendPasswordResetLink);
+// Enviar código de recuperación por email
+router.post("/password-reset/request", sendPasswordResetCode);
 
-// Mostrar formulario de reset (popup con token)
-router.get("/password-reset/reset/:token", renderResetPasswordForm);
+// Verificar código de recuperación
+router.post("/password-reset/verify-code", verifyResetCode);
 
-// Procesar nueva contraseña
-router.post("/password-reset/reset/:token", resetPassword);
+// Procesar nueva contraseña con código
+router.post("/password-reset/reset", resetPasswordWithCode);
 
 // =====================
 // Rutas de login/logout (PÚBLICAS)
@@ -35,10 +35,20 @@ router.get("/login", (req, res) => {
   if (req.session.user) {
     return res.redirect('/rooms');
   }
+  
+  // Verificar si hay mensajes especiales
+  let message = null;
+  if (req.query.message === 'account_deleted') {
+    message = 'Tu cuenta ha sido eliminada por un administrador.';
+  } else if (req.query.message === 'admin_revoked') {
+    message = 'Tus privilegios de administrador han sido revocados.';
+  }
+  
   // Si no, mostrar la página de login
   res.render("login", {
     layout: "main",
-    title: "Inicio"
+    title: "Inicio",
+    message
   });
 });
 
@@ -67,20 +77,17 @@ router.get("/home", authMiddleware, (req, res) => {
     title: "Home",
     showFooter: true,
     ...user,
+    showNavbar: true
   });
 });
 
-router.get("/services", roleMiddleware("Administrador"), (req, res) => {
-  res.send("<h1>Panel de Servicios - Gestión de comunicaciones con clientes (correo, WhatsApp)</h1>");
-});
-
-router.get("/admin", roleMiddleware("Administrador"), (req, res) => {
-  res.send(
-    "<h1>Panel de Administración</h1>");
-});
-router.get("/services", roleMiddleware("Administrador"), (req, res) => {
-  res.send("<h1>Panel de Servicios - Gestión de comunicaciones con clientes (correo, WhatsApp)</h1>");
-});
-
+// Ruta /admin movida al módulo admin para funcionalidad completa
+// router.get("/admin", authMiddleware, (req, res) => {
+//   res.render("homeAdmintration", {
+//     title: "Administracion",
+//     showFooter: true,
+//     showNavbar: true
+//   });
+// });
 
 export default router;
