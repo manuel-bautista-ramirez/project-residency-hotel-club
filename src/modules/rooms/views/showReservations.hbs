@@ -115,15 +115,12 @@
                   <i class="fa-solid fa-check"></i>
                   <span class="hidden xl:inline">Confirmar</span>
                 </a>
-
-                {{!-- Badge visual si enganche ya se considera perdido ... --}}
                 {{#if this.enganche_perdido}}
                   <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-[0.7rem] rounded">
                     <i class="fa-solid fa-hand-holding-dollar"></i>
                     <span>Enganche retenido</span>
                   </span>
                 {{/if}}
-
                 {{#if (eq @root.user.role 'Administrador')}}
                 <button type="button"
                         onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
@@ -192,6 +189,12 @@
             <i class="fa-solid fa-check"></i>
             <span>Confirmar</span>
           </a>
+          {{#if this.enganche_perdido}}
+            <span class="flex-1 xs:flex-none w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm shadow-sm">
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+              <span>Enganche retenido</span>
+            </span>
+          {{/if}}
           {{#if (eq @root.user.role 'Administrador')}}
           <button type="button"
                   onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
