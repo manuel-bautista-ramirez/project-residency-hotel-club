@@ -12,148 +12,91 @@
     <!-- Logo -->
     <a
       href="/home"
-      class="inline-flex items-center gap-1.5 text-xs sm:text-sm md:text-base font-bold leading-tight tracking-tight hover:text-blue-200 transition"
+      class="inline-flex items-center justify-center gap-1.5 text-2xl md:text-3xl font-bold leading-tight tracking-tight hover:text-blue-200 transition"
+      aria-label="Inicio"
+      title="Inicio"
+      style="min-width:2.5rem;"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        class="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 opacity-90"
-      >
-        <path
-          d="M3 10.5l9-6 9 6V19a2 2 0 01-2 2h-4.5v-5h-5V21H5a 2 2 0 01-2-2v-8.5z"
-        />
-      </svg>
-      <span>Hotel Club</span>
+      <i class="fa-solid fa-hotel text-yellow-300 drop-shadow-lg" style="font-size:2rem;"></i>
     </a>
-
     <!-- Enlaces desktop -->
     <nav aria-label="Principal" class="hidden md:block">
       <ul
-        class="flex items-center gap-1.5 md:gap-2 lg:gap-3 flex-nowrap whitespace-nowrap overflow-hidden"
+        class="flex items-center gap-3 md:gap-4 lg:gap-6 flex-nowrap whitespace-nowrap overflow-hidden"
       >
         {{#if (eq user.role "Administrador")}}
-          <li>
+          <li class="relative group">
             <a
               href="/admin"
-              class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+              class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+              title="Panel de Administración"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
-              >
-                <path
-                  d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"
-                />
-              </svg>
-              <span>Panel de Administración</span>
+              <i class="fa-solid fa-sliders fa-lg text-purple-400 group-hover:text-purple-200 transition"></i>
             </a>
+            <span class="navbar-tooltip">
+              <span class="font-bold text-purple-300 text-sm">Panel de Administración</span>
+            </span>
           </li>
         {{/if}}
-        <li>
+        <li class="relative group">
           <a
             href="/entries"
-            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            title="Entradas"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
-            >
-              <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd"/>
-            </svg>
-            <span>Entradas</span>
+            <i class="fa-solid fa-door-open fa-lg text-blue-200 group-hover:text-blue-100 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-blue-200 text-sm">Entradas</span>
+          </span>
         </li>
-        <li>
+        <li class="relative group">
           <a
             href="/rooms"
-            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            title="Habitaciones"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
-            >
-              <path
-                d="M21 10.5V21h-2.25v-4.5H5.25V21H3V10.5L12 4l9 6.5zM7.5 12.75h9v-2.062L12 7.75l-4.5 2.938v2.062z"
-              />
-            </svg>
-            <span>Habitaciones</span>
+            <i class="fa-solid fa-bed fa-lg text-cyan-300 group-hover:text-cyan-100 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-cyan-200 text-sm">Habitaciones</span>
+          </span>
         </li>
-        <li>
-          <a
-            href="/rooms/calendario"
-            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
-            >
-              <path d="M12.75 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM7.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM8.25 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM9.75 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM10.5 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM12.75 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM14.25 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 13.5a.75.75 0 100-1.5.75.75 0 000 1.5z"/>
-              <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clip-rule="evenodd"/>
-            </svg>
-            <span>Calendario</span>
-          </a>
-        </li>
-        <li>
+        <li class="relative group">
           <a
             href="/memberships"
-            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            title="Membresías"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
-            >
-              <path
-                d="M3.75 5.25A2.25 2.25 0 016 3h12a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 21H6a2.25 2.25 0 01-2.25-2.25V5.25zM6 6.75h12v3H6v-3zm0 4.5h7.5V18H6v-6.75z"
-              />
-            </svg>
-            <span>Membresías</span>
+            <i class="fa-solid fa-id-card fa-lg text-yellow-300 group-hover:text-yellow-100 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-yellow-200 text-sm">Membresías</span>
+          </span>
         </li>
-        <li>
+        <li class="relative group">
           <a
             href="/store"
-            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            title="Tienda"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
-            >
-              <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z"/>
-            </svg>
-            <span>Tienda</span>
+            <i class="fa-solid fa-store fa-lg text-green-300 group-hover:text-green-100 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-green-200 text-sm">Tienda</span>
+          </span>
         </li>
-        <li>
+        <li class="relative group">
           <a
             href="/logout"
-            class="group inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[11px] md:text-xs lg:text-sm whitespace-nowrap hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
+            title="Cerrar Sesión"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-4 h-4 opacity-90 transition-transform duration-200 group-hover:scale-110"
-            >
-              <path
-                d="M15.75 4.5v3h-6V4.5H6v15h3.75v-3h6v3H21v-15h-5.25zM9.75 13.5h6l-1.875 1.875 1.06 1.06L19.5 12l-4.565-4.435-1.06 1.06L15.75 10.5h-6v3z"
-              />
-            </svg>
-            <span>Cerrar Sesión</span>
+            <i class="fa-solid fa-right-from-bracket fa-lg text-red-400 group-hover:text-red-200 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-red-300 text-sm">Cerrar Sesión</span>
+          </span>
         </li>
       </ul>
     </nav>
@@ -201,7 +144,6 @@
         class="text-white focus:outline-none hover:text-green-200 p-2 rounded"
         aria-label="Cerrar menú"
       >&times;</button>
-
     </div>
     <ul
       class="flex-1 flex flex-col space-y-2 p-3 bg-blue-700 text-white overflow-y-auto"
@@ -210,143 +152,62 @@
         <li>
           <a
             href="/admin"
-            class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+            class="group flex items-center gap-2 px-3 py-3 rounded hover:bg-white/10 text-white transition"
+            title="Panel de Administración"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
-            >
-              <path
-                d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"
-              />
-            </svg>
-            <span>Panel de Administración</span>
+            <i class="fa-solid fa-sliders fa-xl text-purple-300 group-hover:text-purple-100 transition"></i>
+            <span class="text-base font-medium">Panel</span>
           </a>
         </li>
       {{/if}}
       <li>
         <a
           href="/entries"
-          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+          class="group flex items-center gap-2 px-3 py-3 rounded hover:bg-white/10 text-white transition"
+          title="Entradas"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
-          >
-            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd"/>
-          </svg>
-          <span>Entradas</span>
+          <i class="fa-solid fa-door-open fa-xl text-blue-200 group-hover:text-blue-100 transition"></i>
+          <span class="text-base font-medium">Entradas</span>
         </a>
       </li>
       <li>
         <a
           href="/rooms"
-          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+          class="group flex items-center gap-2 px-3 py-3 rounded hover:bg-white/10 text-white transition"
+          title="Habitaciones"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
-          >
-            <path
-              d="M21 10.5V21h-2.25v-4.5H5.25V21H3V10.5L12 4l9 6.5zM7.5 12.75h9v-2.062L12 7.75l-4.5 2.938v2.062z"
-            />
-          </svg>
-          <span>Habitaciones</span>
-        </a>
-      </li>
-      <li>
-        <a
-          href="/rooms/calendario"
-          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
-          >
-            <path d="M12.75 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM7.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM8.25 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM9.75 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM10.5 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM12.75 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM14.25 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 17.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 15.75a.75.75 0 100-1.5.75.75 0 000 1.5zM15 12.75a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM16.5 13.5a.75.75 0 100-1.5.75.75 0 000 1.5z"/>
-            <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clip-rule="evenodd"/>
-          </svg>
-          <span>Calendario</span>
+          <i class="fa-solid fa-bed fa-xl text-cyan-200 group-hover:text-cyan-100 transition"></i>
+          <span class="text-base font-medium">Habitaciones</span>
         </a>
       </li>
       <li>
         <a
           href="/memberships"
-          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+          class="group flex items-center gap-2 px-3 py-3 rounded hover:bg-white/10 text-white transition"
+          title="Membresías"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
-          >
-            <path
-              d="M3.75 5.25A2.25 2.25 0 016 3h12a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 21H6a2.25 2.25 0 01-2.25-2.25V5.25zM6 6.75h12v3H6v-3zm0 4.5h7.5V18H6v-6.75z"
-            />
-          </svg>
-          <span>Membresías</span>
+          <i class="fa-solid fa-id-card fa-xl text-yellow-200 group-hover:text-yellow-100 transition"></i>
+          <span class="text-base font-medium">Membresías</span>
         </a>
       </li>
       <li>
         <a
           href="/store"
-          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+          class="group flex items-center gap-2 px-3 py-3 rounded hover:bg-white/10 text-white transition"
+          title="Tienda"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
-          >
-            <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z"/>
-          </svg>
-          <span>Tienda</span>
+          <i class="fa-solid fa-store fa-xl text-green-200 group-hover:text-green-100 transition"></i>
+          <span class="text-base font-medium">Tienda</span>
         </a>
       </li>
-      {{#if (eq user.role "Administrador")}}
-        <li>
-          <a
-            href="/services"
-            class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
-            >
-              <path
-                d="M21.6 7.2l-2.8 2.8-4-4 2.8-2.8a1 1 0 011.4 0l2.6 2.6a1 1 0 010 1.4zM3 17.25V21h3.75l10.6-10.6-3.75-3.75L3 17.25z"
-              />
-            </svg>
-            <span>Servicios</span>
-          </a>
-        </li>
-      {{/if}}
       <li>
         <a
           href="/logout"
-          class="group flex items-center gap-2 px-3 py-2 rounded hover:bg-white/10 text-white transition"
+          class="group flex items-center gap-2 px-3 py-3 rounded hover:bg-white/10 text-white transition"
+          title="Cerrar Sesión"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="w-5 h-5 opacity-90 transition-transform duration-200 group-hover:scale-110"
-          >
-            <path
-              d="M15.75 4.5v3h-6V4.5H6v15h3.75v-3h6v3H21v-15h-5.25zM9.75 13.5h6l-1.875 1.875 1.06 1.06L19.5 12l-4.565-4.435-1.06 1.06L15.75 10.5h-6v3z"
-            />
-          </svg>
-          <span>Cerrar Sesión</span>
+          <i class="fa-solid fa-right-from-bracket fa-xl text-red-300 group-hover:text-red-100 transition"></i>
+          <span class="text-base font-medium">Salir</span>
         </a>
       </li>
     </ul>
@@ -483,3 +344,36 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
+<style>
+/* ...existing code... */
+.navbar-tooltip {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  margin-top: 0.5rem;
+  padding: 0.35rem 1rem;
+  border-radius: 0.5rem;
+  background: #1e293b;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 100;
+  transition: opacity 0.18s, visibility 0.18s, transform 0.18s;
+  border: 2px solid #334155;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px #0005;
+}
+.group:hover .navbar-tooltip,
+.group:focus-within .navbar-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0.25rem) scale(1.04);
+}
+</style>

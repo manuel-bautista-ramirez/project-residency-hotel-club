@@ -1,5 +1,5 @@
 import {
-  getSalesReport,
+  getAllProducts, // Importar la nueva función
   getProductsWithLowStock,
   getBestSellingProducts,
   getSalesByCategory,
@@ -69,8 +69,15 @@ export const renderInventoryReport = async (req, res) => {
       return res.status(403).send("Acceso denegado");
     }
 
+    let allProducts = [];
     let inventoryReport = { por_categoria: [], resumen_general: { productos_totales: 0, stock_total: 0, valor_total_inventario: 0, productos_agotados: 0, productos_stock_bajo: 0 } };
     let lowStockProducts = [];
+
+    try {
+      allProducts = await getAllProducts();
+    } catch (error) {
+      console.warn('⚠️ No se pudieron obtener todos los productos:', error.message);
+    }
 
     try {
       inventoryReport = await generateInventoryReport();
@@ -88,6 +95,7 @@ export const renderInventoryReport = async (req, res) => {
       title: "Reporte de Inventario",
       showFooter: true,
       user,
+      allProducts, // Pasar todos los productos a la vista
       inventoryReport,
       lowStockProducts
     });

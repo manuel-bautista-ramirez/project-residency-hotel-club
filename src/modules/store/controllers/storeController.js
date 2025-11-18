@@ -4,6 +4,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  addStockToProduct, // Importar nueva función
   createSale,
   updateSalePaths,
   getAllSales,
@@ -30,6 +31,7 @@ export const showStore = async (req, res) => {
       title: "Tienda del Hotel",
       showFooter: true,
       products,
+      showNavbar: true,
       user
     });
   } catch (error) {
@@ -167,6 +169,35 @@ export const handleDeleteProduct = async (req, res) => {
   }
 };
 
+// Añadir stock a un producto
+export const handleAddStock = async (req, res) => {
+  try {
+    const user = req.session.user || {};
+    if (user.role !== "Administrador") {
+      return res.status(403).send("Acceso denegado");
+    }
+
+    const { id } = req.params;
+    const { quantityToAdd } = req.body;
+
+    if (!quantityToAdd || parseInt(quantityToAdd) <= 0) {
+      return res.status(400).send("Cantidad a añadir debe ser un número positivo.");
+    }
+
+    const success = await addStockToProduct(id, parseInt(quantityToAdd));
+
+    if (success) {
+      console.log(`✅ Stock añadido al producto ${id}`);
+      res.redirect("/store/inventory");
+    } else {
+      res.status(404).send("Producto no encontrado o error al actualizar.");
+    }
+  } catch (error) {
+    console.error("Error en handleAddStock:", error);
+    res.status(500).send("Error al añadir stock");
+  }
+};
+
 // =====================================================
 //         CONTROLADORES DE VENTAS
 // =====================================================
@@ -186,21 +217,13 @@ export const renderCheckout = (req, res) => {
 export const handleCheckout = async (req, res) => {
   try {
     const user = req.session.user || {};
-    const { nombre_cliente, email, telefono, tipo_pago, productos, total, total_letras, send_email, send_whatsapp } = req.body;
+    // Simplificado para venta rápida
+    const { productos, total, tipo_pago, nombre_cliente, total_letras } = req.body;
 
-    // Para ventas rápidas, no necesitamos email, teléfono, etc.
     const isQuickSale = nombre_cliente === 'Cliente de Mostrador';
-
-    console.log(`🛒 Procesando ${isQuickSale ? 'venta rápida' : 'venta'}...`);
+    console.log(`🛒 Procesando venta rápida...`);
     console.log("Productos:", productos);
     console.log("Total:", total);
-
-    // Crear medio de mensaje solo si NO es venta rápida y hay email o teléfono
-    let messageMethodId = null;
-    if (!isQuickSale && (email || telefono)) {
-      messageMethodId = await createMessageMethod(email, telefono);
-      console.log("✅ Medio de mensaje creado:", messageMethodId);
-    }
 
     // Parsear productos si viene como string
     const productosArray = typeof productos === 'string' ? JSON.parse(productos) : productos;
@@ -208,7 +231,7 @@ export const handleCheckout = async (req, res) => {
     // Crear venta
     const ventaId = await createSale({
       usuario_id: user.id,
-      id_medio_mensaje: messageMethodId,
+      id_medio_mensaje: null, // No aplica para ventas rápidas
       nombre_cliente,
       tipo_pago,
       total: parseFloat(total),

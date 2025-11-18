@@ -3,7 +3,9 @@
   {{>buttons}}
   {{/if}}
 
-  {{#if allReservationes.length}}
+
+  {{#if allReservationes}}
+
   <!-- Filtros -->
   <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -58,7 +60,7 @@
   <!-- Loading Overlay -->
   <div id="reservationsLoadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
     <div class="flex flex-col items-center gap-3">
-      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="img">
+      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="img"></svg>
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
       </svg>
@@ -88,7 +90,8 @@
               data-hab="{{this.numero_habitacion}}"
               data-reserva="{{this.fecha_reserva}}"
               data-ingreso="{{this.fecha_ingreso}}"
-              data-salida="{{this.fecha_salida}}">
+              data-salida="{{this.fecha_salida}}"
+              data-confirm-start="{{this.confirm_start}}">
             <td class="py-2.5 px-2 capitalize">
               <div class="truncate" title="{{this.nombre_cliente}}">{{this.nombre_cliente}}</div>
             </td>
@@ -115,13 +118,19 @@
                 </a>
                 {{/if}}
                 <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}"
-                   class="inline-flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-[0.7rem] rounded shadow-sm transition-colors"
+                   class="inline-flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-[0.7rem] rounded shadow-sm transition-colors confirm-btn"
                    title="Confirmar">
                   <i class="fa-solid fa-check"></i>
                   <span class="hidden xl:inline">Confirmar</span>
                 </a>
+                {{#if this.enganche_perdido}}
+                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-[0.7rem] rounded">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                    <span>Enganche retenido</span>
+                  </span>
+                {{/if}}
                 {{#if (eq @root.user.role 'Administrador')}}
-                <button type="button" 
+                <button type="button"
                         onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
                         class="inline-flex items-center gap-1 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-[0.7rem] rounded shadow-sm transition-colors"
                         title="Eliminar">
@@ -188,8 +197,14 @@
             <i class="fa-solid fa-check"></i>
             <span>Confirmar</span>
           </a>
+          {{#if this.enganche_perdido}}
+            <span class="flex-1 xs:flex-none w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm shadow-sm">
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+              <span>Enganche retenido</span>
+            </span>
+          {{/if}}
           {{#if (eq @root.user.role 'Administrador')}}
-          <button type="button" 
+          <button type="button"
                   onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
                   class="flex-1 xs:flex-none w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
             <i class="fa-solid fa-trash-can"></i>
@@ -254,6 +269,18 @@
   </div>
 </div>
 
+  {{else}}
+    <div class="text-center py-16">
+      <i class="fa-solid fa-calendar-xmark text-5xl text-slate-400"></i>
+      <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron reservaciones</h2>
+      <p class="mt-2 text-sm text-slate-500">Actualmente no hay reservaciones registradas.</p>
+      <a href="/rooms" class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Volver a Habitaciones</span>
+      </a>
+    </div>
+  {{/if}}
+
 <script>
   // Funciones para el modal de eliminación
   function openDeleteReservationModal(reservationId, roomNumber, clientName) {
@@ -261,7 +288,7 @@
     const form = document.getElementById('deleteReservationForm');
     const roomNumberSpan = document.getElementById('deleteReservationRoomNumber');
     const clientNameSpan = document.getElementById('deleteReservationClientName');
-    
+
     if (modal && form) {
       form.action = `/rooms/delete/${reservationId}`;
       roomNumberSpan.textContent = roomNumber;
@@ -285,35 +312,35 @@
     const rowsTable = Array.from(document.querySelectorAll('.reservation-row'));
     const rowsCards = Array.from(document.querySelectorAll('.reservation-reveal'));
     const rows = [...rowsTable, ...rowsCards];
-    
+
     // Filtros
     const q = document.getElementById('reservationSearch');
     const from = document.getElementById('reservationFrom');
     const to = document.getElementById('reservationTo');
     const reset = document.getElementById('reservationReset');
     const count = document.getElementById('reservationCount');
-    
+
     // Paginación
     const selPageSize = document.getElementById('reservationPageSize');
     const btnPrev = document.getElementById('reservationPagePrev');
     const btnNext = document.getElementById('reservationPageNext');
     const lblPage = document.getElementById('reservationPageInfo');
-    
+
     let sortKey = '';
     let sortDir = 'asc';
     let page = 1;
     let pageSize = parseInt(selPageSize ? selPageSize.value : '10', 10) || 10;
-    
+
     // Función para formatear fechas con hora
     function formatDateTime(dateStr) {
       if (!dateStr) return '';
-      
+
       let date;
-      
+
       // Si ya es un objeto Date
       if (dateStr instanceof Date) {
         date = dateStr;
-      } 
+      }
       // Si es un string
       else if (typeof dateStr === 'string') {
         // Si la fecha viene en formato ISO o YYYY-MM-DD
@@ -322,72 +349,72 @@
         } else {
           return dateStr; // Si no reconocemos el formato, devolver original
         }
-      } 
+      }
       else {
         return String(dateStr); // Convertir a string si no es Date ni string
       }
-      
+
       if (isNaN(date.getTime())) {
         return String(dateStr); // Si la fecha es inválida, devolver original
       }
-      
+
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
-      
+
       // Formato: DD/MM/YYYY HH:MM
       return `${day}/${month}/${year} ${hours}:${minutes}`;
     }
-    
+
     // Formatear fechas en la tabla usando data attributes
     rowsTable.forEach(row => {
       const cells = row.querySelectorAll('td');
-      
+
       // Obtener fechas del atributo data-*
       const reservaISO = row.getAttribute('data-reserva');
       const ingresoISO = row.getAttribute('data-ingreso');
       const salidaISO = row.getAttribute('data-salida');
-      
+
       // Formatear fecha reserva (col 2)
       if (cells[2] && reservaISO) {
         const divs = cells[2].querySelectorAll('div');
         if (divs[0]) divs[0].textContent = formatDateTime(reservaISO);
       }
-      
+
       // Formatear fecha ingreso (col 3)
       if (cells[3] && ingresoISO) {
         const divs = cells[3].querySelectorAll('div');
         if (divs[0]) divs[0].textContent = formatDateTime(ingresoISO);
       }
-      
+
       // Formatear fecha salida (col 4)
       if (cells[4] && salidaISO) {
         const divs = cells[4].querySelectorAll('div');
         if (divs[0]) divs[0].textContent = formatDateTime(salidaISO);
       }
     });
-    
+
     // Formatear fechas en las cards usando data attributes
     rowsCards.forEach(card => {
       const reservaISO = card.getAttribute('data-reserva');
       const ingresoISO = card.getAttribute('data-ingreso');
       const salidaISO = card.getAttribute('data-salida');
-      
+
       const allDivs = card.querySelectorAll('div');
       let reservaProcessed = false;
       let ingresoProcessed = false;
       let salidaProcessed = false;
-      
+
       allDivs.forEach(div => {
         const text = div.textContent.trim();
-        
+
         // Procesar fechas en orden: reserva, ingreso, salida
         if (!reservaProcessed && text.match(/^\d{4}-\d{2}-\d{2}/) && reservaISO) {
           div.textContent = formatDateTime(reservaISO);
           reservaProcessed = true;
-        } 
+        }
         else if (reservaProcessed && !ingresoProcessed && text.match(/^\d{4}-\d{2}-\d{2}/) && ingresoISO) {
           div.textContent = formatDateTime(ingresoISO);
           ingresoProcessed = true;
@@ -398,17 +425,19 @@
         }
       });
     });
-    
+
     // Ocultar overlay tras breve tiempo
-    setTimeout(() => { 
-      if (overlay) overlay.classList.add('hidden'); 
+    setTimeout(() => {
+      if (overlay) overlay.classList.add('hidden');
     }, 300);
-    
+
     // --- Funciones auxiliares ---
     function norm(str) { return (str || '').toString().trim().toLowerCase(); }
-    
-    function inRange(dateStr, fromStr, toStr) {
-      if (!fromStr && !toStr) return true;
+
+
+    function inRange(dateStr, fromStr) {
+      if (!fromStr) return true;
+//upstream/main
       const d = new Date(dateStr);
       if (Number.isNaN(d.getTime())) return false;
       
@@ -429,14 +458,14 @@
       
       return true;
     }
-    
+
     // --- Filtrado ---
     function applyFilters() {
       const text = norm(q.value);
       const f = from.value;
       const t = to.value;
       let visible = 0;
-      
+
       rows.forEach(el => {
         const d = {
           nombre: norm(el.dataset.nombre || ''),
@@ -445,50 +474,50 @@
           ingreso: el.dataset.ingreso || '',
           salida: el.dataset.salida || ''
         };
-        
+
         const hayTexto = !text || (
-          d.nombre.includes(text) || 
-          d.hab.includes(text) || 
+          d.nombre.includes(text) ||
+          d.hab.includes(text) ||
           d.reserva.includes(text) ||
           d.ingreso.includes(text) ||
           d.salida.includes(text)
         );
         const hayFechaIn = inRange(d.ingreso, f, t);
         const show = hayTexto && hayFechaIn;
-        
+
         el.classList.toggle('hidden', !show);
         if (show) visible++;
       });
-      
+
       if (count) {
-        count.textContent = visible === rows.length 
-          ? 'Mostrando todas las reservaciones' 
+        count.textContent = visible === rows.length
+          ? 'Mostrando todas las reservaciones'
           : `Mostrando ${visible} de ${rows.length} reservaciones`;
       }
-      
+
       // Reiniciar a página 1 después de filtrar
       page = 1;
       applySortAndPaginate();
     }
-    
+
     ['input','change'].forEach(evt => {
       q.addEventListener(evt, applyFilters);
       from.addEventListener(evt, applyFilters);
       to.addEventListener(evt, applyFilters);
     });
-    
+
     reset.addEventListener('click', () => {
       q.value = '';
       from.value = '';
       to.value = '';
       applyFilters();
     });
-    
+
     // --- Ordenamiento y paginación ---
     function getVisibleRows() {
       return rows.filter(el => !el.classList.contains('hidden'));
     }
-    
+
     function coerce(key, val) {
       if (key === 'hab') return parseInt(val, 10) || 0;
       if (key === 'reserva' || key === 'ingreso' || key === 'salida') {
@@ -496,11 +525,11 @@
       }
       return norm(val);
     }
-    
+
     function applySortAndPaginate() {
       const visible = getVisibleRows();
       let arr = visible.slice();
-      
+
       // Ordenar si hay clave de ordenamiento
       if (sortKey) {
         arr.sort((a, b) => {
@@ -511,25 +540,25 @@
           return 0;
         });
       }
-      
+
       // Paginar
       const total = arr.length;
       const totalPages = Math.max(1, Math.ceil(total / pageSize));
       if (page > totalPages) page = totalPages;
       const start = (page - 1) * pageSize;
       const end = start + pageSize;
-      
+
       rows.forEach(el => { el.style.display = el.classList.contains('hidden') ? '' : ''; });
       arr.forEach((el, idx) => {
         const inPage = idx >= start && idx < end;
         el.style.display = inPage ? '' : 'none';
       });
-      
+
       if (lblPage) lblPage.textContent = `Página ${total ? page : 0} de ${totalPages}`;
       if (btnPrev) btnPrev.disabled = page <= 1;
       if (btnNext) btnNext.disabled = page >= totalPages;
     }
-    
+
     // Eventos de ordenamiento en headers de tabla
     document.querySelectorAll('#tableSection thead th').forEach((th, idx) => {
       const mapIdxToKey = {
@@ -541,13 +570,13 @@
       };
       const key = mapIdxToKey[idx];
       if (!key) return;
-      
+
       th.style.cursor = 'pointer';
-      
+
       function clearIndicators() {
         document.querySelectorAll('#tableSection thead th .sort-indicator').forEach(el => el.remove());
       }
-      
+
       function addIndicator(target, dir) {
         const span = document.createElement('span');
         span.className = 'sort-indicator inline-block ml-1 align-middle';
@@ -556,7 +585,7 @@
           : '<svg class="w-3 h-3 opacity-90" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17l-5-5h10l-5 5z"/></svg>';
         target.appendChild(span);
       }
-      
+
       th.addEventListener('click', () => {
         if (sortKey === key) {
           sortDir = sortDir === 'asc' ? 'desc' : 'asc';
@@ -570,7 +599,7 @@
         addIndicator(th.querySelector('span') || th, sortDir);
       });
     });
-    
+
     // Eventos de paginación
     if (selPageSize) {
       selPageSize.addEventListener('change', () => {
@@ -579,24 +608,24 @@
         applySortAndPaginate();
       });
     }
-    
+
     if (btnPrev) {
       btnPrev.addEventListener('click', () => {
         page = Math.max(1, page - 1);
         applySortAndPaginate();
       });
     }
-    
+
     if (btnNext) {
       btnNext.addEventListener('click', () => {
         page = page + 1;
         applySortAndPaginate();
       });
     }
-    
+
     // Inicializar filtros
     applyFilters();
-    
+
     // Validar botones de confirmar según fechas
     validateConfirmButtons();
   });
@@ -604,54 +633,31 @@
   // Función para validar y habilitar/deshabilitar botones de confirmar
   function validateConfirmButtons() {
     const now = new Date();
-    const confirmButtons = document.querySelectorAll('a[href*="/rooms/confirmReservations/renta/"]');
-    
+    const confirmButtons = document.querySelectorAll('.confirm-btn');
+
     confirmButtons.forEach(button => {
-      // Buscar el contenedor padre (tr para tabla, article para cards)
-      const row = button.closest('tr');
-      const card = button.closest('article');
-      const container = row || card;
-      
+      const container = button.closest('tr') || button.closest('article');
       if (!container) return;
-      
+
       const fechaIngresoStr = container.dataset.ingreso;
       const fechaSalidaStr = container.dataset.salida;
-      
+
       if (!fechaIngresoStr || !fechaSalidaStr) return;
-      
+
       try {
-        // Parsear fechas desde el formato ISO que viene del servidor
         const fechaIngreso = new Date(fechaIngresoStr);
         const fechaSalida = new Date(fechaSalidaStr);
-        
-        // Calcular 30 minutos antes de la fecha de ingreso
         const fechaHabilitacion = new Date(fechaIngreso.getTime() - (30 * 60 * 1000));
-        
-        // Verificar si estamos en el rango válido
+
         const enRangoValido = now >= fechaHabilitacion && now <= fechaSalida;
-        
+
         if (enRangoValido) {
-          // Habilitar botón
           button.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
           button.classList.add('hover:bg-green-700');
           button.title = 'Confirmar reservación';
-          
-          // Remover indicador visual de deshabilitado si existe
-          const icon = button.querySelector('i');
-          if (icon) {
-            icon.classList.remove('opacity-60');
-          }
         } else {
-          // Deshabilitar botón
           button.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
           button.classList.remove('hover:bg-green-700');
-          
-          // Agregar indicador visual de deshabilitado
-          const icon = button.querySelector('i');
-          if (icon) {
-            icon.classList.add('opacity-60');
-          }
-          
           if (now < fechaHabilitacion) {
             const tiempoRestante = Math.ceil((fechaHabilitacion - now) / (1000 * 60));
             button.title = `Disponible en ${tiempoRestante} minutos (30 min antes del ingreso)`;
@@ -661,7 +667,6 @@
         }
       } catch (error) {
         console.error('Error al validar fechas para botón:', error);
-        // En caso de error, deshabilitar por seguridad
         button.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
         button.title = 'Error al validar fechas';
       }

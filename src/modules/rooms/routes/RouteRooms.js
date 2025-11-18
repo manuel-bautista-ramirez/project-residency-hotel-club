@@ -41,6 +41,9 @@ import {
   // Funciones para calendario
   renderCalendarioRooms,
   getCalendarData,
+  getCalendarEvents,
+  // Función para finalizar rentas expiradas
+  finalizarRentasExpiradasController,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -58,27 +61,28 @@ routerRoom.get("/rooms/reportes", renderReservacionesView);
 
 // ----- FORMULARIOS INDIVIDUALES -----
 routerRoom.get("/rooms/reservar/:id", createResevation);
-routerRoom.post("/rooms/reservar/:id", handleCreateReservation);
+routerRoom.post("/rooms/reservar/:id", handleCreateReservation);//
 
 routerRoom.post("/rooms/changes/status/:id", changesStatus);
 
-routerRoom.get("/rooms/rentar/:id", renderFormRentar);  
+routerRoom.get("/rooms/rentar/:id", renderFormRentar);
 routerRoom.post("/rooms/create-renta/:id", handleCreateRenta);
 
 routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
-routerRoom.post("/api/reservaciones/:id/editar", handleEditReservation);
+routerRoom.post("/api/reservaciones/:id/editar", handleEditReservation); //
 
 // ----- CONVERSIÓN DE RESERVACIÓN A RENTA -----
 routerRoom.get("/rooms/confirmReservations/renta/:id", renderConvertReservationToRent);
 routerRoom.post("/api/rooms/convertReservationToRent/:id", handleConvertReservationToRent);
 
 routerRoom.post("/rooms/delete/:id", deleteByIdResevation);
-routerRoom.post("/rentas/eliminar/:id", deleteIdRenta);
+routerRoom.post("/rooms/rentas/delete/:id", deleteIdRenta);
 routerRoom.post("/rooms/desocupar/:id", marcarComoDesocupada);
 
 // ----- CALENDARIO -----
-routerRoom.get("/rooms/calendario", renderCalendarioRooms);
+routerRoom.get("/rooms/list/calendario", renderCalendarioRooms);
 routerRoom.get("/api/rooms/calendar-data", getCalendarData);
+routerRoom.get("/rooms/calendario/eventos", getCalendarEvents);
 
 // ----- API for promesas -----
 
@@ -102,5 +106,8 @@ routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-whatsapp", sendRes
 
 // ----- RUTAS PARA RECORDATORIOS -----
 routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-reminder", sendCheckInReminder);
+
+// ----- RUTA PARA FINALIZAR RENTAS EXPIRADAS -----
+routerRoom.post("/api/rooms/finalizar-rentas-expiradas", finalizarRentasExpiradasController);
 
 export { routerRoom };
