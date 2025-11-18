@@ -19,14 +19,13 @@
     >
       <i class="fa-solid fa-hotel text-yellow-300 drop-shadow-lg" style="font-size:2rem;"></i>
     </a>
-
     <!-- Enlaces desktop -->
     <nav aria-label="Principal" class="hidden md:block">
       <ul
         class="flex items-center gap-3 md:gap-4 lg:gap-6 flex-nowrap whitespace-nowrap overflow-hidden"
       >
         {{#if (eq user.role "Administrador")}}
-          <li>
+          <li class="relative group">
             <a
               href="/admin"
               class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
@@ -34,9 +33,12 @@
             >
               <i class="fa-solid fa-sliders fa-lg text-purple-400 group-hover:text-purple-200 transition"></i>
             </a>
+            <span class="navbar-tooltip">
+              <span class="font-bold text-purple-300 text-sm">Panel de Administración</span>
+            </span>
           </li>
         {{/if}}
-        <li>
+        <li class="relative group">
           <a
             href="/entries"
             class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
@@ -44,8 +46,11 @@
           >
             <i class="fa-solid fa-door-open fa-lg text-blue-200 group-hover:text-blue-100 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-blue-200 text-sm">Entradas</span>
+          </span>
         </li>
-        <li>
+        <li class="relative group">
           <a
             href="/rooms"
             class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
@@ -53,8 +58,11 @@
           >
             <i class="fa-solid fa-bed fa-lg text-cyan-300 group-hover:text-cyan-100 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-cyan-200 text-sm">Habitaciones</span>
+          </span>
         </li>
-        <li>
+        <li class="relative group">
           <a
             href="/memberships"
             class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
@@ -62,8 +70,11 @@
           >
             <i class="fa-solid fa-id-card fa-lg text-yellow-300 group-hover:text-yellow-100 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-yellow-200 text-sm">Membresías</span>
+          </span>
         </li>
-        <li>
+        <li class="relative group">
           <a
             href="/store"
             class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
@@ -71,8 +82,11 @@
           >
             <i class="fa-solid fa-store fa-lg text-green-300 group-hover:text-green-100 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-green-200 text-sm">Tienda</span>
+          </span>
         </li>
-        <li>
+        <li class="relative group">
           <a
             href="/logout"
             class="group inline-flex items-center justify-center px-2 py-2 rounded hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 transition"
@@ -80,6 +94,9 @@
           >
             <i class="fa-solid fa-right-from-bracket fa-lg text-red-400 group-hover:text-red-200 transition"></i>
           </a>
+          <span class="navbar-tooltip">
+            <span class="font-bold text-red-300 text-sm">Cerrar Sesión</span>
+          </span>
         </li>
       </ul>
     </nav>
@@ -327,3 +344,36 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
+<style>
+/* ...existing code... */
+.navbar-tooltip {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  margin-top: 0.5rem;
+  padding: 0.35rem 1rem;
+  border-radius: 0.5rem;
+  background: #1e293b;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 100;
+  transition: opacity 0.18s, visibility 0.18s, transform 0.18s;
+  border: 2px solid #334155;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px #0005;
+}
+.group:hover .navbar-tooltip,
+.group:focus-within .navbar-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0.25rem) scale(1.04);
+}
+</style>
