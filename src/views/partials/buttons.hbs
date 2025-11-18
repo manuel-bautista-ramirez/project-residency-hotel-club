@@ -1,63 +1,146 @@
 <div class="mt-4 px-2 sm:px-4 lg:px-0">
-  <!-- Botones en grid responsive -->
-  <div class="{{#if (eq user.role 'Administrador')}}grid grid-cols-5{{else}}flex justify-center{{/if}} gap-1 sm:gap-3 w-full max-w-6xl mx-auto">
-    {{#unless (eq user.role 'Administrador')}}
-    <div class="grid grid-cols-3 gap-1 sm:gap-3 justify-items-center">
-    {{/unless}}
+  <div class="botones-container">
+    <a href="/rooms" class="boton-nav bg-green-600 hover:bg-green-700">
+      <i class="fa-solid fa-bed"></i>
+      <span>Habitaciones</span>
+    </a>
+
     {{#if (eq user.role "Administrador")}}
-      <a
-        href="/rooms/precios"
-        class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
-      >
-        <i class="fa-solid fa-dollar-sign text-sm sm:text-lg"></i>
-        <span class="font-semibold text-xs sm:text-base leading-tight">
-          <span class="hidden sm:inline">Precios</span>
-          <span class="sm:hidden">Precios</span>
-        </span>
-      </a>
-      <a
-        href="/rooms/reportes"
-        class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
-      >
-        <i class="fa-solid fa-chart-line text-sm sm:text-lg"></i>
-        <span class="font-semibold text-xs sm:text-base leading-tight">
-          <span class="hidden sm:inline">Reportes</span>
-          <span class="sm:hidden">Reportes</span>
-        </span>
-      </a>
+    <a href="/rooms/precios" class="boton-nav bg-green-600 hover:bg-green-700">
+      <i class="fa-solid fa-dollar-sign"></i>
+      <span>Precios</span>
+    </a>
+
+    <a href="/rooms/reportes" class="boton-nav bg-purple-600 hover:bg-purple-700">
+      <i class="fa-solid fa-chart-line"></i>
+      <span>Reportes</span>
+    </a>
     {{/if}}
-    <a
-      href="/rooms/list/reservations"
-      class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
-    >
-      <i class="fa-solid fa-calendar-check text-sm sm:text-lg"></i>
-      <span class="font-semibold text-xs sm:text-base leading-tight">
-        <span class="hidden sm:inline">Reservaciones</span>
-        <span class="sm:hidden">Reservas</span>
-      </span>
+
+    <a href="/rooms/list/reservations" class="boton-nav bg-blue-600 hover:bg-blue-700">
+      <i class="fa-solid fa-calendar-check"></i>
+      <span>Reservas</span>
     </a>
-    <a
-      href="/rooms/list/rentas"
-      class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
-    >
-      <i class="fa-solid fa-key text-sm sm:text-lg"></i>
-      <span class="font-semibold text-xs sm:text-base leading-tight">
-        <span class="hidden sm:inline">Rentas</span>
-        <span class="sm:hidden">Rentas</span>
-      </span>
+
+    <a href="/rooms/list/rentas" class="boton-nav bg-indigo-600 hover:bg-indigo-700">
+      <i class="fa-solid fa-key"></i>
+      <span>Rentas</span>
     </a>
-    <a
-      href="/rooms/list/calendario"
-      class="inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 sm:px-4 py-2 sm:py-3 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-lg sm:rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 min-h-[3rem] sm:min-h-[auto]"
-    >
-      <i class="fa-solid fa-calendar text-sm sm:text-lg"></i>
-      <span class="font-semibold text-xs sm:text-base leading-tight">
-        <span class="hidden sm:inline">Calendario</span>
-        <span class="sm:hidden">Agenda</span>
-      </span>
+
+    <a href="/rooms/list/calendario" class="boton-nav bg-violet-600 hover:bg-violet-700">
+      <i class="fa-solid fa-calendar"></i>
+      <span>Agenda</span>
     </a>
-    {{#unless (eq user.role 'Administrador')}}
-    </div>
-    {{/unless}}
   </div>
 </div>
+
+<style>
+.botones-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Para móvil (hasta 767px) - Mantenemos el grid de 3 columnas */
+@media (max-width: 767px) {
+  .botones-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+/* Para tablet y desktop (768px en adelante) - FLEX en una sola fila */
+@media (min-width: 768px) {
+  .botones-container {
+    display: flex !important;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+/* Para desktop grande (1024px en adelante) */
+@media (min-width: 1024px) {
+  .botones-container {
+    gap: 1rem;
+  }
+}
+
+/* Estilos base de los botones - MUY COMPACTOS */
+.boton-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.6rem;
+  color: white;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  text-align: center;
+  text-decoration: none;
+  font-size: 0.7rem;
+  line-height: 1;
+  min-width: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Hover effects */
+.boton-nav:hover {
+  transform: scale(1.03);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.boton-nav:active {
+  transform: scale(0.98);
+}
+
+/* Tamaños responsive para tablet/desktop */
+@media (min-width: 768px) {
+  .boton-nav {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    min-width: 85px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .boton-nav {
+    padding: 0.6rem 0.9rem;
+    font-size: 0.8rem;
+    min-width: 95px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .boton-nav {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+    min-width: 105px;
+  }
+}
+
+/* Tamaños de iconos */
+.boton-nav i {
+  font-size: 0.7rem;
+}
+
+@media (min-width: 768px) {
+  .boton-nav i {
+    font-size: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .boton-nav i {
+    font-size: 0.8rem;
+  }
+}
+</style>
