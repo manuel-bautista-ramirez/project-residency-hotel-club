@@ -121,11 +121,11 @@ export const checkRoomAvailability = async (roomId, fechaIngreso, fechaSalida, e
 
     const [rows] = await pool.query(query, params);
     const isAvailable = rows[0].conflicts === 0;
-    
+
     console.log('🔢 Conflictos encontrados:', rows[0].conflicts);
     console.log('✅ Disponible:', isAvailable);
     console.log('=== FIN VERIFICACIÓN ===\n');
-    
+
     return isAvailable; // true si está disponible, false si hay conflictos
   } catch (err) {
     console.error('Error checkRoomAvailability:', err);
@@ -180,7 +180,7 @@ export const createReservation = async (reservationData) => {
     // 2. Insertar la reservación
     const engancheAmount = enganche || 0;
     const engancheText = enganche_letras || '';
-    
+
     const [result] = await pool.query(
       `INSERT INTO reservaciones
        (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida, monto, monto_letras, enganche, enganche_letras)
@@ -202,7 +202,7 @@ export const createReservation = async (reservationData) => {
     // 3. Cambiar el estado de la habitación a "ocupado" solo si el check-in ya pasó
     const checkInDate = new Date(fecha_ingreso);
     const now = new Date();
-    
+
     if (checkInDate <= now) {
       console.log('🏠 Actualizando estado de habitación a "ocupado" (check-in ya pasó)');
       await pool.query(
@@ -278,7 +278,7 @@ export const getAllRentas = async () => {
             -- Si la fecha de salida ya pasó o es hoy después de la hora de salida
             WHEN (
               DATE(re.fecha_salida) < CURDATE()
-              OR 
+              OR
               (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida)
             ) THEN 'expirada'
             -- Si está dentro del período de renta
@@ -286,21 +286,21 @@ export const getAllRentas = async () => {
           END AS estado_tiempo,
           -- Calcular días restantes o días vencidos
           CASE
-            WHEN DATE(re.fecha_salida) < CURDATE() THEN 
+            WHEN DATE(re.fecha_salida) < CURDATE() THEN
               CONCAT('Expiró hace ', DATEDIFF(CURDATE(), DATE(re.fecha_salida)), ' día(s)')
             WHEN DATE(re.fecha_salida) = CURDATE() THEN
               CASE
                 WHEN NOW() >= re.fecha_salida THEN 'Expiró hoy'
                 ELSE CONCAT('Expira hoy a las ', TIME_FORMAT(TIME(re.fecha_salida), '%H:%i'))
               END
-            ELSE 
+            ELSE
               CONCAT('Expira en ', DATEDIFF(DATE(re.fecha_salida), CURDATE()), ' día(s)')
           END AS tiempo_restante
     FROM rentas re
     INNER JOIN habitaciones h ON re.habitacion_id = h.id
-    ORDER BY 
-      CASE WHEN re.estado = 'finalizada' OR 
-               (DATE(re.fecha_salida) < CURDATE() OR 
+    ORDER BY
+      CASE WHEN re.estado = 'finalizada' OR
+               (DATE(re.fecha_salida) < CURDATE() OR
                 (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida))
            THEN 1 ELSE 0 END,
       re.fecha_ingreso DESC
@@ -348,32 +348,32 @@ export const finalizarRenta = async (id) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    
+
     // 1. Obtener información de la renta
     console.log(`🔍 Buscando renta con id: ${id}`);
     const [renta] = await connection.query(
       'SELECT habitacion_id FROM rentas WHERE id = ?',
       [id]
     );
-    
+
     if (renta.length === 0) {
       throw new Error('Renta no encontrada');
     }
-    
+
     const habitacionId = renta[0].habitacion_id;
     console.log(`🔍 Habitación ID encontrada: ${habitacionId}`);
-    
+
     // 2. Actualizar la renta como finalizada
     console.log(`📝 Actualizando renta ${id} a estado 'finalizada'...`);
     const [rentaResult] = await connection.query(
-      `UPDATE rentas 
-       SET estado = 'finalizada', 
-           fecha_salida_real = NOW() 
+      `UPDATE rentas
+       SET estado = 'finalizada',
+           fecha_salida_real = NOW()
        WHERE id = ?`,
       [id]
     );
     console.log(`✅ Renta actualizada. Filas afectadas: ${rentaResult.affectedRows}`);
-    
+
     // 3. Marcar la habitación como "limpieza" (no disponible directamente)
     console.log(`🧹 Cambiando habitación ${habitacionId} a estado 'limpieza'...`);
     const [habResult] = await connection.query(
@@ -381,14 +381,14 @@ export const finalizarRenta = async (id) => {
       [habitacionId]
     );
     console.log(`✅ Habitación actualizada. Filas afectadas: ${habResult.affectedRows}`);
-    
+
     // Verificar el estado actual
     const [habCheck] = await connection.query(
       'SELECT id, numero, estado FROM habitaciones WHERE id = ?',
       [habitacionId]
     );
     console.log(`🔍 Estado actual de la habitación:`, habCheck[0]);
-    
+
     await connection.commit();
     console.log(`✅ Transacción completada exitosamente`);
     return true;
@@ -479,7 +479,7 @@ export const updateReservation = async (id, reservationData) => {
     updateValues.push(id);
 
     const updateReservacionQuery = `
-      UPDATE reservaciones 
+      UPDATE reservaciones
       SET ${updateFields.join(', ')}
       WHERE id = ?
     `;
@@ -694,7 +694,7 @@ export const createRent = async ({
   // 3. Actualizar estado de la habitación si el check-in es hoy y ya pasó la hora
   const checkInDate = new Date(check_in_date);
   const now = new Date();
-  
+
   // Si la fecha de check-in es hoy o ya pasó, cambiar estado a "ocupado"
   if (checkInDate <= now) {
     console.log('🏠 Actualizando estado de habitación a "ocupado" (check-in ya pasó)');
@@ -771,7 +771,7 @@ export const updateRent = async (id, rentData) => {
     updateValues.push(id);
 
     const updateRentQuery = `
-      UPDATE rentas 
+      UPDATE rentas
       SET ${updateFields.join(', ')}
       WHERE id = ?
     `;
@@ -797,7 +797,7 @@ export const updateRent = async (id, rentData) => {
 export const getReporteRentas = async (fechaInicio, fechaFin, filtros = {}) => {
   try {
     let query = `
-      SELECT 
+      SELECT
         r.id AS id_renta,
         r.nombre_cliente,
         h.numero AS numero_habitacion,
@@ -814,9 +814,9 @@ export const getReporteRentas = async (fechaInicio, fechaFin, filtros = {}) => {
       LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
       WHERE DATE(r.fecha_ingreso) BETWEEN ? AND ?
     `;
-    
+
     const params = [fechaInicio, fechaFin];
-    
+
     // Aplicar filtros opcionales
     if (filtros.habitacion) {
       query += ` AND h.numero = ?`;
@@ -830,16 +830,16 @@ export const getReporteRentas = async (fechaInicio, fechaFin, filtros = {}) => {
       query += ` AND r.tipo_pago = ?`;
       params.push(filtros.tipoPago);
     }
-    
+
     query += ` ORDER BY r.fecha_ingreso DESC`;
-    
+
     const [rentas] = await pool.query(query, params);
-    
+
     // Calcular estadísticas
     const totalRentas = rentas.length;
     const totalIngresos = rentas.reduce((sum, r) => sum + Number(r.monto), 0);
     const promedioIngreso = totalRentas > 0 ? totalIngresos / totalRentas : 0;
-    
+
     return {
       tipo: 'rentas',
       fechaInicio,
@@ -861,7 +861,7 @@ export const getReporteRentas = async (fechaInicio, fechaFin, filtros = {}) => {
 export const getReporteReservaciones = async (fechaInicio, fechaFin, filtros = {}) => {
   try {
     let query = `
-      SELECT 
+      SELECT
         r.id,
         r.nombre_cliente,
         h.numero AS numero_habitacion,
@@ -871,15 +871,20 @@ export const getReporteReservaciones = async (fechaInicio, fechaFin, filtros = {
         r.monto,
         r.enganche,
         mm.correo_cliente,
-        mm.telefono_cliente
+        mm.telefono_cliente,
+        -- Marcar enganche como "perdido" si ya pasó el plazo de confirmación (30 minutos después del ingreso)
+        CASE
+          WHEN NOW() > DATE_ADD(r.fecha_ingreso, INTERVAL 30 MINUTE) THEN COALESCE(r.enganche, 0)
+          ELSE 0
+        END AS enganche_perdido
       FROM reservaciones r
       INNER JOIN habitaciones h ON r.habitacion_id = h.id
       LEFT JOIN medios_mensajes mm ON r.id_medio_mensaje = mm.id_medio_mensaje
       WHERE DATE(r.fecha_ingreso) BETWEEN ? AND ?
     `;
-    
+
     const params = [fechaInicio, fechaFin];
-    
+
     // Aplicar filtros opcionales
     if (filtros.habitacion) {
       query += ` AND h.numero = ?`;
@@ -889,16 +894,17 @@ export const getReporteReservaciones = async (fechaInicio, fechaFin, filtros = {
       query += ` AND r.nombre_cliente LIKE ?`;
       params.push(`%${filtros.cliente}%`);
     }
-    
+
     query += ` ORDER BY r.fecha_ingreso DESC`;
-    
+
     const [reservaciones] = await pool.query(query, params);
-    
+
     // Calcular estadísticas
     const totalReservaciones = reservaciones.length;
-    const totalMontoEsperado = reservaciones.reduce((sum, r) => sum + Number(r.monto), 0);
+    const totalMontoEsperado = reservaciones.reduce((sum, r) => sum + Number(r.monto || 0), 0);
     const totalEnganche = reservaciones.reduce((sum, r) => sum + Number(r.enganche || 0), 0);
-    
+    const totalEnganchePerdido = reservaciones.reduce((sum, r) => sum + Number(r.enganche_perdido || 0), 0);
+
     return {
       tipo: 'reservaciones',
       fechaInicio,
@@ -908,7 +914,8 @@ export const getReporteReservaciones = async (fechaInicio, fechaFin, filtros = {
         totalReservaciones,
         totalMontoEsperado,
         totalEnganche,
-        pendientePorCobrar: totalMontoEsperado - totalEnganche
+        pendientePorCobrar: totalMontoEsperado - totalEnganche,
+        totalEnganchePerdido
       }
     };
   } catch (err) {
@@ -922,7 +929,7 @@ export const getReporteConsolidado = async (fechaInicio, fechaFin, filtros = {})
   try {
     const reporteRentas = await getReporteRentas(fechaInicio, fechaFin, filtros);
     const reporteReservaciones = await getReporteReservaciones(fechaInicio, fechaFin, filtros);
-    
+
     return {
       tipo: 'consolidado',
       fechaInicio,
@@ -947,7 +954,7 @@ export const getRoomsCalendarData = async () => {
   try {
     // Obtener todas las habitaciones
     const rooms = await getHabitaciones();
-    
+
     console.log(`📊 Total habitaciones en modelo: ${rooms.length}`);
 
     // Para cada habitación, obtener sus rentas y reservaciones
@@ -998,24 +1005,58 @@ export const getRoomsCalendarData = async () => {
   }
 };
 
-// Función para actualizar habitaciones de rentas expiradas (sin marcar rentas como finalizadas)
+// Función para verificar si una habitación tiene bookings activos (rentas activas o reservaciones no expiradas)
+export const hasActiveBookings = async (roomId) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT
+        (
+          (SELECT COUNT(*) FROM rentas re
+           WHERE re.habitacion_id = ?
+           AND re.estado = 'activa'
+           AND (
+             DATE(re.fecha_salida) > CURDATE()
+             OR
+             (DATE(re.fecha_salida) = CURDATE() AND NOW() < re.fecha_salida)
+           )
+          )
+          +
+          (SELECT COUNT(*) FROM reservaciones r
+           WHERE r.habitacion_id = ?
+           AND (
+             DATE(r.fecha_salida) > CURDATE()
+             OR
+             (DATE(r.fecha_salida) = CURDATE() AND NOW() < r.fecha_salida)
+           )
+          )
+        ) AS conflicts
+    `, [roomId, roomId]);
+
+    return (rows[0] && rows[0].conflicts > 0) || false;
+  } catch (err) {
+    console.error('Error hasActiveBookings:', err);
+    return true; // En caso de error, ser conservador y devolver true (bloquear cambio)
+  }
+};
+
+// Función para actualizar habitaciones de rentas expiradas (ahora también finaliza las rentas)
+// Nota: REMOVIDA la condición AND h.estado != 'limpieza' para procesar todas las rentas expiradas
 export const finalizarRentasExpiradas = async () => {
   const connection = await pool.getConnection();
   try {
     console.log('🔍 Buscando rentas expiradas para actualizar habitaciones...');
-    
-    // Buscar rentas activas que ya expiraron
+
+    // Buscar rentas activas que ya expiraron (sin filtrar por estado de habitación)
     const [rentasExpiradas] = await connection.query(`
       SELECT re.id, re.habitacion_id, re.nombre_cliente, re.fecha_salida, h.estado as estado_habitacion
       FROM rentas re
       INNER JOIN habitaciones h ON re.habitacion_id = h.id
-      WHERE re.estado = 'activa' 
+      WHERE re.estado = 'activa'
       AND (
         DATE(re.fecha_salida) < CURDATE()
-        OR 
+        OR
         (DATE(re.fecha_salida) = CURDATE() AND NOW() >= re.fecha_salida)
       )
-      AND h.estado != 'limpieza'
     `);
 
     if (rentasExpiradas.length === 0) {
@@ -1025,18 +1066,26 @@ export const finalizarRentasExpiradas = async () => {
 
     console.log(`📋 Encontradas ${rentasExpiradas.length} habitaciones de rentas expiradas:`, rentasExpiradas);
 
+    // Extraer ids de rentas afectadas
+    const rentaIds = rentasExpiradas.map(r => r.id);
+
+    // 1) Marcar las rentas como finalizadas y establecer fecha_salida_real
+    const placeholders = rentaIds.map(()=>'?').join(',');
+    const updateRentasSql = `UPDATE rentas SET estado = 'finalizada', fecha_salida_real = NOW() WHERE id IN (${placeholders})`;
+    const [resRentas] = await connection.query(updateRentasSql, rentaIds);
+    console.log(`✅ Rentas finalizadas: filas afectadas ${resRentas.affectedRows}`);
+
+    // 2) Actualizar las habitaciones a "limpieza"
     let actualizadasExitosas = 0;
     const habitacionesActualizadas = [];
 
-    // Solo actualizar el estado de las habitaciones a "limpieza"
     for (const renta of rentasExpiradas) {
       try {
-        console.log(`🧹 Cambiando habitación ${renta.habitacion_id} a estado 'limpieza'...`);
         const [result] = await connection.query(
           'UPDATE habitaciones SET estado = "limpieza" WHERE id = ?',
           [renta.habitacion_id]
         );
-        
+
         if (result.affectedRows > 0) {
           actualizadasExitosas++;
           habitacionesActualizadas.push({
@@ -1046,6 +1095,8 @@ export const finalizarRentasExpiradas = async () => {
             fecha_salida: renta.fecha_salida
           });
           console.log(`✅ Habitación ${renta.habitacion_id} actualizada a limpieza (renta ${renta.id})`);
+        } else {
+          console.log(`ℹ️ Habitación ${renta.habitacion_id} ya estaba en limpieza o no encontrada`);
         }
       } catch (error) {
         console.error(`❌ Error al actualizar habitación de renta ${renta.id}:`, error);
@@ -1053,7 +1104,7 @@ export const finalizarRentasExpiradas = async () => {
     }
 
     console.log(`🎉 Proceso completado: ${actualizadasExitosas}/${rentasExpiradas.length} habitaciones actualizadas a limpieza`);
-    
+
     return {
       actualizadas: actualizadasExitosas,
       habitaciones: habitacionesActualizadas

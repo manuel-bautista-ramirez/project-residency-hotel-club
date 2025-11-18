@@ -82,15 +82,15 @@
         <tr class="hover:bg-gray-50 rent-reveal opacity-0 translate-y-1 transition-all duration-500"
             data-nombre="{{this.nombre_cliente}}"
             data-hab="{{this.numero_habitacion}}"
-            data-ingreso="{{this.fecha_ingreso}}"
-            data-salida="{{this.fecha_salida}}"
+            data-ingreso="{{this.fecha_ingreso}} PM"
+            data-salida="{{this.fecha_salida}} AM"
             data-pago="{{this.tipo_pago}}"
             data-monto="{{this.monto}}"
             data-letras="{{this.monto_letras}}">
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.nombre_cliente}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.numero_habitacion}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_ingreso}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_salida}}</td>
+          <td class="py-2 px-3 sm:py-3 sm:px-4"> {{this.fecha_ingreso}}</td>
+          <td class="py-2 px-3 sm:py-3 sm:px-4">"{{this.fecha_salida}} "</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">
             {{#if (eq this.estado_tiempo 'corriente')}}
               <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
@@ -143,8 +143,8 @@
     <article class="bg-white rounded-xl shadow-lg overflow-hidden rent-reveal opacity-0 translate-y-1 transition-all duration-500"
              data-nombre="{{this.nombre_cliente}}"
              data-hab="{{this.numero_habitacion}}"
-             data-ingreso="{{this.fecha_ingreso}}"
-             data-salida="{{this.fecha_salida}}"
+             data-ingreso="{{this.fecha_ingreso}} PM"
+             data-salida="{{this.fecha_salida}} AM"
              data-pago="{{this.tipo_pago}}"
              data-monto="{{this.monto}}"
              data-letras="{{this.monto_letras}}">
@@ -307,7 +307,7 @@
     const form = document.getElementById('deleteForm');
     const roomNumberSpan = document.getElementById('deleteRoomNumber');
     const clientNameSpan = document.getElementById('deleteClientName');
-    
+
     if (modal && form) {
       form.action = `/rooms/rentas/delete/${rentId}`;
       roomNumberSpan.textContent = roomNumber;
@@ -331,7 +331,7 @@
     const form = document.getElementById('desocuparForm');
     const roomNumberSpan = document.getElementById('desocuparRoomNumber');
     const clientNameSpan = document.getElementById('desocuparClientName');
-    
+
     if (modal && form) {
       form.action = `/rooms/desocupar/${rentId}`;
       roomNumberSpan.textContent = roomNumber;
@@ -353,11 +353,11 @@
   document.addEventListener('click', function(event) {
     const deleteModal = document.getElementById('deleteModal');
     const desocuparModal = document.getElementById('desocuparModal');
-    
+
     if (deleteModal && event.target === deleteModal) {
       closeDeleteModal();
     }
-    
+
     if (desocuparModal && event.target === desocuparModal) {
       closeDesocuparModal();
     }
@@ -394,16 +394,16 @@
       console.log('\n🔍 === DEPURACIÓN formatDateTime (FRONTEND) ===');
       console.log('📥 Input dateStr:', dateStr);
       console.log('📥 Tipo:', typeof dateStr);
-      
+
       if (!dateStr) return '';
-      
+
       let date;
-      
+
       // Si ya es un objeto Date
       if (dateStr instanceof Date) {
         console.log('✅ Es un objeto Date');
         date = dateStr;
-      } 
+      }
       // Si es un string
       else if (typeof dateStr === 'string') {
         console.log('✅ Es un string');
@@ -415,52 +415,52 @@
           console.log('❌ Formato no reconocido, devolviendo original');
           return dateStr;
         }
-      } 
+      }
       else {
         console.log('❌ Tipo no soportado, convirtiendo a string');
         return String(dateStr);
       }
-      
+
       if (isNaN(date.getTime())) {
         console.log('❌ Fecha inválida');
         return String(dateStr);
       }
-      
+
       console.log('📅 Date object creado:');
       console.log('  - toString():', date.toString());
       console.log('  - toUTCString():', date.toUTCString());
       console.log('  - toISOString():', date.toISOString());
       console.log('  - getHours() [local]:', date.getHours());
       console.log('  - getUTCHours() [UTC]:', date.getUTCHours());
-      
+
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
-      
+
       const formatted = `${day}/${month}/${year} ${hours}:${minutes}`;
       console.log('📤 Output formateado:', formatted);
       console.log('=== FIN DEPURACIÓN formatDateTime ===\n');
-      
+
       // Formato: DD/MM/YYYY HH:MM
       return formatted;
     }
-    
+
     // Formatear fechas en la tabla usando data attributes
     rows.forEach(row => {
       const cells = row.querySelectorAll('td');
-      
+
       // Obtener fechas del atributo data-* que tiene el formato ISO completo
       const ingresoISO = row.getAttribute('data-ingreso');
       const salidaISO = row.getAttribute('data-salida');
-      
+
       console.log('=== PROCESANDO FILA ===');
       console.log('data-ingreso:', ingresoISO);
       console.log('data-salida:', salidaISO);
       console.log('Tipo ingreso:', typeof ingresoISO);
       console.log('Tipo salida:', typeof salidaISO);
-      
+
       // Formatear y actualizar las celdas (índice 2 y 3)
       if (cells[2] && ingresoISO) {
         const formatted = formatDateTime(ingresoISO);
@@ -473,20 +473,20 @@
         cells[3].textContent = formatted;
       }
     });
-    
+
     // Formatear fechas en las cards móviles usando data attributes y clases específicas
     document.querySelectorAll('.rent-reveal[data-ingreso]').forEach(card => {
       const ingresoISO = card.getAttribute('data-ingreso');
       const salidaISO = card.getAttribute('data-salida');
-      
+
       // Buscar los divs con las clases específicas
       const ingresoDiv = card.querySelector('.fecha-ingreso-card');
       const salidaDiv = card.querySelector('.fecha-salida-card');
-      
+
       if (ingresoDiv && ingresoISO) {
         ingresoDiv.textContent = formatDateTime(ingresoISO);
       }
-      
+
       if (salidaDiv && salidaISO) {
         salidaDiv.textContent = formatDateTime(salidaISO);
       }
