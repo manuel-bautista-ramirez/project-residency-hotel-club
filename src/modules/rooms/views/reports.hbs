@@ -21,16 +21,18 @@
 
 <!-- Contenido principal -->
 <div class="container mx-auto px-4 py-6 mt-16">
-    {{>buttons}}
-    
-    <div id="notification-area" class="mb-4"></div>
-    
-    <!-- Header -->
+
+   <!-- Header -->
     <header class="mb-8 text-center">
         <h1 class="text-2xl md:text-3xl font-extrabold text-blue-900 tracking-tight">Reportes de Habitaciones</h1>
         <p class="text-gray-600 mt-2">Genera reportes de rentas, reservaciones y envíalos por correo o WhatsApp.</p>
     </header>
-    
+    {{>buttons}}
+
+    <div id="notification-area" class="mb-4"></div>
+
+
+
     <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
 
         <!-- Selector de tipo de reporte -->
@@ -88,7 +90,7 @@
         <!-- Filtros y Fechas -->
         <div class="mb-6">
             <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Filtros y Fechas</h2>
-            
+
             <!-- Selector de fecha para DIARIO -->
             <div id="selector-diario" class="date-selector mb-4">
                 <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona el día:</label>
@@ -127,11 +129,11 @@
             <div type="hidden" class="mt-6" value="on">
                 <label class="block text-sm md:text-base text-gray-700 mb-3 font-medium">Filtros Opcionales:</label>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                    <input type="hidden" id="filtro-habitacion" placeholder="Número de habitación" 
+                    <input type="hidden" id="filtro-habitacion" placeholder="Número de habitación"
                            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base">
-                    <input type="hidden" id="filtro-cliente" placeholder="Nombre del cliente" 
+                    <input type="hidden" id="filtro-cliente" placeholder="Nombre del cliente"
                            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base">
-                    <select id="filtro-tipo-pago" 
+                    <select id="filtro-tipo-pago"
                             class="border border-gray-300 rounded-lg p-2 md:p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base">
                         <option value="">Todos los tipos de pago</option>
                         <option value="efectivo">Efectivo</option>
@@ -140,15 +142,15 @@
                     </select>
                 </div>
             </div>
-        
+
         <!-- Botones de Acción -->
         <div class="mt-6 pt-4 border-t border-gray-200">
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <button id="generar-reporte-btn" 
+                <button id="generar-reporte-btn"
                         class="bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm md:text-base font-medium">
                     <i class="fas fa-chart-bar mr-2"></i>Generar Reporte
                 </button>
-               
+
             </div>
         </div>
     </div>
@@ -170,7 +172,7 @@
     <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">
         <i class="fas fa-paper-plane mr-2"></i>Enviar Reporte
     </h2>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <!-- Envío por correo -->
         <div class="border rounded-lg p-4">
@@ -178,28 +180,28 @@
                 <i class="fas fa-envelope mr-2 text-blue-500"></i>Envío por Correo
             </h3>
             <div class="space-y-3">
-                <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com" 
+                <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
                        class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                <textarea id="mensaje-email" placeholder="Mensaje opcional..." rows="3" 
+                <textarea id="mensaje-email" placeholder="Mensaje opcional..." rows="3"
                           class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"></textarea>
-                <button id="enviar-email-btn" 
+                <button id="enviar-email-btn"
                         class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
                     <i class="fas fa-envelope mr-2"></i>Enviar por Correo
                 </button>
             </div>
         </div>
-        
+
         <!-- Envío por WhatsApp -->
         <div class="border rounded-lg p-4">
             <h3 class="font-semibold text-gray-700 mb-3">
                 <i class="fab fa-whatsapp mr-2 text-green-500"></i>Envío por WhatsApp
             </h3>
             <div class="space-y-3">
-                <input type="tel" id="whatsapp-numero" placeholder="+52 123 456 7890" 
+                <input type="tel" id="whatsapp-numero" placeholder="+52 123 456 7890"
                        class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-                <textarea id="mensaje-whatsapp" placeholder="Mensaje opcional..." rows="3" 
+                <textarea id="mensaje-whatsapp" placeholder="Mensaje opcional..." rows="3"
                           class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"></textarea>
-                <button id="enviar-whatsapp-btn" 
+                <button id="enviar-whatsapp-btn"
                         class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
                     <i class="fab fa-whatsapp mr-2"></i>Enviar por WhatsApp
                 </button>
@@ -286,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('filtro-habitacion').value = '';
         document.getElementById('filtro-cliente').value = '';
         document.getElementById('filtro-tipo-pago').value = '';
-        
+
         // Resetear fechas
         document.getElementById('fecha-diaria').value = '';
         document.getElementById('fecha-semanal').value = '';
@@ -299,23 +301,23 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('fecha-diaria').value = today;
 });
 </script>
-                        
 
-             
 
-                 
-               
 
-             
 
-          
+
+
+
+
+
+
 
             <!-- Opciones de envío -->
             <div id="envio-opciones" class="bg-white border rounded-lg p-6 mb-20 hidden">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">
                     <i class="fas fa-paper-plane mr-2"></i>Enviar Reporte
                 </h2>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Envío por correo -->
                     <div class="border rounded-lg p-4">
@@ -323,9 +325,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="fas fa-envelope text-blue-500 mr-2"></i>Enviar por Correo
                         </h3>
                         <div class="space-y-3">
-                            <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com" 
+                            <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
                                    class="border rounded-lg p-2 w-full" required>
-                            <input type="text" id="email-asunto" placeholder="Asunto del correo" 
+                            <input type="text" id="email-asunto" placeholder="Asunto del correo"
                                    class="border rounded-lg p-2 w-full">
                             <button id="enviar-email-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
                                 <i class="fas fa-envelope mr-2"></i>Enviar por Correo
@@ -339,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="fab fa-whatsapp text-green-500 mr-2"></i>Enviar por WhatsApp
                         </h3>
                         <div class="space-y-3">
-                            <input type="tel" id="whatsapp-telefono" placeholder="5512345678" 
+                            <input type="tel" id="whatsapp-telefono" placeholder="5512345678"
                                    class="border rounded-lg p-2 w-full" required>
                             <small class="text-gray-500">Formato: 10 dígitos sin espacios</small>
                             <button id="enviar-whatsapp-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full">
@@ -397,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Mostrar/ocultar selectores de fecha según el período
                 document.querySelectorAll('.date-selector').forEach(sel => sel.classList.add('hidden'));
-                
+
                 if (periodoSeleccionado === 'diario') {
                     document.getElementById('selector-diario').classList.remove('hidden');
                 } else if (periodoSeleccionado === 'semanal') {
@@ -420,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('fecha-diaria').value = `${year}-${month}-${day}`;
         document.getElementById('fecha-mensual').value = `${year}-${month}`;
         document.getElementById('fecha-quincenal').value = `${year}-${month}`;
-        
+
         // Calcular la semana actual
         const firstDayOfYear = new Date(year, 0, 1);
         const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
@@ -443,7 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 fechaInicio = fecha;
                 fechaFin = fecha;
-            } 
+            }
             else if (periodoSeleccionado === 'semanal') {
                 const semana = document.getElementById('fecha-semanal').value; // formato: 2025-W42
                 if (!semana) {
@@ -455,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const daysOffset = (parseInt(weekNum) - 1) * 7;
                 const weekStart = new Date(firstDayOfYear.getTime() + daysOffset * 24 * 60 * 60 * 1000);
                 const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
-                
+
                 fechaInicio = weekStart.toISOString().split('T')[0];
                 fechaFin = weekEnd.toISOString().split('T')[0];
             }
@@ -467,7 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return null;
                 }
                 const [year, month] = mes.split('-');
-                
+
                 if (quincena === 'primera') {
                     fechaInicio = `${year}-${month}-01`;
                     fechaFin = `${year}-${month}-15`;
@@ -544,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Función para mostrar el reporte
         function mostrarReporte(reporte) {
             const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
-            
+
             let contenidoHTML = `
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">
                     <i class="fas fa-chart-bar mr-2"></i>Reporte de ${reporte.tipo.charAt(0).toUpperCase() + reporte.tipo.slice(1)}
@@ -663,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.totalGeneral)}</p>
                         </div>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <h3 class="font-semibold text-gray-800 mb-3">📊 Rentas (${reporte.rentas.estadisticas.totalRentas})</h3>
@@ -697,10 +699,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Función para mostrar notificaciones
         function mostrarNotificacion(mensaje, tipo = 'info') {
             const notificationArea = document.getElementById('notification-area');
-            const colorClass = tipo === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 
+            const colorClass = tipo === 'error' ? 'bg-red-100 border-red-400 text-red-700' :
                               tipo === 'success' ? 'bg-green-100 border-green-400 text-green-700' :
                               'bg-blue-100 border-blue-400 text-blue-700';
-            
+
             notificationArea.innerHTML = `
                 <div class="${colorClass} px-4 py-3 rounded relative border" role="alert">
                     <span class="block sm:inline">${mensaje}</span>
@@ -709,7 +711,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </span>
                 </div>
             `;
-            
+
             // Auto-ocultar después de 5 segundos
             setTimeout(() => {
                 if (notificationArea.firstElementChild) {
@@ -814,7 +816,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     mostrarNotificacion('Reporte enviado por WhatsApp exitosamente', 'success');
                     document.getElementById('whatsapp-telefono').value = '';
-                    
+
                     // Abrir WhatsApp Web si hay URL
                     if (data.whatsappURL) {
                         window.open(data.whatsappURL, '_blank');
@@ -869,4 +871,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     </script>
+
+    <!-- Incluir validaciones del módulo de habitaciones -->
+    <script src="/js/ModuleRooms/js/index.js"></script>
+    <script src="/js/ModuleRooms/js/universalValidation.js"></script>
+    <script src="/js/ModuleRooms/js/reportsValidation.js"></script>
 </body>

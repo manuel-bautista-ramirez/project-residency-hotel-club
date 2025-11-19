@@ -5,28 +5,32 @@ USE hotel_club;
 -- =====================================================
 --               MODULE LOGIN
 -- =======================================================
+
 CREATE TABLE IF NOT EXISTS users_hotel (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(50) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  role ENUM('Administrador','Usuario') NOT NULL
+  password VARCHAR(255) NULL COMMENT 'NULL = usuario debe crear contraseña en primer login',
+  email VARCHAR(100) NULL UNIQUE,
+  role ENUM('Administrador','Usuario') NOT NULL,
+  INDEX idx_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- ======= Insertar usuarios por defecto =======
 -- NOTA: Las contraseñas están hasheadas con bcrypt (10 rounds)
 -- Administrador: manuel / manuel123
 -- Usuario: daniela / daniela123
 -- Para regenerar los hashes, ejecuta: node generate-password-hashes.js
-INSERT IGNORE INTO users_hotel (username, password, role) VALUES
-  ('manuel', '$2b$10$rQJ5vZ9K7mN2L3.OXxYzKqW8rJ9fH5nL2mP4qR6sT8uV0wKYQ8Pj3x', 'Administrador'),
-  ('daniela', '$2b$10$wA0L8oO3M4/PYyZALrX9sK0gI6oM3nQ5rS7tU9vW1xLZR9Qk4yHK6', 'Usuario');
+INSERT IGNORE INTO users_hotel (username, password, email, role) VALUES
+  ('manuel', '$2b$10$rQJ5vZ9K7mN2L3.OXxYzKqW8rJ9fH5nL2mP4qR6sT8uV0wKYQ8Pj3x', 'victor.m.r.b.2000@gmail.com', 'Administrador'),
+  ('daniela', '$2b$10$wA0L8oO3M4/PYyZALrX9sK0gI6oM3nQ5rS7tU9vW1xLZR9Qk4yHK6', 'iscvictormanuelramirezbautista@gmail.com', 'Usuario');
 
 -- si te da error solo  restablece la contraseña. en el link de abajo del login
 
 CREATE TABLE IF NOT EXISTS password_resets (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
-  token VARCHAR(255) NOT NULL UNIQUE,
+  token VARCHAR(6) NOT NULL UNIQUE COMMENT 'Código de 6 dígitos para recuperación',
   expires_at DATETIME NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   KEY idx_password_resets_user (user_id),
@@ -361,7 +365,7 @@ CREATE TABLE IF NOT EXISTS productos (
 CREATE TABLE IF NOT EXISTS ventas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   usuario_id INT,
-  id_medio_mensaje INT,
+  id_medio_mensaje INT NULL,
   nombre_cliente VARCHAR(255) NOT NULL,
   tipo_pago ENUM('efectivo', 'tarjeta', 'transferencia') NOT NULL,
   total DECIMAL(10, 2) NOT NULL,
@@ -372,8 +376,7 @@ CREATE TABLE IF NOT EXISTS ventas (
   INDEX idx_fecha_venta (created_at),
   INDEX idx_tipo_pago (tipo_pago),
   INDEX idx_usuario (usuario_id),
-  FOREIGN KEY (usuario_id) REFERENCES users_hotel(id) ON DELETE SET NULL,
-  FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes(id) ON DELETE SET NULL
+  FOREIGN KEY (usuario_id) REFERENCES users_hotel(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de detalles de venta

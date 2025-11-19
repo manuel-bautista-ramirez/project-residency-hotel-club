@@ -90,6 +90,21 @@ export const updateProductStock = async (id, cantidad) => {
   }
 };
 
+// Añadir stock a un producto
+export const addStockToProduct = async (id, quantityToAdd) => {
+  try {
+    const [result] = await pool.query(`
+      UPDATE productos 
+      SET stock = stock + ?
+      WHERE id = ?
+    `, [quantityToAdd, id]);
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error("Error en addStockToProduct:", error);
+    throw error;
+  }
+};
+
 // =====================================================
 //            FUNCIONES DE VENTAS
 // =====================================================
@@ -163,7 +178,7 @@ export const getAllSales = async () => {
       SELECT 
         v.id,
         v.nombre_cliente,
-        v.fecha_venta,
+        v.created_at AS fecha_venta,
         v.tipo_pago,
         v.total,
         v.pdf_path,
@@ -174,7 +189,7 @@ export const getAllSales = async () => {
       LEFT JOIN users_hotel u ON v.usuario_id = u.id
       LEFT JOIN venta_detalles dv ON v.id = dv.venta_id
       GROUP BY v.id
-      ORDER BY v.fecha_venta DESC
+      ORDER BY v.created_at DESC
     `);
     return rows;
   } catch (error) {
@@ -196,7 +211,7 @@ export const getSaleById = async (id) => {
         mm.telefono_cliente
       FROM ventas v
       LEFT JOIN users_hotel u ON v.usuario_id = u.id
-      LEFT JOIN medios_mensajes mm ON v.id_medio_mensaje = mm.id
+      LEFT JOIN medios_mensajes mm ON v.id_medio_mensaje = mm.id_medio_mensaje
       WHERE v.id = ?
     `, [id]);
 
@@ -279,9 +294,9 @@ export const getSalesReport = async (fechaInicio, fechaFin) => {
       FROM ventas v
       LEFT JOIN users_hotel u ON v.usuario_id = u.id
       LEFT JOIN venta_detalles dv ON v.id = dv.venta_id
-      WHERE DATE(v.fecha_venta) BETWEEN ? AND ?
+      WHERE DATE(v.created_at) BETWEEN ? AND ?
       GROUP BY v.id
-      ORDER BY v.fecha_venta DESC
+      ORDER BY v.created_at DESC
     `, [fechaInicio, fechaFin]);
 
     // Calcular estadísticas
@@ -456,7 +471,7 @@ export const getBestSellingProducts = async (days = 30) => {
       FROM productos p
       INNER JOIN venta_detalles dv ON p.id = dv.producto_id
       INNER JOIN ventas v ON dv.venta_id = v.id
-      WHERE v.fecha_venta >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
       GROUP BY p.id, p.nombre, p.categoria, p.precio, p.stock
       ORDER BY total_vendido DESC
       LIMIT 10
@@ -481,7 +496,7 @@ export const getSalesByCategory = async (days = 30) => {
       FROM productos p
       INNER JOIN venta_detalles dv ON p.id = dv.producto_id
       INNER JOIN ventas v ON dv.venta_id = v.id
-      WHERE v.fecha_venta >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
       GROUP BY p.categoria
       ORDER BY ingresos_totales DESC
     `, [days]);

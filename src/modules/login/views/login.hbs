@@ -22,6 +22,12 @@
       </div>
     {{/if}}
 
+    {{#if success}}
+      <div class="flex justify-center mt-4 py-2">
+        <p class="text-green-600 text-center text-sm sm:text-base">{{success}}</p>
+      </div>
+    {{/if}}
+
     <!-- Enlace para recuperación de contraseña -->
     <div class="flex justify-center mt-4">
       <a href="/password-reset/request" class="text-blue-500 hover:underline text-sm sm:text-base">
@@ -31,7 +37,7 @@
     
   </form>
 
-  <script type="module" src="/js/validationClient.js"></script>
+  <script type="module" src="/js/ModuleLogin/validationClient.js"></script>
   <script>
     document.querySelectorAll('input').forEach(input => {
       input.addEventListener('focus', () => {
