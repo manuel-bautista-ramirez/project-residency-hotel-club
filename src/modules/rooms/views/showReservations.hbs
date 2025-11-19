@@ -311,9 +311,37 @@
       }
       // Si es un string
       else if (typeof dateStr === 'string') {
-        // Si la fecha viene en formato ISO o YYYY-MM-DD
-        if (dateStr.includes('T') || dateStr.includes('Z') || dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
-          date = new Date(dateStr);
+        // Si la fecha viene en formato ISO o YYYY-MM-DD, parsear manualmente para evitar problemas de zona horaria
+        if (dateStr.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
+          // Ejemplo esperado: 2025-11-18T06:17:29-06:00 o 2025-11-18T06:17:29Z
+          const [datePart, timePartWithZone] = dateStr.split('T');
+          const timePart = timePartWithZone.split(/[Z+-]/)[0]; // tomar solo HH:MM:SS
+
+          const [year, month, day] = datePart.split('-').map(Number);
+          const [hour, minute] = timePart.split(':').map(Number);
+
+          const dayStr = String(day).padStart(2, '0');
+          const monthStr = String(month).padStart(2, '0');
+          const yearStr = String(year);
+          const hourStr = String(hour).padStart(2, '0');
+          const minuteStr = String(minute).padStart(2, '0');
+
+          return `${dayStr}/${monthStr}/${yearStr} ${hourStr}:${minuteStr}`;
+        } else if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+          // Formato simple MySQL: YYYY-MM-DD HH:MM:SS
+          const [datePart, timePartFull] = dateStr.split(' ');
+          const timePart = (timePartFull || '').split('.')[0] || '00:00:00';
+
+          const [year, month, day] = datePart.split('-').map(Number);
+          const [hour, minute] = timePart.split(':').map(Number);
+
+          const dayStr = String(day).padStart(2, '0');
+          const monthStr = String(month).padStart(2, '0');
+          const yearStr = String(year);
+          const hourStr = String(hour).padStart(2, '0');
+          const minuteStr = String(minute).padStart(2, '0');
+
+          return `${dayStr}/${monthStr}/${yearStr} ${hourStr}:${minuteStr}`;
         } else {
           return dateStr; // Si no reconocemos el formato, devolver original
         }
@@ -322,6 +350,7 @@
         return String(dateStr); // Convertir a string si no es Date ni string
       }
 
+      // Si llegamos aquí con un objeto Date, formatear normalmente
       if (isNaN(date.getTime())) {
         return String(dateStr); // Si la fecha es inválida, devolver original
       }
@@ -344,6 +373,8 @@
       const reservaISO = row.getAttribute('data-reserva');
       const ingresoISO = row.getAttribute('data-ingreso');
       const salidaISO = row.getAttribute('data-salida');
+
+      console.log('DEBUG reservaISO:', reservaISO);
 
       // Formatear fecha reserva (col 2)
       if (cells[2] && reservaISO) {

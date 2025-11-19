@@ -32,6 +32,23 @@ const formatearFechaSafe = (fecha, formato = 'iso') => {
     switch (formato) {
       case 'date':
         return fechaObj.toISOString().split("T")[0];
+      case 'iso_mx': {
+        const formatter = new Intl.DateTimeFormat('es-MX', {
+          timeZone: 'America/Mexico_City',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        });
+        const parts = formatter.formatToParts(fechaObj).reduce((acc, p) => {
+          acc[p.type] = p.value; return acc;
+        }, {});
+        // Devolver en formato ISO con offset fijo de México: YYYY-MM-DDTHH:mm:ss-06:00
+        return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}-06:00`;
+      }
       case 'iso':
       default:
         return fechaObj.toISOString();
@@ -372,9 +389,10 @@ export const renderAllRervationes = async (req, res) => {
 
       return {
         ...reservacion,
-        fecha_reserva: formatearFechaSafe(reservacion.fecha_reserva),
-        fecha_ingreso: formatearFechaSafe(reservacion.fecha_ingreso),
-        fecha_salida: formatearFechaSafe(reservacion.fecha_salida),
+        // Enviar fechas en formato ISO estándar; el frontend ya las parsea manualmente sin cambiar la zona horaria
+        fecha_reserva: formatearFechaSafe(reservacion.fecha_reserva, 'iso'),
+        fecha_ingreso: formatearFechaSafe(reservacion.fecha_ingreso, 'iso'),
+        fecha_salida: formatearFechaSafe(reservacion.fecha_salida, 'iso'),
         enganche_perdido: Boolean(enganchePerdido),
         confirm_start: confirmStartDate ? confirmStartDate.toISOString() : null, // para data-attribute en la vista
       };

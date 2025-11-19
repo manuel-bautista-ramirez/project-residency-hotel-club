@@ -8,31 +8,19 @@ export const getHabitaciones = async () => {
       SELECT
         h.*,
         CASE
-          -- Si hay una renta activa y ya pasó la hora de entrada (12:00), está ocupada
+          -- Si AHORA (fecha y hora actuales) cae dentro del rango de una renta ACTIVA, la habitación está ocupada
           WHEN EXISTS (
             SELECT 1 FROM rentas re
             WHERE re.habitacion_id = h.id
             AND re.estado = 'activa'
-            AND (
-              -- Si la fecha de ingreso es hoy, verificar que ya sean las 12:00 o más
-              (DATE(re.fecha_ingreso) = CURDATE() AND CURTIME() >= '12:00:00')
-              OR
-              -- Si ya pasó la fecha de ingreso, está ocupada
-              (DATE(re.fecha_ingreso) < CURDATE() AND CURDATE() <= DATE(re.fecha_salida))
-            )
+            AND NOW() BETWEEN re.fecha_ingreso AND re.fecha_salida
           ) THEN 'ocupado'
 
-          -- Si hay una reservación activa y ya pasó la hora de entrada (12:00), está ocupada
+          -- Si AHORA cae dentro del rango de una reservación, la habitación está ocupada (bloquear renta en ese rango)
           WHEN EXISTS (
             SELECT 1 FROM reservaciones r
             WHERE r.habitacion_id = h.id
-            AND (
-              -- Si la fecha de ingreso es hoy, verificar que ya sean las 12:00 o más
-              (DATE(r.fecha_ingreso) = CURDATE() AND CURTIME() >= '12:00:00')
-              OR
-              -- Si ya pasó la fecha de ingreso, está ocupada
-              (DATE(r.fecha_ingreso) < CURDATE() AND CURDATE() <= DATE(r.fecha_salida))
-            )
+            AND NOW() BETWEEN r.fecha_ingreso AND r.fecha_salida
           ) THEN 'ocupado'
 
           -- Si el estado manual es limpieza, mantener limpieza
@@ -184,7 +172,7 @@ export const createReservation = async (reservationData) => {
     const [result] = await pool.query(
       `INSERT INTO reservaciones
        (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva, fecha_ingreso, fecha_salida, monto, monto_letras, enganche, enganche_letras)
-        VALUES (?, ?, ?, ?, CURDATE(), ?, ?, ?, ?, ?, ?)`,
+        VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?)`,
       [
         habitacion_id,
         usuarioIdInt,
@@ -560,7 +548,7 @@ export const createRenta = async (req, res) => {
       `INSERT INTO reservaciones
        (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_reserva,
         fecha_ingreso, fecha_salida, monto, monto_letras, tipo_pago)
-       VALUES (?, ?, ?, ?, CURDATE(), ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)`,
       [
         habitacion_id,
         usuario_id,
