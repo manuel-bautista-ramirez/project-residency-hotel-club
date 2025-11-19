@@ -663,7 +663,8 @@ export const renderFormEditarReservacion = async (req, res) => {
 
 
        showNavbar: true
-//upstream/main
+
+
     });
   } catch (err) {
     console.error("Error en renderFormEditarReservacion:", err);

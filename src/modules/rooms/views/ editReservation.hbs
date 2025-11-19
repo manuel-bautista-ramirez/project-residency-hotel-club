@@ -97,6 +97,7 @@
                 required
 
                 class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-1 focus:ring-yellow-400 focus:border-yellow-400 outline-none appearance-none cursor-pointer"
+
               >
                 {{#each habitaciones}}
                   <option value="{{this.id}}" {{#if (eq this.id ../reservacion.habitacion_id)}}selected{{/if}}>
@@ -106,7 +107,6 @@
               </select>
             </div>
           </div>
-
           <!-- Columna 2: Fechas -->
           <div class="space-y-3">
             <!-- Fechas -->
