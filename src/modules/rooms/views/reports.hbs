@@ -1,93 +1,101 @@
 <style>
-    .active-period {
-        background-color: #3B82F6;
-        color: white;
-    }
+  .active-period {
+    background-color: #3B82F6;
+    color: white;
+  }
 
-    #calendar {
-        transition: all 0.3s ease;
-    }
+  #calendar {
+    transition: all 0.3s ease;
+  }
 
-    .report-type-option.active-report {
-        border-color: #3B82F6;
-        background-color: #EBF8FF;
-    }
+  .report-type-option.active-report {
+    border-color: #3B82F6;
+    background-color: #EBF8FF;
+  }
 
-    .period-option.active {
-        border-color: #3B82F6;
-        background-color: #EBF8FF;
-    }
+  .period-option.active {
+    border-color: #3B82F6;
+    background-color: #EBF8FF;
+  }
 </style>
 
 <!-- Contenido principal -->
 <div class="container mx-auto px-4 py-6 mt-16">
 
-   <!-- Header -->
-    <header class="mb-8 text-center">
-        <h1 class="text-2xl md:text-3xl font-extrabold text-blue-900 tracking-tight">Reportes de Habitaciones</h1>
-        <p class="text-gray-600 mt-2">Genera reportes de rentas, reservaciones y envíalos por correo o WhatsApp.</p>
-    </header>
-    {{>buttons}}
+  <!-- Header -->
+  <header class="mb-8 text-center">
+    <h1 class="text-2xl md:text-3xl font-extrabold text-blue-900 tracking-tight">Reportes de Habitaciones</h1>
+    <p class="text-gray-600 mt-2">Genera reportes de rentas, reservaciones y envíalos por correo o WhatsApp.</p>
+  </header>
+  {{>buttons}}
 
-    <div id="notification-area" class="mb-4"></div>
+  <div id="notification-area" class="mb-4"></div>
 
 
 
-    <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
+  <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
 
-        <!-- Selector de tipo de reporte -->
-        <div class="mb-6">
-            <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Tipo de Reporte</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                <div class="report-type-option border-2 border-blue-500 bg-blue-50 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md active-report"
-                    data-type="rentas">
-                    <i class="fas fa-bed text-2xl md:text-4xl text-blue-500 mb-2 block"></i>
-                    <h3 class="font-semibold text-sm md:text-base">Reporte de Rentas</h3>
-                    <p class="text-xs md:text-sm text-gray-500 mt-1">Análisis de habitaciones rentadas</p>
-                </div>
-                <div class="report-type-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
-                    data-type="reservaciones">
-                    <i class="fas fa-calendar-check text-2xl md:text-4xl text-green-500 mb-2 block"></i>
-                    <h3 class="font-semibold text-sm md:text-base">Reporte de Reservaciones</h3>
-                    <p class="text-xs md:text-sm text-gray-500 mt-1">Análisis de reservaciones</p>
-                </div>
-                <div class="report-type-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md sm:col-span-2 lg:col-span-1"
-                    data-type="consolidado">
-                    <i class="fas fa-chart-bar text-2xl md:text-4xl text-purple-500 mb-2 block"></i>
-                    <h3 class="font-semibold text-sm md:text-base">Reporte Consolidado</h3>
-                    <p class="text-xs md:text-sm text-gray-500 mt-1">Rentas + Reservaciones</p>
-                </div>
-            </div>
+    <!-- Selector de tipo de reporte -->
+    <div class="mb-6">
+      <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Tipo de Reporte</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+        <div
+          class="report-type-option border-2 border-blue-500 bg-blue-50 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md active-report"
+          data-type="rentas">
+          <i class="fas fa-bed text-2xl md:text-4xl text-blue-500 mb-2 block"></i>
+          <h3 class="font-semibold text-sm md:text-base">Reporte de Rentas</h3>
+          <p class="text-xs md:text-sm text-gray-500 mt-1">Análisis de habitaciones rentadas</p>
         </div>
-
-        <!-- Selector de Período -->
-        <div class="mb-6">
-            <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Período del Reporte</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-                <button class="period-option border-2 border-blue-500 bg-blue-50 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md active"
-                    data-period="diario">
-                    <i class="fas fa-calendar-day text-xl md:text-3xl text-blue-500 mb-2 block"></i>
-                    <h3 class="font-semibold text-xs md:text-sm">Diario</h3>
-                </button>
-                <button class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
-                    data-period="semanal">
-                    <i class="fas fa-calendar-week text-xl md:text-3xl text-green-500 mb-2 block"></i>
-                    <h3 class="font-semibold text-xs md:text-sm">Semanal</h3>
-                </button>
-                <button class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
-                    data-period="quincenal">
-                    <i class="fas fa-calendar-alt text-xl md:text-3xl text-purple-500 mb-2 block"></i>
-                    <h3 class="font-semibold text-xs md:text-sm">Quincenal</h3>
-                </button>
-                <button class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
-                    data-period="mensual">
-                    <i class="fas fa-calendar text-xl md:text-3xl text-orange-500 mb-2 block"></i>
-                    <h3 class="font-semibold text-xs md:text-sm">Mensual</h3>
-                </button>
-            </div>
+        <div
+          class="report-type-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+          data-type="reservaciones">
+          <i class="fas fa-calendar-check text-2xl md:text-4xl text-green-500 mb-2 block"></i>
+          <h3 class="font-semibold text-sm md:text-base">Reporte de Reservaciones</h3>
+          <p class="text-xs md:text-sm text-gray-500 mt-1">Análisis de reservaciones</p>
         </div>
+        <div
+          class="report-type-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md sm:col-span-2 lg:col-span-1"
+          data-type="consolidado">
+          <i class="fas fa-chart-bar text-2xl md:text-4xl text-purple-500 mb-2 block"></i>
+          <h3 class="font-semibold text-sm md:text-base">Reporte Consolidado</h3>
+          <p class="text-xs md:text-sm text-gray-500 mt-1">Rentas + Reservaciones</p>
+        </div>
+      </div>
+    </div>
 
-        <!-- Filtros y Fechas -->
+    <!-- Selector de Período -->
+    <div class="mb-6">
+      <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Período del Reporte</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+        <button
+          class="period-option border-2 border-blue-500 bg-blue-50 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md active"
+          data-period="diario">
+          <i class="fas fa-calendar-day text-xl md:text-3xl text-blue-500 mb-2 block"></i>
+          <h3 class="font-semibold text-xs md:text-sm">Diario</h3>
+        </button>
+        <button
+          class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+          data-period="semanal">
+          <i class="fas fa-calendar-week text-xl md:text-3xl text-green-500 mb-2 block"></i>
+          <h3 class="font-semibold text-xs md:text-sm">Semanal</h3>
+        </button>
+        <button
+          class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+          data-period="quincenal">
+          <i class="fas fa-calendar-alt text-xl md:text-3xl text-purple-500 mb-2 block"></i>
+          <h3 class="font-semibold text-xs md:text-sm">Quincenal</h3>
+        </button>
+        <button
+          class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+          data-period="mensual">
+          <i class="fas fa-calendar text-xl md:text-3xl text-orange-500 mb-2 block"></i>
+          <h3 class="font-semibold text-xs md:text-sm">Mensual</h3>
+        </button>
+      </div>
+    </div>
+
+ 
+     <!-- Filtros y Fechas -->
         <div class="mb-6">
             <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Filtros y Fechas</h2>
 
@@ -125,755 +133,548 @@
                 <input type="month" id="fecha-mensual" class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
-            <!-- Filtros Opcionales -->
-            <div type="hidden" class="mt-6" value="on">
-                <label class="block text-sm md:text-base text-gray-700 mb-3 font-medium">Filtros Opcionales:</label>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                    <input type="hidden" id="filtro-habitacion" placeholder="Número de habitación"
-                           class="border border-gray-300 rounded-lg p-2 md:p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base">
-                    <input type="hidden" id="filtro-cliente" placeholder="Nombre del cliente"
-                           class="border border-gray-300 rounded-lg p-2 md:p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base">
-                    <select id="filtro-tipo-pago"
-                            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm md:text-base">
-                        <option value="">Todos los tipos de pago</option>
-                        <option value="efectivo">Efectivo</option>
-                        <option value="tarjeta">Tarjeta</option>
-                        <option value="transferencia">Transferencia</option>
-                    </select>
-                </div>
-            </div>
-
-        <!-- Botones de Acción -->
-        <div class="mt-6 pt-4 border-t border-gray-200">
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <button id="generar-reporte-btn"
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm md:text-base font-medium">
-                    <i class="fas fa-chart-bar mr-2"></i>Generar Reporte
-                </button>
-
-            </div>
-        </div>
+    <!-- Botones de Acción -->
+    <div class="mt-6 pt-4 border-t border-gray-200">
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <button id="generar-reporte-btn"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm md:text-base font-medium">
+          <i class="fas fa-chart-bar mr-2"></i>Generar Reporte
+        </button>
+      </div>
     </div>
-</div>
+  </div>
 
-
-<!-- Vista previa del reporte -->
-<div class="p-3">
-
-<div id="reporte-container" class="bg-gray-50 rounded-lg p-4 md:p-7 mt-6 mb-6 ">
-    <div class="flex justify-center items-center h-32 md:h-40 border border-dashed border-gray-300 rounded-lg">
-        <p class="text-gray-500 text-sm md:text-base text-center">Selecciona un tipo de reporte y genera la vista previa</p>
+  <!-- Vista previa del reporte -->
+  <div class="p-3">
+    <div id="reporte-container" class="bg-gray-50 rounded-lg p-4 md:p-7 mt-6 mb-6 ">
+      <div class="flex justify-center items-center h-32 md:h-40 border border-dashed border-gray-300 rounded-lg">
+        <p class="text-gray-500 text-sm md:text-base text-center">Selecciona un tipo de reporte y genera la vista previa
+        </p>
+      </div>
     </div>
-</div>
-</div>
+  </div>
 
-<!-- Opciones de envío -->
-<div id="envio-opciones" class="bg-white border rounded-lg p-4 md:p-6 mb-6 hidden">
-    <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">
-        <i class="fas fa-paper-plane mr-2"></i>Enviar Reporte
-    </h2>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      let tipoReporteSeleccionado = 'rentas';
+      let periodoSeleccionado = 'diario';
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <!-- Envío por correo -->
-        <div class="border rounded-lg p-4">
-            <h3 class="font-semibold text-gray-700 mb-3">
-                <i class="fas fa-envelope mr-2 text-blue-500"></i>Envío por Correo
-            </h3>
-            <div class="space-y-3">
-                <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
-                       class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                <textarea id="mensaje-email" placeholder="Mensaje opcional..." rows="3"
-                          class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"></textarea>
-                <button id="enviar-email-btn"
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
-                    <i class="fas fa-envelope mr-2"></i>Enviar por Correo
-                </button>
-            </div>
-        </div>
-
-        <!-- Envío por WhatsApp -->
-        <div class="border rounded-lg p-4">
-            <h3 class="font-semibold text-gray-700 mb-3">
-                <i class="fab fa-whatsapp mr-2 text-green-500"></i>Envío por WhatsApp
-            </h3>
-            <div class="space-y-3">
-                <input type="tel" id="whatsapp-numero" placeholder="+52 123 456 7890"
-                       class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-                <textarea id="mensaje-whatsapp" placeholder="Mensaje opcional..." rows="3"
-                          class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"></textarea>
-                <button id="enviar-whatsapp-btn"
-                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
-                    <i class="fab fa-whatsapp mr-2"></i>Enviar por WhatsApp
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let tipoReporteSeleccionado = 'rentas';
-    let periodoSeleccionado = 'diario';
-
-    // Funcionalidad para cambiar entre tipos de reporte
-    document.querySelectorAll('.report-type-option').forEach(option => {
+      // Funcionalidad para cambiar entre tipos de reporte
+      document.querySelectorAll('.report-type-option').forEach(option => {
         option.addEventListener('click', function () {
-            // Remover clase active de todas las opciones
-            document.querySelectorAll('.report-type-option').forEach(opt => {
-                opt.classList.remove('active-report');
-                opt.classList.remove('border-blue-500', 'bg-blue-50');
-                opt.classList.add('border-gray-200');
-            });
+          // Remover clase active de todas las opciones
+          document.querySelectorAll('.report-type-option').forEach(opt => {
+            opt.classList.remove('active-report');
+            opt.classList.remove('border-blue-500', 'bg-blue-50');
+            opt.classList.add('border-gray-200');
+          });
 
-            // Agregar clase active a la opción seleccionada
-            this.classList.add('active-report');
-            this.classList.add('border-blue-500', 'bg-blue-50');
-            this.classList.remove('border-gray-200');
+          // Agregar clase active a la opción seleccionada
+          this.classList.add('active-report');
+          this.classList.add('border-blue-500', 'bg-blue-50');
+          this.classList.remove('border-gray-200');
 
-            tipoReporteSeleccionado = this.getAttribute('data-type');
+          tipoReporteSeleccionado = this.getAttribute('data-type');
         });
-    });
+      });
 
-    // Funcionalidad para cambiar entre períodos
-    document.querySelectorAll('.period-option').forEach(option => {
+      // Helper para formatear fecha a YYYY-MM-DD
+      function formatDateYMD(date) {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      // Obtener rango de fechas según el período seleccionado y los controles de fecha
+      function obtenerRangoFechas() {
+        const today = new Date();
+
+        if (periodoSeleccionado === 'diario') {
+          const inputDia = document.getElementById('fecha-diaria');
+          const valor = inputDia?.value;
+          if (!valor) {
+            throw new Error('Selecciona una fecha para el reporte diario');
+          }
+          return { fechaInicio: valor, fechaFin: valor };
+        }
+
+        if (periodoSeleccionado === 'semanal') {
+          const inputSemana = document.getElementById('fecha-semanal');
+          const valor = inputSemana?.value; // Formato esperado: YYYY-Www
+          if (!valor) {
+            throw new Error('Selecciona una semana para el reporte semanal');
+          }
+
+          const [yearStr, weekStr] = valor.split('-W');
+          const year = parseInt(yearStr, 10);
+          const week = parseInt(weekStr, 10);
+
+          // Aproximación: tomar el 1 de enero y sumar (week - 1) * 7 días
+          const inicio = new Date(year, 0, 1);
+          const diaSemana = inicio.getDay(); // 0=Domingo, 1=Lunes, ...
+          const ajuste = (diaSemana === 0 ? -6 : 1) - diaSemana; // Mover a lunes de la primera semana
+          inicio.setDate(inicio.getDate() + ajuste + (week - 1) * 7);
+          const fin = new Date(inicio);
+          fin.setDate(inicio.getDate() + 6);
+
+          return { fechaInicio: formatDateYMD(inicio), fechaFin: formatDateYMD(fin) };
+        }
+
+        if (periodoSeleccionado === 'quincenal') {
+          const inputMes = document.getElementById('fecha-quincenal');
+          const valor = inputMes?.value; // Formato esperado: YYYY-MM
+          if (!valor) {
+            throw new Error('Selecciona un mes para el reporte quincenal');
+          }
+
+          const esPrimera = document.getElementById('primera-quincena')?.checked;
+          const [yearStr, monthStr] = valor.split('-');
+          const year = parseInt(yearStr, 10);
+          const month = parseInt(monthStr, 10); // 1-12
+
+          if (esPrimera) {
+            const inicio = new Date(year, month - 1, 1);
+            const fin = new Date(year, month - 1, 15);
+            return { fechaInicio: formatDateYMD(inicio), fechaFin: formatDateYMD(fin) };
+          } else {
+            const inicio = new Date(year, month - 1, 16);
+            const fin = new Date(year, month, 0); // Último día del mes
+            return { fechaInicio: formatDateYMD(inicio), fechaFin: formatDateYMD(fin) };
+          }
+        }
+
+        if (periodoSeleccionado === 'mensual') {
+          const inputMes = document.getElementById('fecha-mensual');
+          const valor = inputMes?.value; // Formato esperado: YYYY-MM
+          if (!valor) {
+            throw new Error('Selecciona un mes para el reporte mensual');
+          }
+
+          const [yearStr, monthStr] = valor.split('-');
+          const year = parseInt(yearStr, 10);
+          const month = parseInt(monthStr, 10); // 1-12
+
+          const inicio = new Date(year, month - 1, 1);
+          const fin = new Date(year, month, 0); // Último día del mes
+          return { fechaInicio: formatDateYMD(inicio), fechaFin: formatDateYMD(fin) };
+        }
+
+        // Fallback: usar hoy
+        const fecha = formatDateYMD(today);
+        return { fechaInicio: fecha, fechaFin: fecha };
+      }
+
+      // Funcionalidad para cambiar entre períodos
+      document.querySelectorAll('.period-option').forEach(option => {
         option.addEventListener('click', function () {
-            // Remover clase active de todas las opciones
-            document.querySelectorAll('.period-option').forEach(opt => {
-                opt.classList.remove('active');
-                opt.classList.remove('border-blue-500', 'bg-blue-50');
-                opt.classList.add('border-gray-200');
-            });
+          // Remover clase active de todas las opciones
+          document.querySelectorAll('.period-option').forEach(opt => {
+            opt.classList.remove('active');
+            opt.classList.remove('border-blue-500', 'bg-blue-50');
+            opt.classList.add('border-gray-200');
+          });
 
-            // Agregar clase active a la opción seleccionada
-            this.classList.add('active');
-            this.classList.add('border-blue-500', 'bg-blue-50');
-            this.classList.remove('border-gray-200');
+          // Agregar clase active a la opción seleccionada
+          this.classList.add('active');
+          this.classList.add('border-blue-500', 'bg-blue-50');
+          this.classList.remove('border-gray-200');
 
-            periodoSeleccionado = this.getAttribute('data-period');
+          periodoSeleccionado = this.getAttribute('data-period');
 
-            // Mostrar/ocultar selectores de fecha
-            document.querySelectorAll('.date-selector').forEach(selector => {
-                selector.classList.add('hidden');
-            });
+          // Mostrar/ocultar selectores de fecha
+          document.querySelectorAll('.date-selector').forEach(selector => {
+            selector.classList.add('hidden');
+          });
 
-            const selectorId = `selector-${periodoSeleccionado}`;
-            const selector = document.getElementById(selectorId);
-            if (selector) {
-                selector.classList.remove('hidden');
+          const selectorId = `selector-${periodoSeleccionado}`;
+          const selector = document.getElementById(selectorId);
+          if (selector) {
+            selector.classList.remove('hidden');
+          }
+
+          // Establecer valores por defecto en los filtros de fecha según el período
+          const hoy = new Date();
+
+          if (periodoSeleccionado === 'diario') {
+            const inputDia = document.getElementById('fecha-diaria');
+            if (inputDia) {
+              inputDia.value = formatDateYMD(hoy);
             }
-        });
-    });
+          }
 
-    // Generar reporte
-    document.getElementById('generar-reporte-btn').addEventListener('click', function() {
-        // Aquí iría la lógica para generar el reporte
+          if (periodoSeleccionado === 'semanal') {
+            const inputSemana = document.getElementById('fecha-semanal');
+            if (inputSemana) {
+              const year = hoy.getFullYear();
+              // Calcular número de semana aproximado
+              const inicioAnio = new Date(year, 0, 1);
+              const diffMs = hoy - inicioAnio;
+              const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+              const week = Math.floor((diffDias + inicioAnio.getDay()) / 7) + 1;
+              const weekStr = week.toString().padStart(2, '0');
+              inputSemana.value = `${year}-W${weekStr}`;
+            }
+          }
+
+          if (periodoSeleccionado === 'quincenal') {
+            const inputQuincena = document.getElementById('fecha-quincenal');
+            if (inputQuincena) {
+              const year = hoy.getFullYear();
+              const month = (hoy.getMonth() + 1).toString().padStart(2, '0');
+              inputQuincena.value = `${year}-${month}`;
+            }
+
+            const radioPrimera = document.getElementById('primera-quincena');
+            const radioSegunda = document.getElementById('segunda-quincena');
+            if (radioPrimera && radioSegunda) {
+              // Seleccionar quincena según el día actual
+              if (hoy.getDate() <= 15) {
+                radioPrimera.checked = true;
+                radioSegunda.checked = false;
+              } else {
+                radioPrimera.checked = false;
+                radioSegunda.checked = true;
+              }
+            }
+          }
+
+          if (periodoSeleccionado === 'mensual') {
+            const inputMes = document.getElementById('fecha-mensual');
+            if (inputMes) {
+              const year = hoy.getFullYear();
+              const month = (hoy.getMonth() + 1).toString().padStart(2, '0');
+              inputMes.value = `${year}-${month}`;
+            }
+          }
+        });
+      });
+
+      // Generar reporte
+      document.getElementById('generar-reporte-btn').addEventListener('click', async function () {
         const container = document.getElementById('reporte-container');
         container.innerHTML = `
-            <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-            <div class="bg-white p-4 rounded border">
-                <p class="text-center text-gray-600">Generando reporte de ${tipoReporteSeleccionado} - ${periodoSeleccionado}...</p>
-                <div class="mt-4 flex justify-center">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                </div>
-            </div>
+          <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
+          <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
+            <p class="text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Generando reporte...</p>
+          </div>`;
+
+        try {
+          // Obtener fechas según el período y los selectores de fecha
+          const { fechaInicio, fechaFin } = obtenerRangoFechas();
+
+          const params = new URLSearchParams({
+            tipo: tipoReporteSeleccionado,
+            fechaInicio,
+            fechaFin
+          });
+
+          const response = await fetch(`/api/rooms/reports/generate?${params}`);
+          const data = await response.json();
+
+          if (!response.ok || !data.reporte) {
+            throw new Error(data.error || 'Error al generar el reporte');
+          }
+
+          mostrarReporte(data.reporte);
+
+        } catch (error) {
+          container.innerHTML = `
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
+            <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
+              <p class="text-red-500">Error: ${error.message}</p>
+            </div>`;
+          // Ocultar opciones de envío en caso de error
+          document.getElementById('envio-opciones').classList.add('hidden');
+        }
+      });
+
+      // Función para mostrar el reporte en tabla
+      function mostrarReporte(reporte) {
+        const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
+
+        let contenidoHTML = `
+          <h2 class="text-xl font-semibold text-gray-700 mb-4">
+            <i class="fas fa-chart-bar mr-2"></i>Reporte de ${reporte.tipo.charAt(0).toUpperCase() + reporte.tipo.slice(1)}
+          </h2>
         `;
 
-        // Mostrar opciones de envío después de generar
-        setTimeout(() => {
-            document.getElementById('envio-opciones').classList.remove('hidden');
-        }, 2000);
-    });
+        let hayDatos = false;
 
-    // Limpiar filtros
-    document.getElementById('limpiar-filtros-btn').addEventListener('click', function() {
-        document.getElementById('filtro-habitacion').value = '';
-        document.getElementById('filtro-cliente').value = '';
-        document.getElementById('filtro-tipo-pago').value = '';
-
-        // Resetear fechas
-        document.getElementById('fecha-diaria').value = '';
-        document.getElementById('fecha-semanal').value = '';
-        document.getElementById('fecha-quincenal').value = '';
-        document.getElementById('fecha-mensual').value = '';
-    });
-
-    // Configurar fecha por defecto (hoy)
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('fecha-diaria').value = today;
-});
-</script>
-
-
-
-
-
-
-
-
-
-
-
-            <!-- Opciones de envío -->
-            <div id="envio-opciones" class="bg-white border rounded-lg p-6 mb-20 hidden">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">
-                    <i class="fas fa-paper-plane mr-2"></i>Enviar Reporte
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Envío por correo -->
-                    <div class="border rounded-lg p-4">
-                        <h3 class="font-semibold text-gray-800 mb-3">
-                            <i class="fas fa-envelope text-blue-500 mr-2"></i>Enviar por Correo
-                        </h3>
-                        <div class="space-y-3">
-                            <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
-                                   class="border rounded-lg p-2 w-full" required>
-                            <input type="text" id="email-asunto" placeholder="Asunto del correo"
-                                   class="border rounded-lg p-2 w-full">
-                            <button id="enviar-email-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
-                                <i class="fas fa-envelope mr-2"></i>Enviar por Correo
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Envío por WhatsApp -->
-                    <div class="border rounded-lg p-4">
-                        <h3 class="font-semibold text-gray-800 mb-3">
-                            <i class="fab fa-whatsapp text-green-500 mr-2"></i>Enviar por WhatsApp
-                        </h3>
-                        <div class="space-y-3">
-                            <input type="tel" id="whatsapp-telefono" placeholder="5512345678"
-                                   class="border rounded-lg p-2 w-full" required>
-                            <small class="text-gray-500">Formato: 10 dígitos sin espacios</small>
-                            <button id="enviar-whatsapp-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full">
-                                <i class="fab fa-whatsapp mr-2"></i>Enviar por WhatsApp
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-  </header>
-   </div>
-     <script>
-        let reporteActual = null;
-        let tipoReporteSeleccionado = 'rentas';
-        let periodoSeleccionado = 'diario';
-
-        // Funcionalidad para cambiar entre tipos de reporte
-        document.querySelectorAll('.report-type-option').forEach(option => {
-            option.addEventListener('click', function () {
-                // Remover clase active de todas las opciones
-                document.querySelectorAll('.report-type-option').forEach(opt => {
-                    opt.classList.remove('active-report');
-                    opt.classList.add('border-gray-200');
-                    opt.classList.remove('border-blue-500');
-                });
-
-                // Añadir clase active a la opción seleccionada
-                this.classList.add('active-report');
-                this.classList.remove('border-gray-200');
-                this.classList.add('border-blue-500');
-
-                // Guardar tipo seleccionado
-                tipoReporteSeleccionado = this.getAttribute('data-type');
-            });
-        });
-
-        // Funcionalidad para cambiar entre períodos
-        document.querySelectorAll('.period-option').forEach(option => {
-            option.addEventListener('click', function () {
-                // Remover clase active de todas las opciones
-                document.querySelectorAll('.period-option').forEach(opt => {
-                    opt.classList.remove('border-blue-500', 'bg-blue-50');
-                    opt.classList.add('border-gray-200');
-                });
-
-                // Añadir clase active a la opción seleccionada
-                this.classList.add('border-blue-500', 'bg-blue-50');
-                this.classList.remove('border-gray-200');
-
-                // Guardar período seleccionado
-                periodoSeleccionado = this.getAttribute('data-period');
-
-                // Mostrar/ocultar selectores de fecha según el período
-                document.querySelectorAll('.date-selector').forEach(sel => sel.classList.add('hidden'));
-
-                if (periodoSeleccionado === 'diario') {
-                    document.getElementById('selector-diario').classList.remove('hidden');
-                } else if (periodoSeleccionado === 'semanal') {
-                    document.getElementById('selector-semanal').classList.remove('hidden');
-                } else if (periodoSeleccionado === 'quincenal') {
-                    document.getElementById('selector-quincenal').classList.remove('hidden');
-                } else if (periodoSeleccionado === 'mensual') {
-                    document.getElementById('selector-mensual').classList.remove('hidden');
-                }
-            });
-        });
-
-        // Establecer valores por defecto en los inputs de fecha
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = (today.getMonth() + 1).toString().padStart(2, '0');
-        const day = today.getDate().toString().padStart(2, '0');
-
-        // Establecer valores por defecto
-        document.getElementById('fecha-diaria').value = `${year}-${month}-${day}`;
-        document.getElementById('fecha-mensual').value = `${year}-${month}`;
-        document.getElementById('fecha-quincenal').value = `${year}-${month}`;
-
-        // Calcular la semana actual
-        const firstDayOfYear = new Date(year, 0, 1);
-        const pastDaysOfYear = (today - firstDayOfYear) / 86400000;
-        const week = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-        document.getElementById('fecha-semanal').value = `${year}-W${week.toString().padStart(2, '0')}`;
-
-        // --- Lógica para generar reportes ---
-        const reporteContainer = document.getElementById('reporte-container');
-        const envioOpciones = document.getElementById('envio-opciones');
-
-        // Función para calcular fechas según el período
-        function calcularFechas() {
-            let fechaInicio, fechaFin;
-
-            if (periodoSeleccionado === 'diario') {
-                const fecha = document.getElementById('fecha-diaria').value;
-                if (!fecha) {
-                    mostrarNotificacion('Por favor selecciona una fecha', 'error');
-                    return null;
-                }
-                fechaInicio = fecha;
-                fechaFin = fecha;
-            }
-            else if (periodoSeleccionado === 'semanal') {
-                const semana = document.getElementById('fecha-semanal').value; // formato: 2025-W42
-                if (!semana) {
-                    mostrarNotificacion('Por favor selecciona una semana', 'error');
-                    return null;
-                }
-                const [year, weekNum] = semana.split('-W');
-                const firstDayOfYear = new Date(year, 0, 1);
-                const daysOffset = (parseInt(weekNum) - 1) * 7;
-                const weekStart = new Date(firstDayOfYear.getTime() + daysOffset * 24 * 60 * 60 * 1000);
-                const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
-
-                fechaInicio = weekStart.toISOString().split('T')[0];
-                fechaFin = weekEnd.toISOString().split('T')[0];
-            }
-            else if (periodoSeleccionado === 'quincenal') {
-                const mes = document.getElementById('fecha-quincenal').value; // formato: 2025-10
-                const quincena = document.querySelector('input[name="quincena"]:checked').value;
-                if (!mes) {
-                    mostrarNotificacion('Por favor selecciona un mes', 'error');
-                    return null;
-                }
-                const [year, month] = mes.split('-');
-
-                if (quincena === 'primera') {
-                    fechaInicio = `${year}-${month}-01`;
-                    fechaFin = `${year}-${month}-15`;
-                } else {
-                    fechaInicio = `${year}-${month}-16`;
-                    const lastDay = new Date(year, month, 0).getDate();
-                    fechaFin = `${year}-${month}-${lastDay}`;
-                }
-            }
-            else if (periodoSeleccionado === 'mensual') {
-                const mes = document.getElementById('fecha-mensual').value; // formato: 2025-10
-                if (!mes) {
-                    mostrarNotificacion('Por favor selecciona un mes', 'error');
-                    return null;
-                }
-                const [year, month] = mes.split('-');
-                fechaInicio = `${year}-${month}-01`;
-                const lastDay = new Date(year, month, 0).getDate();
-                fechaFin = `${year}-${month}-${lastDay}`;
-            }
-
-            return { fechaInicio, fechaFin };
-        }
-
-        // Función para generar reporte
-        async function generarReporte() {
-            const fechas = calcularFechas();
-            if (!fechas) return;
-
-            const { fechaInicio, fechaFin } = fechas;
-            const habitacion = document.getElementById('filtro-habitacion').value;
-            const cliente = document.getElementById('filtro-cliente').value;
-            const tipoPago = document.getElementById('filtro-tipo-pago').value;
-
-            // Mostrar loading
-            reporteContainer.innerHTML = `
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-                <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                    <p class="text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Generando reporte...</p>
+        // Si no hay datos, mostrar mensaje y NO mostrar tabla
+        if (!reporte.datos || reporte.datos.length === 0) {
+          if (reporte.tipo === 'consolidado') {
+            const hasRentas = reporte.rentas && reporte.rentas.datos && reporte.rentas.datos.length > 0;
+            const hasReservas = reporte.reservaciones && reporte.reservaciones.datos && reporte.reservaciones.datos.length > 0;
+            hayDatos = hasRentas || hasReservas;
+            if (!hayDatos) {
+              contenidoHTML += `
+                <div class="text-center py-12">
+                  <i class="fas fa-info-circle text-4xl text-slate-400"></i>
+                  <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron rentas o reservaciones</h2>
+                  <p class="mt-2 text-sm text-slate-500">No hay datos de rentas o reservaciones para el período seleccionado.</p>
                 </div>`;
-
-            try {
-                const params = new URLSearchParams({
-                    tipo: tipoReporteSeleccionado,
-                    fechaInicio,
-                    fechaFin
-                });
-
-                if (habitacion) params.append('habitacion', habitacion);
-                if (cliente) params.append('cliente', cliente);
-                if (tipoPago) params.append('tipoPago', tipoPago);
-
-                const response = await fetch(`/api/rooms/reports/generate?${params}`);
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Error al generar el reporte');
-                }
-
-                reporteActual = data.reporte;
-                mostrarReporte(data.reporte);
-                envioOpciones.classList.remove('hidden');
-
-            } catch (error) {
-                reporteContainer.innerHTML = `
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Vista Previa del Reporte</h2>
-                    <div class="flex justify-center items-center h-40 border border-dashed border-gray-300 rounded-lg">
-                        <p class="text-red-500">Error: ${error.message}</p>
-                    </div>`;
-                envioOpciones.classList.add('hidden');
             }
-        }
-
-        // Función para mostrar el reporte
-        function mostrarReporte(reporte) {
-            const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
-
-            let contenidoHTML = `
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">
-                    <i class="fas fa-chart-bar mr-2"></i>Reporte de ${reporte.tipo.charAt(0).toUpperCase() + reporte.tipo.slice(1)}
-                </h2>
-            `;
-
-            if (reporte.tipo === 'rentas') {
-                contenidoHTML += `
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div class="bg-blue-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-blue-800">Total Rentas</h3>
-                            <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalRentas}</p>
-                        </div>
-                        <div class="bg-green-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-green-800">Ingreso Total</h3>
-                            <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.totalIngresos)}</p>
-                        </div>
-                        <div class="bg-purple-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-purple-800">Promedio</h3>
-                            <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.promedioIngreso)}</p>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white border">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="px-4 py-2 border">Cliente</th>
-                                    <th class="px-4 py-2 border">Habitación</th>
-                                    <th class="px-4 py-2 border">Check-in</th>
-                                    <th class="px-4 py-2 border">Check-out</th>
-                                    <th class="px-4 py-2 border">Tipo Pago</th>
-                                    <th class="px-4 py-2 border">Monto</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${reporte.datos.map(r => `
-                                    <tr>
-                                        <td class="px-4 py-2 border">${r.nombre_cliente}</td>
-                                        <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
-                                        <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
-                                        <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
-                                        <td class="px-4 py-2 border text-center">${r.tipo_pago}</td>
-                                        <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            } else if (reporte.tipo === 'reservaciones') {
-                contenidoHTML += `
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-green-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-green-800">Total Reservaciones</h3>
-                            <p class="text-2xl font-bold text-green-900">${reporte.estadisticas.totalReservaciones}</p>
-                        </div>
-                        <div class="bg-blue-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-blue-800">Monto Esperado</h3>
-                            <p class="text-2xl font-bold text-blue-900">${formatCurrency(reporte.estadisticas.totalMontoEsperado)}</p>
-                        </div>
-                        <div class="bg-yellow-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-yellow-800">Enganche Recibido</h3>
-                            <p class="text-2xl font-bold text-yellow-900">${formatCurrency(reporte.estadisticas.totalEnganche)}</p>
-                        </div>
-                        <div class="bg-red-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-red-800">Pendiente por Cobrar</h3>
-                            <p class="text-2xl font-bold text-red-900">${formatCurrency(reporte.estadisticas.pendientePorCobrar)}</p>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white border">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="px-4 py-2 border">Cliente</th>
-                                    <th class="px-4 py-2 border">Habitación</th>
-                                    <th class="px-4 py-2 border">Check-in</th>
-                                    <th class="px-4 py-2 border">Check-out</th>
-                                    <th class="px-4 py-2 border">Monto Total</th>
-                                    <th class="px-4 py-2 border">Enganche</th>
-                                    <th class="px-4 py-2 border">Pendiente</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${reporte.datos.map(r => `
-                                    <tr>
-                                        <td class="px-4 py-2 border">${r.nombre_cliente}</td>
-                                        <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
-                                        <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
-                                        <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
-                                        <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
-                                        <td class="px-4 py-2 border text-right">${formatCurrency(r.enganche || 0)}</td>
-                                        <td class="px-4 py-2 border text-right">${formatCurrency(r.monto - (r.enganche || 0))}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            } else if (reporte.tipo === 'consolidado') {
-                contenidoHTML += `
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-blue-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-blue-800">Total Operaciones</h3>
-                            <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalOperaciones}</p>
-                        </div>
-                        <div class="bg-green-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-green-800">Ingresos Reales</h3>
-                            <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.ingresosReales)}</p>
-                        </div>
-                        <div class="bg-yellow-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-yellow-800">Ingresos Esperados</h3>
-                            <p class="text-2xl font-bold text-yellow-900">${formatCurrency(reporte.estadisticas.ingresosEsperados)}</p>
-                        </div>
-                        <div class="bg-purple-100 p-4 rounded-lg">
-                            <h3 class="font-semibold text-purple-800">Total General</h3>
-                            <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.totalGeneral)}</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <h3 class="font-semibold text-gray-800 mb-3">📊 Rentas (${reporte.rentas.estadisticas.totalRentas})</h3>
-                            <div class="bg-blue-50 p-4 rounded-lg">
-                                <p class="text-sm"><strong>Ingresos:</strong> ${formatCurrency(reporte.rentas.estadisticas.totalIngresos)}</p>
-                                <p class="text-sm"><strong>Promedio:</strong> ${formatCurrency(reporte.rentas.estadisticas.promedioIngreso)}</p>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-800 mb-3">📅 Reservaciones (${reporte.reservaciones.estadisticas.totalReservaciones})</h3>
-                            <div class="bg-green-50 p-4 rounded-lg">
-                                <p class="text-sm"><strong>Monto Esperado:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.totalMontoEsperado)}</p>
-                                <p class="text-sm"><strong>Enganche:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.totalEnganche)}</p>
-                                <p class="text-sm"><strong>Pendiente:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.pendientePorCobrar)}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
+          } else {
             contenidoHTML += `
-                <div class="text-sm text-gray-500 mt-4 p-4 bg-gray-50 rounded-lg">
-                    <p><strong>📅 Período:</strong> ${new Date(reporte.fechaInicio).toLocaleDateString('es-MX')} - ${new Date(reporte.fechaFin).toLocaleDateString('es-MX')}</p>
-                    <p><strong>🕐 Generado:</strong> ${new Date().toLocaleString('es-MX')}</p>
-                </div>
-            `;
-
-            reporteContainer.innerHTML = contenidoHTML;
+              <div class="text-center py-12">
+                <i class="fas fa-info-circle text-4xl text-slate-400"></i>
+                <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron rentas o reservaciones</h2>
+                <p class="mt-2 text-sm text-slate-500">No hay datos de rentas o reservaciones para el período seleccionado.</p>
+              </div>`;
+          }
+        } else {
+          hayDatos = true;
         }
 
-        // Función para mostrar notificaciones
-        function mostrarNotificacion(mensaje, tipo = 'info') {
-            const notificationArea = document.getElementById('notification-area');
-            const colorClass = tipo === 'error' ? 'bg-red-100 border-red-400 text-red-700' :
-                              tipo === 'success' ? 'bg-green-100 border-green-400 text-green-700' :
-                              'bg-blue-100 border-blue-400 text-blue-700';
-
-            notificationArea.innerHTML = `
-                <div class="${colorClass} px-4 py-3 rounded relative border" role="alert">
-                    <span class="block sm:inline">${mensaje}</span>
-                    <span class="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer" onclick="this.parentElement.remove()">
-                        <i class="fas fa-times"></i>
-                    </span>
+        if (reporte.tipo === 'rentas' && hayDatos) {
+          contenidoHTML += `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div class="bg-blue-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-blue-800">Total Rentas</h3>
+                <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalRentas}</p>
+              </div>
+              <div class="bg-green-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-green-800">Ingreso Total</h3>
+                <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.totalIngresos)}</p>
+              </div>
+              <div class="bg-purple-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-purple-800">Promedio</h3>
+                <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.promedioIngreso)}</p>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white border">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="px-4 py-2 border">Cliente</th>
+                    <th class="px-4 py-2 border">Habitación</th>
+                    <th class="px-4 py-2 border">Check-in</th>
+                    <th class="px-4 py-2 border">Check-out</th>
+                    <th class="px-4 py-2 border">Tipo Pago</th>
+                    <th class="px-4 py-2 border">Monto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${reporte.datos.map(r => `
+                    <tr>
+                      <td class="px-4 py-2 border">${r.nombre_cliente}</td>
+                      <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
+                      <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
+                      <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
+                      <td class="px-4 py-2 border text-center">${r.tipo_pago}</td>
+                      <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else if (reporte.tipo === 'reservaciones' && hayDatos) {
+          contenidoHTML += `
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div class="bg-green-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-green-800">Total Reservaciones</h3>
+                <p class="text-2xl font-bold text-green-900">${reporte.estadisticas.totalReservaciones}</p>
+              </div>
+              <div class="bg-blue-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-blue-800">Monto Esperado</h3>
+                <p class="text-2xl font-bold text-blue-900">${formatCurrency(reporte.estadisticas.totalMontoEsperado)}</p>
+              </div>
+              <div class="bg-yellow-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-yellow-800">Enganche Recibido</h3>
+                <p class="text-2xl font-bold text-yellow-900">${formatCurrency(reporte.estadisticas.totalEnganche)}</p>
+              </div>
+              <div class="bg-red-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-red-800">Pendiente por Cobrar</h3>
+                <p class="text-2xl font-bold text-red-900">${formatCurrency(reporte.estadisticas.pendientePorCobrar)}</p>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white border">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="px-4 py-2 border">Cliente</th>
+                    <th class="px-4 py-2 border">Habitación</th>
+                    <th class="px-4 py-2 border">Check-in</th>
+                    <th class="px-4 py-2 border">Check-out</th>
+                    <th class="px-4 py-2 border">Monto Total</th>
+                    <th class="px-4 py-2 border">Enganche</th>
+                    <th class="px-4 py-2 border">Pendiente</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${reporte.datos.map(r => `
+                    <tr>
+                      <td class="px-4 py-2 border">${r.nombre_cliente}</td>
+                      <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
+                      <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
+                      <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
+                      <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
+                      <td class="px-4 py-2 border text-right">${formatCurrency(r.enganche || 0)}</td>
+                      <td class="px-4 py-2 border text-right">${formatCurrency(r.monto - (r.enganche || 0))}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else if (reporte.tipo === 'consolidado' && (reporte.rentas || reporte.reservaciones)) {
+          const hasRentas = reporte.rentas && reporte.rentas.datos && reporte.rentas.datos.length > 0;
+          const hasReservas = reporte.reservaciones && reporte.reservaciones.datos && reporte.reservaciones.datos.length > 0;
+          hayDatos = hasRentas || hasReservas;
+          if (hayDatos) {
+            contenidoHTML += `
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-blue-100 p-4 rounded-lg">
+                  <h3 class="font-semibold text-blue-800">Total Operaciones</h3>
+                  <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalOperaciones}</p>
                 </div>
+                <div class="bg-green-100 p-4 rounded-lg">
+                  <h3 class="font-semibold text-green-800">Ingresos Reales</h3>
+                  <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.ingresosReales)}</p>
+                </div>
+                <div class="bg-yellow-100 p-4 rounded-lg">
+                  <h3 class="font-semibold text-yellow-800">Ingresos Esperados</h3>
+                  <p class="text-2xl font-bold text-yellow-900">${formatCurrency(reporte.estadisticas.ingresosEsperados)}</p>
+                </div>
+                <div class="bg-purple-100 p-4 rounded-lg">
+                  <h3 class="font-semibold text-purple-800">Total General</h3>
+                  <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.totalGeneral)}</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h3 class="font-semibold text-gray-800 mb-3">📊 Rentas (${reporte.rentas.estadisticas.totalRentas})</h3>
+                  ${hasRentas ? `
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm"><strong>Ingresos:</strong> ${formatCurrency(reporte.rentas.estadisticas.totalIngresos)}</p>
+                    <p class="text-sm"><strong>Promedio:</strong> ${formatCurrency(reporte.rentas.estadisticas.promedioIngreso)}</p>
+                  </div>
+                  <div class="overflow-x-auto mt-2">
+                    <table class="min-w-full bg-white border">
+                      <thead class="bg-gray-100">
+                        <tr>
+                          <th class="px-4 py-2 border">Cliente</th>
+                          <th class="px-4 py-2 border">Habitación</th>
+                          <th class="px-4 py-2 border">Check-in</th>
+                          <th class="px-4 py-2 border">Check-out</th>
+                          <th class="px-4 py-2 border">Tipo Pago</th>
+                          <th class="px-4 py-2 border">Monto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${reporte.rentas.datos.map(r => `
+                          <tr>
+                            <td class="px-4 py-2 border">${r.nombre_cliente}</td>
+                            <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
+                            <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
+                            <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
+                            <td class="px-4 py-2 border text-center">${r.tipo_pago}</td>
+                            <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                  ` : `<div class="text-sm text-gray-500">No se encontraron rentas.</div>`}
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800 mb-3">📅 Reservaciones (${reporte.reservaciones.estadisticas.totalReservaciones})</h3>
+                  ${hasReservas ? `
+                  <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm"><strong>Monto Esperado:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.totalMontoEsperado)}</p>
+                    <p class="text-sm"><strong>Enganche:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.totalEnganche)}</p>
+                    <p class="text-sm"><strong>Pendiente:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.pendientePorCobrar)}</p>
+                  </div>
+                  <div class="overflow-x-auto mt-2">
+                    <table class="min-w-full bg-white border">
+                      <thead class="bg-gray-100">
+                        <tr>
+                          <th class="px-4 py-2 border">Cliente</th>
+                          <th class="px-4 py-2 border">Habitación</th>
+                          <th class="px-4 py-2 border">Check-in</th>
+                          <th class="px-4 py-2 border">Check-out</th>
+                          <th class="px-4 py-2 border">Monto Total</th>
+                          <th class="px-4 py-2 border">Enganche</th>
+                          <th class="px-4 py-2 border">Pendiente</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${reporte.reservaciones.datos.map(r => `
+                          <tr>
+                            <td class="px-4 py-2 border">${r.nombre_cliente}</td>
+                            <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
+                            <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
+                            <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
+                            <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
+                            <td class="px-4 py-2 border text-right">${formatCurrency(r.enganche || 0)}</td>
+                            <td class="px-4 py-2 border text-right">${formatCurrency(r.monto - (r.enganche || 0))}</td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                  ` : `<div class="text-sm text-gray-500">No se encontraron reservaciones.</div>`}
+                </div>
+              </div>
             `;
-
-            // Auto-ocultar después de 5 segundos
-            setTimeout(() => {
-                if (notificationArea.firstElementChild) {
-                    notificationArea.firstElementChild.remove();
-                }
-            }, 5000);
+          }
         }
 
-        // Event listeners
-        document.getElementById('generar-reporte-btn').addEventListener('click', generarReporte);
+        contenidoHTML += `
+          <div class="text-sm text-gray-500 mt-4 p-4 bg-gray-50 rounded-lg">
+            <p><strong>📅 Período:</strong> ${new Date(reporte.fechaInicio).toLocaleDateString('es-MX')} - ${new Date(reporte.fechaFin).toLocaleDateString('es-MX')}</p>
+            <p><strong>🕐 Generado:</strong> ${new Date().toLocaleString('es-MX')}</p>
+          </div>
+        `;
 
-        // Envío por correo
-        document.getElementById('enviar-email-btn').addEventListener('click', async () => {
-            const destinatario = document.getElementById('email-destinatario').value;
-            const asunto = document.getElementById('email-asunto').value || `Reporte de ${tipoReporteSeleccionado} - Hotel Club`;
+        document.getElementById('reporte-container').innerHTML = contenidoHTML;
 
-            if (!destinatario) {
-                mostrarNotificacion('Por favor ingresa un correo electrónico', 'error');
-                return;
-            }
+        // Mostrar opciones de envío solo si hay datos
+        const envioOpciones = document.getElementById('envio-opciones');
+        if (hayDatos) {
+          envioOpciones.classList.remove('hidden');
+        } else {
+          envioOpciones.classList.add('hidden');
+        }
+      }
+    });
+  </script>
 
-            if (!reporteActual) {
-                mostrarNotificacion('Primero genera un reporte', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('enviar-email-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
-            btn.disabled = true;
-
-            try {
-                const response = await fetch('/api/rooms/reports/send-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        tipo: reporteActual.tipo,
-                        fechaInicio: reporteActual.fechaInicio,
-                        fechaFin: reporteActual.fechaFin,
-                        destinatario,
-                        asunto,
-                        filtros: reporteActual.filtros || {}
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    mostrarNotificacion('Reporte enviado por correo exitosamente', 'success');
-                    document.getElementById('email-destinatario').value = '';
-                    document.getElementById('email-asunto').value = '';
-                } else {
-                    throw new Error(data.error || 'Error al enviar el correo');
-                }
-
-            } catch (error) {
-                mostrarNotificacion(`Error: ${error.message}`, 'error');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        });
-
-        // Envío por WhatsApp
-        document.getElementById('enviar-whatsapp-btn').addEventListener('click', async () => {
-            const telefono = document.getElementById('whatsapp-telefono').value;
-
-            if (!telefono) {
-                mostrarNotificacion('Por favor ingresa un número de teléfono', 'error');
-                return;
-            }
-
-            if (!reporteActual) {
-                mostrarNotificacion('Primero genera un reporte', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('enviar-whatsapp-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
-            btn.disabled = true;
-
-            try {
-                const response = await fetch('/api/rooms/reports/send-whatsapp', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        tipo: reporteActual.tipo,
-                        fechaInicio: reporteActual.fechaInicio,
-                        fechaFin: reporteActual.fechaFin,
-                        telefono,
-                        filtros: reporteActual.filtros || {}
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    mostrarNotificacion('Reporte enviado por WhatsApp exitosamente', 'success');
-                    document.getElementById('whatsapp-telefono').value = '';
-
-                    // Abrir WhatsApp Web si hay URL
-                    if (data.whatsappURL) {
-                        window.open(data.whatsappURL, '_blank');
-                    }
-                } else {
-                    throw new Error(data.error || 'Error al enviar por WhatsApp');
-                }
-
-            } catch (error) {
-                mostrarNotificacion(`Error: ${error.message}`, 'error');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        });
-
-        // Listener para el botón de reporte Quincenal
-        document.querySelector('#biweekly-selector .generate-report-btn').addEventListener('click', () => {
-            const period = 'biweekly';
-            const month = document.getElementById('biweekly-month-input').value;
-            const fortnight = document.querySelector('input[name="fortnight"]:checked').value;
-            const date = `${month}-${fortnight}`;
-            if (date) {
-                generateReportPreview(period, date);
-            }
-        });
-
-        // Listener para el botón de reporte Semanal
-        document.querySelector('#weekly-selector .generate-report-btn').addEventListener('click', () => {
-            const period = 'weekly';
-            const rawDate = document.getElementById('week-input').value; // e.g., 2023-W42
-            const date = rawDate.replace('-W', 'W'); // e.g., 2023W42
-            if (date) {
-                generateReportPreview(period, date);
-            }
-        });
-
-        // Manejar errores de la URL al cargar la página
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const error = urlParams.get('error');
-            if (error) {
-                const notificationArea = document.getElementById('notification-area');
-                notificationArea.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                        <strong class="font-bold">Error: </strong>
-                        <span class="block sm:inline">${decodeURIComponent(error)}</span>
-                    </div>
-                `;
-                // Limpiar la URL para que el error no se muestre si se recarga la página
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        });
-    </script>
-
-    <!-- Incluir validaciones del módulo de habitaciones -->
-    <script src="/js/ModuleRooms/js/index.js"></script>
-    <script src="/js/ModuleRooms/js/universalValidation.js"></script>
-    <script src="/js/ModuleRooms/js/reportsValidation.js"></script>
-</body>
+  <!-- Opciones de envío (ocultas si no hay datos) -->
+  <div id="envio-opciones" class="bg-white border rounded-lg p-6 mb-20 hidden">
+    <!-- ...contenido de envío por correo y WhatsApp... -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Envío por correo -->
+      <div class="border rounded-lg p-4">
+        <h3 class="font-semibold text-gray-800 mb-3">
+          <i class="fas fa-envelope text-blue-500 mr-2"></i>Enviar por Correo
+        </h3>
+        <div class="space-y-3">
+          <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
+            class="border rounded-lg p-2 w-full" required>
+          <input type="text" id="email-asunto" placeholder="Asunto del correo" class="border rounded-lg p-2 w-full">
+          <button id="enviar-email-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+            <i class="fas fa-envelope mr-2"></i>Enviar por Correo
+          </button>
+        </div>
+      </div>
+      <!-- Envío por WhatsApp -->
+      <div class="border rounded-lg p-4">
+        <h3 class="font-semibold text-gray-800 mb-3">
+          <i class="fab fa-whatsapp text-green-500 mr-2"></i>Enviar por WhatsApp
+        </h3>
+        <div class="space-y-3">
+          <input type="tel" id="whatsapp-telefono" placeholder="5512345678" class="border rounded-lg p-2 w-full"
+            required>
+          <small class="text-gray-500">Formato: 10 dígitos sin espacios</small>
+          <button id="enviar-whatsapp-btn"
+            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full">
+            <i class="fab fa-whatsapp mr-2"></i>Enviar por WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
