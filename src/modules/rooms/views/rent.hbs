@@ -299,38 +299,53 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================
   // VALIDACIÓN: Check-in FIJO en HOY, Check-out modificable
   // ============================================
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  const todayStr = `${year}-${month}-${day}`;
-  
-  console.log('📅 Fecha de HOY:', todayStr);
-  
-  // Check-in BLOQUEADO en HOY (no modificable)
-  checkInInput.value = todayStr;
-  checkInInput.setAttribute('min', todayStr);
-  checkInInput.setAttribute('max', todayStr);
+  const formatDateForInput = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const now = new Date();
+  const checkInBaseDate = new Date(now);
+  let overnightAdjustmentApplied = false;
+
+  // Si es turno nocturno (00:00 - 08:59), contabilizar como el día anterior
+  if (checkInBaseDate.getHours() < 9) {
+    checkInBaseDate.setDate(checkInBaseDate.getDate() - 1);
+    overnightAdjustmentApplied = true;
+  }
+
+  const checkInStr = formatDateForInput(checkInBaseDate);
+  console.log('📅 Fecha operativa de INGRESO:', checkInStr);
+  if (overnightAdjustmentApplied) {
+    console.log('🌙 Ajuste nocturno aplicado: llegada posterior a medianoche contabilizada como el día anterior');
+  }
+
+  // Check-in BLOQUEADO en la fecha operativa calculada (no modificable)
+  checkInInput.value = checkInStr;
+  checkInInput.setAttribute('min', checkInStr);
+  checkInInput.setAttribute('max', checkInStr);
   checkInInput.setAttribute('readonly', 'readonly');
   checkInInput.classList.add('bg-gray-100', 'cursor-not-allowed');
-  
-  // Check-out por defecto MAÑANA (pero modificable)
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowYear = tomorrow.getFullYear();
-  const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
-  const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0');
-  const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
-  
-  console.log('📅 Fecha de MAÑANA:', tomorrowStr);
-  
-  checkOutInput.setAttribute('min', tomorrowStr);
-  checkOutInput.value = tomorrowStr;
+
+  // Check-out por defecto: día siguiente a la fecha operativa
+  const defaultCheckOutDate = new Date(checkInBaseDate);
+  defaultCheckOutDate.setDate(defaultCheckOutDate.getDate() + 1);
+  const checkOutDefaultStr = formatDateForInput(defaultCheckOutDate);
+
+  console.log('📅 Fecha de salida sugerida:', checkOutDefaultStr);
+
+  checkOutInput.setAttribute('min', checkOutDefaultStr);
+  checkOutInput.value = checkOutDefaultStr;
   
   // Prevenir cambios en el check-in
   checkInInput.addEventListener('click', function(e) {
     e.preventDefault();
-    showNotification('La fecha de entrada está establecida para hoy', 'info');
+    const mensajeTurno = overnightAdjustmentApplied
+      ? 'La fecha de entrada se fijó automáticamente al día anterior por horario nocturno (00:00-08:59)'
+      : 'La fecha de entrada está establecida automáticamente para el turno actual';
+    showNotification(mensajeTurno, 'info');
   });
   
   checkInInput.addEventListener('keydown', function(e) {

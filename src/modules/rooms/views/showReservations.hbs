@@ -4,7 +4,23 @@
   {{#if allReservationes}}
   <!-- Filtros -->
   <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="bg-white rounded-lg border border-slate-200 p-3 sm:p-4 shadow-sm">
+        <p class="text-xs text-slate-500 uppercase tracking-wide">Reservaciones pendientes</p>
+        <p class="text-lg sm:text-xl font-semibold text-slate-800 mt-1 flex items-baseline gap-2">
+          {{resumenReservaciones.pendientes.cantidad}}
+          <span class="text-[0.65rem] font-medium text-slate-500">registros</span>
+        </p>
+        <p class="text-xs text-slate-500 mt-1">Monto acumulado: <span class="font-medium text-slate-700">{{resumenReservaciones.pendientes.total}}</span></p>
+      </div>
+      <div class="bg-white rounded-lg border border-blue-100 p-3 sm:p-4 shadow-sm">
+        <p class="text-xs text-blue-500 uppercase tracking-wide">Reservaciones convertidas</p>
+        <p class="text-lg sm:text-xl font-semibold text-blue-700 mt-1 flex items-baseline gap-2">
+          {{resumenReservaciones.convertidas.cantidad}}
+          <span class="text-[0.65rem] font-medium text-blue-400">registros</span>
+        </p>
+        <p class="text-xs text-blue-500 mt-1">Monto asociado: <span class="font-medium">{{resumenReservaciones.convertidas.total}}</span></p>
+      </div>
       <!-- Búsqueda libre -->
       <div class="flex flex-col gap-1 sm:col-span-2 lg:col-span-1">
         <label for="reservationSearch" class="text-xs font-medium text-slate-600">Buscar (cliente, habitación, fechas)</label>
@@ -71,18 +87,23 @@
             <th class="py-2.5 px-2 text-left w-[13%]"><span class="inline-flex items-center gap-1"><i class="fa-regular fa-calendar text-[0.75rem]"></i> <span class="truncate">Reserva</span></span></th>
             <th class="py-2.5 px-2 text-left w-[13%]"><span class="inline-flex items-center gap-1"><i class="fa-solid fa-calendar-day text-[0.75rem]"></i> <span class="truncate">Ingreso</span></span></th>
             <th class="py-2.5 px-2 text-left w-[13%]"><span class="inline-flex items-center gap-1"><i class="fa-solid fa-calendar-check text-[0.75rem]"></i> <span class="truncate">Salida</span></span></th>
-            <th class="py-2.5 px-2 text-center w-[33%]"><span class="inline-flex items-center gap-1 justify-center"><i class="fa-solid fa-ellipsis-vertical text-[0.75rem]"></i> <span>Acciones</span></span></th>
+            <th class="py-2.5 px-2 text-left w-[13%]"><span class="inline-flex items-center gap-1"><i class="fa-solid fa-tags text-[0.75rem]"></i> <span class="truncate">Estado</span></span></th>
+            <th class="py-2.5 px-2 text-center w-[20%]"><span class="inline-flex items-center gap-1 justify-center"><i class="fa-solid fa-ellipsis-vertical text-[0.75rem]"></i> <span>Acciones</span></span></th>
           </tr>
         </thead>
 
         <tbody class="text-gray-700 divide-y divide-gray-200 text-xs">
           {{#each allReservationes}}
-          <tr class="hover:bg-gray-50 transition-colors reservation-row"
+          <tr class="hover:bg-gray-50 transition-colors reservation-row {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
               data-nombre="{{this.nombre_cliente}}"
               data-hab="{{this.numero_habitacion}}"
               data-reserva="{{this.fecha_reserva}}"
               data-ingreso="{{this.fecha_ingreso}}"
               data-salida="{{this.fecha_salida}}"
+              data-estado="{{this.estado_etiqueta.texto}}"
+              data-estado-clave="{{this.estado_clave}}"
+              data-origen="{{this.resumen_financiero.origen}}"
+              data-origen-clave="{{this.resumen_financiero.origen_clave}}"
               data-confirm-start="{{this.confirm_start}}">
             <td class="py-2.5 px-2 capitalize">
               <div class="truncate" title="{{this.nombre_cliente}}">{{this.nombre_cliente}}</div>
@@ -100,36 +121,54 @@
               <div class="truncate">{{this.fecha_salida}}</div>
             </td>
             <td class="py-2.5 px-2">
+              {{#if this.estado_etiqueta}}
+              <div class="flex flex-col gap-1">
+                <span class="inline-flex items-center gap-1 px-2 py-1 text-[0.7rem] font-medium rounded {{this.estado_etiqueta.clase}}">
+                  <i class="{{this.estado_etiqueta.icono}}"></i>
+                  {{this.estado_etiqueta.texto}}
+                </span>
+                <span class="text-[0.65rem] text-slate-500 uppercase tracking-wide">{{this.resumen_financiero.origen}} • {{this.resumen_financiero.monto_formateado}}</span>
+              </div>
+              {{/if}}
+            </td>
+            <td class="py-2.5 px-2">
               <div class="flex items-center justify-center gap-1 flex-wrap">
-                {{#if (eq @root.user.role 'Administrador')}}
-                <a href="/rooms/editar/{{this.id_reservacion}}"
-                   class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-[0.7rem] rounded shadow-sm transition-colors"
-                   title="Editar">
-                  <i class="fa-solid fa-pen-to-square"></i>
-                  <span class="hidden xl:inline">Editar</span>
-                </a>
-                {{/if}}
+              {{#if (eq @root.user.role 'Administrador')}}
+              <a href="/rooms/editar/{{this.id_reservacion}}"
+                 class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-[0.7rem] rounded shadow-sm transition-colors"
+                 title="Editar">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span class="hidden xl:inline">Editar</span>
+              </a>
+              {{/if}}
+              {{#unless this.es_convertida}}
                 <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}"
                    class="inline-flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-[0.7rem] rounded shadow-sm transition-colors confirm-btn"
                    title="Confirmar">
                   <i class="fa-solid fa-check"></i>
                   <span class="hidden xl:inline">Confirmar</span>
                 </a>
-                {{#if this.enganche_perdido}}
-                  <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-[0.7rem] rounded">
-                    <i class="fa-solid fa-hand-holding-dollar"></i>
-                    <span>Enganche retenido</span>
-                  </span>
-                {{/if}}
-                {{#if (eq @root.user.role 'Administrador')}}
-                <button type="button"
-                        onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-[0.7rem] rounded shadow-sm transition-colors"
-                        title="Eliminar">
-                  <i class="fa-solid fa-trash-can"></i>
-                  <span class="hidden xl:inline">Eliminar</span>
-                </button>
-                {{/if}}
+              {{else}}
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-[0.7rem] rounded shadow-sm">
+                  <i class="fa-solid fa-right-left"></i>
+                  Convertida
+                </span>
+              {{/unless}}
+              {{#if this.enganche_perdido}}
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-[0.7rem] rounded">
+                  <i class="fa-solid fa-hand-holding-dollar"></i>
+                  <span>Enganche retenido</span>
+                </span>
+              {{/if}}
+              {{#if (eq @root.user.role 'Administrador')}}
+              <button type="button"
+                      onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
+                      class="inline-flex items-center gap-1 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-[0.7rem] rounded shadow-sm transition-colors"
+                      title="Eliminar">
+                <i class="fa-solid fa-trash-can"></i>
+                <span class="hidden xl:inline">Eliminar</span>
+              </button>
+              {{/if}}
               </div>
             </td>
           </tr>
@@ -142,12 +181,16 @@
   <!-- Cards de reservaciones (móvil y tablet) -->
   <section id="cardsSection" class="mt-6 grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2 lg:hidden">
     {{#each allReservationes}}
-    <article class="bg-white rounded-xl shadow-lg overflow-hidden reservation-reveal transition-all duration-300"
+    <article class="bg-white rounded-xl shadow-lg overflow-hidden reservation-reveal transition-all duration-300 {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
              data-nombre="{{this.nombre_cliente}}"
              data-hab="{{this.numero_habitacion}}"
              data-reserva="{{this.fecha_reserva}}"
              data-ingreso="{{this.fecha_ingreso}}"
-             data-salida="{{this.fecha_salida}}">
+             data-salida="{{this.fecha_salida}}"
+             data-estado="{{this.estado_etiqueta.texto}}"
+             data-estado-clave="{{this.estado_clave}}"
+             data-origen="{{this.resumen_financiero.origen}}"
+             data-origen-clave="{{this.resumen_financiero.origen_clave}}">
       <div class="bg-blue-900 text-white px-4 py-3">
         <h3 class="font-bold text-sm sm:text-base inline-flex items-center gap-2">
           <i class="fa-solid fa-bed text-base"></i>
@@ -155,6 +198,15 @@
         </h3>
       </div>
       <div class="p-4 space-y-4 text-sm text-gray-800">
+        {{#if this.estado_etiqueta}}
+        <div class="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 text-xs">
+          <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded {{this.estado_etiqueta.clase}}">
+            <i class="{{this.estado_etiqueta.icono}}"></i>
+            {{this.estado_etiqueta.texto}}
+          </span>
+          <span class="uppercase tracking-wide text-[0.65rem] text-slate-500">{{this.resumen_financiero.origen}} • {{this.resumen_financiero.monto_formateado}}</span>
+        </div>
+        {{/if}}
         <div class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-3">
           <div class="flex flex-col">
             <div class="text-gray-500 text-xs inline-flex items-center gap-1.5 mb-1">
@@ -185,10 +237,17 @@
             <span>Editar</span>
           </a>
           {{/if}}
+          {{#unless this.es_convertida}}
           <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}" class="flex-1 xs:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm shadow-sm transition-colors">
             <i class="fa-solid fa-check"></i>
             <span>Confirmar</span>
           </a>
+          {{else}}
+          <span class="flex-1 xs:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm shadow-sm">
+            <i class="fa-solid fa-right-left"></i>
+            Convertida
+          </span>
+          {{/unless}}
           {{#if this.enganche_perdido}}
             <span class="flex-1 xs:flex-none w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm shadow-sm">
               <i class="fa-solid fa-hand-holding-dollar"></i>
@@ -448,12 +507,19 @@
       let visible = 0;
 
       rows.forEach(el => {
+        const esConvertida = (el.dataset.estadoClave || '') === 'convertida';
+        if (esConvertida) {
+          el.classList.add('hidden');
+          return;
+        }
         const d = {
           nombre: norm(el.dataset.nombre || ''),
           hab: (el.dataset.hab || '').toString(),
           reserva: el.dataset.reserva || '',
           ingreso: el.dataset.ingreso || '',
-          salida: el.dataset.salida || ''
+          salida: el.dataset.salida || '',
+          estado: norm(el.dataset.estado || ''),
+          origen: norm(el.dataset.origen || '')
         };
 
         const hayTexto = !text || (
@@ -461,7 +527,9 @@
           d.hab.includes(text) ||
           d.reserva.includes(text) ||
           d.ingreso.includes(text) ||
-          d.salida.includes(text)
+          d.salida.includes(text) ||
+          d.estado.includes(text) ||
+          d.origen.includes(text)
         );
         const hayFechaIn = inRange(d.ingreso, f);
         const show = hayTexto && hayFechaIn;
@@ -545,7 +613,8 @@
         1: 'hab',
         2: 'reserva',
         3: 'ingreso',
-        4: 'salida'
+        4: 'salida',
+        5: 'estado'
       };
       const key = mapIdxToKey[idx];
       if (!key) return;
@@ -630,7 +699,7 @@
 
         const enRangoValido = now >= fechaHabilitacion && now <= fechaSalida;
 
-        if (enRangoValido) {
+        if (!enRangoValido) { // Invert condiction to enable button / disable button
           button.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
           button.classList.add('hover:bg-green-700');
           button.title = 'Confirmar reservación';

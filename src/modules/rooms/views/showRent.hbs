@@ -2,6 +2,34 @@
   {{>buttons}}
 
   {{#if allRentas}}
+  <!-- Resumen de ingresos -->
+  <section class="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+    <div class="bg-white/80 backdrop-blur rounded-xl shadow-sm ring-1 ring-emerald-100 p-4 flex items-center justify-between">
+      <div>
+        <p class="text-xs uppercase tracking-wide text-emerald-600 font-semibold">Rentas directas</p>
+        <p class="text-2xl font-bold text-slate-900 mt-1">
+          {{resumenIngresos.directas.total_formateado}}
+        </p>
+        <p class="text-xs text-slate-500 mt-1">{{resumenIngresos.directas.cantidad}} registro(s)</p>
+      </div>
+      <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 text-emerald-700">
+        <i class="fa-solid fa-cash-register"></i>
+      </span>
+    </div>
+    <div class="bg-white/80 backdrop-blur rounded-xl shadow-sm ring-1 ring-blue-100 p-4 flex items-center justify-between">
+      <div>
+        <p class="text-xs uppercase tracking-wide text-blue-600 font-semibold">Reservaciones convertidas</p>
+        <p class="text-2xl font-bold text-slate-900 mt-1">
+          {{resumenIngresos.convertidas.total_formateado}}
+        </p>
+        <p class="text-xs text-slate-500 mt-1">{{resumenIngresos.convertidas.cantidad}} registro(s)</p>
+      </div>
+      <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-700">
+        <i class="fa-solid fa-right-left"></i>
+      </span>
+    </div>
+  </section>
+
   <!-- Filtros -->
   <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -69,6 +97,7 @@
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-door-closed text-[0.9rem]"></i> Habitación</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-day text-[0.9rem]"></i> Ingreso</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-check text-[0.9rem]"></i> Salida</span></th>
+          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-tags text-[0.9rem]"></i> Origen</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-clock text-[0.9rem]"></i> Estado</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-credit-card text-[0.9rem]"></i> Tipo de pago</span></th>
           <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-coins text-[0.9rem]"></i> Monto</span></th>
@@ -84,6 +113,7 @@
             data-hab="{{this.numero_habitacion}}"
             data-ingreso="{{this.fecha_ingreso}} PM"
             data-salida="{{this.fecha_salida}} AM"
+            data-origen="{{this.origen_clave}}"
             data-pago="{{this.tipo_pago}}"
             data-monto="{{this.monto}}"
             data-letras="{{this.monto_letras}}">
@@ -91,6 +121,19 @@
           <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.numero_habitacion}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4"> {{this.fecha_ingreso}}</td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">"{{this.fecha_salida}} "</td>
+          <td class="py-2 px-3 sm:py-3 sm:px-4">
+            {{#if (eq this.origen_clave 'directa')}}
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full">
+                <i class="fa-solid fa-file-pen text-emerald-600"></i>
+                {{this.origen_texto}}
+              </span>
+            {{else}}
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                <i class="fa-solid fa-right-left text-blue-600"></i>
+                {{this.origen_texto}}
+              </span>
+            {{/if}}
+          </td>
           <td class="py-2 px-3 sm:py-3 sm:px-4">
             {{#if (eq this.estado_tiempo 'corriente')}}
               <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
@@ -145,6 +188,7 @@
              data-hab="{{this.numero_habitacion}}"
              data-ingreso="{{this.fecha_ingreso}} PM"
              data-salida="{{this.fecha_salida}} AM"
+             data-origen="{{this.origen_clave}}"
              data-pago="{{this.tipo_pago}}"
              data-monto="{{this.monto}}"
              data-letras="{{this.monto_letras}}">
@@ -181,8 +225,16 @@
             <div class="capitalize">{{this.monto_letras}}</div>
           </div>
         </div>
-        <!-- Estado de la renta -->
+        <!-- Origen + Estado de la renta -->
         <div class="border-t pt-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <span class="inline-flex items-center gap-1.5 text-xs text-slate-500"><i class="fa-solid fa-tags"></i> {{this.origen_texto}}</span>
+            {{#if (eq this.origen_clave 'directa')}}
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full"><i class="fa-solid fa-file-pen text-emerald-600"></i> Directa</span>
+            {{else}}
+              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"><i class="fa-solid fa-right-left text-blue-600"></i> Conversión</span>
+            {{/if}}
+          </div>
           <div class="text-gray-500 text-xs inline-flex items-center gap-1.5 mb-2"><i class="fa-solid fa-clock"></i> Estado de la renta</div>
           {{#if (eq this.estado_tiempo 'corriente')}}
             <div class="inline-flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg w-full">
@@ -369,11 +421,9 @@
     const rows = Array.from(document.querySelectorAll('.rent-reveal'));
     // Filtros
     const q = document.getElementById('rentSearch');
-    // const pay = document.getElementById('rentPayType'); // removed
     const from = document.getElementById('rentFrom');
     const reset = document.getElementById('rentReset');
     const count = document.getElementById('rentCount');
-    // removed salida filters
     // Vista y paginación
     const tableSection = document.getElementById('tableSection');
     const cardsSection = document.getElementById('cardsSection');
@@ -533,12 +583,17 @@
           hab: (el.dataset.hab || '').toString(),
           ingreso: el.dataset.ingreso || '',
           salida: el.dataset.salida || '',
+          origen: norm(el.dataset.origen || ''),
           pago: norm(el.dataset.pago || ''),
           monto: (el.dataset.monto || '').toString(),
           letras: norm(el.dataset.letras || '')
         };
         const hayTexto = !text || (
-          d.nombre.includes(text) || d.hab.includes(text) || d.monto.includes(text) || d.letras.includes(text)
+          d.nombre.includes(text) ||
+          d.hab.includes(text) ||
+          d.monto.includes(text) ||
+          d.letras.includes(text) ||
+          d.origen.includes(text)
         );
         const hayFechaIn = inRange(d.ingreso, f);
         const show = hayTexto && hayFechaIn;
@@ -607,9 +662,10 @@
         1: 'hab',
         2: 'ingreso',
         3: 'salida',
-        4: 'pago',
-        5: 'monto',
-        6: 'letras'
+        4: 'origen',
+        5: 'pago',
+        6: 'monto',
+        7: 'letras'
       };
       const key = mapIdxToKey[idx];
       if (!key) return;

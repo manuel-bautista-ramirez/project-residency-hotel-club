@@ -374,6 +374,12 @@ export const renderAllRervationes = async (req, res) => {
     const user = req.session.user || { role: "Usuario" };
     const allReservationes = await getAllReservationes();
 
+    const currencyFormatter = new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+      minimumFractionDigits: 2,
+    });
+
     const ahora = new Date();
 
     const reservacionesFormateadas = allReservationes.map((reservacion) => {
@@ -387,6 +393,40 @@ export const renderAllRervationes = async (req, res) => {
       // Enganche perdido si ahora > fecha_ingreso + 30 minutos (es decir: no se confirmó en el lapso)
       const enganchePerdido = fechaIngresoDate ? (ahora > new Date(fechaIngresoDate.getTime() + (30 * 60 * 1000))) : false;
 
+      const esConvertida = reservacion.es_convertida === 1;
+      const origenLabel = esConvertida ? "Conversión" : "Reservación";
+      const estadoBase = reservacion.estado_reservacion || "pendiente";
+
+      const estadoEtiqueta = esConvertida
+        ? { texto: "Convertida a renta", clase: "bg-blue-100 text-blue-800", icono: "fa-solid fa-right-left" }
+        : estadoBase === "cancelada"
+          ? { texto: "Cancelada", clase: "bg-red-100 text-red-700", icono: "fa-solid fa-ban" }
+          : { texto: "Pendiente", clase: "bg-amber-100 text-amber-700", icono: "fa-solid fa-clock" };
+
+      const resumenFinanciero = esConvertida
+        ? {
+            tipo: reservacion.tipo_pago_renta || reservacion.tipo_pago,
+            monto: reservacion.monto_renta || reservacion.precio_total,
+            monto_formateado: currencyFormatter.format(
+              Number(reservacion.monto_renta || reservacion.precio_total || 0)
+            ),
+            origen: origenLabel,
+            origen_clave: "conversion",
+          }
+        : {
+            tipo: reservacion.tipo_pago,
+            monto: reservacion.precio_total,
+            monto_formateado: currencyFormatter.format(Number(reservacion.precio_total || 0)),
+            origen: origenLabel,
+            origen_clave: "reservacion",
+          };
+
+      const estado_clave = esConvertida
+        ? "convertida"
+        : estadoBase === "cancelada"
+          ? "cancelada"
+          : "pendiente";
+
       return {
         ...reservacion,
         // Enviar fechas en formato ISO estándar; el frontend ya las parsea manualmente sin cambiar la zona horaria
@@ -395,13 +435,35 @@ export const renderAllRervationes = async (req, res) => {
         fecha_salida: formatearFechaSafe(reservacion.fecha_salida, 'iso'),
         enganche_perdido: Boolean(enganchePerdido),
         confirm_start: confirmStartDate ? confirmStartDate.toISOString() : null, // para data-attribute en la vista
+        es_convertida: esConvertida,
+        estado_etiqueta: estadoEtiqueta,
+        resumen_financiero: resumenFinanciero,
+        origen_clave: resumenFinanciero.origen_clave,
+        estado_clave,
       };
     });
+
+    const reservacionesPendientes = reservacionesFormateadas.filter(r => !r.es_convertida);
+    const reservacionesConvertidas = reservacionesFormateadas.filter(r => r.es_convertida);
+    const totalPendiente = reservacionesPendientes.reduce((sum, r) => sum + Number(r.resumen_financiero?.monto || 0), 0);
+    const totalConvertido = reservacionesConvertidas.reduce((sum, r) => sum + Number(r.resumen_financiero?.monto || 0), 0);
+
+    const resumenReservaciones = {
+      pendientes: {
+        cantidad: reservacionesPendientes.length,
+        total: currencyFormatter.format(totalPendiente),
+      },
+      convertidas: {
+        cantidad: reservacionesConvertidas.length,
+        total: currencyFormatter.format(totalConvertido),
+      },
+    };
 
     res.render("showReservations", {
       title: "Adminstracion de  Reservaciones",
       showFooter: true,
       allReservationes: reservacionesFormateadas,
+      resumenReservaciones,
       user: {
         ...user,
         rol: user.role,
@@ -541,6 +603,36 @@ export const renderAllRentas = async (req, res) => {
     const user = req.session.user || { role: "Usuario" };
     const allRentas = await getAllRentas();
 
+    const rentasDirectas = allRentas.filter((renta) => renta.es_conversion === 0);
+    const rentasConvertidas = allRentas.filter((renta) => renta.es_conversion === 1);
+
+    const calcularTotal = (items) =>
+      items.reduce((total, renta) => total + Number(renta.monto || 0), 0);
+
+    const currencyFormatter = new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+      minimumFractionDigits: 2,
+    });
+
+    const resumenIngresos = {
+      directas: {
+        total: calcularTotal(rentasDirectas),
+        cantidad: rentasDirectas.length,
+      },
+      convertidas: {
+        total: calcularTotal(rentasConvertidas),
+        cantidad: rentasConvertidas.length,
+      },
+    };
+
+    resumenIngresos.directas.total_formateado = currencyFormatter.format(
+      resumenIngresos.directas.total
+    );
+    resumenIngresos.convertidas.total_formateado = currencyFormatter.format(
+      resumenIngresos.convertidas.total
+    );
+
     // Formatear fechas sin ajuste de zona horaria de forma segura
     const formatDateForDisplay = (dateStr) => {
       if (!dateStr) return null;
@@ -571,6 +663,11 @@ export const renderAllRentas = async (req, res) => {
       ...renta,
       fecha_ingreso: formatDateForDisplay(renta.fecha_ingreso),
       fecha_salida: formatDateForDisplay(renta.fecha_salida),
+      origen_texto:
+        renta.es_conversion === 0
+          ? "Renta directa"
+          : "Conversión de reservación",
+      origen_clave: renta.es_conversion === 0 ? "directa" : "conversion",
     }));
 
     console.log('🔍 Usuario en renderAllRentas:', user);
@@ -579,6 +676,7 @@ export const renderAllRentas = async (req, res) => {
     res.render("showRent", {
       title: "Listado de habitaciones rentadas",
       allRentas: rentasFormateadas,
+      resumenIngresos,
       showFooter: true,
       user: {
         ...user,
@@ -933,157 +1031,131 @@ export const renderFormRentar = async (req, res) => {
   }
 };
 
-// Helper para convertir números a letras (simplificado)
-function numeroALetras(num) {
-  return `${num} pesos`; // Implementa tu lógica si quieres algo más elaborado
-}
-
-// set new renta get mes , price , tyepe room
-
 export const handleCreateRenta = async (req, res) => {
-  const habitacion_id = req.params.id;
-  const usuario_id = req.session.user?.id;
-  const {
-    client_name,
-    email,
-    phone,
-    check_in,
-    check_out,
-    payment_type,
-    price,
-    price_text,
-    send_email,
-    send_whatsapp,
-  } = req.body;
-
-  console.log("req.body completo:", req.body);
-  console.log("Datos recibidos para renta:", {
-    habitacion_id,
-    usuario_id,
-    client_name,
-    email,
-    phone,
-    check_in,
-    check_out,
-    payment_type,
-    price,
-    price_text,
-  });
-
   try {
-    // Las fechas ya vienen con la hora correcta desde el frontend
-    // Check-in: 12:00 PM, Check-out: 11:59 AM
-    // NO modificar las horas, solo usar las que vienen
-    const check_in_formatted = check_in;
-    const check_out_formatted = check_out;
+    const habitacionId = Number(req.params.id);
+    if (Number.isNaN(habitacionId)) {
+      return res.status(400).send("ID de habitación inválido");
+    }
 
-    // 1. Insertar medio de mensaje
-    console.log("Antes de createMessageMethod - email:", email, "phone:", phone);
-    const message_method_id = await createMessageMethod(email, phone);
-    console.log("ID medio de mensaje creado:", message_method_id);
+    const {
+      client_name,
+      email,
+      phone,
+      check_in,
+      check_out,
+      price,
+      price_text,
+      payment_type,
+      send_email,
+      send_whatsapp,
+    } = req.body;
 
-    // Validar tipo de pago (el formulario ya envía los valores correctos en español)
+    const missingFields = [];
+    if (!client_name) missingFields.push("nombre del cliente");
+    if (!email) missingFields.push("email");
+    if (!phone) missingFields.push("teléfono");
+    if (!check_in) missingFields.push("fecha de entrada");
+    if (!check_out) missingFields.push("fecha de salida");
+    if (!price) missingFields.push("precio");
+    if (!payment_type) missingFields.push("tipo de pago");
+
+    if (missingFields.length) {
+      return res
+        .status(400)
+        .send(`Faltan datos obligatorios: ${missingFields.join(", ")}`);
+    }
+
     const tiposPagoValidos = ["tarjeta", "transferencia", "efectivo"];
-
     if (!tiposPagoValidos.includes(payment_type)) {
       return res.status(400).send("Tipo de pago inválido");
     }
 
-    const tipo_pago = payment_type;
+    const usuarioId = req.session.user?.id;
+    if (!usuarioId) {
+      return res.status(401).send("Usuario no autenticado");
+    }
 
-    // 2. Insertar renta
+    const messageMethodId = await createMessageMethod(email, phone);
+
+    const montoNumerico = Number(price) || 0;
+    const montoTexto = price_text?.trim()
+      ? price_text
+      : numeroALetras(montoNumerico);
+
     const rentData = {
-      room_id: habitacion_id,
-      user_id: usuario_id,
-      message_method_id: message_method_id,
-      client_name: client_name,
-      check_in_date: check_in_formatted,
-      check_out_date: check_out_formatted,
-      payment_type: tipo_pago,
-      amount: price,
-      amount_text: price_text,
+      room_id: habitacionId,
+      user_id: usuarioId,
+      message_method_id: messageMethodId,
+      client_name,
+      email,
+      phone,
+      check_in_date: check_in,
+      check_out_date: check_out,
+      payment_type,
+      amount: montoNumerico,
+      amount_text: montoTexto,
+      enganche: 0,
     };
 
-    console.log("Creando renta con datos:", rentData);
-    const rent_id = await createRent(rentData);
-    console.log("Renta creada con ID:", rent_id);
+    const rentId = await createRent(rentData);
 
-    // Obtener el número real de la habitación
     const { getRoomNumberById } = await import("../models/ModelRoom.js");
-    const numeroHabitacion = await getRoomNumberById(habitacion_id);
+    const numeroHabitacion = await getRoomNumberById(habitacionId);
 
-    // Preparar datos para el PDF
     const datosParaPDF = {
       client_name,
       email,
       phone,
       check_in,
       check_out,
-      payment_type: tipo_pago,
-      price,
-      habitacion_id,
-      numero_habitacion: numeroHabitacion || habitacion_id, // Usar número real o ID como fallback
-      tipo: "renta",
+      payment_type,
+      price: montoNumerico.toFixed(2),
+      habitacion_id: habitacionId,
+      numero_habitacion: numeroHabitacion || habitacionId,
     };
 
-    console.log("Datos listos para PDF:", datosParaPDF);
-
-    // Generar PDF y QR y enviar
     try {
       const { generateAndSendPDF } = await import("../utils/pdfGenerator.js");
       const { generarQR } = await import("../utils/qrGenerator.js");
-      const pdfEnvioService = await import("../utils/pdfEnvio.js").then(
+      const envioPdfService = await import("../utils/pdfEnvio.js").then(
         (module) => module.default
       );
 
       const qrPath = await generarQR(datosParaPDF, "renta");
       const pdfPath = await generateAndSendPDF(datosParaPDF, "renta", qrPath);
 
-      console.log("Comprobantes generados:");
-      console.log("PDF:", pdfPath);
-      console.log("QR:", qrPath);
-
-      // Guardar las rutas de los archivos en la base de datos
-      await updateRent(rent_id, {
+      await updateRent(rentId, {
         pdf_path: pdfPath,
         qr_path: qrPath,
       });
-      console.log("Rutas de archivos guardadas en la base de datos para la renta.");
 
-      // Opciones de envío
-      const opcionesEnvio = {
+      const options = {
         sendEmail: send_email === "on",
         sendWhatsApp: send_whatsapp === "on",
       };
 
-      // Enviar comprobante
-      const resultadosEnvio = await pdfEnvioService.enviarComprobanteRenta(
+      await envioPdfService.enviarComprobanteRenta(
         datosParaPDF,
         pdfPath,
-        opcionesEnvio
+        options
       );
-
-      console.log("Resultados del envío:", resultadosEnvio);
     } catch (pdfError) {
-      console.error("Error generando/enviando comprobante:", pdfError);
-      // No detenemos el flujo principal si falla el PDF
+      console.error("Error generando/enviando comprobante de renta:", pdfError);
+      // Continuar aunque falle el envío
     }
 
-    res.redirect("/rooms?success=renta");
-  } catch (err) {
-    console.error("Error creando la renta:", err);
-
-    if (err.message && err.message.includes("no está disponible")) {
-      return res
-        .status(409)
-        .send(
-          `<script>alert('${err.message}'); window.location.href='/rooms';</script>`
-        );
-    }
-
-    return res.status(500).send("Error creando la renta");
+    return res.redirect("/rooms");
+  } catch (error) {
+    console.error("Error en handleCreateRenta:", error);
+    return res.status(500).send("Error al crear la renta");
   }
 };
+
+// Helper para convertir números a letras (simplificado)
+function numeroALetras(num) {
+  return `${num} pesos`; // Implementa tu lógica si quieres algo más elaborado
+}
 
 export const renderCalendario = (req, res) => {
   res.render("calendar", {
@@ -2060,12 +2132,6 @@ export const handleConvertReservationToRent = async (req, res) => {
       }
     }
 
-    // IMPORTANTE: Eliminar la reservación ANTES de crear la renta
-    // para que no haya conflicto de disponibilidad
-    console.log(`Eliminando reservación ${id} de la base de datos...`);
-    await deletebyReservation(id);
-    console.log(`Reservación ${id} eliminada`);
-
     // Crear el registro de medios de mensaje primero
     console.log("Creando registro de medios de mensaje...");
     const messageMethodId = await createMessageMethod(email, phone);
@@ -2088,7 +2154,7 @@ export const handleConvertReservationToRent = async (req, res) => {
     };
 
     console.log("Creando renta con datos:", rentData);
-    const rent_id = await createRent(rentData);
+    const rent_id = await createRent(rentData, id); // Pasar el ID de la reservación a excluir
     console.log("Renta creada con ID:", rent_id);
 
     // Obtener el número real de la habitación

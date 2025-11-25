@@ -186,6 +186,12 @@
         return `${year}-${month}-${day}`;
       }
 
+      // Establecer la fecha actual por defecto para el periodo diario
+      const dailyInput = document.getElementById('fecha-diaria');
+      if (dailyInput) {
+        dailyInput.value = formatDateYMD(new Date());
+      }
+
       // Obtener rango de fechas según el período seleccionado y los controles de fecha
       function obtenerRangoFechas() {
         const today = new Date();
@@ -429,18 +435,22 @@
 
         if (reporte.tipo === 'rentas' && hayDatos) {
           contenidoHTML += `
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <div class="bg-blue-100 p-4 rounded-lg">
-                <h3 class="font-semibold text-blue-800">Total Rentas</h3>
-                <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalRentas}</p>
+                <h3 class="font-semibold text-blue-800">Rentas Directas</h3>
+                <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalDirectas}</p>
+              </div>
+              <div class="bg-orange-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-orange-800">Rentas por Conversión</h3>
+                <p class="text-2xl font-bold text-orange-900">${reporte.estadisticas.totalConvertidas}</p>
               </div>
               <div class="bg-green-100 p-4 rounded-lg">
-                <h3 class="font-semibold text-green-800">Ingreso Total</h3>
-                <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.totalIngresos)}</p>
+                <h3 class="font-semibold text-green-800">Ingreso Directo</h3>
+                <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.ingresosDirectos)}</p>
               </div>
-              <div class="bg-purple-100 p-4 rounded-lg">
-                <h3 class="font-semibold text-purple-800">Promedio</h3>
-                <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.promedioIngreso)}</p>
+              <div class="bg-teal-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-teal-800">Promedio Directo</h3>
+                <p class="text-2xl font-bold text-teal-900">${formatCurrency(reporte.estadisticas.promedioIngreso)}</p>
               </div>
             </div>
             <div class="overflow-x-auto">
@@ -472,10 +482,14 @@
           `;
         } else if (reporte.tipo === 'reservaciones' && hayDatos) {
           contenidoHTML += `
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
               <div class="bg-green-100 p-4 rounded-lg">
-                <h3 class="font-semibold text-green-800">Total Reservaciones</h3>
-                <p class="text-2xl font-bold text-green-900">${reporte.estadisticas.totalReservaciones}</p>
+                <h3 class="font-semibold text-green-800">Reservas Pendientes</h3>
+                <p class="text-2xl font-bold text-green-900">${reporte.estadisticas.totalPendientes}</p>
+              </div>
+              <div class="bg-orange-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-orange-800">Reservas Convertidas</h3>
+                <p class="text-2xl font-bold text-orange-900">${reporte.estadisticas.totalConvertidas}</p>
               </div>
               <div class="bg-blue-100 p-4 rounded-lg">
                 <h3 class="font-semibold text-blue-800">Monto Esperado</h3>
@@ -488,6 +502,10 @@
               <div class="bg-red-100 p-4 rounded-lg">
                 <h3 class="font-semibold text-red-800">Pendiente por Cobrar</h3>
                 <p class="text-2xl font-bold text-red-900">${formatCurrency(reporte.estadisticas.pendientePorCobrar)}</p>
+              </div>
+              <div class="bg-teal-100 p-4 rounded-lg">
+                <h3 class="font-semibold text-teal-800">Convertidas + Enganche</h3>
+                <p class="text-2xl font-bold text-teal-900">${formatCurrency(reporte.estadisticas.totalConvertidasConEnganche)}</p>
               </div>
             </div>
             <div class="overflow-x-auto">
@@ -510,9 +528,9 @@
                       <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
                       <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
                       <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
-                      <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
-                      <td class="px-4 py-2 border text-right">${formatCurrency(r.enganche || 0)}</td>
-                      <td class="px-4 py-2 border text-right">${formatCurrency(r.monto - (r.enganche || 0))}</td>
+                      <td class="px-4 py-2 border text-right">${formatCurrency(typeof r.monto_total_mostrado !== 'undefined' ? r.monto_total_mostrado : r.monto)}</td>
+                      <td class="px-4 py-2 border text-right">${formatCurrency(typeof r.enganche_mostrado !== 'undefined' ? r.enganche_mostrado : (r.enganche || 0))}</td>
+                      <td class="px-4 py-2 border text-right">${formatCurrency(typeof r.pendiente_mostrado !== 'undefined' ? r.pendiente_mostrado : (r.monto - (r.enganche || 0)))}</td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -525,22 +543,30 @@
           hayDatos = hasRentas || hasReservas;
           if (hayDatos) {
             contenidoHTML += `
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
                 <div class="bg-blue-100 p-4 rounded-lg">
-                  <h3 class="font-semibold text-blue-800">Total Operaciones</h3>
-                  <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalOperaciones}</p>
+                  <h3 class="font-semibold text-blue-800">Rentas Directas</h3>
+                  <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalRentasDirectas}</p>
+                </div>
+                <div class="bg-orange-100 p-4 rounded-lg">
+                  <h3 class="font-semibold text-orange-800">Rentas por Conversión</h3>
+                  <p class="text-2xl font-bold text-orange-900">${reporte.estadisticas.totalRentasConvertidas}</p>
                 </div>
                 <div class="bg-green-100 p-4 rounded-lg">
-                  <h3 class="font-semibold text-green-800">Ingresos Reales</h3>
-                  <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.ingresosReales)}</p>
+                  <h3 class="font-semibold text-green-800">Reservas Pendientes</h3>
+                  <p class="text-2xl font-bold text-green-900">${reporte.estadisticas.totalReservasPendientes}</p>
+                </div>
+                <div class="bg-teal-100 p-4 rounded-lg">
+                  <h3 class="font-semibold text-teal-800">Reservas Convertidas</h3>
+                  <p class="text-2xl font-bold text-teal-900">${reporte.estadisticas.totalReservasConvertidas}</p>
+                </div>
+                <div class="bg-purple-100 p-4 rounded-lg">
+                  <h3 class="font-semibold text-purple-800">Ingresos Reales</h3>
+                  <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.ingresosReales)}</p>
                 </div>
                 <div class="bg-yellow-100 p-4 rounded-lg">
                   <h3 class="font-semibold text-yellow-800">Ingresos Esperados</h3>
                   <p class="text-2xl font-bold text-yellow-900">${formatCurrency(reporte.estadisticas.ingresosEsperados)}</p>
-                </div>
-                <div class="bg-purple-100 p-4 rounded-lg">
-                  <h3 class="font-semibold text-purple-800">Total General</h3>
-                  <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.totalGeneral)}</p>
                 </div>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -586,6 +612,7 @@
                     <p class="text-sm"><strong>Monto Esperado:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.totalMontoEsperado)}</p>
                     <p class="text-sm"><strong>Enganche:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.totalEnganche)}</p>
                     <p class="text-sm"><strong>Pendiente:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.pendientePorCobrar)}</p>
+                    <p class="text-sm"><strong>Convertidas + Enganche:</strong> ${formatCurrency(reporte.reservaciones.estadisticas.totalConvertidasConEnganche)}</p>
                   </div>
                   <div class="overflow-x-auto mt-2">
                     <table class="min-w-full bg-white border">
@@ -607,9 +634,9 @@
                             <td class="px-4 py-2 border text-center">${r.numero_habitacion} (${r.tipo_habitacion})</td>
                             <td class="px-4 py-2 border text-center">${new Date(r.fecha_ingreso).toLocaleDateString('es-MX')}</td>
                             <td class="px-4 py-2 border text-center">${new Date(r.fecha_salida).toLocaleDateString('es-MX')}</td>
-                            <td class="px-4 py-2 border text-right">${formatCurrency(r.monto)}</td>
-                            <td class="px-4 py-2 border text-right">${formatCurrency(r.enganche || 0)}</td>
-                            <td class="px-4 py-2 border text-right">${formatCurrency(r.monto - (r.enganche || 0))}</td>
+                            <td class="px-4 py-2 border text-right">${formatCurrency(typeof r.monto_total_mostrado !== 'undefined' ? r.monto_total_mostrado : r.monto)}</td>
+                            <td class="px-4 py-2 border text-right">${formatCurrency(typeof r.enganche_mostrado !== 'undefined' ? r.enganche_mostrado : (r.enganche || 0))}</td>
+                            <td class="px-4 py-2 border text-right">${formatCurrency(typeof r.pendiente_mostrado !== 'undefined' ? r.pendiente_mostrado : (r.monto - (r.enganche || 0)))}</td>
                           </tr>
                         `).join('')}
                       </tbody>
