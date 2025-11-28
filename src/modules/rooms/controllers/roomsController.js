@@ -1,6 +1,31 @@
 // roomsController.js
 import path from "path";
 import { fileURLToPath } from "url";
+
+// Helper function para manejo seguro de fechas
+const formatearFechaSafe = (fecha, formato = 'iso') => {
+  if (!fecha) return null;
+  try {
+    const fechaObj = new Date(fecha);
+    // Verificar si la fecha es válida
+    if (isNaN(fechaObj.getTime())) {
+      console.warn(`Fecha inválida encontrada: ${fecha}`);
+      return null;
+    }
+    
+    switch (formato) {
+      case 'date':
+        return fechaObj.toISOString().split("T")[0];
+      case 'iso':
+      default:
+        return fechaObj.toISOString();
+    }
+  } catch (error) {
+    console.warn(`Error al formatear fecha: ${fecha}`, error);
+    return null;
+  }
+};
+import { pool } from "../../../dataBase/connectionDataBase.js";
 import {
   getHabitaciones,
   findReservacionById,
@@ -20,6 +45,7 @@ import {
   updateReservation,
   updateRent,
   finalizarRenta,
+  finalizarRentasExpiradas,
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 // Para obtener __dirname en ES modules
@@ -29,6 +55,18 @@ const __dirname = path.dirname(__filename);
 export const renderHabitacionesView = async (req, res) => {
   try {
     const user = req.session.user || { role: "Usuario" };
+    
+    // Actualizar habitaciones de rentas expiradas antes de cargar las habitaciones
+    try {
+      const resultado = await finalizarRentasExpiradas();
+      if (resultado.actualizadas > 0) {
+        console.log(`🔄 Se actualizaron automáticamente ${resultado.actualizadas} habitaciones de rentas expiradas a estado limpieza`);
+      }
+    } catch (error) {
+      console.error("⚠️ Error al actualizar habitaciones de rentas expiradas:", error);
+      // No interrumpir el flujo, solo registrar el error
+    }
+    
     const habitaciones = await getHabitaciones();
 
     res.render("ShowAllRooms", {
@@ -139,21 +177,37 @@ export const handleCreateReservation = async (req, res) => {
       return res.status(401).send("Usuario no autenticado o ID inválido");
     }
 
-    // Formateo de fechas
+    // Validar y formatear fechas de forma segura
+    if (!fecha_ingreso || !fecha_salida) {
+      console.error("Fechas faltantes:", { fecha_ingreso, fecha_salida });
+      return res.status(400).send("Las fechas de ingreso y salida son requeridas");
+    }
+
     const fechaIngresoDate = new Date(fecha_ingreso);
     const fechaSalidaDate = new Date(fecha_salida);
+
+    // Validar que las fechas sean válidas
+    if (isNaN(fechaIngresoDate.getTime()) || isNaN(fechaSalidaDate.getTime())) {
+      console.error("Fechas inválidas:", { fecha_ingreso, fecha_salida });
+      return res.status(400).send("Las fechas proporcionadas no son válidas");
+    }
 
     fechaIngresoDate.setUTCHours(18, 0, 0, 0);
     fechaSalidaDate.setUTCHours(18, 0, 0, 0);
 
     const formatUTCForMySQL = (date) => {
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-      const day = String(date.getUTCDate()).padStart(2, "0");
-      const hours = String(date.getUTCHours()).padStart(2, "0");
-      const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-      const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      try {
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+        const day = String(date.getUTCDate()).padStart(2, "0");
+        const hours = String(date.getUTCHours()).padStart(2, "0");
+        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+        const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      } catch (error) {
+        console.error("Error al formatear fecha para MySQL:", error);
+        throw new Error("Error al formatear fecha");
+      }
     };
 
     const fecha_ingreso_formatted = formatUTCForMySQL(fechaIngresoDate);
@@ -270,15 +324,9 @@ export const renderAllRervationes = async (req, res) => {
 
     const reservacionesFormateadas = allReservationes.map((reservacion) => ({
       ...reservacion,
-      fecha_reserva: reservacion.fecha_reserva
-        ? new Date(reservacion.fecha_reserva).toISOString()
-        : null,
-      fecha_ingreso: reservacion.fecha_ingreso
-        ? new Date(reservacion.fecha_ingreso).toISOString()
-        : null,
-      fecha_salida: reservacion.fecha_salida
-        ? new Date(reservacion.fecha_salida).toISOString()
-        : null,
+      fecha_reserva: formatearFechaSafe(reservacion.fecha_reserva),
+      fecha_ingreso: formatearFechaSafe(reservacion.fecha_ingreso),
+      fecha_salida: formatearFechaSafe(reservacion.fecha_salida),
     }));
 
     res.render("showReservations", {
@@ -359,18 +407,30 @@ export const renderAllRentas = async (req, res) => {
     const user = req.session.user || { role: "Usuario" };
     const allRentas = await getAllRentas();
 
-    // Formatear fechas sin ajuste de zona horaria
+    // Formatear fechas sin ajuste de zona horaria de forma segura
     const formatDateForDisplay = (dateStr) => {
       if (!dateStr) return null;
-      // Extraer la fecha y hora directamente del string de MySQL
-      // Formato: "2025-10-11T12:00:00.000Z" → "11/10/2025 12:00"
-      const date = new Date(dateStr);
-      const day = String(date.getUTCDate()).padStart(2, '0');
-      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-      const year = date.getUTCFullYear();
-      const hours = String(date.getUTCHours()).padStart(2, '0');
-      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-      return `${day}/${month}/${year} ${hours}:${minutes}`;
+      try {
+        // Extraer la fecha y hora directamente del string de MySQL
+        // Formato: "2025-10-11T12:00:00.000Z" → "11/10/2025 12:00"
+        const date = new Date(dateStr);
+        
+        // Verificar si la fecha es válida
+        if (isNaN(date.getTime())) {
+          console.warn(`Fecha inválida en renta: ${dateStr}`);
+          return "Fecha inválida";
+        }
+        
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const year = date.getUTCFullYear();
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+      } catch (error) {
+        console.error(`Error al formatear fecha de renta: ${dateStr}`, error);
+        return "Error en fecha";
+      }
     };
 
     const rentasFormateadas = allRentas.map((renta) => ({
@@ -442,9 +502,9 @@ export const deleteIdRenta = async (req, res) => {
       }
     }
 
-    // Liberar la habitación poniéndola en estado "limpieza"
-    console.log(` Liberando habitación ${habitacionId} y poniéndola en estado "limpieza"...`);
-    await pool.query('UPDATE habitaciones SET estado = "limpieza" WHERE id = ?', [habitacionId]);
+    // Liberar la habitación poniéndola en estado "disponible" (no "limpieza" porque la renta se está eliminando, no finalizando)
+    console.log(` Liberando habitación ${habitacionId} y poniéndola en estado "disponible"...`);
+    await pool.query('UPDATE habitaciones SET estado = "disponible" WHERE id = ?', [habitacionId]);
 
     // Eliminar la renta de la base de datos
     console.log(` Eliminando renta ${rentaId} de la base de datos...`);
@@ -469,7 +529,41 @@ export const marcarComoDesocupada = async (req, res) => {
       return res.status(400).json({ error: "ID inválido" });
     }
 
-    console.log(`Marcando renta ${rentaId} como desocupada...`);
+    console.log(`Verificando si la renta ${rentaId} puede ser desocupada...`);
+    
+    // Verificar si la renta ya está expirada
+    const [rentaInfo] = await pool.query(`
+      SELECT fecha_salida, estado,
+             CASE
+               WHEN estado = 'finalizada' THEN 'expirada'
+               WHEN (
+                 DATE(fecha_salida) < CURDATE()
+                 OR 
+                 (DATE(fecha_salida) = CURDATE() AND NOW() >= fecha_salida)
+               ) THEN 'expirada'
+               ELSE 'corriente'
+             END AS estado_tiempo
+      FROM rentas 
+      WHERE id = ?
+    `, [rentaId]);
+
+    if (rentaInfo.length === 0) {
+      console.error(`❌ Renta ${rentaId} no encontrada`);
+      return res.status(404).json({ error: "Renta no encontrada" });
+    }
+
+    const renta = rentaInfo[0];
+    
+    // Validar que la renta no esté expirada
+    if (renta.estado_tiempo === 'expirada') {
+      console.log(`⚠️ Intento de desocupar renta expirada ${rentaId}`);
+      return res.status(400).json({ 
+        error: "No se puede desocupar una renta que ya ha expirado",
+        details: "Esta renta ya venció y no puede ser desocupada manualmente"
+      });
+    }
+
+    console.log(`✅ Renta ${rentaId} está corriente, procediendo a marcar como desocupada...`);
     
     // Llamar a la función del modelo que finaliza la renta y libera la habitación
     const success = await finalizarRenta(rentaId);
@@ -496,13 +590,9 @@ export const renderFormEditarReservacion = async (req, res) => {
     const reservacion = await findReservacionById(reservacionId);
     if (!reservacion) return res.status(404).send("Reservación no encontrada");
 
-    // Formatear fechas para inputs tipo date
-    reservacion.fecha_ingreso = reservacion.fecha_ingreso
-      .toISOString()
-      .split("T")[0];
-    reservacion.fecha_salida = reservacion.fecha_salida
-      .toISOString()
-      .split("T")[0];
+    // Formatear fechas para inputs tipo date de forma segura
+    reservacion.fecha_ingreso = formatearFechaSafe(reservacion.fecha_ingreso, 'date') || "";
+    reservacion.fecha_salida = formatearFechaSafe(reservacion.fecha_salida, 'date') || "";
 
     const habitaciones = await getHabitaciones();
 
@@ -512,6 +602,7 @@ export const renderFormEditarReservacion = async (req, res) => {
       reservacion,
       habitaciones,
       user: req.session.user,
+       showNavbar: true
     });
   } catch (err) {
     console.error("Error en renderFormEditarReservacion:", err);
@@ -912,7 +1003,7 @@ export const renderCalendario = (req, res) => {
 // Nuevo calendario mejorado con vista por habitación
 export const renderCalendarioRooms = (req, res) => {
   const user = req.session.user || {};
-  res.render("calendarRooms", {
+  res.render("calendar", {
     title: "Calendario de Habitaciones",
     showFooter: true,
     user: {
@@ -947,6 +1038,96 @@ export const fetchEventos = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener los eventos" });
+  }
+};
+
+// API para obtener eventos en formato FullCalendar (solo próximos)
+export const getCalendarEvents = async (req, res) => {
+  try {
+    const { getAllRentas, getAllReservationes } = await import("../models/ModelRoom.js");
+    
+    // Obtener rentas y reservaciones
+    const todasLasRentas = await getAllRentas();
+    const todasLasReservaciones = await getAllReservationes();
+    
+    // Filtrar eventos relevantes para el calendario
+    const ahora = new Date();
+    
+    // Para rentas: incluir las que están activas (no finalizadas) o que empezarán en el futuro
+    const rentas = todasLasRentas.filter(renta => {
+      const fechaSalida = new Date(renta.fecha_salida);
+      // Incluir si la fecha de salida es futura o si la renta está activa (corriente)
+      return fechaSalida >= ahora || renta.estado_tiempo === 'corriente';
+    });
+    
+    // Para reservaciones: incluir las que empezarán en el futuro
+    const reservaciones = todasLasReservaciones.filter(reservacion => {
+      const fechaIngreso = new Date(reservacion.fecha_ingreso);
+      return fechaIngreso >= ahora;
+    });
+    
+    console.log(`📊 Total rentas en BD: ${todasLasRentas.length}, Próximas: ${rentas.length}`);
+    console.log(`📊 Total reservaciones en BD: ${todasLasReservaciones.length}, Próximas: ${reservaciones.length}`);
+    
+    // Convertir rentas a formato FullCalendar
+    const eventosRentas = rentas.map(renta => {
+      // Determinar colores según el estado de la renta
+      let backgroundColor, borderColor, title;
+      
+      if (renta.estado_tiempo === 'expirada') {
+        backgroundColor = '#ef4444'; // Rojo para expiradas
+        borderColor = '#dc2626';
+        title = `${renta.nombre_cliente} - Hab. ${renta.numero_habitacion} (EXPIRADA)`;
+      } else {
+        backgroundColor = '#10b981'; // Verde para corrientes
+        borderColor = '#059669';
+        title = `${renta.nombre_cliente} - Hab. ${renta.numero_habitacion}`;
+      }
+      
+      return {
+        id: `renta-${renta.id_renta}`,
+        title: title,
+        start: renta.fecha_ingreso,
+        end: renta.fecha_salida,
+        backgroundColor: backgroundColor,
+        borderColor: borderColor,
+        extendedProps: {
+          tipo: 'renta',
+          estado: renta.estado_tiempo || 'corriente',
+          correo: '', // Las rentas no tienen correo en esta consulta
+          telefono: '', // Las rentas no tienen teléfono en esta consulta
+          habitacion: renta.numero_habitacion,
+          precio: renta.monto
+        }
+      };
+    });
+    
+    // Convertir reservaciones a formato FullCalendar
+    const eventosReservaciones = reservaciones.map(reservacion => ({
+      id: `reservacion-${reservacion.id_reservacion}`,
+      title: `${reservacion.nombre_cliente} - Hab. ${reservacion.numero_habitacion}`,
+      start: reservacion.fecha_ingreso,
+      end: reservacion.fecha_salida,
+      backgroundColor: '#3b82f6',
+      borderColor: '#2563eb',
+      extendedProps: {
+        tipo: 'reservacion',
+        correo: reservacion.correo || '',
+        telefono: reservacion.telefono || '',
+        habitacion: reservacion.numero_habitacion,
+        precio: reservacion.precio_total
+      }
+    }));
+    
+    // Combinar todos los eventos
+    const todosLosEventos = [...eventosRentas, ...eventosReservaciones];
+    
+    console.log(`📅 Total eventos para calendario: ${todosLosEventos.length}`);
+    
+    res.json(todosLosEventos);
+  } catch (error) {
+    console.error("❌ Error obteniendo eventos del calendario:", error);
+    res.status(500).json({ error: "Error al obtener eventos del calendario" });
   }
 };
 
@@ -1881,14 +2062,39 @@ export const handleConvertReservationToRent = async (req, res) => {
 
       console.log("Resultados de envío:", resultadosEnvio);
 
-      res.redirect("/rooms/list/rentas");
+      // Redirigir a la página principal de rooms
+      res.redirect("/rooms");
     } catch (pdfError) {
       console.error("Error al generar/enviar PDF:", pdfError);
       // Aunque falle el PDF, la renta ya se creó
-      res.redirect("/rooms/list/rentas");
+      res.redirect("/rooms");
     }
   } catch (error) {
     console.error("Error al convertir reservación a renta:", error);
     res.status(500).send("Error al convertir la reservación a renta");
+  }
+};
+
+// Endpoint para actualizar habitaciones de rentas expiradas
+export const finalizarRentasExpiradasController = async (req, res) => {
+  try {
+    console.log('🔄 Ejecutando actualización manual de habitaciones de rentas expiradas...');
+    const resultado = await finalizarRentasExpiradas();
+    
+    res.json({
+      success: true,
+      message: `Se actualizaron ${resultado.actualizadas} habitaciones de rentas expiradas a estado limpieza`,
+      data: {
+        actualizadas: resultado.actualizadas,
+        habitaciones: resultado.habitaciones
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error en finalizarRentasExpiradasController:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al actualizar habitaciones de rentas expiradas',
+      details: error.message
+    });
   }
 };

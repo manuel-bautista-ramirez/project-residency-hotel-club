@@ -6,6 +6,7 @@ import {
   renderEditProduct,
   handleUpdateProduct,
   handleDeleteProduct,
+  handleAddStock, // Importar nuevo controlador
   renderCheckout,
   handleCheckout,
   showSales,
@@ -46,6 +47,9 @@ routerStore.post("/store/edit/:id", handleUpdateProduct);
 
 // Eliminar producto (solo administradores)
 routerStore.get("/store/delete/:id", handleDeleteProduct);
+
+// Añadir stock a producto (solo administradores)
+routerStore.post("/store/inventory/add-stock/:id", handleAddStock);
 
 // =====================================================
 //              RUTAS DE VENTAS

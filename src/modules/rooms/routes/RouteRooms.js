@@ -41,6 +41,9 @@ import {
   // Funciones para calendario
   renderCalendarioRooms,
   getCalendarData,
+  getCalendarEvents,
+  // Función para finalizar rentas expiradas
+  finalizarRentasExpiradasController,
 } from "../controllers/roomsController.js";
 
 const routerRoom = express.Router();
@@ -77,8 +80,9 @@ routerRoom.post("/rentas/eliminar/:id", deleteIdRenta);
 routerRoom.post("/rooms/desocupar/:id", marcarComoDesocupada);
 
 // ----- CALENDARIO -----
-routerRoom.get("/rooms/calendario", renderCalendarioRooms);
+routerRoom.get("/rooms/list/calendario", renderCalendarioRooms);
 routerRoom.get("/api/rooms/calendar-data", getCalendarData);
+routerRoom.get("/rooms/calendario/eventos", getCalendarEvents);
 
 // ----- API for promesas -----
 
@@ -102,5 +106,8 @@ routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-whatsapp", sendRes
 
 // ----- RUTAS PARA RECORDATORIOS -----
 routerRoom.post("/api/rooms/reservaciones/:reservacionId/send-reminder", sendCheckInReminder);
+
+// ----- RUTA PARA FINALIZAR RENTAS EXPIRADAS -----
+routerRoom.post("/api/rooms/finalizar-rentas-expiradas", finalizarRentasExpiradasController);
 
 export { routerRoom };

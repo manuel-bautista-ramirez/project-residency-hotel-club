@@ -361,7 +361,7 @@ CREATE TABLE IF NOT EXISTS productos (
 CREATE TABLE IF NOT EXISTS ventas (
   id INT AUTO_INCREMENT PRIMARY KEY,
   usuario_id INT,
-  id_medio_mensaje INT,
+  id_medio_mensaje INT NULL,
   nombre_cliente VARCHAR(255) NOT NULL,
   tipo_pago ENUM('efectivo', 'tarjeta', 'transferencia') NOT NULL,
   total DECIMAL(10, 2) NOT NULL,
@@ -372,8 +372,7 @@ CREATE TABLE IF NOT EXISTS ventas (
   INDEX idx_fecha_venta (created_at),
   INDEX idx_tipo_pago (tipo_pago),
   INDEX idx_usuario (usuario_id),
-  FOREIGN KEY (usuario_id) REFERENCES users_hotel(id) ON DELETE SET NULL,
-  FOREIGN KEY (id_medio_mensaje) REFERENCES medios_mensajes(id) ON DELETE SET NULL
+  FOREIGN KEY (usuario_id) REFERENCES users_hotel(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de detalles de venta

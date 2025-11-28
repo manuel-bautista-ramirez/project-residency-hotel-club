@@ -4,6 +4,7 @@ import { membershipApiRoutes, membershipRoutes } from "../modules/membership/rou
 import { routerRoom } from "../modules/rooms/routes/RouteRooms.js";
 import { entriesRouter } from "../modules/entries/router/RouteDailyEntries.js";
 import { routerStore } from "../modules/store/routes/storeRoutes.js";
+import { adminRouter } from "../modules/admin/router/adminRouter.js";
 
 // Rutas de módulos
 
@@ -47,6 +48,7 @@ routerGlobal.use("/memberships", membershipRoutes);
 routerGlobal.use("/api/memberships", membershipApiRoutes);
 routerGlobal.use( entriesRouter);
 routerGlobal.use(routerStore);
+routerGlobal.use(adminRouter);
 
 
 

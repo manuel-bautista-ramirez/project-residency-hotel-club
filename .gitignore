@@ -15,6 +15,9 @@ public/uploads/
 # Mantener estructura de directorios
 !public/uploads/**/.gitkeep
 
-# Archivos CSS
+# Archivos CSS (excepto librerías)
 *.css
+# Permitir librerías de terceros
+!public/js/**/fullcalendar*/**/*.css
+!public/js/**/lib/**/*.css
 

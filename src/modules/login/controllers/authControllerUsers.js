@@ -11,7 +11,7 @@ import {
   validateEmptyFields,
   validateUsername,
   validatePassword,
-} from "../middlewares/validation/textBox.js";
+} from "../../../middlewares/validation/textBox.js";
 
 //  Generar enlace de recuperación
 export const sendPasswordResetLink = async (req, res) => {
