@@ -420,28 +420,37 @@ const MembershipUI = {
   },
   /**
    * Manejador para el evento 'change' del selector de tipo de membresía.
-   * Actualiza el número máximo de integrantes permitidos y muestra u oculta
-   * la sección para agregar integrantes según el tipo de membresía.
+   * Actualiza el número máximo de integrantes permitidos y crea exactamente
+   * el número de campos requeridos según max_integrantes del tipo seleccionado.
+   * Los integrantes no pueden agregarse ni eliminarse, deben ser exactos.
    */
   handleTipoMembresiaChange: function (e) {
     const selectedOption = e.target.options[e.target.selectedIndex];
-    const isFamily = selectedOption.text.toLowerCase().includes('familiar');
     this.maxIntegrantes = parseInt(selectedOption.dataset.max, 10);
     this.updateCalculatedDetails();
 
     this.integrantesContainer.innerHTML = ""; // Limpiar siempre
-    if (isFamily) {
+    
+    // Si max_integrantes > 1, mostrar sección de integrantes
+    if (this.maxIntegrantes > 1) {
       this.integrantesSection.classList.remove("hidden");
-      this.addIntegranteBtn.classList.add("hidden"); // Ocultar botón de añadir
-      // Crear los 3 campos obligatorios
-      for (let i = 0; i < 3; i++) {
-        this.agregarIntegrante(false); // `false` para no mostrar el botón de eliminar
+      this.addIntegranteBtn.classList.add("hidden"); // Siempre ocultar el botón de agregar
+      
+      // Crear exactamente (maxIntegrantes - 1) campos fijos
+      // -1 porque el titular ya cuenta como un integrante
+      const numIntegrantesAdicionales = this.maxIntegrantes - 1;
+      
+      for (let i = 0; i < numIntegrantesAdicionales; i++) {
+        this.agregarIntegrante(false); // false = sin botón de eliminar
       }
-    } else if (this.maxIntegrantes > 1) {
-        // Lógica para otros tipos de membresía con integrantes opcionales (si existieran)
-      this.integrantesSection.classList.remove("hidden");
-      this.addIntegranteBtn.classList.remove("hidden");
+      
+      // Actualizar el texto del header para informar al usuario
+      const headerText = this.integrantesSection.querySelector('h4');
+      if (headerText) {
+        headerText.innerHTML = `<i class="fas fa-users mr-2"></i>Integrantes adicionales (${numIntegrantesAdicionales} requeridos)`;
+      }
     } else {
+      // Si solo es para 1 persona (individual), ocultar la sección
       this.integrantesSection.classList.add("hidden");
     }
   },

@@ -37,11 +37,16 @@
             <table class="w-full border-collapse">
                 <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
                     <tr>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Nombre</th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Descripción</th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Máx. Integrantes</th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-right font-semibold text-gray-700">Precio</th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">Acciones</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Nombre
+                        </th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">
+                            Descripción</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Máx.
+                            Integrantes</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-right font-semibold text-gray-700">Precio
+                        </th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">
+                            Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200" id="tiposMembresiaTableBody">
@@ -54,13 +59,13 @@
                         <td class="px-6 py-4 text-center">
                             <div class="flex justify-center space-x-2">
                                 <button
-                                    class="edit-tipo-btn action-btn bg-blue-100 text-blue-600 hover:bg-blue-200 hover:scale-110 transition-all duration-200"
+                                    class="edit-tipo-btn action-btn p-2 rounded-md bg-blue-100 text-blue-600 hover:bg-blue-200 hover:scale-110 transition-all duration-200"
                                     data-id="{{this.id_tipo_membresia}}" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 {{#isNotDefault this.nombre 'tipo'}}
                                 <button
-                                    class="delete-tipo-btn action-btn bg-red-100 text-red-600 hover:bg-red-200 hover:scale-110 transition-all duration-200"
+                                    class="delete-tipo-btn action-btn p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 hover:scale-110 transition-all duration-200"
                                     data-id="{{this.id_tipo_membresia}}" data-nombre="{{this.nombre}}" title="Eliminar">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
@@ -95,8 +100,10 @@
             <table class="w-full border-collapse">
                 <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
                     <tr>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Nombre</th>
-                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">Acciones</th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-left font-semibold text-gray-700">Nombre
+                        </th>
+                        <th class="border-b-2 border-gray-300 px-6 py-4 text-center font-semibold text-gray-700">
+                            Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200" id="metodosPagoTableBody">
@@ -106,13 +113,13 @@
                         <td class="px-6 py-4 text-center">
                             <div class="flex justify-center space-x-2">
                                 <button
-                                    class="edit-metodo-btn action-btn bg-blue-100 text-blue-600 hover:bg-blue-200 hover:scale-110 transition-all duration-200"
+                                    class="edit-metodo-btn action-btn p-2 rounded-md bg-blue-100 text-blue-600 hover:bg-blue-200 hover:scale-110 transition-all duration-200"
                                     data-id="{{this.id_metodo_pago}}" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 {{#isNotDefault this.nombre 'metodo'}}
                                 <button
-                                    class="delete-metodo-btn action-btn bg-red-100 text-red-600 hover:bg-red-200 hover:scale-110 transition-all duration-200"
+                                    class="delete-metodo-btn action-btn p-2 rounded-md bg-red-100 text-red-600 hover:bg-red-200 hover:scale-110 transition-all duration-200"
                                     data-id="{{this.id_metodo_pago}}" data-nombre="{{this.nombre}}" title="Eliminar">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
@@ -128,8 +135,7 @@
 </div>
 
 <!-- Modal para Tipo de Membresía -->
-<div id="tipoMembresiaModal"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+<div id="tipoMembresiaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95">
         <div class="p-6 border-b-2 border-gray-200">
             <h3 id="tipoModalTitle" class="text-xl font-bold text-gray-800 flex items-center">
@@ -154,7 +160,8 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-2">
-                    <label for="tipoMaxIntegrantes" class="block text-sm font-semibold text-gray-700">Máx. Integrantes *</label>
+                    <label for="tipoMaxIntegrantes" class="block text-sm font-semibold text-gray-700">Máx. Integrantes
+                        *</label>
                     <input type="number" id="tipoMaxIntegrantes" name="max_integrantes" min="1" required
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-300">
                 </div>
@@ -185,7 +192,7 @@
 </div>
 
 <!-- Modal para Método de Pago -->
-<div id="metodoPagoModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+<div id="metodoPagoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95">
         <div class="p-6 border-b-2 border-gray-200">
             <h3 id="metodoModalTitle" class="text-xl font-bold text-gray-800 flex items-center">
@@ -217,8 +224,7 @@
 </div>
 
 <!-- Modal de Confirmación Eliminación -->
-<div id="deleteConfirmModal"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+<div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95">
         <div class="p-6 border-b-2 border-gray-200">
             <h3 class="text-xl font-bold text-gray-800 flex items-center">
@@ -242,4 +248,3 @@
 </div>
 
 <script src="/js/moduleMembershipJs/manageTypes.js" type="module"></script>
-
