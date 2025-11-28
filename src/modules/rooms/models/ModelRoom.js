@@ -12,7 +12,7 @@ export const getHabitaciones = async () => {
           WHEN EXISTS (
             SELECT 1 FROM rentas re
             WHERE re.habitacion_id = h.id
-            AND re.estado = 'activa'
+            AND COALESCE(re.estado, 'activa') = 'activa'
             AND NOW() BETWEEN re.fecha_ingreso AND re.fecha_salida
           ) THEN 'ocupado'
 
@@ -20,6 +20,7 @@ export const getHabitaciones = async () => {
           WHEN EXISTS (
             SELECT 1 FROM reservaciones r
             WHERE r.habitacion_id = h.id
+            AND COALESCE(r.estado, '') <> 'convertida_a_renta'
             AND NOW() BETWEEN r.fecha_ingreso AND r.fecha_salida
           ) THEN 'ocupado'
 
@@ -33,7 +34,7 @@ export const getHabitaciones = async () => {
           WHEN EXISTS (
             SELECT 1 FROM rentas re
             WHERE re.habitacion_id = h.id
-            AND re.estado = 'activa'
+            AND COALESCE(re.estado, 'activa') = 'activa'
             AND (
               DATE(re.fecha_salida) < CURDATE()
               OR
@@ -45,6 +46,7 @@ export const getHabitaciones = async () => {
           WHEN EXISTS (
             SELECT 1 FROM reservaciones r
             WHERE r.habitacion_id = h.id
+            AND COALESCE(r.estado, '') <> 'convertida_a_renta'
             AND (
               DATE(r.fecha_salida) < CURDATE()
               OR
@@ -86,7 +88,7 @@ export const checkRoomAvailability = async (roomId, fechaIngreso, fechaSalida, e
           (SELECT COUNT(*)
            FROM rentas
            WHERE habitacion_id = ?
-           AND estado = 'activa'
+           AND COALESCE(estado, 'activa') = 'activa'
            AND (? < fecha_salida AND ? > fecha_ingreso)
            ${excludeRentId ? 'AND id != ?' : ''}
           ) +
@@ -597,8 +599,8 @@ export const createRent = async ({
 
     // 1. Insertar la renta
     const [rentResult] = await connection.query(
-      `INSERT INTO rentas (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_ingreso, fecha_salida, tipo_pago, monto, monto_letras) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [room_id, user_id, message_method_id, client_name, check_in_date, check_out_date, payment_type, amount, amount_text]
+      `INSERT INTO rentas (habitacion_id, usuario_id, id_medio_mensaje, nombre_cliente, fecha_ingreso, fecha_salida, tipo_pago, monto, monto_letras, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [room_id, user_id, message_method_id, client_name, check_in_date, check_out_date, payment_type, amount, amount_text, 'activa']
     );
     const rent_id = rentResult.insertId;
 
@@ -1006,7 +1008,7 @@ export const hasActiveBookings = async (roomId) => {
         (
           (SELECT COUNT(*) FROM rentas re
            WHERE re.habitacion_id = ?
-           AND re.estado = 'activa'
+           AND COALESCE(re.estado, 'activa') = 'activa'
            AND (
              DATE(re.fecha_salida) > CURDATE()
              OR
@@ -1016,7 +1018,10 @@ export const hasActiveBookings = async (roomId) => {
           +
           (SELECT COUNT(*) FROM reservaciones r
            WHERE r.habitacion_id = ?
+           AND COALESCE(r.estado, '') <> 'convertida_a_renta'
            AND (
+             DATE(r.fecha_salida) < CURDATE()
+             OR
              DATE(r.fecha_salida) > CURDATE()
              OR
              (DATE(r.fecha_salida) = CURDATE() AND NOW() < r.fecha_salida)
@@ -1044,7 +1049,7 @@ export const finalizarRentasExpiradas = async () => {
       SELECT re.id, re.habitacion_id, re.nombre_cliente, re.fecha_salida, h.estado as estado_habitacion
       FROM rentas re
       INNER JOIN habitaciones h ON re.habitacion_id = h.id
-      WHERE re.estado = 'activa'
+      WHERE COALESCE(re.estado, 'activa') = 'activa'
       AND (
         DATE(re.fecha_salida) < CURDATE()
         OR

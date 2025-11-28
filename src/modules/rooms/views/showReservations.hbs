@@ -27,11 +27,6 @@
         <input id="reservationSearch" type="text" placeholder="Escribe para filtrar..."
                class="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
       </div>
-      <!-- Rango de fechas (ingreso) -->
-      <div class="flex flex-col gap-1 sm:col-span-2 lg:col-span-2">
-        <label for="reservationFrom" class="text-xs font-medium text-slate-600">Ingreso desde</label>
-        <input id="reservationFrom" type="date" class="px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full lg:max-w-sm">
-      </div>
     </div>
     <div class="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
       <div id="reservationCount" class="text-xs text-slate-600">Mostrando todas las reservaciones</div>
@@ -94,7 +89,8 @@
 
         <tbody class="text-gray-700 divide-y divide-gray-200 text-xs">
           {{#each allReservationes}}
-          <tr class="hover:bg-gray-50 transition-colors reservation-row {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
+          <tr class="hover-bg-gray-50 transition-colors reservation-row {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
+              data-item-id="{{this.id_reservacion}}"
               data-nombre="{{this.nombre_cliente}}"
               data-hab="{{this.numero_habitacion}}"
               data-reserva="{{this.fecha_reserva}}"
@@ -182,6 +178,7 @@
   <section id="cardsSection" class="mt-6 grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2 lg:hidden">
     {{#each allReservationes}}
     <article class="bg-white rounded-xl shadow-lg overflow-hidden reservation-reveal transition-all duration-300 {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
+             data-item-id="{{this.id_reservacion}}"
              data-nombre="{{this.nombre_cliente}}"
              data-hab="{{this.numero_habitacion}}"
              data-reserva="{{this.fecha_reserva}}"
@@ -340,11 +337,12 @@
     const rowsTable = Array.from(document.querySelectorAll('.reservation-row'));
     const rowsCards = Array.from(document.querySelectorAll('.reservation-reveal'));
     const rows = [...rowsTable, ...rowsCards];
+    let activeCollection = rowsTable;
+    const totalRecords = new Set(rowsTable.map(el => el.dataset.itemId).filter(Boolean)).size || rowsTable.length;
 
     // Filtros
     const q = document.getElementById('reservationSearch');
-    const from = document.getElementById('reservationFrom');
-    const reset = document.getElementById('reservationReset');
+    const resetBtn = document.getElementById('reservationReset');
     const count = document.getElementById('reservationCount');
 
     // Paginación
@@ -492,26 +490,19 @@
     // --- Funciones auxiliares ---
     function norm(str) { return (str || '').toString().trim().toLowerCase(); }
 
-    function inRange(dateStr, fromStr) {
-      if (!fromStr) return true;
-      const d = new Date(dateStr);
-      if (Number.isNaN(d.getTime())) return false;
-      if (fromStr && d < new Date(fromStr)) return false;
-      return true;
-    }
-
     // --- Filtrado ---
     function applyFilters() {
-      const text = norm(q.value);
-      const f = from.value;
-      let visible = 0;
+      const text = norm(q ? q.value : '');
+      const visibleIds = new Set();
 
       rows.forEach(el => {
         const esConvertida = (el.dataset.estadoClave || '') === 'convertida';
         if (esConvertida) {
           el.classList.add('hidden');
+          el.style.display = 'none';
           return;
         }
+
         const d = {
           nombre: norm(el.dataset.nombre || ''),
           hab: (el.dataset.hab || '').toString(),
@@ -531,17 +522,29 @@
           d.estado.includes(text) ||
           d.origen.includes(text)
         );
-        const hayFechaIn = inRange(d.ingreso, f);
-        const show = hayTexto && hayFechaIn;
+
+        const show = hayTexto;
 
         el.classList.toggle('hidden', !show);
-        if (show) visible++;
+        if (!show) {
+          el.style.display = 'none';
+        }
+        if (show && el.closest('#tableSection')) {
+          const itemId = el.dataset.itemId || `${d.hab}-${d.nombre}`;
+          visibleIds.add(itemId);
+        }
       });
 
       if (count) {
-        count.textContent = visible === rows.length
-          ? 'Mostrando todas las reservaciones'
-          : `Mostrando ${visible} de ${rows.length} reservaciones`;
+        const totalBase = totalRecords;
+        const visibleTotal = visibleIds.size;
+        if (totalBase === 0) {
+          count.textContent = 'Sin reservaciones para mostrar';
+        } else if (visibleTotal >= totalBase) {
+          count.textContent = `Mostrando todas las reservaciones (${totalBase})`;
+        } else {
+          count.textContent = `Mostrando ${visibleTotal} de ${totalBase} reservaciones`;
+        }
       }
 
       // Reiniciar a página 1 después de filtrar
@@ -549,20 +552,18 @@
       applySortAndPaginate();
     }
 
-    ['input','change'].forEach(evt => {
-      q.addEventListener(evt, applyFilters);
-      from.addEventListener(evt, applyFilters);
-    });
+    if (q) {
+      ['input','change'].forEach(evt => q.addEventListener(evt, applyFilters));
+    }
 
-    reset.addEventListener('click', () => {
-      q.value = '';
-      from.value = '';
+    resetBtn?.addEventListener('click', () => {
+      if (q) q.value = '';
       applyFilters();
     });
 
     // --- Ordenamiento y paginación ---
     function getVisibleRows() {
-      return rows.filter(el => !el.classList.contains('hidden'));
+      return activeCollection.filter(el => !el.classList.contains('hidden'));
     }
 
     function coerce(key, val) {
@@ -595,8 +596,18 @@
       const start = (page - 1) * pageSize;
       const end = start + pageSize;
 
-      rows.forEach(el => { el.style.display = el.classList.contains('hidden') ? '' : ''; });
+      const inactiveCollection = activeCollection === rowsTable ? rowsCards : rowsTable;
+      inactiveCollection.forEach(el => { el.style.display = 'none'; });
+      activeCollection.forEach(el => {
+        if (el.classList.contains('hidden')) {
+          el.style.display = 'none';
+        }
+      });
       arr.forEach((el, idx) => {
+        if (el.classList.contains('hidden')) {
+          el.style.display = 'none';
+          return;
+        }
         const inPage = idx >= start && idx < end;
         el.style.display = inPage ? '' : 'none';
       });
@@ -671,6 +682,23 @@
       });
     }
 
+    function syncActiveCollection() {
+      const prefersTable = window.matchMedia('(min-width: 1024px)').matches; // lg breakpoint
+      activeCollection = prefersTable ? rowsTable : rowsCards;
+      applySortAndPaginate();
+    }
+
+    syncActiveCollection();
+    window.addEventListener('resize', () => {
+      const prefersTable = window.matchMedia('(min-width: 1024px)').matches;
+      const shouldUseTable = prefersTable;
+      const isTableActive = activeCollection === rowsTable;
+      if (shouldUseTable !== isTableActive) {
+        activeCollection = shouldUseTable ? rowsTable : rowsCards;
+        applySortAndPaginate();
+      }
+    });
+
     // Inicializar filtros
     applyFilters();
 
@@ -699,7 +727,7 @@
 
         const enRangoValido = now >= fechaHabilitacion && now <= fechaSalida;
 
-        if (!enRangoValido) { // Invert condiction to enable button / disable button
+        if (enRangoValido) { // Invert condiction to enable button / disable button
           button.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
           button.classList.add('hover:bg-green-700');
           button.title = 'Confirmar reservación';

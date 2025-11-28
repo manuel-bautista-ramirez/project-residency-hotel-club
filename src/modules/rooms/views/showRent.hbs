@@ -30,53 +30,6 @@
     </div>
   </section>
 
-  <!-- Filtros -->
-  <section class="mt-4 sm:mt-6 bg-white/70 backdrop-blur rounded-xl shadow-sm ring-1 ring-slate-100 p-3 sm:p-4">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <!-- Búsqueda libre -->
-      <div class="flex flex-col gap-1">
-        <label for="rentSearch" class="text-xs font-medium text-slate-600">Buscar (cliente, habitación, monto, letras)</label>
-        <input id="rentSearch" type="text" placeholder="Escribe para filtrar..."
-               class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-      </div>
-      <!-- Rango de fechas (ingreso) -->
-      <div class="flex flex-col gap-1 md:col-span-2 max-w-sm">
-        <label for="rentFrom" class="text-xs font-medium text-slate-600">Ingreso desde</label>
-        <input id="rentFrom" type="date" class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-      </div>
-    </div>
-    <div class="mt-3 flex items-center justify-between gap-2">
-      <div id="rentCount" class="text-xs text-slate-600">Mostrando todas las rentas</div>
-      <button id="rentReset" class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg inline-flex items-center gap-1.5">
-        <i class="fa-solid fa-eraser"></i>
-        Limpiar filtros
-      </button>
-    </div>
-  </section>
-
-  <!-- Paginación -->
-  <section class="mt-3 sm:mt-4 flex items-center gap-2 justify-between sm:justify-end">
-    <div class="flex items-center gap-2">
-      <label class="text-xs text-slate-600">Por página</label>
-      <select id="rentPageSize" class="px-2 py-1 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-        <option>10</option>
-        <option>20</option>
-        <option>50</option>
-      </select>
-      <div class="flex items-center gap-2">
-        <button id="rentPagePrev" class="px-3 py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 inline-flex items-center gap-1.5">
-          <i class="fa-solid fa-angle-left"></i>
-          Anterior
-        </button>
-        <span id="rentPageInfo" class="text-xs text-slate-600">Página 1 de 1</span>
-        <button id="rentPageNext" class="px-3 py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 inline-flex items-center gap-1.5">
-          Siguiente
-          <i class="fa-solid fa-angle-right"></i>
-        </button>
-      </div>
-    </div>
-  </section>
-
   <!-- Loading Overlay -->
   <div id="rentsLoadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
     <div class="flex flex-col items-center gap-3">
@@ -88,106 +41,147 @@
     </div>
   </div>
 
-  <!-- Tabla de rentas (solo desktop) -->
-  <section id="tableSection" class="overflow-x-auto mt-6 hidden lg:block">
-    <table class="min-w-full bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
-      <thead class="bg-blue-800 text-white text-xs sm:text-sm uppercase">
-        <tr>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-user text-[0.9rem]"></i> Cliente</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-door-closed text-[0.9rem]"></i> Habitación</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-day text-[0.9rem]"></i> Ingreso</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-check text-[0.9rem]"></i> Salida</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-tags text-[0.9rem]"></i> Origen</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-clock text-[0.9rem]"></i> Estado</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-credit-card text-[0.9rem]"></i> Tipo de pago</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-coins text-[0.9rem]"></i> Monto</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-file-lines text-[0.9rem]"></i> Monto en letras</span></th>
-          <th class="py-2 px-3 sm:py-3 sm:px-4 text-center"><span class="inline-flex items-center gap-1.5 whitespace-nowrap justify-center w-full"><i class="fa-solid fa-ellipsis-vertical text-[0.9rem]"></i> Acciones</span></th>
-        </tr>
-      </thead>
+  <!-- Controles de rentas -->
+  <section id="rentControls" class="mt-6">
+    <div class="bg-blue-900/95 text-white px-3 sm:px-4 py-4 rounded-xl shadow-lg">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+          <label for="rentSearch" class="text-xs font-semibold tracking-wide text-blue-100 uppercase">Buscar</label>
+          <input id="rentSearch" type="text" placeholder="Cliente, habitación, monto, letras..."
+                 class="px-3 py-2 text-sm border border-blue-200/70 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-200 bg-white/95 text-slate-800 w-full sm:w-72">
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <div id="rentCount" class="text-xs text-blue-100">Mostrando todas las rentas</div>
+          <button id="rentReset" class="px-3 py-1.5 text-xs bg-blue-800/50 hover:bg-blue-700/70 text-blue-100 rounded-lg inline-flex items-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-eraser"></i>
+            Limpiar
+          </button>
+          <div class="flex items-center gap-2 text-xs text-blue-100">
+            <span>Por página:</span>
+            <span class="font-semibold text-white">5</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="rentPagePrev" class="px-3 py-1.5 text-xs rounded-lg bg-blue-800/60 hover:bg-blue-700/70 inline-flex items-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-angle-left"></i>
+              Anterior
+            </button>
+            <span id="rentPageInfo" class="text-xs text-blue-100">Página 1 de 1</span>
+            <button id="rentPageNext" class="px-3 py-1.5 text-xs rounded-lg bg-blue-800/60 hover:bg-blue-700/70 inline-flex items-center gap-1.5 transition-colors">
+              Siguiente
+              <i class="fa-solid fa-angle-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-      <tbody class="text-gray-700 divide-y divide-gray-200 text-xs sm:text-sm">
-        {{#each allRentas}}
-        <tr class="hover:bg-gray-50 rent-reveal opacity-0 translate-y-1 transition-all duration-500"
-            data-nombre="{{this.nombre_cliente}}"
-            data-hab="{{this.numero_habitacion}}"
-            data-ingreso="{{this.fecha_ingreso}} PM"
-            data-salida="{{this.fecha_salida}} AM"
-            data-origen="{{this.origen_clave}}"
-            data-pago="{{this.tipo_pago}}"
-            data-monto="{{this.monto}}"
-            data-letras="{{this.monto_letras}}">
-          <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.nombre_cliente}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.numero_habitacion}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4"> {{this.fecha_ingreso}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">"{{this.fecha_salida}} "</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">
-            {{#if (eq this.origen_clave 'directa')}}
-              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full">
-                <i class="fa-solid fa-file-pen text-emerald-600"></i>
-                {{this.origen_texto}}
-              </span>
-            {{else}}
-              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                <i class="fa-solid fa-right-left text-blue-600"></i>
-                {{this.origen_texto}}
-              </span>
-            {{/if}}
-          </td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">
-            {{#if (eq this.estado_tiempo 'corriente')}}
-              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                <i class="fa-solid fa-clock text-green-600"></i>
-                Corriente
-              </span>
-              <div class="text-xs text-gray-500 mt-1">{{this.tiempo_restante}}</div>
-            {{else}}
-              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
-                <i class="fa-solid fa-exclamation-triangle text-red-600"></i>
-                Expirada
-              </span>
-              <div class="text-xs text-gray-500 mt-1">{{this.tiempo_restante}}</div>
-            {{/if}}
-          </td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.tipo_pago}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.monto}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.monto_letras}}</td>
-          <td class="py-2 px-3 sm:py-3 sm:px-4">
-            <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
-              {{#if (eq this.estado_tiempo 'corriente')}}
-                <button type="button" onclick="openDesocuparModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition w-24 sm:w-28">
-                  <i class="fa-solid fa-door-open"></i>
-                  <span>Desocupar</span>
-                </button>
-              {{else}}
-                <button type="button" disabled class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gray-400 text-gray-600 text-xs sm:text-sm rounded-lg shadow-sm cursor-not-allowed w-24 sm:w-28" title="No se puede desocupar una renta expirada">
-                  <i class="fa-solid fa-ban"></i>
-                  <span class="hidden sm:inline">Renta Expirada</span>
-                  <span class="sm:hidden">Expirada</span>
-                </button>
-              {{/if}}
-              {{#if (eq @root.user.role 'Administrador')}}
-              <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition w-24 sm:w-28">
-                <i class="fa-solid fa-trash-can"></i>
-                <span>Eliminar</span>
-              </button>
-              {{/if}}
-            </div>
-          </td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
+  <!-- Tabla de rentas (solo desktop) -->
+  <section id="tableSection" class="mt-6 hidden lg:block">
+    <div id="rentTableWrapper" class="relative">
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
+          <thead class="bg-blue-800 text-white text-xs sm:text-sm uppercase">
+            <tr>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-user text-[0.9rem]"></i> Cliente</span></th>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-door-closed text-[0.9rem]"></i> Habitación</span></th>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-day text-[0.9rem]"></i> Ingreso</span></th>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-check text-[0.9rem]"></i> Salida</span></th>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-tags text-[0.9rem]"></i> Origen</span></th>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-clock text-[0.9rem]"></i> Estado</span></th>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-credit-card text-[0.9rem]"></i> Tipo de pago</span></th>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-coins text-[0.9rem]"></i> Monto</span></th>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-file-lines text-[0.9rem]"></i> Monto en letras</span></th>
+              <th class="py-2 px-3 sm:py-3 sm:px-4 text-center"><span class="inline-flex items-center gap-1.5 whitespace-nowrap justify-center w-full"><i class="fa-solid fa-ellipsis-vertical text-[0.9rem]"></i> Acciones</span></th>
+            </tr>
+          </thead>
+
+          <tbody class="text-gray-700 divide-y divide-gray-200 text-xs sm:text-sm">
+            {{#each allRentas}}
+            <tr class="hover:bg-gray-50 rent-reveal opacity-0 translate-y-1 transition-all duration-500"
+                data-item-id="{{this.id_renta}}"
+                data-nombre="{{this.nombre_cliente}}"
+                data-hab="{{this.numero_habitacion}}"
+                data-ingreso="{{this.fecha_ingreso}}"
+                data-salida="{{this.fecha_salida}}"
+                data-origen="{{this.origen_clave}}"
+                data-pago="{{this.tipo_pago}}"
+                data-monto="{{this.monto}}"
+                data-letras="{{this.monto_letras}}">
+              <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.nombre_cliente}}</td>
+              <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.numero_habitacion}}</td>
+              <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_ingreso}}</td>
+              <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_salida}}</td>
+              <td class="py-2 px-3 sm:py-3 sm:px-4">
+                {{#if (eq this.origen_clave 'directa')}}
+                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full">
+                    <i class="fa-solid fa-file-pen text-emerald-600"></i>
+                    {{this.origen_texto}}
+                  </span>
+                {{else}}
+                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                    <i class="fa-solid fa-right-left text-blue-600"></i>
+                    {{this.origen_texto}}
+                  </span>
+                {{/if}}
+              </td>
+              <td class="py-2 px-3 sm:py-3 sm:px-4">
+                {{#if (eq this.estado_tiempo 'corriente')}}
+                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                    <i class="fa-solid fa-clock text-green-600"></i>
+                    Corriente
+                  </span>
+                  <div class="text-xs text-gray-500 mt-1">{{this.tiempo_restante}}</div>
+                {{else}}
+                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                    <i class="fa-solid fa-exclamation-triangle text-red-600"></i>
+                    Expirada
+                  </span>
+                  <div class="text-xs text-gray-500 mt-1">{{this.tiempo_restante}}</div>
+                {{/if}}
+              </td>
+              <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.tipo_pago}}</td>
+              <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.monto}}</td>
+              <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.monto_letras}}</td>
+              <td class="py-2 px-3 sm:py-3 sm:px-4">
+                <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
+                  {{#if (eq this.estado_tiempo 'corriente')}}
+                    <button type="button" onclick="openDesocuparModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition-colors w-24 sm:w-28">
+                      <i class="fa-solid fa-door-open"></i>
+                      <span>Desocupar</span>
+                    </button>
+                  {{else}}
+                    <button type="button" disabled class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gray-400 text-gray-600 text-xs sm:text-sm rounded-lg shadow-sm cursor-not-allowed w-24 sm:w-28" title="No se puede desocupar una renta expirada">
+                      <i class="fa-solid fa-ban"></i>
+                      <span class="hidden sm:inline">Renta expirada</span>
+                      <span class="sm:hidden">Expirada</span>
+                    </button>
+                  {{/if}}
+                  {{#if (eq @root.user.role 'Administrador')}}
+                  <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition-colors w-24 sm:w-28">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Eliminar</span>
+                  </button>
+                  {{/if}}
+                </div>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <!-- Cards de rentas (móvil y tablet) -->
   <section id="cardsSection" class="mt-6 grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:hidden">
     {{#each allRentas}}
     <article class="bg-white rounded-xl shadow-lg overflow-hidden rent-reveal opacity-0 translate-y-1 transition-all duration-500"
+             data-item-id="{{this.id_renta}}"
              data-nombre="{{this.nombre_cliente}}"
              data-hab="{{this.numero_habitacion}}"
-             data-ingreso="{{this.fecha_ingreso}} PM"
-             data-salida="{{this.fecha_salida}} AM"
+             data-ingreso="{{this.fecha_ingreso}}"
+             data-salida="{{this.fecha_salida}}"
              data-origen="{{this.origen_clave}}"
              data-pago="{{this.tipo_pago}}"
              data-monto="{{this.monto}}"
@@ -419,17 +413,21 @@
   document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('rentsLoadingOverlay');
     const rows = Array.from(document.querySelectorAll('.rent-reveal'));
-    // Filtros
-    const q = document.getElementById('rentSearch');
-    const from = document.getElementById('rentFrom');
-    const reset = document.getElementById('rentReset');
-    const count = document.getElementById('rentCount');
-    // Vista y paginación
     const tableSection = document.getElementById('tableSection');
     const cardsSection = document.getElementById('cardsSection');
-    const btnViewTable = document.getElementById('rentViewTable');
-    const btnViewCards = document.getElementById('rentViewCards');
-    const selPageSize = document.getElementById('rentPageSize');
+    const tableWrapper = document.getElementById('rentTableWrapper');
+    const tableBody = tableSection ? tableSection.querySelector('tbody') : null;
+    const tableRows = rows.filter(el => el.closest('#tableSection'));
+    const cardRows = rows.filter(el => el.closest('#cardsSection'));
+    let useTable = window.matchMedia('(min-width: 1024px)').matches;
+    let activeCollection = useTable ? tableRows : cardRows;
+    let filteredRows = activeCollection.slice();
+    const totalRecords = new Set(rows.map(el => el.dataset.itemId).filter(Boolean)).size || rows.length;
+    // Filtros
+    const q = document.getElementById('rentSearch');
+    const resetBtn = document.getElementById('rentReset');
+    const count = document.getElementId('rentCount');
+    // Paginación
     const btnPrev = document.getElementById('rentPagePrev');
     const btnNext = document.getElementById('rentPageNext');
     const lblPage = document.getElementById('rentPageInfo');
@@ -437,7 +435,24 @@
     let sortKey = '';
     let sortDir = 'asc'; // 'asc' | 'desc'
     let page = 1;
-    let pageSize = parseInt(selPageSize ? selPageSize.value : '10', 10) || 10;
+    const tablePageSize = 10;
+    const cardPageSize = 5;
+
+    function getPageSize() {
+      return activeCollection === tableRows ? tablePageSize : cardPageSize;
+    }
+
+    function adjustTableHeight() {
+      if (!tableWrapper) return;
+      const visibleRows = tableRows.filter(el => !el.classList.contains('hidden'));
+      if (visibleRows.length > 5) {
+        tableWrapper.className = 'relative max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100';
+      } else {
+        tableWrapper.className = 'relative';
+        tableWrapper.style.maxHeight = '';
+        tableWrapper.style.overflowY = '';
+      }
+    }
 
     // Función para formatear fechas con hora
     function formatDateTime(dateStr) {
@@ -497,35 +512,8 @@
       return formatted;
     }
 
-    // Formatear fechas en la tabla usando data attributes
-    rows.forEach(row => {
-      const cells = row.querySelectorAll('td');
-
-      // Obtener fechas del atributo data-* que tiene el formato ISO completo
-      const ingresoISO = row.getAttribute('data-ingreso');
-      const salidaISO = row.getAttribute('data-salida');
-
-      console.log('=== PROCESANDO FILA ===');
-      console.log('data-ingreso:', ingresoISO);
-      console.log('data-salida:', salidaISO);
-      console.log('Tipo ingreso:', typeof ingresoISO);
-      console.log('Tipo salida:', typeof salidaISO);
-
-      // Formatear y actualizar las celdas (índice 2 y 3)
-      if (cells[2] && ingresoISO) {
-        const formatted = formatDateTime(ingresoISO);
-        console.log('Ingreso formateado:', formatted);
-        cells[2].textContent = formatted;
-      }
-      if (cells[3] && salidaISO) {
-        const formatted = formatDateTime(salidaISO);
-        console.log('Salida formateada:', formatted);
-        cells[3].textContent = formatted;
-      }
-    });
-
-    // Formatear fechas en las cards móviles usando data attributes y clases específicas
-    document.querySelectorAll('.rent-reveal[data-ingreso]').forEach(card => {
+    // Formatear fechas en las cards usando data attributes y clases específicas
+    rows.forEach(card => {
       const ingresoISO = card.getAttribute('data-ingreso');
       const salidaISO = card.getAttribute('data-salida');
 
@@ -545,7 +533,7 @@
     // Ocultar overlay tras breve tiempo para evitar parpadeo
     setTimeout(() => { if (overlay) overlay.classList.add('hidden'); }, 300);
 
-    // Reveal-on-scroll para filas
+    // Reveal-on-scroll para tarjetas
     if (!('IntersectionObserver' in window) || rows.length === 0) {
       rows.forEach(r => r.classList.remove('opacity-0', 'translate-y-1'));
     } else {
@@ -564,19 +552,13 @@
       });
     }
 
+
     // --- Filtrado ---
     function norm(str) { return (str || '').toString().trim().toLowerCase(); }
-    function inRange(dateStr, fromStr) {
-      if (!fromStr) return true;
-      const d = new Date(dateStr);
-      if (Number.isNaN(d)) return false;
-      if (fromStr && d < new Date(fromStr)) return false;
-      return true;
-    }
     function applyFilters() {
-      const text = norm(q.value);
-      const f = from.value;
-      let visible = 0;
+      const text = norm(q ? q.value : '');
+      const visibleIds = new Set();
+      filteredRows = [];
       rows.forEach(el => {
         const d = {
           nombre: norm(el.dataset.nombre || ''),
@@ -595,32 +577,43 @@
           d.letras.includes(text) ||
           d.origen.includes(text)
         );
-        const hayFechaIn = inRange(d.ingreso, f);
-        const show = hayTexto && hayFechaIn;
-        el.classList.toggle('hidden', !show);
-        if (show) visible++;
+        if (hayTexto) {
+          el.classList.remove('hidden');
+          el.style.display = '';
+          filteredRows.push(el);
+          const itemId = el.dataset.itemId || `${d.hab}-${d.nombre}`;
+          visibleIds.add(itemId);
+        } else {
+          el.classList.add('hidden');
+          el.style.display = 'none';
+        }
       });
-      if (count) count.textContent = visible === rows.length ? 'Mostrando todas las rentas' : `Mostrando ${visible} de ${rows.length} rentas`;
+      if (count) {
+        const totalBase = totalRecords;
+        const visibleTotal = visibleIds.size;
+        if (totalBase === 0) {
+          count.textContent = 'Sin rentas para mostrar';
+        } else if (visibleTotal >= totalBase) {
+          count.textContent = `Mostrando todas las rentas (${totalBase})`;
+        } else {
+          count.textContent = `Mostrando ${visibleTotal} de ${totalBase} rentas`;
+        }
+      }
       // Reiniciar a página 1 después de filtrar
       page = 1;
       applySortAndPaginate();
     }
-    ['input','change'].forEach(evt => {
-      q.addEventListener(evt, applyFilters);
-      from.addEventListener(evt, applyFilters);
-    });
-    reset.addEventListener('click', () => {
-      q.value = '';
-      from.value = '';
+    if (q) {
+      ['input','change'].forEach(evt => q.addEventListener(evt, applyFilters));
+    }
+    resetBtn?.addEventListener('click', () => {
+      if (q) q.value = '';
       applyFilters();
     });
     // Inicial
     applyFilters();
 
     // --- Ordenamiento ---
-    function getVisibleRows() {
-      return rows.filter(el => !el.classList.contains('hidden'));
-    }
     function coerce(key, val) {
       if (key === 'monto') return parseFloat(val) || 0;
       if (key === 'hab') return parseInt(val, 10) || 0;
@@ -628,8 +621,7 @@
       return norm(val);
     }
     function applySortAndPaginate() {
-      const visible = getVisibleRows();
-      let arr = visible.slice();
+      let arr = filteredRows.slice();
       if (sortKey) {
         arr.sort((a, b) => {
           const av = coerce(sortKey, a.dataset[sortKey] || '');
@@ -639,128 +631,54 @@
           return 0;
         });
       }
-      // Paginar: ocultar por estilo inline sólo para paginación
       const total = arr.length;
-      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      const totalPages = total === 0 ? 1 : Math.ceil(total / pageSize);
       if (page > totalPages) page = totalPages;
       const start = (page - 1) * pageSize;
       const end = start + pageSize;
-      rows.forEach(el => { el.style.display = el.classList.contains('hidden') ? '' : ''; });
+
+      // Ocultar todas las tarjetas inicialmente
+      rows.forEach(el => {
+        if (el.classList.contains('hidden')) {
+          el.style.display = 'none';
+        }
+      });
+
       arr.forEach((el, idx) => {
+        if (el.classList.contains('hidden')) {
+          el.style.display = 'none';
+          return;
+        }
         const inPage = idx >= start && idx < end;
         el.style.display = inPage ? '' : 'none';
       });
-      if (lblPage) lblPage.textContent = `Página ${total ? page : 0} de ${totalPages}`;
-      if (btnPrev) btnPrev.disabled = page <= 1;
-      if (btnNext) btnNext.disabled = page >= totalPages;
+
+      if (lblPage) {
+        lblPage.textContent = total > 0 ? `Página ${page} de ${totalPages}` : 'Página 0 de 0';
+      }
+      if (btnPrev) btnPrev.disabled = page <= 1 || total === 0;
+      if (btnNext) btnNext.disabled = page >= totalPages || total === 0;
     }
 
-    // Eventos de ordenamiento (click en headers de la tabla)
-    document.querySelectorAll('#tableSection thead th').forEach((th, idx) => {
-      const mapIdxToKey = {
-        0: 'nombre',
-        1: 'hab',
-        2: 'ingreso',
-        3: 'salida',
-        4: 'origen',
-        5: 'pago',
-        6: 'monto',
-        7: 'letras'
-      };
-      const key = mapIdxToKey[idx];
-      if (!key) return;
-      th.style.cursor = 'pointer';
-      function clearIndicators() {
-        document.querySelectorAll('#tableSection thead th .sort-indicator').forEach(el => el.remove());
-      }
-      function addIndicator(target, dir) {
-        const span = document.createElement('span');
-        span.className = 'sort-indicator inline-block ml-1 align-middle';
-        span.innerHTML = dir === 'asc'
-          ? '<svg class="w-3 h-3 opacity-90" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7l5 5H7l5-5z"/></svg>'
-          : '<svg class="w-3 h-3 opacity-90" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17l-5-5h10l-5 5z"/></svg>';
-        target.appendChild(span);
-      }
-      th.addEventListener('click', () => {
-        if (sortKey === key) {
-          sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-        } else {
-          sortKey = key;
-          sortDir = 'asc';
+    if (btnPrev) {
+      btnPrev.addEventListener('click', () => {
+        if (page > 1) {
+          page -= 1;
+          applySortAndPaginate();
         }
-        page = 1;
-        applySortAndPaginate();
-        // update indicators
-        clearIndicators();
-        addIndicator(th.querySelector('span') || th, sortDir);
       });
-    });
-    // Inicializar indicador en el primer click manual cuando el usuario ordene; opcionalmente podríamos definir un orden por defecto y mostrarlo aquí.
-
-    // Paginación eventos
-    if (selPageSize) selPageSize.addEventListener('change', () => {
-      pageSize = parseInt(selPageSize.value, 10) || 10;
-      page = 1;
-      applySortAndPaginate();
-    });
-    if (btnPrev) btnPrev.addEventListener('click', () => { page = Math.max(1, page - 1); applySortAndPaginate(); });
-    if (btnNext) btnNext.addEventListener('click', () => { page = page + 1; applySortAndPaginate(); });
-
-    // Toggle vista en desktop
-    function setView(view) {
-      // view: 'table' | 'cards'
-      if (!tableSection || !cardsSection) return;
-      if (view === 'table') {
-        tableSection.classList.remove('hidden');
-        cardsSection.classList.add('hidden');
-        if (btnViewTable && btnViewCards) {
-          btnViewTable.classList.add('bg-blue-600','text-white');
-          btnViewCards.classList.remove('bg-blue-600','text-white');
-          btnViewCards.classList.add('bg-white','text-slate-700');
-        }
-      } else {
-        tableSection.classList.add('hidden');
-        cardsSection.classList.remove('hidden');
-        if (btnViewTable && btnViewCards) {
-          btnViewCards.classList.add('bg-blue-600','text-white');
-          btnViewTable.classList.remove('bg-blue-600','text-white');
-          btnViewTable.classList.add('bg-white','text-slate-700');
-        }
-      }
-      // Recalcular paginación con la nueva vista
-      page = 1;
-      applySortAndPaginate();
     }
-    if (btnViewTable) btnViewTable.addEventListener('click', () => setView('table'));
-    if (btnViewCards) btnViewCards.addEventListener('click', () => setView('cards'));
-
-    // CSV export (filtradas, sin limitar por paginación)
-    function exportCSV() {
-      const visible = rows.filter(el => !el.classList.contains('hidden'));
-      const header = ['Nombre del cliente','Número de habitación','Fecha de Ingreso','Fecha de Salida','Tipo de Pago','Monto','Monto en letras'];
-      const lines = [header.join(',')];
-      visible.forEach(el => {
-        const vals = [el.dataset.nombre, el.dataset.hab, el.dataset.ingreso, el.dataset.salida, el.dataset.pago, el.dataset.monto, el.dataset.letras]
-          .map(v => '"' + (v || '').toString().replace(/"/g,'""') + '"');
-        lines.push(vals.join(','));
+    if (btnNext) {
+      btnNext.addEventListener('click', () => {
+        const totalPages = filteredRows.length === 0 ? 1 : Math.ceil(filteredRows.length / pageSize);
+        if (page < totalPages) {
+          page += 1;
+          applySortAndPaginate();
+        }
       });
-      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'rentas.csv';
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
     }
-    // Botón export (lo añadimos al lado derecho de paginación)
-    const exportBtn = document.createElement('button');
-    exportBtn.innerHTML = '<i class="fa-solid fa-file-export mr-1.5"></i> Exportar CSV';
-    exportBtn.className = 'px-3 py-1.5 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 inline-flex items-center';
-    const pagControls = document.getElementById('rentPageNext')?.parentElement?.parentElement;
-    if (pagControls) { pagControls.appendChild(exportBtn); exportBtn.addEventListener('click', exportCSV); }
 
-    // Inicializar vista según breakpoint (cards en móvil/tablet, tabla en escritorio)
-    const prefersTable = window.matchMedia('(min-width: 1024px)').matches; // lg
-    setView(prefersTable ? 'table' : 'cards');
+    // Inicial
+    applyFilters();
   });
-
 </script>
