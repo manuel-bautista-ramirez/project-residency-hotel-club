@@ -1,39 +1,45 @@
-<div class="max-w-7xl mx-auto px-3 sm:px-4 pt-24 sm:pt-28 pb-24">
-  {{>buttons}}
+<div class="h-screen max-w-7xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-1 flex flex-col overflow-hidden">
+  <div class="flex-none">
+    {{>buttons}}
+  </div>
 
   {{#if allRentas}}
   <!-- Resumen de ingresos -->
-  <section class="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-    <div class="bg-white/80 backdrop-blur rounded-xl shadow-sm ring-1 ring-emerald-100 p-4 flex items-center justify-between">
+  <section class="flex-none mt-1 sm:mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 lg:hidden">
+    <div
+      class="bg-white/80 backdrop-blur rounded-lg shadow-sm ring-1 ring-emerald-100 px-1.5 py-1 flex items-center justify-between">
       <div>
-        <p class="text-xs uppercase tracking-wide text-emerald-600 font-semibold">Rentas directas</p>
-        <p class="text-2xl font-bold text-slate-900 mt-1">
+        <p class="text-[0.65rem] uppercase tracking-wide text-emerald-600 font-semibold">Rentas directas</p>
+        <p class="text-lg font-bold text-slate-900 mt-0">
           {{resumenIngresos.directas.total_formateado}}
         </p>
-        <p class="text-xs text-slate-500 mt-1">{{resumenIngresos.directas.cantidad}} registro(s)</p>
+        <p class="text-[0.65rem] text-slate-500 mt-0">{{resumenIngresos.directas.cantidad}} registro(s)</p>
       </div>
-      <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 text-emerald-700">
-        <i class="fa-solid fa-cash-register"></i>
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700">
+        <i class="fa-solid fa-cash-register text-sm"></i>
       </span>
     </div>
-    <div class="bg-white/80 backdrop-blur rounded-xl shadow-sm ring-1 ring-blue-100 p-4 flex items-center justify-between">
+    <div
+      class="bg-white/80 backdrop-blur rounded-lg shadow-sm ring-1 ring-blue-100 px-1.5 py-1 flex items-center justify-between">
       <div>
-        <p class="text-xs uppercase tracking-wide text-blue-600 font-semibold">Reservaciones convertidas</p>
-        <p class="text-2xl font-bold text-slate-900 mt-1">
+        <p class="text-[0.65rem] uppercase tracking-wide text-blue-600 font-semibold">Reservaciones convertidas</p>
+        <p class="text-lg font-bold text-slate-900 mt-0">
           {{resumenIngresos.convertidas.total_formateado}}
         </p>
-        <p class="text-xs text-slate-500 mt-1">{{resumenIngresos.convertidas.cantidad}} registro(s)</p>
+        <p class="text-[0.65rem] text-slate-500 mt-0">{{resumenIngresos.convertidas.cantidad}} registro(s)</p>
       </div>
-      <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-700">
-        <i class="fa-solid fa-right-left"></i>
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700">
+        <i class="fa-solid fa-right-left text-sm"></i>
       </span>
     </div>
   </section>
 
   <!-- Loading Overlay -->
-  <div id="rentsLoadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+  <div id="rentsLoadingOverlay"
+    class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center hidden">
     <div class="flex flex-col items-center gap-3">
-      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="img">
+      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24" aria-hidden="true" role="img">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
       </svg>
@@ -41,644 +47,663 @@
     </div>
   </div>
 
-  <!-- Controles de rentas -->
-  <section id="rentControls" class="mt-6">
+  <!-- Controles de rentas (móvil y tablet) -->
+  <section id="rentControlsMobile" class="flex-none mt-6 lg:hidden">
     <div class="bg-blue-900/95 text-white px-3 sm:px-4 py-4 rounded-xl shadow-lg">
-      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-          <label for="rentSearch" class="text-xs font-semibold tracking-wide text-blue-100 uppercase">Buscar</label>
-          <input id="rentSearch" type="text" placeholder="Cliente, habitación, monto, letras..."
-                 class="px-3 py-2 text-sm border border-blue-200/70 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-200 bg-white/95 text-slate-800 w-full sm:w-72">
+          <label for="rentSearchMobile"
+            class="text-xs font-semibold tracking-wide text-blue-100 uppercase">Buscar</label>
+          <input id="rentSearchMobile" type="text" placeholder="Cliente, habitación, monto, letras..."
+            class="px-3 py-2 text-sm border border-blue-200/70 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-200 bg-white/95 text-slate-800 w-full sm:w-72">
         </div>
         <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <div id="rentCount" class="text-xs text-blue-100">Mostrando todas las rentas</div>
-          <button id="rentReset" class="px-3 py-1.5 text-xs bg-blue-800/50 hover:bg-blue-700/70 text-blue-100 rounded-lg inline-flex items-center gap-1.5 transition-colors">
+          <div id="rentCountMobile" class="text-xs text-blue-100">Mostrando todas las rentas</div>
+          <button id="rentResetMobile"
+            class="px-3 py-1.5 text-xs bg-blue-800/50 hover:bg-blue-700/70 text-blue-100 rounded-lg inline-flex items-center gap-1.5 transition-colors">
             <i class="fa-solid fa-eraser"></i>
             Limpiar
           </button>
-          <div class="flex items-center gap-2 text-xs text-blue-100">
-            <span>Por página:</span>
-            <span class="font-semibold text-white">5</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="rentPagePrev" class="px-3 py-1.5 text-xs rounded-lg bg-blue-800/60 hover:bg-blue-700/70 inline-flex items-center gap-1.5 transition-colors">
-              <i class="fa-solid fa-angle-left"></i>
-              Anterior
-            </button>
-            <span id="rentPageInfo" class="text-xs text-blue-100">Página 1 de 1</span>
-            <button id="rentPageNext" class="px-3 py-1.5 text-xs rounded-lg bg-blue-800/60 hover:bg-blue-700/70 inline-flex items-center gap-1.5 transition-colors">
-              Siguiente
-              <i class="fa-solid fa-angle-right"></i>
-            </button>
-          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Tabla de rentas (solo desktop) -->
-  <section id="tableSection" class="mt-6 hidden lg:block">
-    <div id="rentTableWrapper" class="relative">
-      <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
-          <thead class="bg-blue-800 text-white text-xs sm:text-sm uppercase">
-            <tr>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-user text-[0.9rem]"></i> Cliente</span></th>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-door-closed text-[0.9rem]"></i> Habitación</span></th>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-day text-[0.9rem]"></i> Ingreso</span></th>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-calendar-check text-[0.9rem]"></i> Salida</span></th>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-tags text-[0.9rem]"></i> Origen</span></th>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-clock text-[0.9rem]"></i> Estado</span></th>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-credit-card text-[0.9rem]"></i> Tipo de pago</span></th>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-coins text-[0.9rem]"></i> Monto</span></th>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-left"><span class="inline-flex items-center gap-1.5 whitespace-nowrap"><i class="fa-solid fa-file-lines text-[0.9rem]"></i> Monto en letras</span></th>
-              <th class="py-2 px-3 sm:py-3 sm:px-4 text-center"><span class="inline-flex items-center gap-1.5 whitespace-nowrap justify-center w-full"><i class="fa-solid fa-ellipsis-vertical text-[0.9rem]"></i> Acciones</span></th>
-            </tr>
-          </thead>
 
-          <tbody class="text-gray-700 divide-y divide-gray-200 text-xs sm:text-sm">
-            {{#each allRentas}}
-            <tr class="hover:bg-gray-50 rent-reveal opacity-0 translate-y-1 transition-all duration-500"
-                data-item-id="{{this.id_renta}}"
-                data-nombre="{{this.nombre_cliente}}"
-                data-hab="{{this.numero_habitacion}}"
-                data-ingreso="{{this.fecha_ingreso}}"
-                data-salida="{{this.fecha_salida}}"
-                data-origen="{{this.origen_clave}}"
-                data-pago="{{this.tipo_pago}}"
-                data-monto="{{this.monto}}"
-                data-letras="{{this.monto_letras}}">
-              <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.nombre_cliente}}</td>
-              <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.numero_habitacion}}</td>
-              <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_ingreso}}</td>
-              <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.fecha_salida}}</td>
-              <td class="py-2 px-3 sm:py-3 sm:px-4">
-                {{#if (eq this.origen_clave 'directa')}}
-                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full">
-                    <i class="fa-solid fa-file-pen text-emerald-600"></i>
-                    {{this.origen_texto}}
-                  </span>
+  <!-- TABLA CON SCROLL DINÁMICO - Muestra 5 filas completas, scroll a partir de la 6ta -->
+  <div class="w-full bg-white rounded-lg shadow border border-gray-200 overflow-hidden hidden lg:block ">
+
+    <!-- Header de búsqueda -->
+    <div class="bg-blue-900 text-white p-3 border-b border-blue-800">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div class="flex-1">
+          <input id="rentSearch" type="text" placeholder="Buscar por cliente, habitación, monto..."
+            class="w-full px-3 py-2 rounded border border-blue-300 bg-white text-gray-800 text-sm">
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="bg-blue-800 rounded px-3 py-2 text-sm min-w-[140px]">
+            <div class="flex justify-between">
+              <span class="font-semibold">Resumen:</span>
+              <span id="rentCount" class="font-bold">
+                {{#if allRentas.length}}
+                {{allRentas.length}} renta(s)
                 {{else}}
-                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                    <i class="fa-solid fa-right-left text-blue-600"></i>
-                    {{this.origen_texto}}
-                  </span>
+                0 rentas
                 {{/if}}
-              </td>
-              <td class="py-2 px-3 sm:py-3 sm:px-4">
-                {{#if (eq this.estado_tiempo 'corriente')}}
-                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                    <i class="fa-solid fa-clock text-green-600"></i>
-                    Corriente
-                  </span>
-                  <div class="text-xs text-gray-500 mt-1">{{this.tiempo_restante}}</div>
-                {{else}}
-                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
-                    <i class="fa-solid fa-exclamation-triangle text-red-600"></i>
-                    Expirada
-                  </span>
-                  <div class="text-xs text-gray-500 mt-1">{{this.tiempo_restante}}</div>
-                {{/if}}
-              </td>
-              <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.tipo_pago}}</td>
-              <td class="py-2 px-3 sm:py-3 sm:px-4">{{this.monto}}</td>
-              <td class="py-2 px-3 sm:py-3 sm:px-4 capitalize">{{this.monto_letras}}</td>
-              <td class="py-2 px-3 sm:py-3 sm:px-4">
-                <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
-                  {{#if (eq this.estado_tiempo 'corriente')}}
-                    <button type="button" onclick="openDesocuparModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition-colors w-24 sm:w-28">
-                      <i class="fa-solid fa-door-open"></i>
-                      <span>Desocupar</span>
-                    </button>
-                  {{else}}
-                    <button type="button" disabled class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gray-400 text-gray-600 text-xs sm:text-sm rounded-lg shadow-sm cursor-not-allowed w-24 sm:w-28" title="No se puede desocupar una renta expirada">
-                      <i class="fa-solid fa-ban"></i>
-                      <span class="hidden sm:inline">Renta expirada</span>
-                      <span class="sm:hidden">Expirada</span>
-                    </button>
-                  {{/if}}
-                  {{#if (eq @root.user.role 'Administrador')}}
-                  <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-lg shadow-sm transition-colors w-24 sm:w-28">
-                    <i class="fa-solid fa-trash-can"></i>
-                    <span>Eliminar</span>
-                  </button>
-                  {{/if}}
+              </span>
+            </div>
+          </div>
+          <button id="rentReset" class="bg-blue-800 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
+            Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENEDOR DE TABLA CON ALTURA DINÁMICA -->
+    <div id="rentasTableContainer" class="overflow-auto">
+      <!-- Altura se ajusta automáticamente según número de filas (1-5 sin scroll, 6+ con scroll) -->
+
+      <table class="w-full min-w-max">
+        <!-- HEADER FIJO -->
+        <thead class="sticky top-0 bg-white z-10 border-b">
+          <tr class="bg-gray-50">
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">CLIENTE</th>
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">HAB.</th>
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">INGRESO</th>
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">SALIDA</th>
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">ORIGEN</th>
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">ESTADO</th>
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">PAGO</th>
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">MONTO</th>
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">LETRAS</th>
+            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">ACCIONES</th>
+          </tr>
+        </thead>
+
+        <!-- CUERPO DE LA TABLA -->
+        <tbody id="rentasTableBody">
+          {{#if allRentas.length}}
+          {{#each allRentas}}
+          <tr class="border-b hover:bg-gray-50 transition-colors">
+            <!-- Cada fila tiene altura fija de 3.5rem (56px) -->
+            <td class="p-3 border-r align-middle" style="height: 3.5rem;">
+              <div class="flex items-center">
+                <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center mr-2">
+                  <i class="fas fa-user text-white text-xs"></i>
                 </div>
-              </td>
-            </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+                <span class="text-sm font-medium truncate">{{this.nombre_cliente}}</span>
+              </div>
+            </td>
 
-  <!-- Cards de rentas (móvil y tablet) -->
-  <section id="cardsSection" class="mt-6 grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:hidden">
-    {{#each allRentas}}
-    <article class="bg-white rounded-xl shadow-lg overflow-hidden rent-reveal opacity-0 translate-y-1 transition-all duration-500"
-             data-item-id="{{this.id_renta}}"
-             data-nombre="{{this.nombre_cliente}}"
-             data-hab="{{this.numero_habitacion}}"
-             data-ingreso="{{this.fecha_ingreso}}"
-             data-salida="{{this.fecha_salida}}"
-             data-origen="{{this.origen_clave}}"
-             data-pago="{{this.tipo_pago}}"
-             data-monto="{{this.monto}}"
-             data-letras="{{this.monto_letras}}">
-      <div class="bg-blue-900 text-white px-3 py-2">
-        <h3 class="font-bold text-sm inline-flex items-center gap-1.5">
-          <i class="fa-solid fa-bed text-[1rem]"></i>
-          <span>Hab. {{this.numero_habitacion}} • {{this.nombre_cliente}}</span>
-        </h3>
-      </div>
-      <div class="p-4 space-y-3 text-sm text-gray-800">
-        <!-- Primera fila: Ingreso, Salida, Pago -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <div>
-            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar-plus"></i> Ingreso</div>
-            <div class="fecha-ingreso-card">{{this.fecha_ingreso}}</div>
-          </div>
-          <div>
-            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar-check"></i> Salida</div>
-            <div class="fecha-salida-card">{{this.fecha_salida}}</div>
-          </div>
-          <div>
-            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-solid fa-credit-card"></i> Pago</div>
-            <div class="capitalize">{{this.tipo_pago}}</div>
-          </div>
+            <td class="p-3 border-r text-center align-middle font-bold" style="height: 3.5rem;">
+              {{this.numero_habitacion}}
+            </td>
+
+            <td class="p-3 border-r align-middle text-sm" style="height: 3.5rem;">
+              {{this.fecha_ingreso}}
+            </td>
+
+            <td class="p-3 border-r align-middle text-sm" style="height: 3.5rem;">
+              {{this.fecha_salida}}
+            </td>
+
+            <td class="p-3 border-r align-middle" style="height: 3.5rem;">
+              <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                {{this.origen_texto}}
+              </span>
+            </td>
+
+            <td class="p-3 border-r align-middle" style="height: 3.5rem;">
+              {{#if (eq this.estado_tiempo 'corriente')}}
+              <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                Corriendo...
+              </span>
+              {{else}}
+              <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">
+                Expirada
+              </span>
+              {{/if}}
+            </td>
+
+            <td class="p-3 border-r align-middle capitalize text-sm" style="height: 3.5rem;">
+              {{this.tipo_pago}}
+            </td>
+
+            <td class="p-3 border-r align-middle font-bold" style="height: 3.5rem;">
+              ${{this.monto}}
+            </td>
+
+            <td class="p-3 border-r align-middle text-xs truncate" style="height: 3.5rem; max-width: 200px;">
+              {{this.monto_letras}}
+            </td>
+
+            <td class="p-3 align-middle" style="height: 3.5rem;">
+              <div class="flex space-x-2 justify-center">
+                {{#if (eq this.estado_tiempo 'corriente')}}
+                <button type="button"
+                  onclick="openDesocuparModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
+                  class="text-green-600 hover:text-green-800 p-1.5 rounded hover:bg-green-50 transition-colors"
+                  title="Desocupar habitación">
+                  <i class="fa-solid fa-door-open text-base"></i>
+                </button>
+                {{else}}
+                <button type="button" disabled class="text-gray-400 p-1.5 rounded cursor-not-allowed"
+                  title="No se puede desocupar una renta expirada">
+                  <i class="fa-solid fa-ban text-base"></i>
+                </button>
+                {{/if}}
+                {{#if (eq @root.user.role 'Administrador')}}
+                <button type="button"
+                  onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
+                  class="text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 transition-colors"
+                  title="Eliminar renta">
+                  <i class="fa-solid fa-trash-can text-base"></i>
+                </button>
+                {{/if}}
+              </div>
+            </td>
+          </tr>
+          {{/each}}
+          {{else}}
+          <!-- Estado vacío -->
+          <tr>
+            <td colspan="10" class="p-8 text-center text-gray-500">
+              <div class="flex flex-col items-center">
+                <i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i>
+                <p class="text-sm">No hay rentas para mostrar</p>
+              </div>
+            </td>
+          </tr>
+          {{/if}}
+        </tbody>
+      </table>
+    </div>
+
+
+    <!-- Cards de rentas (móvil y tablet) -->
+    <section id="cardsSection"
+      class="flex-1 overflow-auto mt-4 grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:hidden min-h-0 pb-20">
+      {{#each allRentas}}
+      <article
+        class="bg-white rounded-xl shadow-lg overflow-hidden rent-reveal opacity-0 translate-y-1 transition-all duration-500"
+        data-item-id="{{this.id_renta}}" data-nombre="{{this.nombre_cliente}}" data-hab="{{this.numero_habitacion}}"
+        data-ingreso="{{this.fecha_ingreso}}" data-salida="{{this.fecha_salida}}" data-origen="{{this.origen_clave}}"
+        data-pago="{{this.tipo_pago}}" data-monto="{{this.monto}}" data-letras="{{this.monto_letras}}">
+        <div class="bg-blue-900 text-white px-3 py-2">
+          <h3 class="font-bold text-sm inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-bed text-[1rem]"></i>
+            <span>Hab. {{this.numero_habitacion}} • {{this.nombre_cliente}}</span>
+          </h3>
         </div>
-        <!-- Segunda fila: Monto y Monto en letras -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-solid fa-coins"></i> Monto</div>
-            <div>{{this.monto}}</div>
+        <div class="p-4 space-y-3 text-sm text-gray-800">
+          <!-- Primera fila: Ingreso, Salida, Pago -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div>
+              <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i
+                  class="fa-regular fa-calendar-plus"></i> Ingreso</div>
+              <div class="fecha-ingreso-card">{{this.fecha_ingreso}}</div>
+            </div>
+            <div>
+              <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i
+                  class="fa-regular fa-calendar-check"></i> Salida</div>
+              <div class="fecha-salida-card">{{this.fecha_salida}}</div>
+            </div>
+            <div>
+              <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i
+                  class="fa-solid fa-credit-card"></i>
+                Pago</div>
+              <div class="capitalize">{{this.tipo_pago}}</div>
+            </div>
           </div>
-          <div>
-            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-regular fa-file-lines"></i> Monto en letras</div>
-            <div class="capitalize">{{this.monto_letras}}</div>
+          <!-- Segunda fila: Monto y Monto en letras -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i class="fa-solid fa-coins"></i>
+                Monto
+              </div>
+              <div>{{this.monto}}</div>
+            </div>
+            <div>
+              <div class="text-gray-500 text-xs inline-flex items-center gap-1.5"><i
+                  class="fa-regular fa-file-lines"></i>
+                Monto en letras</div>
+              <div class="capitalize">{{this.monto_letras}}</div>
+            </div>
           </div>
-        </div>
-        <!-- Origen + Estado de la renta -->
-        <div class="border-t pt-3">
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <span class="inline-flex items-center gap-1.5 text-xs text-slate-500"><i class="fa-solid fa-tags"></i> {{this.origen_texto}}</span>
-            {{#if (eq this.origen_clave 'directa')}}
-              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full"><i class="fa-solid fa-file-pen text-emerald-600"></i> Directa</span>
-            {{else}}
-              <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"><i class="fa-solid fa-right-left text-blue-600"></i> Conversión</span>
-            {{/if}}
-          </div>
-          <div class="text-gray-500 text-xs inline-flex items-center gap-1.5 mb-2"><i class="fa-solid fa-clock"></i> Estado de la renta</div>
-          {{#if (eq this.estado_tiempo 'corriente')}}
-            <div class="inline-flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg w-full">
+          <!-- Origen + Estado de la renta -->
+          <div class="border-t pt-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <span class="inline-flex items-center gap-1.5 text-xs text-slate-500"><i class="fa-solid fa-tags"></i>
+                {{this.origen_texto}}</span>
+              {{#if (eq this.origen_clave 'directa')}}
+              <span
+                class="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-full"><i
+                  class="fa-solid fa-file-pen text-emerald-600"></i> Directa</span>
+              {{else}}
+              <span
+                class="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"><i
+                  class="fa-solid fa-right-left text-blue-600"></i> Conversión</span>
+              {{/if}}
+            </div>
+            <div class="text-gray-500 text-xs inline-flex items-center gap-1.5 mb-2"><i class="fa-solid fa-clock"></i>
+              Estado de la renta</div>
+            {{#if (eq this.estado_tiempo 'corriente')}}
+            <div
+              class="inline-flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg w-full">
               <i class="fa-solid fa-clock text-green-600"></i>
               <div>
                 <div class="font-semibold">Corriente</div>
                 <div class="text-xs text-green-600">{{this.tiempo_restante}}</div>
               </div>
             </div>
-          {{else}}
-            <div class="inline-flex items-center gap-2 px-3 py-2 bg-red-100 text-red-800 text-sm font-medium rounded-lg w-full">
+            {{else}}
+            <div
+              class="inline-flex items-center gap-2 px-3 py-2 bg-red-100 text-red-800 text-sm font-medium rounded-lg w-full">
               <i class="fa-solid fa-exclamation-triangle text-red-600"></i>
               <div>
                 <div class="font-semibold">Expirada</div>
                 <div class="text-xs text-red-600">{{this.tiempo_restante}}</div>
               </div>
             </div>
-          {{/if}}
-        </div>
-        <div class="pt-2 flex gap-2">
-          {{#if (eq this.estado_tiempo 'corriente')}}
-            <button type="button" onclick="openDesocuparModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+            {{/if}}
+          </div>
+          <div class="pt-2 flex gap-2">
+            {{#if (eq this.estado_tiempo 'corriente')}}
+            <button type="button"
+              onclick="openDesocuparModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
+              class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm shadow-sm transition-colors">
               <i class="fa-solid fa-door-open"></i>
               <span>Desocupar</span>
             </button>
-          {{else}}
-            <button type="button" disabled class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-400 text-gray-600 rounded-lg text-sm shadow-sm cursor-not-allowed" title="No se puede desocupar una renta expirada">
+            {{else}}
+            <button type="button" disabled
+              class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-400 text-gray-600 rounded-lg text-sm shadow-sm cursor-not-allowed"
+              title="No se puede desocupar una renta expirada">
               <i class="fa-solid fa-ban"></i>
               <span>Renta Expirada</span>
             </button>
-          {{/if}}
-          {{#if (eq @root.user.role 'Administrador')}}
-          <button type="button" onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')" class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
-            <i class="fa-solid fa-trash-can"></i>
-            <span>Eliminar</span>
-          </button>
-          {{/if}}
+            {{/if}}
+            {{#if (eq @root.user.role 'Administrador')}}
+            <button type="button"
+              onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
+              class="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm shadow-sm transition-colors">
+              <i class="fa-solid fa-trash-can"></i>
+              <span>Eliminar</span>
+            </button>
+            {{/if}}
+          </div>
         </div>
-      </div>
-    </article>
-    {{/each}}
-  </section>
-</div>
-
-<!-- Modal de confirmación de eliminación -->
-<div id="deleteModal" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
-  <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
-    <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-      <i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl"></i>
-    </div>
-    <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Eliminar renta?</h2>
-    <p class="mb-6 text-gray-600 text-sm sm:text-base text-center">
-      Estás a punto de eliminar la renta de la habitación <span id="deleteRoomNumber" class="font-bold text-blue-600"></span> para el cliente <span id="deleteClientName" class="font-bold text-gray-900"></span>.
-    </p>
-    <p class="mb-6 text-red-600 text-xs sm:text-sm text-center font-medium">
-      <i class="fa-solid fa-circle-exclamation"></i> Esta acción no se puede deshacer.
-    </p>
-    <form id="deleteForm" method="POST" class="flex flex-col gap-3 w-full">
-      <div class="flex flex-col sm:flex-row justify-end gap-2">
-        <button type="button" onclick="closeDeleteModal()"
-                class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
-          <i class="fa-solid fa-xmark"></i> Cancelar
-        </button>
-        <button type="submit"
-                class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
-          <i class="fa-solid fa-trash-can"></i> Eliminar
-        </button>
-      </div>
-    </form>
+      </article>
+      {{/each}}
+    </section>
   </div>
-</div>
 
-<!-- Modal para desocupar renta -->
-<div id="desocuparModal" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
-  <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
-    <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
-      <i class="fa-solid fa-door-open text-green-600 text-2xl"></i>
-    </div>
-    <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Desocupar habitación?</h2>
-    <p class="mb-4 text-gray-600 text-sm sm:text-base text-center">
-      ¿Estás seguro de marcar como <span class="font-bold text-green-600">DESOCUPADA</span> la habitación <span id="desocuparRoomNumber" class="font-bold text-blue-600"></span>?
-    </p>
-    <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-      <p class="text-sm text-blue-800">
-        <i class="fa-solid fa-user text-blue-600"></i> <strong>Cliente:</strong> <span id="desocuparClientName" class="font-medium"></span>
+  <!-- Modal de confirmación de eliminación -->
+  <div id="deleteModal" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
+      <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+        <i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Eliminar renta?</h2>
+      <p class="mb-6 text-gray-600 text-sm sm:text-base text-center">
+        Estás a punto de eliminar la renta de la habitación <span id="deleteRoomNumber"
+          class="font-bold text-blue-600"></span> para el cliente <span id="deleteClientName"
+          class="font-bold text-gray-900"></span>.
       </p>
+      <p class="mb-6 text-red-600 text-xs sm:text-sm text-center font-medium">
+        <i class="fa-solid fa-circle-exclamation"></i> Esta acción no se puede deshacer.
+      </p>
+      <form id="deleteForm" method="POST" class="flex flex-col gap-3 w-full">
+        <div class="flex flex-col sm:flex-row justify-end gap-2">
+          <button type="button" onclick="closeDeleteModal()"
+            class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
+            <i class="fa-solid fa-xmark"></i> Cancelar
+          </button>
+          <button type="submit"
+            class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
+            <i class="fa-solid fa-trash-can"></i> Eliminar
+          </button>
+        </div>
+      </form>
     </div>
-    <p class="mb-6 text-gray-600 text-xs sm:text-sm text-center">
-      <i class="fa-solid fa-info-circle text-blue-500"></i> La renta se marcará como finalizada y la habitación pasará a estado <strong>"LIMPIEZA"</strong>. El registro se mantendrá para reportes.
-    </p>
-    <form id="desocuparForm" method="POST" class="flex flex-col gap-3 w-full">
-      <div class="flex flex-col sm:flex-row justify-end gap-2">
-        <button type="button" onclick="closeDesocuparModal()"
-                class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
-          <i class="fa-solid fa-xmark"></i> Cancelar
-        </button>
-        <button type="submit"
-                class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
-          <i class="fa-solid fa-door-open"></i> Desocupar
-        </button>
-      </div>
-    </form>
   </div>
-</div>
+
+  <!-- Modal para desocupar renta -->
+  <div id="desocuparModal"
+    class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
+      <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+        <i class="fa-solid fa-door-open text-green-600 text-2xl"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Desocupar habitación?</h2>
+      <p class="mb-4 text-gray-600 text-sm sm:text-base text-center">
+        ¿Estás seguro de marcar como <span class="font-bold text-green-600">DESOCUPADA</span> la habitación <span
+          id="desocuparRoomNumber" class="font-bold text-blue-600"></span>?
+      </p>
+      <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <p class="text-sm text-blue-800">
+          <i class="fa-solid fa-user text-blue-600"></i> <strong>Cliente:</strong> <span id="desocuparClientName"
+            class="font-medium"></span>
+        </p>
+      </div>
+      <p class="mb-6 text-gray-600 text-xs sm:text-sm text-center">
+        <i class="fa-solid fa-info-circle text-blue-500"></i> La renta se marcará como finalizada y la habitación pasará
+        a
+        estado <strong>"LIMPIEZA"</strong>. El registro se mantendrá para reportes.
+      </p>
+      <form id="desocuparForm" method="POST" class="flex flex-col gap-3 w-full">
+        <div class="flex flex-col sm:flex-row justify-end gap-2">
+          <button type="button" onclick="closeDesocuparModal()"
+            class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
+            <i class="fa-solid fa-xmark"></i> Cancelar
+          </button>
+          <button type="submit"
+            class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
+            <i class="fa-solid fa-door-open"></i> Desocupar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   {{else}}
-    <div class="text-center py-16">
-      <i class="fa-solid fa-file-invoice-dollar text-5xl text-slate-400"></i>
-      <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron rentas</h2>
-      <p class="mt-2 text-sm text-slate-500">Actualmente no hay rentas registradas.</p>
-      <a href="/rooms" class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
-        <i class="fa-solid fa-arrow-left"></i>
-        <span>Volver a Habitaciones</span>
-      </a>
-    </div>
+  <div class="text-center py-16">
+    <i class="fa-solid fa-file-invoice-dollar text-5xl text-slate-400"></i>
+    <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron rentas</h2>
+    <p class="mt-2 text-sm text-slate-500">Actualmente no hay rentas registradas.</p>
+    <a href="/rooms"
+      class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Volver a Habitaciones</span>
+    </a>
+  </div>
   {{/if}}
 
-<script>
-  // Funciones para el modal de eliminación
-  function openDeleteModal(rentId, roomNumber, clientName) {
-    const modal = document.getElementById('deleteModal');
-    const form = document.getElementById('deleteForm');
-    const roomNumberSpan = document.getElementById('deleteRoomNumber');
-    const clientNameSpan = document.getElementById('deleteClientName');
+  <script>
+    // Funciones para el modal de eliminación
+    function openDeleteModal(rentId, roomNumber, clientName) {
+      const modal = document.getElementById('deleteModal');
+      const form = document.getElementById('deleteForm');
+      const roomNumberSpan = document.getElementById('deleteRoomNumber');
+      const clientNameSpan = document.getElementById('deleteClientName');
 
-    if (modal && form) {
-      form.action = `/rooms/rentas/delete/${rentId}`;
-      roomNumberSpan.textContent = roomNumber;
-      clientNameSpan.textContent = clientName;
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-  }
-
-  function closeDeleteModal() {
-    const modal = document.getElementById('deleteModal');
-    if (modal) {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-  }
-
-  // Funciones para el modal de desocupar
-  function openDesocuparModal(rentId, roomNumber, clientName) {
-    const modal = document.getElementById('desocuparModal');
-    const form = document.getElementById('desocuparForm');
-    const roomNumberSpan = document.getElementById('desocuparRoomNumber');
-    const clientNameSpan = document.getElementById('desocuparClientName');
-
-    if (modal && form) {
-      form.action = `/rooms/desocupar/${rentId}`;
-      roomNumberSpan.textContent = roomNumber;
-      clientNameSpan.textContent = clientName;
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-  }
-
-  function closeDesocuparModal() {
-    const modal = document.getElementById('desocuparModal');
-    if (modal) {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-  }
-
-  // Cerrar modales al hacer clic fuera de ellos
-  document.addEventListener('click', function(event) {
-    const deleteModal = document.getElementById('deleteModal');
-    const desocuparModal = document.getElementById('desocuparModal');
-
-    if (deleteModal && event.target === deleteModal) {
-      closeDeleteModal();
-    }
-
-    if (desocuparModal && event.target === desocuparModal) {
-      closeDesocuparModal();
-    }
-  });
-
-  // Código principal
-  document.addEventListener('DOMContentLoaded', () => {
-    const overlay = document.getElementById('rentsLoadingOverlay');
-    const rows = Array.from(document.querySelectorAll('.rent-reveal'));
-    const tableSection = document.getElementById('tableSection');
-    const cardsSection = document.getElementById('cardsSection');
-    const tableWrapper = document.getElementById('rentTableWrapper');
-    const tableBody = tableSection ? tableSection.querySelector('tbody') : null;
-    const tableRows = rows.filter(el => el.closest('#tableSection'));
-    const cardRows = rows.filter(el => el.closest('#cardsSection'));
-    let useTable = window.matchMedia('(min-width: 1024px)').matches;
-    let activeCollection = useTable ? tableRows : cardRows;
-    let filteredRows = activeCollection.slice();
-    const totalRecords = new Set(rows.map(el => el.dataset.itemId).filter(Boolean)).size || rows.length;
-    // Filtros
-    const q = document.getElementById('rentSearch');
-    const resetBtn = document.getElementById('rentReset');
-    const count = document.getElementId('rentCount');
-    // Paginación
-    const btnPrev = document.getElementById('rentPagePrev');
-    const btnNext = document.getElementById('rentPageNext');
-    const lblPage = document.getElementById('rentPageInfo');
-
-    let sortKey = '';
-    let sortDir = 'asc'; // 'asc' | 'desc'
-    let page = 1;
-    const tablePageSize = 10;
-    const cardPageSize = 5;
-
-    function getPageSize() {
-      return activeCollection === tableRows ? tablePageSize : cardPageSize;
-    }
-
-    function adjustTableHeight() {
-      if (!tableWrapper) return;
-      const visibleRows = tableRows.filter(el => !el.classList.contains('hidden'));
-      if (visibleRows.length > 5) {
-        tableWrapper.className = 'relative max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100';
-      } else {
-        tableWrapper.className = 'relative';
-        tableWrapper.style.maxHeight = '';
-        tableWrapper.style.overflowY = '';
+      if (modal && form) {
+        form.action = `/rooms/rentas/delete/${rentId}`;
+        roomNumberSpan.textContent = roomNumber;
+        clientNameSpan.textContent = clientName;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
       }
     }
 
-    // Función para formatear fechas con hora
-    function formatDateTime(dateStr) {
-      console.log('\n🔍 === DEPURACIÓN formatDateTime (FRONTEND) ===');
-      console.log('📥 Input dateStr:', dateStr);
-      console.log('📥 Tipo:', typeof dateStr);
-
-      if (!dateStr) return '';
-
-      let date;
-
-      // Si ya es un objeto Date
-      if (dateStr instanceof Date) {
-        console.log('✅ Es un objeto Date');
-        date = dateStr;
+    function closeDeleteModal() {
+      const modal = document.getElementById('deleteModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
       }
-      // Si es un string
-      else if (typeof dateStr === 'string') {
-        console.log('✅ Es un string');
-        // Si la fecha viene en formato ISO o YYYY-MM-DD
-        if (dateStr.includes('T') || dateStr.includes('Z') || dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
-          console.log('✅ Formato ISO detectado');
-          date = new Date(dateStr);
-        } else {
-          console.log('❌ Formato no reconocido, devolviendo original');
-          return dateStr;
-        }
-      }
-      else {
-        console.log('❌ Tipo no soportado, convirtiendo a string');
-        return String(dateStr);
-      }
-
-      if (isNaN(date.getTime())) {
-        console.log('❌ Fecha inválida');
-        return String(dateStr);
-      }
-
-      console.log('📅 Date object creado:');
-      console.log('  - toString():', date.toString());
-      console.log('  - toUTCString():', date.toUTCString());
-      console.log('  - toISOString():', date.toISOString());
-      console.log('  - getHours() [local]:', date.getHours());
-      console.log('  - getUTCHours() [UTC]:', date.getUTCHours());
-
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-
-      const formatted = `${day}/${month}/${year} ${hours}:${minutes}`;
-      console.log('📤 Output formateado:', formatted);
-      console.log('=== FIN DEPURACIÓN formatDateTime ===\n');
-
-      // Formato: DD/MM/YYYY HH:MM
-      return formatted;
     }
 
-    // Formatear fechas en las cards usando data attributes y clases específicas
-    rows.forEach(card => {
-      const ingresoISO = card.getAttribute('data-ingreso');
-      const salidaISO = card.getAttribute('data-salida');
+    // Funciones para el modal de desocupar
+    function openDesocuparModal(rentId, roomNumber, clientName) {
+      const modal = document.getElementById('desocuparModal');
+      const form = document.getElementById('desocuparForm');
+      const roomNumberSpan = document.getElementById('desocuparRoomNumber');
+      const clientNameSpan = document.getElementById('desocuparClientName');
 
-      // Buscar los divs con las clases específicas
-      const ingresoDiv = card.querySelector('.fecha-ingreso-card');
-      const salidaDiv = card.querySelector('.fecha-salida-card');
+      if (modal && form) {
+        form.action = `/rooms/desocupar/${rentId}`;
+        roomNumberSpan.textContent = roomNumber;
+        clientNameSpan.textContent = clientName;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
 
-      if (ingresoDiv && ingresoISO) {
-        ingresoDiv.textContent = formatDateTime(ingresoISO);
+    function closeDesocuparModal() {
+      const modal = document.getElementById('desocuparModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    // Cerrar modales al hacer clic fuera de ellos
+    document.addEventListener('click', function (event) {
+      const deleteModal = document.getElementById('deleteModal');
+      const desocuparModal = document.getElementById('desocuparModal');
+
+      if (deleteModal && event.target === deleteModal) {
+        closeDeleteModal();
       }
 
-      if (salidaDiv && salidaISO) {
-        salidaDiv.textContent = formatDateTime(salidaISO);
+      if (desocuparModal && event.target === desocuparModal) {
+        closeDesocuparModal();
       }
     });
 
-    // Ocultar overlay tras breve tiempo para evitar parpadeo
-    setTimeout(() => { if (overlay) overlay.classList.add('hidden'); }, 300);
+    // FUNCIÓN PARA AJUSTAR LA ALTURA DE LA TABLA DE RENTAS DINÁMICAMENTE
+    function adjustRentasTableHeight() {
+      const tableContainer = document.getElementById('rentasTableContainer');
+      const rentasTableBody = document.getElementById('rentasTableBody');
 
-    // Reveal-on-scroll para tarjetas
-    if (!('IntersectionObserver' in window) || rows.length === 0) {
-      rows.forEach(r => r.classList.remove('opacity-0', 'translate-y-1'));
-    } else {
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.remove('opacity-0', 'translate-y-1');
-            entry.target.classList.add('opacity-100', 'translate-y-0');
-            io.unobserve(entry.target);
+      if (!tableContainer || !rentasTableBody) {
+        console.log('Elementos de la tabla de rentas no encontrados');
+        return;
+      }
+
+      const rentaRows = rentasTableBody.querySelectorAll('tr');
+      const rentaCount = rentaRows.length;
+
+      console.log(`Ajustando tabla de rentas: ${rentaCount} rentas encontradas`);
+
+      // Si hay 5 o menos rentas, ajustar altura exacta sin espacio en blanco
+      if (rentaCount <= 5) {
+        console.log('Ajustando altura natural - sin scroll');
+        // Altura automática basada en contenido, sin restricciones
+        tableContainer.style.maxHeight = 'none';
+        tableContainer.style.height = 'auto';
+        tableContainer.style.overflowY = 'hidden';
+        tableContainer.className = 'overflow-x-auto';
+      } else {
+        // Si hay más de 5 rentas, activar scroll con altura fija de 5 filas
+        console.log('Con scroll - más de 5 rentas');
+        tableContainer.style.maxHeight = 'calc(5 * 3.5rem)'; // Altura de 5 filas
+        tableContainer.style.height = '';
+        tableContainer.style.overflowY = 'auto';
+        tableContainer.className = 'overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100';
+      }
+    }
+
+    // Ejecutar al cargar la página
+    document.addEventListener('DOMContentLoaded', function () {
+      adjustRentasTableHeight();
+
+      // También ejecutar el código existente de filtros
+      initializeRentasFilters();
+    });
+
+    // También ejecutar cuando la página esté completamente cargada
+    window.addEventListener('load', function () {
+      setTimeout(() => {
+        adjustRentasTableHeight();
+      }, 200);
+    });
+
+    // Ejecutar después de un pequeño delay para asegurar renderizado completo
+    setTimeout(() => {
+      adjustRentasTableHeight();
+    }, 500);
+
+    // Ejecutar después de más tiempo para asegurar que todo esté listo
+    setTimeout(() => {
+      adjustRentasTableHeight();
+    }, 1000);
+
+    // Ejecutar después de aún más tiempo para casos de carga lenta
+    setTimeout(() => {
+      adjustRentasTableHeight();
+    }, 2000);
+
+    // Función para forzar el ajuste de la tabla (para debugging)
+    window.forceRentasTableAdjust = function () {
+      console.log('Forzando ajuste de tabla de rentas...');
+      adjustRentasTableHeight();
+    };
+
+    // Función para actualizar la tabla después de operaciones CRUD
+    function refreshRentasTableHeight() {
+      setTimeout(() => {
+        adjustRentasTableHeight();
+      }, 300);
+    }
+
+    // Observador de mutaciones para detectar cambios en la tabla de rentas
+    if (typeof MutationObserver !== 'undefined') {
+      const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.type === 'childList' && mutation.target.id === 'rentasTableBody') {
+            console.log('Cambios detectados en la tabla de rentas');
+            setTimeout(() => {
+              adjustRentasTableHeight();
+            }, 100);
           }
         });
-      }, { threshold: 0.12 });
-      rows.forEach((el, idx) => {
-        el.style.transitionDelay = `${Math.min(idx * 20, 200)}ms`;
-        io.observe(el);
       });
-    }
 
-
-    // --- Filtrado ---
-    function norm(str) { return (str || '').toString().trim().toLowerCase(); }
-    function applyFilters() {
-      const text = norm(q ? q.value : '');
-      const visibleIds = new Set();
-      filteredRows = [];
-      rows.forEach(el => {
-        const d = {
-          nombre: norm(el.dataset.nombre || ''),
-          hab: (el.dataset.hab || '').toString(),
-          ingreso: el.dataset.ingreso || '',
-          salida: el.dataset.salida || '',
-          origen: norm(el.dataset.origen || ''),
-          pago: norm(el.dataset.pago || ''),
-          monto: (el.dataset.monto || '').toString(),
-          letras: norm(el.dataset.letras || '')
-        };
-        const hayTexto = !text || (
-          d.nombre.includes(text) ||
-          d.hab.includes(text) ||
-          d.monto.includes(text) ||
-          d.letras.includes(text) ||
-          d.origen.includes(text)
-        );
-        if (hayTexto) {
-          el.classList.remove('hidden');
-          el.style.display = '';
-          filteredRows.push(el);
-          const itemId = el.dataset.itemId || `${d.hab}-${d.nombre}`;
-          visibleIds.add(itemId);
-        } else {
-          el.classList.add('hidden');
-          el.style.display = 'none';
+      // Observar cambios en el tbody de la tabla de rentas
+      document.addEventListener('DOMContentLoaded', function () {
+        const rentasTableBody = document.getElementById('rentasTableBody');
+        if (rentasTableBody) {
+          observer.observe(rentasTableBody, { childList: true, subtree: true });
         }
       });
-      if (count) {
-        const totalBase = totalRecords;
-        const visibleTotal = visibleIds.size;
-        if (totalBase === 0) {
-          count.textContent = 'Sin rentas para mostrar';
-        } else if (visibleTotal >= totalBase) {
-          count.textContent = `Mostrando todas las rentas (${totalBase})`;
-        } else {
-          count.textContent = `Mostrando ${visibleTotal} de ${totalBase} rentas`;
-        }
-      }
-      // Reiniciar a página 1 después de filtrar
-      page = 1;
-      applySortAndPaginate();
     }
-    if (q) {
-      ['input','change'].forEach(evt => q.addEventListener(evt, applyFilters));
-    }
-    resetBtn?.addEventListener('click', () => {
-      if (q) q.value = '';
-      applyFilters();
-    });
-    // Inicial
-    applyFilters();
 
-    // --- Ordenamiento ---
-    function coerce(key, val) {
-      if (key === 'monto') return parseFloat(val) || 0;
-      if (key === 'hab') return parseInt(val, 10) || 0;
-      if (key === 'ingreso' || key === 'salida') return new Date(val).getTime() || 0;
-      return norm(val);
-    }
-    function applySortAndPaginate() {
-      let arr = filteredRows.slice();
-      if (sortKey) {
-        arr.sort((a, b) => {
-          const av = coerce(sortKey, a.dataset[sortKey] || '');
-          const bv = coerce(sortKey, b.dataset[sortKey] || '');
-          if (av < bv) return sortDir === 'asc' ? -1 : 1;
-          if (av > bv) return sortDir === 'asc' ? 1 : -1;
-          return 0;
+    // Código principal de filtros (simplificado sin paginación)
+    function initializeRentasFilters() {
+      const overlay = document.getElementById('rentsLoadingOverlay');
+      const rows = Array.from(document.querySelectorAll('.rent-reveal'));
+
+      // Filtros
+      const controls = {
+        desktop: {
+          q: document.getElementById('rentSearch'),
+          reset: document.getElementById('rentReset'),
+          count: document.getElementById('rentCount')
+        },
+        mobile: {
+          q: document.getElementById('rentSearchMobile'),
+          reset: document.getElementById('rentResetMobile'),
+          count: document.getElementById('rentCountMobile')
+        }
+      };
+
+      const mediaDesktop = window.matchMedia('(min-width: 1024px)');
+      let useTable = mediaDesktop.matches;
+      let activeCollection = useTable ?
+        Array.from(document.querySelectorAll('#tableSection .rent-reveal')) :
+        Array.from(document.querySelectorAll('#cardsSection .rent-reveal'));
+
+      let filteredRows = [];
+      let currentSearch = '';
+
+      // Ocultar overlay
+      setTimeout(() => {
+        if (overlay) overlay.classList.add('hidden');
+
+        // Animar las filas después de cargar
+        setTimeout(() => {
+          document.querySelectorAll('.rent-reveal').forEach(el => {
+            el.classList.remove('opacity-0', 'translate-y-1');
+          });
+        }, 100);
+      }, 300);
+
+      function norm(str) { return (str || '').toString().trim().toLowerCase(); }
+
+      function applyFilters() {
+        const text = norm(currentSearch);
+        filteredRows = [];
+
+        activeCollection.forEach(el => {
+          const d = {
+            nombre: norm(el.dataset.nombre || ''),
+            hab: (el.dataset.hab || '').toString(),
+            ingreso: el.dataset.ingreso || '',
+            salida: el.dataset.salida || '',
+            origen: norm(el.dataset.origen || ''),
+            pago: norm(el.dataset.pago || ''),
+            monto: (el.dataset.monto || '').toString(),
+            letras: norm(el.dataset.letras || '')
+          };
+
+          const matches = !text || (
+            d.nombre.includes(text) ||
+            d.hab.includes(text) ||
+            d.monto.includes(text) ||
+            d.letras.includes(text) ||
+            d.origen.includes(text)
+          );
+
+          if (matches) {
+            el.classList.remove('hidden');
+            el.style.display = '';
+            filteredRows.push(el);
+          } else {
+            el.classList.add('hidden');
+            el.style.display = 'none';
+          }
         });
+
+        const totalBase = activeCollection.length;
+        const visibleTotal = filteredRows.length;
+        let summaryText = 'Sin rentas para mostrar';
+        if (totalBase !== 0) {
+          if (!text && visibleTotal === totalBase) {
+            summaryText = `Mostrando todas las rentas (${totalBase})`;
+          } else {
+            summaryText = `Mostrando ${visibleTotal} de ${totalBase} rentas`;
+          }
+        }
+
+        if (controls.desktop.count) controls.desktop.count.textContent = summaryText;
+        if (controls.mobile.count) controls.mobile.count.textContent = summaryText;
+
+        // Ajustar altura después de filtrar
+        refreshRentasTableHeight();
       }
-      const total = arr.length;
-      const totalPages = total === 0 ? 1 : Math.ceil(total / pageSize);
-      if (page > totalPages) page = totalPages;
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize;
 
-      // Ocultar todas las tarjetas inicialmente
-      rows.forEach(el => {
-        if (el.classList.contains('hidden')) {
-          el.style.display = 'none';
-        }
-      });
-
-      arr.forEach((el, idx) => {
-        if (el.classList.contains('hidden')) {
-          el.style.display = 'none';
-          return;
-        }
-        const inPage = idx >= start && idx < end;
-        el.style.display = inPage ? '' : 'none';
-      });
-
-      if (lblPage) {
-        lblPage.textContent = total > 0 ? `Página ${page} de ${totalPages}` : 'Página 0 de 0';
+      function handleSearchInput(event) {
+        currentSearch = event.target.value;
+        syncSearchInputs(currentSearch);
+        applyFilters();
       }
-      if (btnPrev) btnPrev.disabled = page <= 1 || total === 0;
-      if (btnNext) btnNext.disabled = page >= totalPages || total === 0;
-    }
 
-    if (btnPrev) {
-      btnPrev.addEventListener('click', () => {
-        if (page > 1) {
-          page -= 1;
-          applySortAndPaginate();
-        }
-      });
-    }
-    if (btnNext) {
-      btnNext.addEventListener('click', () => {
-        const totalPages = filteredRows.length === 0 ? 1 : Math.ceil(filteredRows.length / pageSize);
-        if (page < totalPages) {
-          page += 1;
-          applySortAndPaginate();
-        }
-      });
-    }
+      function handleResetClick(source) {
+        if ((source === 'desktop' && !useTable) || (source === 'mobile' && useTable)) return;
+        currentSearch = '';
+        syncSearchInputs('');
+        applyFilters();
+      }
 
-    // Inicial
-    applyFilters();
-  });
-</script>
+      function syncSearchInputs(value) {
+        if (controls.desktop.q) controls.desktop.q.value = value;
+        if (controls.mobile.q) controls.mobile.q.value = value;
+      }
+
+      // Event listeners
+      ['input', 'change'].forEach(evt => {
+        controls.desktop.q?.addEventListener(evt, handleSearchInput);
+        controls.mobile.q?.addEventListener(evt, handleSearchInput);
+      });
+
+      controls.desktop.reset?.addEventListener('click', () => handleResetClick('desktop'));
+      controls.mobile.reset?.addEventListener('click', () => handleResetClick('mobile'));
+
+      currentSearch = controls.desktop.q?.value?.trim() || controls.mobile.q?.value?.trim() || '';
+      syncSearchInputs(currentSearch);
+      applyFilters();
+    }
+  </script>
