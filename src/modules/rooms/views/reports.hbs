@@ -94,7 +94,7 @@
       </div>
     </div>
 
- 
+
      <!-- Filtros y Fechas -->
         <div class="mb-6">
             <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Filtros y Fechas</h2>
@@ -435,15 +435,12 @@
 
         if (reporte.tipo === 'rentas' && hayDatos) {
           contenidoHTML += `
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div class="bg-blue-100 p-4 rounded-lg">
                 <h3 class="font-semibold text-blue-800">Rentas Directas</h3>
                 <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalDirectas}</p>
               </div>
-              <div class="bg-orange-100 p-4 rounded-lg">
-                <h3 class="font-semibold text-orange-800">Rentas por Conversión</h3>
-                <p class="text-2xl font-bold text-orange-900">${reporte.estadisticas.totalConvertidas}</p>
-              </div>
+
               <div class="bg-green-100 p-4 rounded-lg">
                 <h3 class="font-semibold text-green-800">Ingreso Directo</h3>
                 <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.ingresosDirectos)}</p>
@@ -543,14 +540,10 @@
           hayDatos = hasRentas || hasReservas;
           if (hayDatos) {
             contenidoHTML += `
-              <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+              <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                 <div class="bg-blue-100 p-4 rounded-lg">
                   <h3 class="font-semibold text-blue-800">Rentas Directas</h3>
                   <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalRentasDirectas}</p>
-                </div>
-                <div class="bg-orange-100 p-4 rounded-lg">
-                  <h3 class="font-semibold text-orange-800">Rentas por Conversión</h3>
-                  <p class="text-2xl font-bold text-orange-900">${reporte.estadisticas.totalRentasConvertidas}</p>
                 </div>
                 <div class="bg-green-100 p-4 rounded-lg">
                   <h3 class="font-semibold text-green-800">Reservas Pendientes</h3>

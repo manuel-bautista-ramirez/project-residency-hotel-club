@@ -225,203 +225,199 @@
     </div>
   </div>
 
-  <!-- SECCIÓN MEJORADA PARA MÓVILES Y TABLETS -->
-  <div id="mobileTabletSection" class="lg:hidden flex-1 flex flex-col overflow-hidden">
+  <!-- SECCIÓN OPTIMIZADA PARA MÓVILES Y TABLETS -->
+  <div id="mobileTabletSection" class="lg:hidden flex-1 flex flex-col overflow-hidden min-h-0">
+    <div id="rentControlsMobile" class="flex-none mb-3 px-3">
+      <div class="bg-blue-900 text-white px-4 py-3 rounded-xl shadow-lg">
+        <!-- Campo de búsqueda simplificado -->
+        <div class="relative mb-3">
+          <input id="rentSearchMobile" type="text" placeholder="Buscar rentas..."
+            class="w-full px-4 py-2.5 pl-10 text-sm border border-blue-200/70 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-200 bg-white text-slate-800 placeholder-gray-400">
+          <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+        </div>
 
-    <!-- Controles de búsqueda móvil -->
-    <div id="rentControlsMobile" class="flex-none mb-4">
-      <div class="bg-blue-900 text-white px-3 py-3 rounded-xl shadow-lg">
-        <div class="flex flex-col gap-3">
-          <!-- Campo de búsqueda -->
-          <div>
-            <label for="rentSearchMobile" class="text-xs font-semibold tracking-wide text-blue-100 uppercase block mb-1">
-              Buscar rentas
-            </label>
-            <div class="relative">
-              <input id="rentSearchMobile" type="text"
-                placeholder="Buscar por cliente, habitación, monto..."
-                class="w-full px-4 py-3 text-sm border border-blue-200/70 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-200 bg-white/95 text-slate-800">
-              <i class="fa-solid fa-search absolute right-3 top-3.5 text-gray-400 text-sm"></i>
-            </div>
+        <!-- Estadísticas y controles SIMPLIFICADOS -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-blue-100 font-medium">Total:</span>
+            <span id="rentCountMobile" class="text-sm font-bold text-white">
+              {{#if allRentas.length}}
+              {{allRentas.length}}
+              {{else}}
+              0
+              {{/if}}
+            </span>
           </div>
 
-          <!-- Estadísticas y controles -->
-          <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-blue-800">
-            <!-- Contador -->
-            <div class="flex items-center gap-2">
-              <div class="bg-blue-800 rounded-lg px-3 py-1.5">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold text-blue-100">Total:</span>
-                  <span id="rentCountMobile" class="text-sm font-bold text-white">
-                    {{#if allRentas.length}}
-                    {{allRentas.length}}
-                    {{else}}
-                    0
-                    {{/if}}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Controles de paginación móvil -->
-            <div class="flex items-center gap-2">
-              <div class="bg-blue-800/50 rounded-lg px-2 py-1 flex items-center gap-2 text-blue-100">
-                <button id="prevPageBtnMobile"
-                  class="w-6 h-6 flex items-center justify-center rounded hover:bg-blue-700 disabled:opacity-50">
-                  <i class="fa-solid fa-chevron-left text-xs"></i>
-                </button>
-                <span id="pageIndicatorMobile" class="text-xs font-mono min-w-[40px] text-center">1/1</span>
-                <button id="nextPageBtnMobile"
-                  class="w-6 h-6 flex items-center justify-center rounded hover:bg-blue-700 disabled:opacity-50">
-                  <i class="fa-solid fa-chevron-right text-xs"></i>
-                </button>
-              </div>
-
-              <button id="rentResetMobile"
-                class="px-3 py-1.5 text-xs bg-blue-800/50 hover:bg-blue-700/70 text-blue-100 rounded-lg inline-flex items-center gap-1.5 transition-colors">
-                <i class="fa-solid fa-eraser"></i>
-                Limpiar
+          <div class="flex items-center gap-2">
+            <!-- Paginación compacta -->
+            <div class="flex items-center bg-blue-800/50 rounded-lg overflow-hidden">
+              <button id="prevPageBtnMobile"
+                class="w-8 h-8 flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+              </button>
+              <span id="pageIndicatorMobile" class="px-2 text-xs font-medium">1/1</span>
+              <button id="nextPageBtnMobile"
+                class="w-8 h-8 flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
               </button>
             </div>
+
+            <button id="rentResetMobile"
+              class="w-8 h-8 flex items-center justify-center bg-blue-800/50 hover:bg-blue-700/70 text-blue-100 rounded-lg transition-colors"
+              title="Limpiar">
+              <i class="fa-solid fa-eraser text-xs"></i>
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Grid de cards responsiva -->
-    <div id="cardsSection" class="flex-1 overflow-y-auto pb-20">
-      <div class="grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2">
+    <!-- Cards - 1 columna en móvil, 2 columnas en tablet -->
+    <div id="cardsSection" class="flex-1 overflow-y-auto pb-20 px-3 ">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         {{#each allRentas}}
-        <article
-          class="bg-white rounded-xl shadow-lg overflow-hidden rent-reveal opacity-0 translate-y-1 transition-all duration-500"
+        <article class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden rent-reveal"
           data-item-id="{{this.id_renta}}" data-nombre="{{this.nombre_cliente}}" data-hab="{{this.numero_habitacion}}"
           data-ingreso="{{this.fecha_ingreso}}" data-salida="{{this.fecha_salida}}" data-origen="{{this.origen_clave}}"
           data-pago="{{this.tipo_pago}}" data-monto="{{this.monto}}" data-letras="{{this.monto_letras}}">
 
-          <!-- Header de la card -->
-          <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-4 py-3">
-            <div class="flex justify-between items-center">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center">
-                  <i class="fa-solid fa-bed text-lg"></i>
+          <!-- Header COMPACTO pero claro -->
+          <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <i class="fa-solid fa-bed text-xs"></i>
                 </div>
-                <div>
-                  <h3 class="font-bold text-base">Hab. {{this.numero_habitacion}}</h3>
-                  <p class="text-sm text-blue-200 truncate max-w-[200px]">{{this.nombre_cliente}}</p>
+                <div class="min-w-0">
+                  <h3 class="font-bold text-sm truncate">Hab. {{this.numero_habitacion}}</h3>
+                  <p class="text-blue-100 text-xs truncate">{{this.nombre_cliente}}</p>
                 </div>
               </div>
               {{#if (eq this.origen_clave 'directa')}}
-              <span class="bg-emerald-500/20 text-emerald-300 px-2 py-1 rounded-full text-xs font-medium">
+              <span
+                class="bg-emerald-400 text-white px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0 ml-2">
                 Directa
               </span>
               {{else}}
-              <span class="bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full text-xs font-medium">
+              <span
+                class="bg-indigo-400 text-white px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0 ml-2">
                 Conversión
               </span>
               {{/if}}
             </div>
           </div>
 
-          <!-- Contenido de la card -->
-          <div class="p-4 space-y-4">
-            <!-- Información principal -->
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-1">
-                <div class="text-xs text-gray-500 font-medium inline-flex items-center gap-1">
-                  <i class="fa-regular fa-calendar-plus text-green-600"></i>
-                  Ingreso
+          <!-- Contenido principal - MEJOR ORGANIZADO -->
+          <div class="p-3 space-y-3">
+            <!-- Fechas y pagos en 2 columnas COMPACTAS -->
+            <div class="grid grid-cols-2 gap-2">
+              <!-- Columna izquierda -->
+              <div class="space-y-2">
+                <div>
+                  <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
+                    <i class="fa-regular fa-calendar-plus text-green-500 text-[10px]"></i>
+                    <span>Ingreso</span>
+                  </div>
+                  <div class="text-xs font-semibold text-gray-900">{{this.fecha_ingreso}}</div>
                 </div>
-                <div class="text-sm font-medium text-gray-900 fecha-ingreso-card">{{this.fecha_ingreso}}</div>
+
+                <div>
+                  <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
+                    <i class="fa-solid fa-credit-card text-indigo-500 text-[10px]"></i>
+                    <span>Pago</span>
+                  </div>
+                  <div class="text-xs font-semibold text-gray-900 capitalize">{{this.tipo_pago}}</div>
+                </div>
               </div>
 
-              <div class="space-y-1">
-                <div class="text-xs text-gray-500 font-medium inline-flex items-center gap-1">
-                  <i class="fa-regular fa-calendar-check text-blue-600"></i>
-                  Salida
+              <!-- Columna derecha -->
+              <div class="space-y-2">
+                <div>
+                  <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
+                    <i class="fa-regular fa-calendar-check text-blue-500 text-[10px]"></i>
+                    <span>Salida</span>
+                  </div>
+                  <div class="text-xs font-semibold text-gray-900">{{this.fecha_salida}}</div>
                 </div>
-                <div class="text-sm font-medium text-gray-900 fecha-salida-card">{{this.fecha_salida}}</div>
-              </div>
 
-              <div class="space-y-1">
-                <div class="text-xs text-gray-500 font-medium inline-flex items-center gap-1">
-                  <i class="fa-solid fa-credit-card text-indigo-600"></i>
-                  Pago
+                <div>
+                  <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
+                    <i class="fa-solid fa-coins text-yellow-500 text-[10px]"></i>
+                    <span>Monto</span>
+                  </div>
+                  <div class="text-sm font-bold text-blue-600">${{this.monto}}</div>
                 </div>
-                <div class="text-sm font-medium text-gray-900 capitalize">{{this.tipo_pago}}</div>
-              </div>
-
-              <div class="space-y-1">
-                <div class="text-xs text-gray-500 font-medium inline-flex items-center gap-1">
-                  <i class="fa-solid fa-coins text-yellow-600"></i>
-                  Monto
-                </div>
-                <div class="text-sm font-bold text-gray-900">${{this.monto}}</div>
               </div>
             </div>
 
-            <!-- Estado de la renta -->
-            <div class="pt-3 border-t border-gray-100">
+            <!-- Estado de la renta - VERSIÓN COMPACTA -->
+            <div class="pt-2 border-t border-gray-100">
               <div class="mb-2">
-                <div class="text-xs text-gray-500 font-medium inline-flex items-center gap-1 mb-2">
-                  <i class="fa-solid fa-clock"></i>
-                  Estado de la renta
+                <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-2">
+                  <i class="fa-solid fa-clock text-[10px]"></i>
+                  <span>Estado</span>
                 </div>
                 {{#if (eq this.estado_tiempo 'corriente')}}
-                <div class="inline-flex items-center justify-between w-full px-3 py-2 bg-green-50 border border-green-100 rounded-lg">
+                <div class="flex items-center justify-between p-2 bg-green-50 border border-green-100 rounded-lg">
                   <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-circle-check text-green-600"></i>
+                    <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <i class="fa-solid fa-check text-green-600 text-[10px]"></i>
+                    </div>
                     <div>
-                      <div class="text-sm font-semibold text-green-800">Corriente</div>
-                      <div class="text-xs text-green-600">{{this.tiempo_restante}}</div>
+                      <div class="text-xs font-semibold text-green-800">Corriente</div>
+                      <div class="text-[10px] text-green-600">{{this.tiempo_restante}}</div>
                     </div>
                   </div>
-                  <span class="text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded">
+                  <span class="text-[10px] font-bold text-green-700 bg-green-100 px-2 py-1 rounded">
                     Activa
                   </span>
                 </div>
                 {{else}}
-                <div class="inline-flex items-center justify-between w-full px-3 py-2 bg-red-50 border border-red-100 rounded-lg">
+                <div class="flex items-center justify-between p-2 bg-red-50 border border-red-100 rounded-lg">
                   <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-triangle-exclamation text-red-600"></i>
+                    <div class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
+                      <i class="fa-solid fa-exclamation text-red-600 text-[10px]"></i>
+                    </div>
                     <div>
-                      <div class="text-sm font-semibold text-red-800">Expirada</div>
-                      <div class="text-xs text-red-600">{{this.tiempo_restante}}</div>
+                      <div class="text-xs font-semibold text-red-800">Expirada</div>
+                      <div class="text-[10px] text-red-600">{{this.tiempo_restante}}</div>
                     </div>
                   </div>
-                  <span class="text-xs font-medium text-red-700 bg-red-100 px-2 py-1 rounded">
+                  <span class="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-1 rounded">
                     Inactiva
                   </span>
                 </div>
                 {{/if}}
               </div>
 
-              <!-- Monto en letras (solo en tablets) -->
-              <div class="hidden sm:block mt-3">
-                <div class="text-xs text-gray-500 font-medium inline-flex items-center gap-1 mb-1">
-                  <i class="fa-regular fa-file-lines"></i>
-                  Monto en letras
+              <!-- Monto en letras - VERSIÓN MÁS COMPACTA -->
+              <div>
+                <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
+                  <i class="fa-regular fa-file-lines text-[10px]"></i>
+                  <span>Monto en letras</span>
                 </div>
-                <div class="text-sm text-gray-700 bg-gray-50 p-2 rounded border border-gray-100">
+                <div
+                  class="text-[10px] text-gray-600 bg-gray-50 p-2 rounded border border-gray-100 leading-tight line-clamp-2">
                   {{this.monto_letras}}
                 </div>
               </div>
             </div>
 
-            <!-- Botones de acción -->
-            <div class="pt-3 border-t border-gray-100">
+            <!-- Botones de acción - COMPACTOS pero accesibles -->
+            <div class="pt-2 border-t border-gray-100">
               <div class="flex gap-2">
                 {{#if (eq this.estado_tiempo 'corriente')}}
                 <button type="button"
                   onclick="openDesocuparModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
-                  class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
-                  <i class="fa-solid fa-door-open"></i>
-                  <span class="hidden sm:inline">Desocupar</span>
-                  <span class="inline sm:hidden">Desocupar</span>
+                  class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-semibold transition-colors">
+                  <i class="fa-solid fa-door-open text-[10px]"></i>
+                  <span>Desocupar</span>
                 </button>
                 {{else}}
                 <button type="button" disabled
-                  class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-300 text-gray-600 rounded-lg text-sm font-medium shadow-sm cursor-not-allowed">
-                  <i class="fa-solid fa-ban"></i>
+                  class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-gray-200 text-gray-500 rounded-lg text-xs font-semibold cursor-not-allowed">
+                  <i class="fa-solid fa-ban text-[10px]"></i>
                   <span>Expirada</span>
                 </button>
                 {{/if}}
@@ -429,10 +425,9 @@
                 {{#if (eq @root.user.role 'Administrador')}}
                 <button type="button"
                   onclick="openDeleteModal({{this.id_renta}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
-                  class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
-                  <i class="fa-solid fa-trash-can"></i>
-                  <span class="hidden sm:inline">Eliminar</span>
-                  <span class="inline sm:hidden">Eliminar</span>
+                  class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors">
+                  <i class="fa-solid fa-trash-can text-[10px]"></i>
+                  <span>Eliminar</span>
                 </button>
                 {{/if}}
               </div>
@@ -441,19 +436,138 @@
         </article>
         {{/each}}
 
-        <!-- Mensaje de no resultados -->
-        <div id="noResultsCard" class="hidden col-span-1 md:col-span-2 py-10 px-4 text-center text-gray-500">
+        <!-- Mensaje de no resultados MÁS COMPACTO -->
+        <div id="noResultsCard" class="hidden md:col-span-2 py-6 px-4 text-center text-gray-500">
           <div class="flex flex-col items-center">
-            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <i class="fas fa-search text-2xl text-gray-400"></i>
+            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-2">
+              <i class="fas fa-search text-lg text-gray-400"></i>
             </div>
-            <h3 class="text-lg font-medium text-gray-700 mb-2">No se encontraron resultados</h3>
-            <p class="text-sm text-gray-500 max-w-sm">No hay rentas que coincidan con tu búsqueda. Intenta con otros términos.</p>
+            <h3 class="text-sm font-semibold text-gray-700 mb-1">Sin resultados</h3>
+            <p class="text-[10px] text-gray-500">Intenta con otros términos</p>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <style>
+    /* Utilidad para truncar 2 líneas */
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Ajustes específicos para móvil */
+    @media (max-width: 767px) {
+      #rentControlsMobile {
+        margin-bottom: 12px;
+      }
+
+      .rent-reveal {
+        min-height: 320px;
+        /* Altura mínima para consistencia */
+        max-width: 100%;
+      }
+
+      /* Asegurar que todo el texto sea visible */
+      .rent-reveal * {
+        line-height: 1.2;
+      }
+
+      /* Mejorar espaciado interno */
+      .rent-reveal>div {
+        padding: 8px;
+      }
+    }
+
+    /* Ajustes específicos para tablet */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #cardsSection {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .rent-reveal {
+        min-height: 300px;
+        height: 100%;
+        /* Asegurar altura completa */
+      }
+
+      /* Grid de 2 columnas con buen espaciado */
+      .grid-cols-1.md\:grid-cols-2 {
+        gap: 12px;
+      }
+    }
+
+    /* Ajustar altura dinámica para mejor scroll */
+    #mobileTabletSection {
+      height: calc(100vh - 160px);
+      /* Altura ajustada */
+    }
+
+    #cardsSection {
+      height: calc(100vh - 220px);
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Mejorar la legibilidad del texto pequeño */
+    .text-\[10px\] {
+      font-size: 10px;
+      line-height: 1.1;
+    }
+  </style>
+
+  <script>
+    // Configuración para asegurar que las cards se muestren completamente
+    document.addEventListener('DOMContentLoaded', function () {
+      // Ajustar altura dinámica
+      function adjustContainerHeight() {
+        const section = document.getElementById('mobileTabletSection');
+        const controls = document.getElementById('rentControlsMobile');
+        const cardsSection = document.getElementById('cardsSection');
+
+        if (section && controls && cardsSection) {
+          const controlsHeight = controls.offsetHeight;
+          const viewportHeight = window.innerHeight;
+
+          // Dejar espacio para márgenes y padding
+          const availableHeight = viewportHeight - controlsHeight - 80;
+          cardsSection.style.height = `${Math.max(availableHeight, 250)}px`;
+        }
+      }
+
+      // Inicializar y ajustar en resize
+      adjustContainerHeight();
+      window.addEventListener('resize', adjustContainerHeight);
+
+      // Asegurar que todas las cards tengan la misma altura en tablet
+      function equalizeCardHeights() {
+        if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+          const cards = document.querySelectorAll('.rent-reveal');
+          if (cards.length > 0) {
+            // Encontrar la altura máxima
+            let maxHeight = 0;
+            cards.forEach(card => {
+              card.style.height = 'auto'; // Reset
+              maxHeight = Math.max(maxHeight, card.offsetHeight);
+            });
+
+            // Aplicar altura máxima a todas
+            cards.forEach(card => {
+              card.style.height = `${maxHeight}px`;
+            });
+          }
+        }
+      }
+
+      // Ejecutar cuando el contenido se cargue y en resize
+      setTimeout(equalizeCardHeights, 100);
+      window.addEventListener('resize', equalizeCardHeights);
+    });
+  </script>
 
   <!-- Modal de confirmación de eliminación -->
   <div id="deleteModal" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
@@ -705,11 +819,11 @@
           const pago = norm(el.dataset.pago || '');
 
           return nombre.includes(searchLower) ||
-                 hab.includes(searchLower) ||
-                 monto.includes(searchLower) ||
-                 letras.includes(searchLower) ||
-                 origen.includes(searchLower) ||
-                 pago.includes(searchLower);
+            hab.includes(searchLower) ||
+            monto.includes(searchLower) ||
+            letras.includes(searchLower) ||
+            origen.includes(searchLower) ||
+            pago.includes(searchLower);
         });
       }
 
@@ -880,7 +994,7 @@
     }
 
     // Inicializar al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       adjustRentasTableHeight();
       initializeRentasFilters();
 
@@ -892,7 +1006,7 @@
     });
 
     // Ajustar en resize
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
       setTimeout(() => {
         adjustRentasTableHeight();
       }, 100);
