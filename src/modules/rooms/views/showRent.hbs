@@ -48,7 +48,7 @@
   </div>
 
 
-  <!-- TABLA CON SCROLL DINÁMICO - Muestra 5 filas completas, scroll a partir de la 6ta -->
+  <!-- TABLA CON SCROLL DINÁMICO - Muestra 4 filas completas, scroll a partir de la 5ta -->
   <div class="w-full bg-white rounded-lg shadow border border-gray-200 overflow-hidden hidden lg:block ">
 
     <!-- Header de búsqueda -->
@@ -80,7 +80,7 @@
 
     <!-- CONTENEDOR DE TABLA CON ALTURA DINÁMICA -->
     <div id="rentasTableContainer" class="overflow-auto">
-      <!-- Altura se ajusta automáticamente según número de filas (1-5 sin scroll, 6+ con scroll) -->
+      <!-- Altura se ajusta automáticamente según número de filas (1-4 sin scroll, 5+ con scroll) -->
 
       <table class="w-full min-w-max">
         <!-- HEADER FIJO -->
@@ -552,8 +552,8 @@
 
       console.log(`Ajustando tabla de rentas: ${rentaCount} rentas encontradas`);
 
-      // Si hay 5 o menos rentas, ajustar altura exacta sin espacio en blanco
-      if (rentaCount <= 5) {
+      // Si hay 4 o menos rentas, ajustar altura exacta sin espacio en blanco
+      if (rentaCount <= 4) {
         console.log('Ajustando altura natural - sin scroll');
         // Altura automática basada en contenido, sin restricciones
         tableContainer.style.maxHeight = 'none';
@@ -561,9 +561,9 @@
         tableContainer.style.overflowY = 'hidden';
         tableContainer.className = 'overflow-x-auto';
       } else {
-        // Si hay más de 5 rentas, activar scroll con altura fija de 5 filas
-        console.log('Con scroll - más de 5 rentas');
-        tableContainer.style.maxHeight = 'calc(5 * 3.5rem)'; // Altura de 5 filas
+        // Si hay más de 4 rentas, activar scroll con altura fija de 4 filas
+        console.log('Con scroll - más de 4 rentas');
+        tableContainer.style.maxHeight = 'calc(4 * 3.5rem)'; // Altura de 4 filas
         tableContainer.style.height = '';
         tableContainer.style.overflowY = 'auto';
         tableContainer.className = 'overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100';
