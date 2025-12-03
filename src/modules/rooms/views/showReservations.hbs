@@ -1,611 +1,620 @@
+<style>
+  /* Utilidad para truncar 2 líneas */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Ajustes específicos para móvil */
+  @media (max-width: 767px) {
+    #reservationControlsMobile {
+      margin-bottom: 12px;
+    }
+
+    .reservation-reveal {
+      min-height: 280px;
+      max-width: 100%;
+    }
+
+    .reservation-reveal * {
+      line-height: 1.2;
+    }
+
+    .reservation-reveal>div {
+      padding: 8px;
+    }
+  }
+
+  /* Ajustes específicos para tablet */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    #cardsSection {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    .reservation-reveal {
+      min-height: 260px;
+      height: 100%;
+    }
+
+    .grid-cols-1.md\:grid-cols-2 {
+      gap: 12px;
+    }
+  }
+
+  /* Ajustar altura dinámica para mejor scroll */
+  #mobileTabletSection {
+    height: calc(100vh - 160px);
+  }
+
+  #cardsSection {
+    height: calc(100vh - 220px);
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mejorar la legibilidad del texto pequeño */
+  .text-\[10px\] {
+    font-size: 10px;
+    line-height: 1.1;
+  }
+</style>
+
 <div class="h-screen max-w-7xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-1 flex flex-col overflow-hidden">
   <div class="flex-none">
     {{>buttons}}
   </div>
 
+  <!-- CONDICIONAL SIMPLIFICADO -->
   {{#if allReservationes}}
-
-  <!-- Loading Overlay -->
-  <div id="reservationsLoadingOverlay"
-    class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm items-center justify-center hidden">
-    <div class="flex flex-col items-center gap-3">
-      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24" aria-hidden="true" role="img">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <p class="text-sm text-blue-900 font-medium">Cargando reservaciones...</p>
-    </div>
-  </div>
-
-  <div class="pt-2"></div>
-  <!-- TABLA CON SCROLL DINÁMICO - Desktop -->
-  <div id="tableSection"
-    class="w-full bg-white rounded-lg shadow border border-gray-200 overflow-hidden hidden lg:block">
-
-    <!-- Header de búsqueda -->
-    <div class="bg-blue-900 text-white p-3 border-b border-blue-800">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div class="flex-1">
-          <input id="reservationSearch" type="text" placeholder="Buscar por cliente, habitación, fechas..."
-            class="w-full px-3 py-2 rounded border border-blue-300 bg-white text-gray-800 text-sm">
-        </div>
-        <div class="flex items-center gap-2">
-          <!-- Resumen de estadísticas -->
-          <div class="bg-blue-800 rounded px-3 py-2 text-sm min-w-[140px]">
-            <div class="flex justify-between items-center gap-2">
-              <span class="font-semibold">Pendientes:</span>
-              <span id="reservationCountPending" class="font-bold">
-                {{resumenReservaciones.pendientes.cantidad}}
-              </span>
-            </div>
-          </div>
-
-          <div class="bg-blue-800 rounded px-3 py-2 text-sm min-w-[140px]">
-            <div class="flex justify-between items-center gap-2">
-              <span class="font-semibold">Convertidas:</span>
-              <span id="reservationCountConverted" class="font-bold">
-                {{resumenReservaciones.convertidas.cantidad}}
-              </span>
-            </div>
-          </div>
-
-          <!-- Controles de Paginación Desktop -->
-          <div class="bg-blue-800 rounded px-2 py-2 text-sm flex items-center gap-2 text-white">
-            <button id="prevPageBtn"
-              class="w-6 h-6 flex items-center justify-center rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-              <i class="fa-solid fa-chevron-left text-xs"></i>
-            </button>
-            <span id="pageIndicator" class="font-mono text-xs min-w-[30px] text-center">1/1</span>
-            <button id="nextPageBtn"
-              class="w-6 h-6 flex items-center justify-center rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-              <i class="fa-solid fa-chevron-right text-xs"></i>
-            </button>
-          </div>
-
-          <button id="reservationReset" class="bg-blue-800 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
-            Limpiar
-          </button>
+    <!-- ========== RESERVACIONES PENDIENTES ========== -->
+      <!-- Loading Overlay -->
+      <div id="reservationsLoadingOverlay"
+        class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm items-center justify-center hidden">
+        <div class="flex flex-col items-center gap-3">
+          <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24" aria-hidden="true" role="img">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          <p class="text-sm text-blue-900 font-medium">Cargando reservaciones...</p>
         </div>
       </div>
-    </div>
 
-    <!-- CONTENEDOR DE TABLA CON ALTURA DINÁMICA -->
-    <div id="reservationsTableContainer" class="overflow-auto">
-      <table class="w-full min-w-max">
-        <!-- HEADER FIJO -->
-        <thead class="sticky top-0 bg-white z-10 border-b">
-          <tr class="bg-gray-50">
-            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
-              <i class="fa-solid fa-user mr-1.5"></i>CLIENTE
-            </th>
-            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
-              <i class="fa-solid fa-bed mr-1.5"></i>HAB.
-            </th>
-            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
-              <i class="fa-regular fa-calendar mr-1.5"></i>RESERVA
-            </th>
-            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
-              <i class="fa-regular fa-calendar-plus mr-1.5"></i>INGRESO
-            </th>
-            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
-              <i class="fa-regular fa-calendar-check mr-1.5"></i>SALIDA
-            </th>
-            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
-              <i class="fa-solid fa-tags mr-1.5"></i>ESTADO
-            </th>
-            <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-              <i class="fa-solid fa-wrench mr-1.5"></i>ACCIONES
-            </th>
-          </tr>
-        </thead>
+      <div class="pt-2"></div>
 
-        <!-- CUERPO DE LA TABLA -->
-        <tbody id="reservationsTableBody">
-          {{#if allReservationes.length}}
-          {{#each allReservationes}}
-          <tr
-            class="border-b hover:bg-gray-50 transition-colors reservation-row {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
-            data-item-id="{{this.id_reservacion}}" data-nombre="{{this.nombre_cliente}}"
-            data-hab="{{this.numero_habitacion}}" data-reserva="{{this.fecha_reserva}}"
-            data-ingreso="{{this.fecha_ingreso}}" data-salida="{{this.fecha_salida}}"
-            data-estado="{{this.estado_etiqueta.texto}}" data-estado-clave="{{this.estado_clave}}"
-            data-origen="{{this.resumen_financiero.origen}}"
-            data-origen-clave="{{this.resumen_financiero.origen_clave}}">
-            <!-- Cada fila tiene altura fija de 3.5rem (56px) -->
-            <td class="p-3 border-r align-middle" style="height: 3.5rem;">
-              <div class="flex items-center">
-                <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center mr-2">
-                  <i class="fas fa-user text-white text-xs"></i>
+      <!-- TABLA CON SCROLL DINÁMICO - Desktop -->
+      <div id="tableSection"
+        class="w-full bg-white rounded-lg shadow border border-gray-200 overflow-hidden hidden lg:block">
+
+        <!-- Header de búsqueda -->
+        <div class="bg-blue-900 text-white p-3 border-b border-blue-800">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div class="flex-1">
+              <input id="reservationSearch" type="text" placeholder="Buscar por cliente, habitación, fechas..."
+                class="w-full px-3 py-2 rounded border border-blue-300 bg-white text-gray-800 text-sm">
+            </div>
+            <div class="flex items-center gap-2">
+              <!-- Resumen de estadísticas -->
+              <div class="bg-blue-800 rounded px-3 py-2 text-sm min-w-[140px]">
+                <div class="flex justify-between items-center gap-2">
+                  <span class="font-semibold">Pendientes:</span>
+                  
+                  
+                  
+                  <span id="reservationCountPending" class="font-bold">
+                    {{resumenReservaciones.pendientes.cantidad}}
+                  </span>
                 </div>
-                <span class="text-sm font-medium truncate">{{this.nombre_cliente}}</span>
               </div>
-            </td>
 
-            <td class="p-3 border-r align-middle" style="height: 3.5rem;">
-              <div class="flex items-center justify-center">
-                <div class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center mr-1.5">
-                  <i class="fa-solid fa-bed text-purple-600 text-xs"></i>
-                </div>
-                <span class="text-sm font-bold text-gray-900">{{this.numero_habitacion}}</span>
-              </div>
-            </td>
-
-            <td class="p-3 border-r align-middle" style="height: 3.5rem;">
-              <div class="flex items-center">
-                <i class="fa-regular fa-calendar text-indigo-600 mr-1.5 text-sm"></i>
-                <span class="text-sm text-gray-900">{{this.fecha_reserva}}</span>
-              </div>
-            </td>
-
-            <td class="p-3 border-r align-middle" style="height: 3.5rem;">
-              <div class="flex items-center">
-                <i class="fa-regular fa-calendar-plus text-green-600 mr-1.5 text-sm"></i>
-                <span class="text-sm text-gray-900">{{this.fecha_ingreso}}</span>
-              </div>
-            </td>
-
-            <td class="p-3 border-r align-middle" style="height: 3.5rem;">
-              <div class="flex items-center">
-                <i class="fa-regular fa-calendar-check text-blue-600 mr-1.5 text-sm"></i>
-                <span class="text-sm text-gray-900">{{this.fecha_salida}}</span>
-              </div>
-            </td>
-
-            <td class="p-3 border-r align-middle" style="height: 3.5rem;">
-              {{#if this.estado_etiqueta}}
-              <span
-                class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{this.estado_etiqueta.clase}}">
-                <i class="{{this.estado_etiqueta.icono}} mr-1.5"></i>
-                {{this.estado_etiqueta.texto}}
-              </span>
-              {{/if}}
-            </td>
-
-            <td class="p-3 align-middle" style="height: 3.5rem;">
-              <div class="flex space-x-2 justify-center">
-                {{#if (eq @root.user.role 'Administrador')}}
-                <a href="/rooms/editar/{{this.id_reservacion}}"
-                  class="text-yellow-600 hover:text-yellow-800 p-1.5 rounded hover:bg-yellow-50 transition-colors"
-                  title="Editar reservación">
-                  <i class="fa-solid fa-pen-to-square text-base"></i>
-                </a>
-                {{/if}}
-                {{#unless this.es_convertida}}
-                <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}"
-                  class="text-green-600 hover:text-green-800 p-1.5 rounded hover:bg-green-50 transition-colors confirm-btn"
-                  title="Confirmar reservación">
-                  <i class="fa-solid fa-check text-base"></i>
-                </a>
-                {{else}}
-                <span class="text-blue-600 p-1.5 rounded" title="Reservación convertida">
-                  <i class="fa-solid fa-right-left text-base"></i>
-                </span>
-                {{/unless}}
-                {{#if (eq @root.user.role 'Administrador')}}
-                <button type="button"
-                  onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
-                  class="text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 transition-colors"
-                  title="Eliminar reservación">
-                  <i class="fa-solid fa-trash-can text-base"></i>
+              <!-- Controles de Paginación Desktop -->
+              <div class="bg-blue-800 rounded px-2 py-2 text-sm flex items-center gap-2 text-white">
+                <button id="prevPageBtn"
+                  class="w-6 h-6 flex items-center justify-center rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  <i class="fa-solid fa-chevron-left text-xs"></i>
                 </button>
-                {{/if}}
+                <span id="pageIndicator" class="font-mono text-xs min-w-[30px] text-center">1/1</span>
+                <button id="nextPageBtn"
+                  class="w-6 h-6 flex items-center justify-center rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
               </div>
-            </td>
-          </tr>
-          {{/each}}
-          {{else}}
-          <!-- Estado vacío -->
-          <tr>
-            <td colspan="7" class="p-8 text-center text-gray-500">
-              <div class="flex flex-col items-center">
-                <i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i>
-                <p class="text-sm">No hay reservaciones para mostrar</p>
-              </div>
-            </td>
-          </tr>
-          {{/if}}
-        </tbody>
-        <!-- Fila de no resultados (oculta por defecto) -->
-        <tbody id="noResultsBody" class="hidden">
-          <tr>
-            <td colspan="7" class="p-8 text-center text-gray-500">
-              <div class="flex flex-col items-center">
-                <i class="fas fa-search text-4xl text-gray-300 mb-2"></i>
-                <p class="text-sm font-medium">No se encontraron resultados para tu búsqueda</p>
-                <p class="text-xs text-gray-400 mt-1">Intenta con otros términos</p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 
-  <!-- SECCIÓN OPTIMIZADA PARA MÓVILES Y TABLETS -->
-  <div id="mobileTabletSection" class="lg:hidden flex-1 flex flex-col overflow-hidden min-h-0">
-    <div id="reservationControlsMobile" class="flex-none mb-3 px-3">
-      <div class="bg-blue-900 text-white px-4 py-3 rounded-xl shadow-lg">
-        <!-- Campo de búsqueda simplificado -->
-        <div class="relative mb-3">
-          <input id="reservationSearchMobile" type="text" placeholder="Buscar reservaciones..."
-            class="w-full px-4 py-2.5 pl-10 text-sm border border-blue-200/70 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-200 bg-white text-slate-800 placeholder-gray-400">
-          <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+              <button id="reservationReset" class="bg-blue-800 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
+                Limpiar
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Estadísticas y controles SIMPLIFICADOS -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1">
-              <span class="text-xs text-blue-100 font-medium">Pendientes:</span>
-              <span id="reservationCountPendingMobile" class="text-sm font-bold text-white">
-                {{resumenReservaciones.pendientes.cantidad}}
-              </span>
-            </div>
-            <div class="flex items-center gap-1">
-              <span class="text-xs text-blue-100 font-medium">Conv:</span>
-              <span id="reservationCountConvertedMobile" class="text-sm font-bold text-white">
-                {{resumenReservaciones.convertidas.cantidad}}
-              </span>
-            </div>
-          </div>
+        <!-- CONTENEDOR DE TABLA CON ALTURA DINÁMICA -->
+        <div id="reservationsTableContainer" class="overflow-auto">
+          <table class="w-full min-w-max">
+            <!-- HEADER FIJO -->
+            <thead class="sticky top-0 bg-white z-10 border-b">
+              <tr class="bg-gray-50">
+                <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
+                  <i class="fa-solid fa-user mr-1.5"></i>CLIENTE
+                </th>
+                <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
+                  <i class="fa-solid fa-bed mr-1.5"></i>HAB.
+                </th>
+                <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
+                  <i class="fa-regular fa-calendar mr-1.5"></i>RESERVA
+                </th>
+                <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
+                  <i class="fa-regular fa-calendar-plus mr-1.5"></i>INGRESO
+                </th>
+                <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
+                  <i class="fa-regular fa-calendar-check mr-1.5"></i>SALIDA
+                </th>
+                <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-r">
+                  <i class="fa-solid fa-tags mr-1.5"></i>ESTADO
+                </th>
+                <th class="p-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  <i class="fa-solid fa-wrench mr-1.5"></i>ACCIONES
+                </th>
+              </tr>
+            </thead>
 
-          <div class="flex items-center gap-2">
-            <!-- Paginación compacta -->
-            <div class="flex items-center bg-blue-800/50 rounded-lg overflow-hidden">
-              <button id="prevPageBtnMobile"
-                class="w-8 h-8 flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                <i class="fa-solid fa-chevron-left text-xs"></i>
-              </button>
-              <span id="pageIndicatorMobile" class="px-2 text-xs font-medium">1/1</span>
-              <button id="nextPageBtnMobile"
-                class="w-8 h-8 flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                <i class="fa-solid fa-chevron-right text-xs"></i>
-              </button>
-            </div>
+            <!-- CUERPO DE LA TABLA -->
+            <tbody id="reservationsTableBody">
+              {{#if allReservationes.length}}
+              {{#each allReservationes}}
+              {{#unless this.es_convertida}}
+              <tr
+                class="border-b hover:bg-gray-50 transition-colors reservation-row"
+                data-item-id="{{this.id_reservacion}}" data-nombre="{{this.nombre_cliente}}"
+                data-hab="{{this.numero_habitacion}}" data-reserva="{{this.fecha_reserva}}"
+                data-ingreso="{{this.fecha_ingreso}}" data-salida="{{this.fecha_salida}}"
+                data-estado="{{this.estado_etiqueta.texto}}" data-estado-clave="{{this.estado_clave}}"
+                data-origen="{{this.resumen_financiero.origen}}"
+                data-origen-clave="{{this.resumen_financiero.origen_clave}}"
+                data-es-convertida="{{this.es_convertida}}">
+                <!-- Cada fila tiene altura fija de 3.5rem (56px) -->
+                <td class="p-3 border-r align-middle" style="height: 3.5rem;">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center mr-2">
+                      <i class="fas fa-user text-white text-xs"></i>
+                    </div>
+                    <span class="text-sm font-medium truncate">{{this.nombre_cliente}}</span>
+                  </div>
+                </td>
 
-            <button id="reservationResetMobile"
-              class="w-8 h-8 flex items-center justify-center bg-blue-800/50 hover:bg-blue-700/70 text-blue-100 rounded-lg transition-colors"
-              title="Limpiar">
-              <i class="fa-solid fa-eraser text-xs"></i>
-            </button>
-          </div>
+                <td class="p-3 border-r align-middle" style="height: 3.5rem;">
+                  <div class="flex items-center justify-center">
+                    <div class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center mr-1.5">
+                      <i class="fa-solid fa-bed text-purple-600 text-xs"></i>
+                    </div>
+                    <span class="text-sm font-bold text-gray-900">{{this.numero_habitacion}}</span>
+                  </div>
+                </td>
+
+                <td class="p-3 border-r align-middle" style="height: 3.5rem;">
+                  <div class="flex items-center">
+                    <i class="fa-regular fa-calendar text-indigo-600 mr-1.5 text-sm"></i>
+                    <span class="text-sm text-gray-900">{{this.fecha_reserva}}</span>
+                  </div>
+                </td>
+
+                <td class="p-3 border-r align-middle" style="height: 3.5rem;">
+                  <div class="flex items-center">
+                    <i class="fa-regular fa-calendar-plus text-green-600 mr-1.5 text-sm"></i>
+                    <span class="text-sm text-gray-900">{{this.fecha_ingreso}}</span>
+                  </div>
+                </td>
+
+                <td class="p-3 border-r align-middle" style="height: 3.5rem;">
+                  <div class="flex items-center">
+                    <i class="fa-regular fa-calendar-check text-blue-600 mr-1.5 text-sm"></i>
+                    <span class="text-sm text-gray-900">{{this.fecha_salida}}</span>
+                  </div>
+                </td>
+
+                <td class="p-3 border-r align-middle" style="height: 3.5rem;">
+                  {{#if this.estado_etiqueta}}
+                  <span
+                    class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{this.estado_etiqueta.clase}}">
+                    <i class="{{this.estado_etiqueta.icono}} mr-1.5"></i>
+                    {{this.estado_etiqueta.texto}}
+                  </span>
+                  {{/if}}
+                </td>
+
+                <td class="p-3 align-middle" style="height: 3.5rem;">
+                  <div class="flex space-x-2 justify-center">
+                    {{#if (eq @root.user.role 'Administrador')}}
+                    <a href="/rooms/editar/{{this.id_reservacion}}"
+                      class="text-yellow-600 hover:text-yellow-800 p-1.5 rounded hover:bg-yellow-50 transition-colors"
+                      title="Editar reservación">
+                      <i class="fa-solid fa-pen-to-square text-base"></i>
+                    </a>
+                    {{/if}}
+                    {{#unless this.es_convertida}}
+                    <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}"
+                      class="text-green-600 hover:text-green-800 p-1.5 rounded hover:bg-green-50 transition-colors confirm-btn"
+                      title="Confirmar reservación">
+                      <i class="fa-solid fa-check text-base"></i>
+                    </a>
+                    {{else}}
+                    <span class="text-blue-600 p-1.5 rounded" title="Reservación convertida">
+                      <i class="fa-solid fa-right-left text-base"></i>
+                    </span>
+                    {{/unless}}
+                    {{#if (eq @root.user.role 'Administrador')}}
+                    <button type="button"
+                      onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
+                      class="text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 transition-colors"
+                      title="Eliminar reservación">
+                      <i class="fa-solid fa-trash-can text-base"></i>
+                    </button>
+                    {{/if}}
+                  </div>
+                </td>
+              </tr>
+              {{/unless}}
+              {{/each}}
+              {{else}}
+              <!-- Estado vacío -->
+              <tr>
+                <td colspan="7" class="p-8 text-center text-gray-500">
+                  <div class="flex flex-col items-center">
+                    <i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i>
+                    <p class="text-sm">No hay reservaciones para mostrar</p>
+                  </div>
+                </td>
+              </tr>
+              {{/if}}
+
+              <!-- Fila de no resultados (oculta por defecto) -->
+              <tr id="noResultsRow" class="hidden">
+                <td colspan="7" class="p-8 text-center text-gray-500">
+                  <div class="flex flex-col items-center">
+                    <i class="fas fa-search text-4xl text-gray-300 mb-2"></i>
+                    <p class="text-sm font-medium">No se encontraron resultados para tu búsqueda</p>
+                    <p class="text-xs text-gray-400 mt-1">Intenta con otros términos</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
 
-    <!-- Cards - 1 columna en móvil, 2 columnas en tablet -->
-    <div id="cardsSection" class="flex-1 overflow-y-auto pb-20 px-3">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {{#each allReservationes}}
-        <article
-          class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden reservation-reveal {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
-          data-item-id="{{this.id_reservacion}}" data-nombre="{{this.nombre_cliente}}"
-          data-hab="{{this.numero_habitacion}}" data-reserva="{{this.fecha_reserva}}"
-          data-ingreso="{{this.fecha_ingreso}}" data-salida="{{this.fecha_salida}}"
-          data-estado="{{this.estado_etiqueta.texto}}" data-estado-clave="{{this.estado_clave}}"
-          data-origen="{{this.resumen_financiero.origen}}" data-origen-clave="{{this.resumen_financiero.origen_clave}}">
+      <!-- SECCIÓN OPTIMIZADA PARA MÓVILES Y TABLETS -->
+      <div id="mobileTabletSection" class="lg:hidden flex-1 flex flex-col overflow-hidden min-h-0">
+        <div id="reservationControlsMobile" class="flex-none mb-3 px-3">
+          <div class="bg-blue-900 text-white px-4 py-3 rounded-xl shadow-lg">
+            <!-- Campo de búsqueda simplificado -->
+            <div class="relative mb-3">
+              <input id="reservationSearchMobile" type="text" placeholder="Buscar reservaciones..."
+                class="w-full px-4 py-2.5 pl-10 text-sm border border-blue-200/70 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-200 bg-white text-slate-800 placeholder-gray-400">
+              <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+            </div>
 
-          <!-- Header COMPACTO pero claro -->
-          <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-2.5">
+            <!-- Estadísticas y controles SIMPLIFICADOS -->
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2 min-w-0">
-                <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <i class="fa-solid fa-bed text-xs"></i>
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1">
+                  <span class="text-xs text-blue-100 font-medium">Pendientes:</span>
+                  <span id="reservationCountPendingMobile" class="text-sm font-bold text-white">
+                    {{resumenReservaciones.pendientes.cantidad}}
+                  </span>
                 </div>
-                <div class="min-w-0">
-                  <h3 class="font-bold text-sm truncate">Hab. {{this.numero_habitacion}}</h3>
-                  <p class="text-blue-100 text-xs truncate">{{this.nombre_cliente}}</p>
-                </div>
-              </div>
-              {{#if this.estado_etiqueta}}
-              <span
-                class="bg-white/20 text-white px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0 ml-2">
-                {{this.estado_etiqueta.texto}}
-              </span>
-              {{/if}}
-            </div>
-          </div>
-
-          <!-- Contenido principal - MEJOR ORGANIZADO -->
-          <div class="p-3 space-y-3">
-            <!-- Fechas en 3 columnas COMPACTAS -->
-            <div class="grid grid-cols-3 gap-2">
-              <div>
-                <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
-                  <i class="fa-regular fa-calendar text-indigo-500 text-[10px]"></i>
-                  <span>Reserva</span>
-                </div>
-                <div class="text-xs font-semibold text-gray-900">{{this.fecha_reserva}}</div>
               </div>
 
-              <div>
-                <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
-                  <i class="fa-regular fa-calendar-plus text-green-500 text-[10px]"></i>
-                  <span>Ingreso</span>
+              <div class="flex items-center gap-2">
+                <!-- Paginación compacta -->
+                <div class="flex items-center bg-blue-800/50 rounded-lg overflow-hidden">
+                  <button id="prevPageBtnMobile"
+                    class="w-8 h-8 flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                  </button>
+                  <span id="pageIndicatorMobile" class="px-2 text-xs font-medium">1/1</span>
+                  <button id="nextPageBtnMobile"
+                    class="w-8 h-8 flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                  </button>
                 </div>
-                <div class="text-xs font-semibold text-gray-900">{{this.fecha_ingreso}}</div>
-              </div>
 
-              <div>
-                <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
-                  <i class="fa-regular fa-calendar-check text-blue-500 text-[10px]"></i>
-                  <span>Salida</span>
-                </div>
-                <div class="text-xs font-semibold text-gray-900">{{this.fecha_salida}}</div>
-              </div>
-            </div>
-
-            <!-- Información adicional -->
-            <div class="pt-2 border-t border-gray-100">
-              <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-2">
-                <i class="fa-solid fa-info-circle text-[10px]"></i>
-                <span>Detalles</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-xs text-gray-600">
-                  <i class="fa-solid fa-tag text-indigo-500 mr-1"></i>
-                  {{this.resumen_financiero.origen}}
-                </span>
-                <span class="text-sm font-bold text-blue-600">{{this.resumen_financiero.monto_formateado}}</span>
-              </div>
-              {{#if this.enganche_perdido}}
-              <div class="mt-2 p-2 bg-red-50 border border-red-100 rounded-lg">
-                <span class="text-[10px] font-bold text-red-700 flex items-center gap-1">
-                  <i class="fa-solid fa-hand-holding-dollar"></i>
-                  Enganche retenido
-                </span>
-              </div>
-              {{/if}}
-            </div>
-
-            <!-- Botones de acción - COMPACTOS pero accesibles -->
-            <div class="pt-2 border-t border-gray-100">
-              <div class="flex gap-2">
-                {{#if (eq @root.user.role 'Administrador')}}
-                <a href="/rooms/editar/{{this.id_reservacion}}"
-                  class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-xs font-semibold transition-colors">
-                  <i class="fa-solid fa-pen-to-square text-[10px]"></i>
-                  <span>Editar</span>
-                </a>
-                {{/if}}
-                {{#unless this.es_convertida}}
-                <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}"
-                  class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-semibold transition-colors confirm-btn">
-                  <i class="fa-solid fa-check text-[10px]"></i>
-                  <span>Confirmar</span>
-                </a>
-                {{else}}
-                <span
-                  class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold">
-                  <i class="fa-solid fa-right-left text-[10px]"></i>
-                  <span>Convertida</span>
-                </span>
-                {{/unless}}
-                {{#if (eq @root.user.role 'Administrador')}}
-                <button type="button"
-                  onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
-                  class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors">
-                  <i class="fa-solid fa-trash-can text-[10px]"></i>
-                  <span>Eliminar</span>
+                <button id="reservationResetMobile"
+                  class="w-8 h-8 flex items-center justify-center bg-blue-800/50 hover:bg-blue-700/70 text-blue-100 rounded-lg transition-colors"
+                  title="Limpiar">
+                  <i class="fa-solid fa-eraser text-xs"></i>
                 </button>
-                {{/if}}
               </div>
             </div>
           </div>
-        </article>
-        {{/each}}
+        </div>
 
-        <!-- Mensaje de no resultados MÁS COMPACTO -->
-        <div id="noResultsCard" class="hidden md:col-span-2 py-6 px-4 text-center text-gray-500">
-          <div class="flex flex-col items-center">
-            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-              <i class="fas fa-search text-lg text-gray-400"></i>
+        <!-- Cards - 1 columna en móvil, 2 columnas en tablet -->
+        <div id="cardsSection" class="flex-1 overflow-y-auto pb-20 px-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {{#each allReservationes}}
+            {{#unless this.es_convertida}}
+            <article
+              class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden reservation-reveal"
+              data-item-id="{{this.id_reservacion}}" data-nombre="{{this.nombre_cliente}}"
+              data-hab="{{this.numero_habitacion}}" data-reserva="{{this.fecha_reserva}}"
+              data-ingreso="{{this.fecha_ingreso}}" data-salida="{{this.fecha_salida}}"
+              data-estado="{{this.estado_etiqueta.texto}}" data-estado-clave="{{this.estado_clave}}"
+              data-origen="{{this.resumen_financiero.origen}}" data-origen-clave="{{this.resumen_financiero.origen_clave}}"
+              data-es-convertida="{{this.es_convertida}}">
+
+              <!-- Header COMPACTO pero claro -->
+              <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                      <i class="fa-solid fa-bed text-xs"></i>
+                    </div>
+                    <div class="min-w-0">
+                      <h3 class="font-bold text-sm truncate">Hab. {{this.numero_habitacion}}</h3>
+                      <p class="text-blue-100 text-xs truncate">{{this.nombre_cliente}}</p>
+                    </div>
+                  </div>
+                  {{#if this.estado_etiqueta}}
+                  <span
+                    class="bg-white/20 text-white px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0 ml-2">
+                    {{this.estado_etiqueta.texto}}
+                  </span>
+                  {{/if}}
+                </div>
+              </div>
+
+              <!-- Contenido principal - MEJOR ORGANIZADO -->
+              <div class="p-3 space-y-3">
+                <!-- Fechas en 3 columnas COMPACTAS -->
+                <div class="grid grid-cols-3 gap-2">
+                  <div>
+                    <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
+                      <i class="fa-regular fa-calendar text-indigo-500 text-[10px]"></i>
+                      <span>Reserva</span>
+                    </div>
+                    <div class="text-xs font-semibold text-gray-900">{{this.fecha_reserva}}</div>
+                  </div>
+
+                  <div>
+                    <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
+                      <i class="fa-regular fa-calendar-plus text-green-500 text-[10px]"></i>
+                      <span>Ingreso</span>
+                    </div>
+                    <div class="text-xs font-semibold text-gray-900">{{this.fecha_ingreso}}</div>
+                  </div>
+
+                  <div>
+                    <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-1">
+                      <i class="fa-regular fa-calendar-check text-blue-500 text-[10px]"></i>
+                      <span>Salida</span>
+                    </div>
+                    <div class="text-xs font-semibold text-gray-900">{{this.fecha_salida}}</div>
+                  </div>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="pt-2 border-t border-gray-100">
+                  <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1 mb-2">
+                    <i class="fa-solid fa-info-circle text-[10px]"></i>
+                    <span>Detalles</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-600">
+                      <i class="fa-solid fa-tag text-indigo-500 mr-1"></i>
+                      {{this.resumen_financiero.origen}}
+                    </span>
+                    <span class="text-sm font-bold text-blue-600">{{this.resumen_financiero.monto_formateado}}</span>
+                  </div>
+                  {{#if this.enganche_perdido}}
+                  <div class="mt-2 p-2 bg-red-50 border border-red-100 rounded-lg">
+                    <span class="text-[10px] font-bold text-red-700 flex items-center gap-1">
+                      <i class="fa-solid fa-hand-holding-dollar"></i>
+                      Enganche retenido
+                    </span>
+                  </div>
+                  {{/if}}
+                </div>
+
+                <!-- Botones de acción - COMPACTOS pero accesibles -->
+                <div class="pt-2 border-t border-gray-100">
+                  <div class="flex gap-2">
+                    {{#if (eq @root.user.role 'Administrador')}}
+                    <a href="/rooms/editar/{{this.id_reservacion}}"
+                      class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-xs font-semibold transition-colors">
+                      <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                      <span>Editar</span>
+                    </a>
+                    {{/if}}
+                    {{#unless this.es_convertida}}
+                    <a href="/rooms/confirmReservations/renta/{{this.id_reservacion}}"
+                      class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-semibold transition-colors confirm-btn">
+                      <i class="fa-solid fa-check text-[10px]"></i>
+                      <span>Confirmar</span>
+                    </a>
+                    {{else}}
+                    <span
+                      class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold">
+                      <i class="fa-solid fa-right-left text-[10px]"></i>
+                      <span>Convertida</span>
+                    </span>
+                    {{/unless}}
+                    {{#if (eq @root.user.role 'Administrador')}}
+                    <button type="button"
+                      onclick="openDeleteReservationModal({{this.id_reservacion}}, '{{this.numero_habitacion}}', '{{this.nombre_cliente}}')"
+                      class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors">
+                      <i class="fa-solid fa-trash-can text-[10px]"></i>
+                      <span>Eliminar</span>
+                    </button>
+                    {{/if}}
+                  </div>
+                </div>
+              </div>
+            </article>
+            {{/unless}}
+            {{/each}}
+
+            <!-- Mensaje de no resultados para búsquedas (oculto por defecto) -->
+            <div id="noResultsCard" class="hidden md:col-span-2 py-6 px-4 text-center text-gray-500">
+              <div class="flex flex-col items-center">
+                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-2">
+                  <i class="fas fa-search text-lg text-gray-400"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-700 mb-1">Sin resultados</h3>
+                <p class="text-[10px] text-gray-500">Intenta con otros términos</p>
+              </div>
             </div>
-            <h3 class="text-sm font-semibold text-gray-700 mb-1">Sin resultados</h3>
-            <p class="text-[10px] text-gray-500">Intenta con otros términos</p>
           </div>
         </div>
       </div>
+
+      <script>
+        // Configuración para asegurar que las cards se muestren completamente
+        document.addEventListener('DOMContentLoaded', function () {
+          // Ajustar altura dinámica
+          function adjustContainerHeight() {
+            const section = document.getElementById('mobileTabletSection');
+            const controls = document.getElementById('reservationControlsMobile');
+            const cardsSection = document.getElementById('cardsSection');
+
+            if (section && controls && cardsSection) {
+              const controlsHeight = controls.offsetHeight;
+              const viewportHeight = window.innerHeight;
+
+              const availableHeight = viewportHeight - controlsHeight - 80;
+              cardsSection.style.height = `${Math.max(availableHeight, 250)}px`;
+            }
+          }
+
+          adjustContainerHeight();
+          window.addEventListener('resize', adjustContainerHeight);
+
+          // Función para formatear fechas a formato legible con hora de 12 horas
+          function formatearFechasEnPagina() {
+            // Función helper para formatear una fecha ISO a formato legible
+            function formatearFecha(fechaISO) {
+              if (!fechaISO) return '';
+
+              try {
+                const fecha = new Date(fechaISO);
+
+                // Verificar si la fecha es válida
+                if (isNaN(fecha.getTime())) {
+                  return fechaISO; // Retornar original si no es válida
+                }
+
+                // Obtener componentes de la fecha
+                const dia = String(fecha.getDate()).padStart(2, '0');
+                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                const año = fecha.getFullYear();
+
+                // Obtener hora en formato de 12 horas
+                let horas = fecha.getHours();
+                const minutos = String(fecha.getMinutes()).padStart(2, '0');
+                const ampm = horas >= 12 ? 'PM' : 'AM';
+                horas = horas % 12;
+                horas = horas ? horas : 12; // La hora '0' debe ser '12'
+                const horasStr = String(horas).padStart(2, '0');
+
+                // Formato: DD/MM/YYYY HH:MM AM/PM
+                return `${dia}/${mes}/${año} ${horasStr}:${minutos} ${ampm}`;
+              } catch (error) {
+                console.error('Error al formatear fecha:', error);
+                return fechaISO;
+              }
+            }
+
+            // Formatear fechas en la tabla (desktop)
+            const tableRows = document.querySelectorAll('#reservationsTableBody tr.reservation-row');
+            tableRows.forEach(row => {
+              // Formatear fecha de reserva
+              const fechaReservaSpan = row.querySelector('td:nth-child(3) span');
+              if (fechaReservaSpan && row.dataset.reserva) {
+                fechaReservaSpan.textContent = formatearFecha(row.dataset.reserva);
+              }
+
+              // Formatear fecha de ingreso
+              const fechaIngresoSpan = row.querySelector('td:nth-child(4) span');
+              if (fechaIngresoSpan && row.dataset.ingreso) {
+                fechaIngresoSpan.textContent = formatearFecha(row.dataset.ingreso);
+              }
+
+              // Formatear fecha de salida
+              const fechaSalidaSpan = row.querySelector('td:nth-child(5) span');
+              if (fechaSalidaSpan && row.dataset.salida) {
+                fechaSalidaSpan.textContent = formatearFecha(row.dataset.salida);
+              }
+            });
+
+            // Formatear fechas en las cards (mobile/tablet)
+            const cards = document.querySelectorAll('#cardsSection article.reservation-reveal');
+            cards.forEach(card => {
+              // Las fechas están en divs con estructura específica
+              const fechaDivs = card.querySelectorAll('.grid.grid-cols-3 > div');
+
+              if (fechaDivs.length >= 3) {
+                // Fecha de reserva (primera columna)
+                const fechaReservaDiv = fechaDivs[0].querySelector('.text-xs.font-semibold');
+                if (fechaReservaDiv && card.dataset.reserva) {
+                  fechaReservaDiv.textContent = formatearFecha(card.dataset.reserva);
+                }
+
+                // Fecha de ingreso (segunda columna)
+                const fechaIngresoDiv = fechaDivs[1].querySelector('.text-xs.font-semibold');
+                if (fechaIngresoDiv && card.dataset.ingreso) {
+                  fechaIngresoDiv.textContent = formatearFecha(card.dataset.ingreso);
+                }
+
+                // Fecha de salida (tercera columna)
+                const fechaSalidaDiv = fechaDivs[2].querySelector('.text-xs.font-semibold');
+                if (fechaSalidaDiv && card.dataset.salida) {
+                  fechaSalidaDiv.textContent = formatearFecha(card.dataset.salida);
+                }
+              }
+            });
+          }
+
+          // Ejecutar formateo de fechas después de un pequeño delay
+          setTimeout(formatearFechasEnPagina, 100);
+
+          // Asegurar que todas las cards tengan la misma altura en tablet
+          function equalizeCardHeights() {
+            if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+              const cards = document.querySelectorAll('.reservation-reveal');
+              if (cards.length > 0) {
+                let maxHeight = 0;
+                cards.forEach(card => {
+                  card.style.height = 'auto';
+                  maxHeight = Math.max(maxHeight, card.offsetHeight);
+                });
+
+                cards.forEach(card => {
+                  card.style.height = `${maxHeight}px`;
+                });
+              }
+            }
+          }
+
+          setTimeout(equalizeCardHeights, 100);
+          window.addEventListener('resize', equalizeCardHeights);
+        });
+      </script>
+
+  {{else}}
+    <div class="text-center py-16">
+      <i class="fa-solid fa-file-invoice-dollar text-5xl text-slate-400"></i>
+      <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron reservaciones</h2>
+      <p class="mt-2 text-sm text-slate-500">Actualmente no hay reservaciones registradas.</p>
+      <a href="/rooms"
+        class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Volver a Habitaciones</span>
+      </a>
     </div>
-  </div>
+  {{/if}}
 
-  <style>
-    /* Utilidad para truncar 2 líneas */
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    /* Ajustes específicos para móvil */
-    @media (max-width: 767px) {
-      #reservationControlsMobile {
-        margin-bottom: 12px;
-      }
-
-      .reservation-reveal {
-        min-height: 280px;
-        max-width: 100%;
-      }
-
-      .reservation-reveal * {
-        line-height: 1.2;
-      }
-
-      .reservation-reveal>div {
-        padding: 8px;
-      }
-    }
-
-    /* Ajustes específicos para tablet */
-    @media (min-width: 768px) and (max-width: 1023px) {
-      #cardsSection {
-        padding-left: 8px;
-        padding-right: 8px;
-      }
-
-      .reservation-reveal {
-        min-height: 260px;
-        height: 100%;
-      }
-
-      .grid-cols-1.md\:grid-cols-2 {
-        gap: 12px;
-      }
-    }
-
-    /* Ajustar altura dinámica para mejor scroll */
-    #mobileTabletSection {
-      height: calc(100vh - 160px);
-    }
-
-    #cardsSection {
-      height: calc(100vh - 220px);
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* Mejorar la legibilidad del texto pequeño */
-    .text-\[10px\] {
-      font-size: 10px;
-      line-height: 1.1;
-    }
-  </style>
-
-  <script>
-    // Configuración para asegurar que las cards se muestren completamente
-    document.addEventListener('DOMContentLoaded', function () {
-      // Ajustar altura dinámica
-      function adjustContainerHeight() {
-        const section = document.getElementById('mobileTabletSection');
-        const controls = document.getElementById('reservationControlsMobile');
-        const cardsSection = document.getElementById('cardsSection');
-
-        if (section && controls && cardsSection) {
-          const controlsHeight = controls.offsetHeight;
-          const viewportHeight = window.innerHeight;
-
-          const availableHeight = viewportHeight - controlsHeight - 80;
-          cardsSection.style.height = `${Math.max(availableHeight, 250)}px`;
-        }
-      }
-
-      adjustContainerHeight();
-      window.addEventListener('resize', adjustContainerHeight);
-
-      // Función para formatear fechas a formato legible con hora de 12 horas
-      function formatearFechasEnPagina() {
-        // Función helper para formatear una fecha ISO a formato legible
-        function formatearFecha(fechaISO) {
-          if (!fechaISO) return '';
-
-          try {
-            const fecha = new Date(fechaISO);
-
-            // Verificar si la fecha es válida
-            if (isNaN(fecha.getTime())) {
-              return fechaISO; // Retornar original si no es válida
-            }
-
-            // Obtener componentes de la fecha
-            const dia = String(fecha.getDate()).padStart(2, '0');
-            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-            const año = fecha.getFullYear();
-
-            // Obtener hora en formato de 12 horas
-            let horas = fecha.getHours();
-            const minutos = String(fecha.getMinutes()).padStart(2, '0');
-            const ampm = horas >= 12 ? 'PM' : 'AM';
-            horas = horas % 12;
-            horas = horas ? horas : 12; // La hora '0' debe ser '12'
-            const horasStr = String(horas).padStart(2, '0');
-
-            // Formato: DD/MM/YYYY HH:MM AM/PM
-            return `${dia}/${mes}/${año} ${horasStr}:${minutos} ${ampm}`;
-          } catch (error) {
-            console.error('Error al formatear fecha:', error);
-            return fechaISO;
-          }
-        }
-
-        // Formatear fechas en la tabla (desktop)
-        const tableRows = document.querySelectorAll('#reservationsTableBody tr.reservation-row');
-        tableRows.forEach(row => {
-          // Formatear fecha de reserva
-          const fechaReservaSpan = row.querySelector('td:nth-child(3) span');
-          if (fechaReservaSpan && row.dataset.reserva) {
-            fechaReservaSpan.textContent = formatearFecha(row.dataset.reserva);
-          }
-
-          // Formatear fecha de ingreso
-          const fechaIngresoSpan = row.querySelector('td:nth-child(4) span');
-          if (fechaIngresoSpan && row.dataset.ingreso) {
-            fechaIngresoSpan.textContent = formatearFecha(row.dataset.ingreso);
-          }
-
-          // Formatear fecha de salida
-          const fechaSalidaSpan = row.querySelector('td:nth-child(5) span');
-          if (fechaSalidaSpan && row.dataset.salida) {
-            fechaSalidaSpan.textContent = formatearFecha(row.dataset.salida);
-          }
-        });
-
-        // Formatear fechas en las cards (mobile/tablet)
-        const cards = document.querySelectorAll('#cardsSection article.reservation-reveal');
-        cards.forEach(card => {
-          // Las fechas están en divs con estructura específica
-          const fechaDivs = card.querySelectorAll('.grid.grid-cols-3 > div');
-
-          if (fechaDivs.length >= 3) {
-            // Fecha de reserva (primera columna)
-            const fechaReservaDiv = fechaDivs[0].querySelector('.text-xs.font-semibold');
-            if (fechaReservaDiv && card.dataset.reserva) {
-              fechaReservaDiv.textContent = formatearFecha(card.dataset.reserva);
-            }
-
-            // Fecha de ingreso (segunda columna)
-            const fechaIngresoDiv = fechaDivs[1].querySelector('.text-xs.font-semibold');
-            if (fechaIngresoDiv && card.dataset.ingreso) {
-              fechaIngresoDiv.textContent = formatearFecha(card.dataset.ingreso);
-            }
-
-            // Fecha de salida (tercera columna)
-            const fechaSalidaDiv = fechaDivs[2].querySelector('.text-xs.font-semibold');
-            if (fechaSalidaDiv && card.dataset.salida) {
-              fechaSalidaDiv.textContent = formatearFecha(card.dataset.salida);
-            }
-          }
-        });
-      }
-
-      // Ejecutar formateo de fechas después de un pequeño delay
-      setTimeout(formatearFechasEnPagina, 100);
-
-
-      // Asegurar que todas las cards tengan la misma altura en tablet
-      function equalizeCardHeights() {
-        if (window.innerWidth >= 768 && window.innerWidth < 1024) {
-          const cards = document.querySelectorAll('.reservation-reveal');
-          if (cards.length > 0) {
-            let maxHeight = 0;
-            cards.forEach(card => {
-              card.style.height = 'auto';
-              maxHeight = Math.max(maxHeight, card.offsetHeight);
-            });
-
-            cards.forEach(card => {
-              card.style.height = `${maxHeight}px`;
-            });
-          }
-        }
-      }
-
-      setTimeout(equalizeCardHeights, 100);
-      window.addEventListener('resize', equalizeCardHeights);
-    });
-  </script>
+  <!-- ========== MODALES (siempre disponibles) ========== -->
 
   <!-- Modal de confirmación de eliminación -->
   <div id="deleteReservationModal"
@@ -668,21 +677,8 @@
     </div>
   </div>
 
-  {{else}}
-  <div class="text-center py-16">
-    <i class="fa-solid fa-calendar-xmark text-5xl text-slate-400"></i>
-    <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron reservaciones</h2>
-    <p class="mt-2 text-sm text-slate-500">Actualmente no hay reservaciones registradas.</p>
-    <a href="/rooms"
-      class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
-      <i class="fa-solid fa-arrow-left"></i>
-      <span>Volver a Habitaciones</span>
-    </a>
-  </div>
-  {{/if}}
-
   <script>
-    // Funciones para el modal de eliminación
+    // Funciones para el modal de eliminación (siempre disponibles)
     function openDeleteReservationModal(reservationId, roomNumber, clientName) {
       const modal = document.getElementById('deleteReservationModal');
       const form = document.getElementById('deleteReservationForm');
@@ -724,10 +720,11 @@
         return;
       }
 
-      const reservationRows = reservationsTableBody.querySelectorAll('tr');
-      const reservationCount = reservationRows.length;
+      const reservationRows = reservationsTableBody.querySelectorAll('tr.reservation-row');
+      const visibleReservations = Array.from(reservationRows).filter(row => !row.classList.contains('hidden'));
+      const reservationCount = visibleReservations.length;
 
-      console.log(`Ajustando tabla de reservaciones: ${reservationCount} reservaciones encontradas`);
+      console.log(`Ajustando tabla de reservaciones: ${reservationCount} reservaciones visibles`);
 
       // Si hay 4 o menos reservaciones, ajustar altura exacta sin espacio en blanco
       if (reservationCount <= 4) {
@@ -746,9 +743,18 @@
       }
     }
 
-    // Inicialización mejorada de filtros
+    // Inicialización mejorada de filtros (solo si hay elementos)
     function initializeReservationsFilters() {
       const overlay = document.getElementById('reservationsLoadingOverlay');
+
+      // Verificar si existen los elementos necesarios
+      const tableSection = document.getElementById('tableSection');
+      const mobileTabletSection = document.getElementById('mobileTabletSection');
+
+      if (!tableSection && !mobileTabletSection) {
+        console.log('No hay secciones de reservaciones disponibles');
+        return;
+      }
 
       // Obtener todas las reservaciones (tabla y cards)
       const tableRows = Array.from(document.querySelectorAll('#tableSection .reservation-row'));
@@ -759,14 +765,12 @@
         desktop: {
           q: document.getElementById('reservationSearch'),
           reset: document.getElementById('reservationReset'),
-          countPending: document.getElementById('reservationCountPending'),
-          countConverted: document.getElementById('reservationCountConverted')
+          countPending: document.getElementById('reservationCountPending')
         },
         mobile: {
           q: document.getElementById('reservationSearchMobile'),
           reset: document.getElementById('reservationResetMobile'),
-          countPending: document.getElementById('reservationCountPendingMobile'),
-          countConverted: document.getElementById('reservationCountConvertedMobile')
+          countPending: document.getElementById('reservationCountPendingMobile')
         }
       };
 
@@ -794,7 +798,7 @@
         return (str || '').toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       }
 
-      // Ocultar overlay
+      // Ocultar overlay si existe
       setTimeout(() => {
         if (overlay) overlay.classList.add('hidden');
 
@@ -817,7 +821,7 @@
         adjustReservationsTableHeight();
       }, 300);
 
-      // Función de filtrado
+      // Función de filtrado CORREGIDA: ahora muestra TODAS las reservaciones
       function applyFilters() {
         const searchDesktop = norm(controls.desktop.q ? controls.desktop.q.value : '');
         const searchMobile = norm(controls.mobile.q ? controls.mobile.q.value : '');
@@ -825,11 +829,8 @@
 
         let visibleCount = 0;
         let pendingCount = 0;
-        let convertedCount = 0;
 
         [...tableRows, ...cardElements].forEach(el => {
-          const isConverted = el.dataset.estadoClave === 'convertida';
-
           const matchesSearch = !searchText ||
             norm(el.dataset.nombre || '').includes(searchText) ||
             norm(el.dataset.hab || '').includes(searchText) ||
@@ -839,41 +840,41 @@
             norm(el.dataset.estado || '').includes(searchText) ||
             norm(el.dataset.origen || '').includes(searchText);
 
-          const shouldShow = matchesSearch && !isConverted;
+          // MODIFICACIÓN IMPORTANTE: Ahora mostramos TODAS las reservaciones
+          const shouldShow = matchesSearch; // Sin ocultar convertidas
 
           el.classList.toggle('hidden', !shouldShow);
           el.style.display = shouldShow ? '' : 'none';
 
           if (shouldShow) {
             visibleCount++;
-            if (isConverted) convertedCount++;
-            else pendingCount++;
+            pendingCount++;
           }
         });
 
         // Mostrar/ocultar mensaje de "sin resultados"
-        const noResultsBody = document.getElementById('noResultsBody');
+        const noResultsRow = document.getElementById('noResultsRow');
         const noResultsCard = document.getElementById('noResultsCard');
 
         if (visibleCount === 0 && searchText) {
-          if (noResultsBody) {
-            noResultsBody.classList.remove('hidden');
-            noResultsBody.style.display = '';
+          if (noResultsRow) {
+            noResultsRow.classList.remove('hidden');
           }
           if (noResultsCard) {
             noResultsCard.classList.remove('hidden');
-            noResultsCard.style.display = '';
           }
         } else {
-          if (noResultsBody) {
-            noResultsBody.classList.add('hidden');
-            noResultsBody.style.display = 'none';
+          if (noResultsRow) {
+            noResultsRow.classList.add('hidden');
           }
           if (noResultsCard) {
             noResultsCard.classList.add('hidden');
-            noResultsCard.style.display = 'none';
           }
         }
+
+        // Actualizar contadores
+        if (controls.desktop.countPending) controls.desktop.countPending.textContent = pendingCount;
+        if (controls.mobile.countPending) controls.mobile.countPending.textContent = pendingCount;
 
         currentPage = 1;
         applySortAndPaginate();
@@ -969,6 +970,14 @@
 
         const fechaIngresoStr = container.dataset.ingreso;
         const fechaSalidaStr = container.dataset.salida;
+        const esConvertida = container.dataset.esConvertida === 'true';
+
+        if (esConvertida) {
+          button.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          button.classList.remove('hover:bg-green-700');
+          button.title = 'Reservación convertida - No se puede confirmar';
+          return;
+        }
 
         if (!fechaIngresoStr || !fechaSalidaStr) return;
 
@@ -1001,11 +1010,19 @@
       });
     }
 
-    // Inicializar cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', initializeReservationsFilters);
+    // Inicializar cuando el DOM esté listo (solo si hay elementos)
+    document.addEventListener('DOMContentLoaded', function () {
+      // Verificar si hay elementos de reservaciones
+      const tableSection = document.getElementById('tableSection');
+      const mobileTabletSection = document.getElementById('mobileTabletSection');
 
-    // Actualizar validación cada minuto
-    setInterval(validateConfirmButtons, 60000);
+      if (tableSection || mobileTabletSection) {
+        initializeReservationsFilters();
+
+        // Actualizar validación cada minuto
+        setInterval(validateConfirmButtons, 60000);
+      }
+    });
 
     // Funciones para el modal de advertencia de estado de habitación
     function openRoomStatusWarningModal(roomNumber) {
@@ -1050,6 +1067,12 @@
           }
 
           const roomNumber = container.dataset.hab;
+          const esConvertida = container.dataset.esConvertida === 'true';
+
+          if (esConvertida) {
+            alert('Esta reservación ya ha sido convertida a renta.');
+            return;
+          }
 
           if (!roomNumber) {
             window.location.href = button.href;

@@ -424,6 +424,19 @@ export const findReservacionById = async (id) => {
   }
 };
 
+export const findReservacionByRentId = async (rentId) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, nombre_cliente, pdf_path, qr_path FROM reservaciones WHERE id_renta = ? LIMIT 1`,
+      [rentId]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  } catch (err) {
+    console.error("Error findReservacionByRentId:", err);
+    return null;
+  }
+};
+
 // Update Reservation
 export const updateReservation = async (id, reservationData) => {
   const connection = await pool.getConnection();

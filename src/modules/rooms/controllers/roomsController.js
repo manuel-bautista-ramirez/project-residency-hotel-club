@@ -81,6 +81,7 @@ import {
   finalizarRenta,
   finalizarRentasExpiradas,
   hasActiveBookings, // <-- NUEVO import
+  findReservacionByRentId,
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 // Para obtener __dirname en ES modules
@@ -378,6 +379,21 @@ export const renderAllRervationes = async (req, res) => {
     const user = req.session.user || { role: "Usuario" };
     const allReservationes = await getAllReservationes();
 
+    const reservationsArray = Array.isArray(allReservationes) ? allReservationes : [];
+
+    console.log(`Reservaciones obtenidas de BD: ${reservationsArray.length}`);
+
+    // Depuración: mostrar todas las reservaciones con su estado
+    reservationsArray.forEach((r, i) => {
+      console.log(`Reservación ${i + 1}:`, {
+        id: r.id_reservacion,
+        es_convertida: r.es_convertida,
+        estado_reservacion: r.estado_reservacion,
+        numero_habitacion: r.numero_habitacion,
+        nombre_cliente: r.nombre_cliente
+      });
+    });
+
     const currencyFormatter = new Intl.NumberFormat("es-MX", {
       style: "currency",
       currency: "MXN",
@@ -386,7 +402,7 @@ export const renderAllRervationes = async (req, res) => {
 
     const ahora = new Date();
 
-    const reservacionesFormateadas = allReservationes.map((reservacion) => {
+    const reservacionesFormateadas = reservationsArray.map((reservacion) => {
       // Fecha ingreso/salida originales (pueden venir como strings MySQL)
       const fechaIngresoRaw = reservacion.fecha_ingreso;
       const fechaIngresoDate = fechaIngresoRaw ? new Date(fechaIngresoRaw) : null;
@@ -447,8 +463,13 @@ export const renderAllRervationes = async (req, res) => {
       };
     });
 
+    // Filtrar solo las reservaciones pendientes (no convertidas)
     const reservacionesPendientes = reservacionesFormateadas.filter(r => !r.es_convertida);
     const reservacionesConvertidas = reservacionesFormateadas.filter(r => r.es_convertida);
+
+    console.log(`Reservaciones pendientes (no convertidas): ${reservacionesPendientes.length}`);
+    console.log(`Reservaciones convertidas: ${reservacionesConvertidas.length}`);
+
     const totalPendiente = reservacionesPendientes.reduce((sum, r) => sum + Number(r.resumen_financiero?.monto || 0), 0);
     const totalConvertido = reservacionesConvertidas.reduce((sum, r) => sum + Number(r.resumen_financiero?.monto || 0), 0);
 
@@ -464,9 +485,10 @@ export const renderAllRervationes = async (req, res) => {
     };
 
     res.render("showReservations", {
-      title: "Adminstracion de  Reservaciones",
+      title: "Administración de Reservaciones",
       showFooter: true,
-      allReservationes: reservacionesFormateadas,
+      // CAMBIO IMPORTANTE: Enviar solo las reservaciones pendientes
+      allReservationes: reservacionesPendientes,
       resumenReservaciones,
       user: {
         ...user,
@@ -476,7 +498,7 @@ export const renderAllRervationes = async (req, res) => {
     });
   } catch (error) {
     console.error(
-      "Error al renderrizar las reservaciones:",
+      "Error al renderizar las reservaciones:",
       error?.message || error
     );
     res.status(500).send("Error al cargar las reservaciones");
@@ -553,32 +575,51 @@ export const deleteIdRenta = async (req, res) => {
 
     const habitacionId = renta.habitacion_id;
 
+    // 1.1 Obtener reservación asociada (si fue conversión)
+    const reservacionAsociada = await findReservacionByRentId(rentaId);
+
+    // Helpers para eliminar archivos compartidos
+    let fsModule;
+    let fsDefault;
+    let fsPromises;
+
+    const ensureFs = async () => {
+      if (!fsModule) {
+        fsModule = await import("fs");
+        fsDefault = fsModule.default;
+        fsPromises = fsModule.promises;
+      }
+    };
+
+    const eliminarArchivo = async (ruta, etiqueta) => {
+      if (!ruta) return;
+      try {
+        await ensureFs();
+        if (fsDefault.existsSync(ruta)) {
+          await fsPromises.unlink(ruta);
+          console.log(`✅ ${etiqueta} eliminado: ${ruta}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error al eliminar ${etiqueta}:`, error.message);
+      }
+    };
+
     // 2. Eliminar archivos PDF y QR si existen
-    if (renta.pdf_path || renta.qr_path) {
-      const fs = await import("fs");
-      const fsPromises = fs.promises;
+    await eliminarArchivo(renta.pdf_path, "PDF de renta");
+    await eliminarArchivo(renta.qr_path, "QR de renta");
 
-      if (renta.pdf_path) {
-        try {
-          if (fs.default.existsSync(renta.pdf_path)) {
-            await fsPromises.unlink(renta.pdf_path);
-            console.log(`✅ PDF de renta eliminado: ${renta.pdf_path}`);
-          }
-        } catch (error) {
-          console.error(`❌ Error al eliminar PDF de renta:`, error.message);
-        }
-      }
+    // 2.1 Eliminar reservación asociada (si aplica) y sus archivos
+    if (reservacionAsociada) {
+      console.log(`Eliminando reservación asociada ${reservacionAsociada.id} a la renta ${rentaId}...`);
+      await eliminarArchivo(reservacionAsociada.pdf_path, "PDF de reservación convertida");
+      await eliminarArchivo(reservacionAsociada.qr_path, "QR de reservación convertida");
 
-      if (renta.qr_path) {
-        try {
-          if (fs.default.existsSync(renta.qr_path)) {
-            await fsPromises.unlink(renta.qr_path);
-            console.log(`✅ QR de renta eliminado: ${renta.qr_path}`);
-          }
-        } catch (error) {
-          console.error(`❌ Error al eliminar QR de renta:`, error.message);
-        }
+      const reservaEliminada = await deletebyReservation(reservacionAsociada.id);
+      if (!reservaEliminada) {
+        console.error(`No se pudo eliminar la reservación asociada ${reservacionAsociada.id}`);
+        return res.status(500).send("No se pudo eliminar la reservación asociada a la renta");
       }
+      console.log(`✅ Reservación asociada ${reservacionAsociada.id} eliminada exitosamente`);
     }
 
     // 3. Liberar la habitación
