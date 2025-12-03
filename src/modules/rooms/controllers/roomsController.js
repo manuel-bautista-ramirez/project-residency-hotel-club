@@ -146,7 +146,7 @@ export const changesStatus = async (req, res) => {
         return res.status(400).send("Solo se puede marcar como disponible si la habitación está en limpieza.");
       }
 
-      
+
     }
 
     // 3) Proceder con el cambio de estado

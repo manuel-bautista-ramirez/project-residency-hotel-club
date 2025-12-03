@@ -1,5 +1,5 @@
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100p-1 sm:p-3">
-  <!-- Loading Overlay -->
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+  <!-- Loading Overlay (Shared) -->
   <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm items-center justify-center hidden">
     <div class="flex flex-col items-center gap-1">
       <svg class="w-3 h-3 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -11,165 +11,330 @@
     </div>
   </div>
 
-  <form id="formConvert" action="/api/rooms/convertReservationToRent/{{reservacion.id_reservacion}}" method="POST"
-    class="w-full max-w-xl lg:max-w-3xl bg-white rounded-lg shadow-sm border border-slate-300 mx-auto overflow-hidden">
+  <!-- ========================================== -->
+  <!-- FORMULARIO MÓVIL / TABLET (< 1024px)       -->
+  <!-- ========================================== -->
+  <div class="lg:hidden min-h-screen flex items-center justify-center p-2 md:p-6">
+    <form id="formConvert_mobile" action="/api/rooms/convertReservationToRent/{{reservacion.id_reservacion}}"
+      method="POST"
+      class="w-full max-w-md md:max-w-2xl bg-white rounded-lg shadow-sm border border-slate-300 mx-auto overflow-hidden">
 
-    <!-- Header con esquinas redondeadas superiores -->
-    <div
-      class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white px-2 py-1.5 border-b border-blue-700 rounded-t-lg">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1 min-w-0">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 text-blue-200 flex-shrink-0"
-            viewBox="0 0 24 24">
-            <path
-              d="M3.75 3a.75.75 0 000 1.5h.75v14.25A2.25 2.25 0 006.75 21h10.5A2.25 2.25 0 0019.5 18.75V4.5h.75a.75.75 0 000-1.5h-16.5zM9 6h6a.75.75 0 010 1.5H9A.75.75 0 019 6zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 9zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 12zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 15z" />
-          </svg>
-          <div class="flex flex-col min-w-0">
-            <h1 class="text-xs font-bold truncate">Conversión a Renta</h1>
-            <p class="text-[10px] text-blue-200 opacity-90 truncate">Hab. {{reservacion.habitacion_numero}}</p>
+      <!-- Header Móvil -->
+      <div
+        class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white px-2 py-1 md:py-3 md:px-4 border-b border-blue-700">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1 md:gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 md:w-5 md:h-5 text-blue-200"
+              viewBox="0 0 24 24">
+              <path
+                d="M3.75 3a.75.75 0 000 1.5h.75v14.25A2.25 2.25 0 006.75 21h10.5A2.25 2.25 0 0019.5 18.75V4.5h.75a.75.75 0 000-1.5h-16.5zM9 6h6a.75.75 0 010 1.5H9A.75.75 0 019 6zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 9zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 12zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 15z" />
+            </svg>
+            <div class="flex flex-col">
+              <h1 class="text-[9px] md:text-lg font-bold">Conversión a Renta</h1>
+              <p class="text-[8px] md:text-sm text-blue-200 opacity-90">Hab. {{reservacion.habitacion_numero}}</p>
+            </div>
           </div>
+          <a href="/rooms/list/reservations"
+            class="text-[9px] md:text-sm hover:opacity-90 transition opacity-80 flex items-center gap-1 md:gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 md:w-4 md:h-4"
+              viewBox="0 0 24 24">
+              <path fill-rule="evenodd"
+                d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z"
+                clip-rule="evenodd" />
+            </svg>
+            Volver
+          </a>
         </div>
-        <a href="/rooms/list/reservations"
-          class="text-xs hover:opacity-90 transition opacity-80 flex items-center gap-1 flex-shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3" viewBox="0 0 24 24">
-            <path fill-rule="evenodd"
-              d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z"
-              clip-rule="evenodd" />
-          </svg>
-          <span class="hidden sm:inline text-xs">Volver</span>
-        </a>
       </div>
-    </div>
 
-    <div class="p-2 lg:p-3 border-b border-slate-200">
-      <input type="hidden" id="habitacion_id_value" name="habitacion_id_value" value="{{reservacion.habitacion_id}}" />
+      <div class="p-1 md:p-4 border-b border-slate-200">
+        <input type="hidden" name="habitacion_id_value" value="{{reservacion.habitacion_id}}" />
 
-      <!-- Layout: 1 columna en móvil, 2 columnas en desktop -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+        <!-- Layout Móvil: Todo en 1 columna compacta -->
+        <div class="space-y-0.5 md:space-y-3">
 
-        <!-- Columna izquierda - Información personal y fechas -->
-        <div class="space-y-1">
-          <!-- Información del cliente -->
-          <div class="space-y-1 border border-slate-200 rounded-mdp-1">
-            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1">Información del Cliente</h2>
-
-            <div class="space-y-1">
+          <!-- Cliente -->
+          <div class="space-y-0.5 md:space-y-2 border border-slate-200 rounded p-0.5 md:p-3">
+            <h2 class="text-[8px] md:text-sm font-bold text-gray-800 uppercase tracking-wide border-b pb-0.5 md:pb-2">
+              Cliente</h2>
+            <div class="space-y-0.5 md:space-y-2">
               <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Nombre completo</label>
-                <input value="{{reservacion.nombre_cliente}}"
-                  class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded bg-slate-50" readonly />
+                <input name="client_name" value="{{reservacion.nombre_cliente}}"
+                  class="w-full px-1 py-0.5 md:px-3 md:py-2 text-[9px] md:text-sm border border-slate-300 rounded bg-slate-50 placeholder-gray-400"
+                  placeholder="Nombre" readonly />
               </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div class="grid grid-cols-2 gap-0.5 md:gap-3">
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 mb-1">Correo electrónico</label>
-                  <input type="email" value="{{reservacion.correo}}"
-                    class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded bg-slate-50" readonly />
+                  <input name="email" value="{{reservacion.correo}}"
+                    class="w-full px-1 py-0.5 md:px-3 md:py-2 text-[9px] md:text-sm border border-slate-300 rounded bg-slate-50 placeholder-gray-400"
+                    placeholder="Email" readonly />
                 </div>
-
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 mb-1">Teléfono</label>
-                  <input type="tel" value="{{reservacion.telefono}}"
-                    class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded bg-slate-50" readonly />
+                  <input name="phone" value="{{reservacion.telefono}}"
+                    class="w-full px-1 py-0.5 md:px-3 md:py-2 text-[9px] md:text-sm border border-slate-300 rounded bg-slate-50 placeholder-gray-400"
+                    placeholder="Teléfono" readonly />
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Fechas de estancia -->
-          <div class="space-y-1 border border-slate-200 rounded-mdp-1">
-            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1">Fechas de Estancia</h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <!-- Fechas -->
+          <div class="space-y-0.5 md:space-y-2 border border-slate-200 rounded p-0.5 md:p-3">
+            <h2 class="text-[8px] md:text-sm font-bold text-gray-800 uppercase tracking-wide border-b pb-0.5 md:pb-2">
+              Fechas</h2>
+            <div class="grid grid-cols-2 gap-0.5 md:gap-3">
               <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Fecha ingreso</label>
-                <input type="text" value="{{reservacion.fecha_ingreso}}"
-                  class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded bg-slate-50" readonly />
+                <label class="block text-[7px] md:text-xs font-bold text-gray-500 uppercase md:mb-1">Ingreso</label>
+                <input name="check_in" value="{{reservacion.fecha_ingreso}}"
+                  class="w-full px-1 py-0.5 md:px-3 md:py-2 text-[9px] md:text-sm border border-slate-300 rounded bg-slate-50"
+                  readonly />
               </div>
-
               <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Fecha salida</label>
-                <input type="text" value="{{reservacion.fecha_salida}}"
-                  class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded bg-slate-50" readonly />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Columna derecha - Desglose de pago y tipo de pago -->
-        <div class="space-y-1">
-          <!-- Desglose de pago -->
-          <div class="space-y-1 border border-slate-200 rounded-mdp-1">
-            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1">Desglose de Pago</h2>
-
-            <div class="space-y-1">
-              <div class="bg-blue-50 border border-blue-200 roundedp-1 space-y-1">
-                <div class="flex justify-between text-xs">
-                  <span class="text-gray-700">Total:</span>
-                  <span class="font-medium text-blue-900">${{reservacion.monto}}</span>
-                </div>
-                <div class="flex justify-between text-xs border-t border-blue-200 pt-1">
-                  <span class="text-gray-700">Enganche:</span>
-                  <span class="font-medium text-green-700">${{reservacion.enganche}}</span>
-                </div>
-                <div class="flex justify-between text-xs border-t border-blue-200 pt-1">
-                  <span class="text-gray-700 font-medium">Saldo:</span>
-                  <span class="font-bold text-orange-700">${{reservacion.saldo_pendiente}}</span>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Saldo en letras</label>
-                <input type="text" value="{{reservacion.saldo_pendiente_letras}}"
-                  class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded bg-slate-50" readonly />
+                <label class="block text-[7px] md:text-xs font-bold text-gray-500 uppercase md:mb-1">Salida</label>
+                <input name="check_out" value="{{reservacion.fecha_salida}}"
+                  class="w-full px-1 py-0.5 md:px-3 md:py-2 text-[9px] md:text-sm border border-slate-300 rounded bg-slate-50"
+                  readonly />
               </div>
             </div>
           </div>
 
-          <!-- Tipo de pago -->
-          <div class="space-y-1 border border-slate-200 rounded-mdp-1">
-            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1">Tipo de Pago</h2>
-
+          <!-- Pago -->
+          <div class="space-y-0.5 md:space-y-2 border border-slate-200 rounded p-0.5 md:p-3">
+            <h2 class="text-[8px] md:text-sm font-bold text-gray-800 uppercase tracking-wide border-b pb-0.5 md:pb-2">
+              Pago</h2>
+            <div
+              class="bg-blue-50 border border-blue-200 rounded p-0.5 md:p-2 flex justify-between items-center gap-1 md:gap-4">
+              <div class="text-[8px] md:text-sm">
+                <span class="text-gray-600">Total:</span> <span
+                  class="font-bold text-blue-900">${{reservacion.monto}}</span>
+              </div>
+              <div class="text-[8px] md:text-sm">
+                <span class="text-gray-600">Enganche:</span> <span
+                  class="font-bold text-green-700">${{reservacion.enganche}}</span>
+              </div>
+              <div class="text-[8px] md:text-sm">
+                <span class="text-gray-600">Saldo:</span> <span
+                  class="font-bold text-orange-700">${{reservacion.saldo_pendiente}}</span>
+              </div>
+            </div>
             <div>
+              <input value="{{reservacion.saldo_pendiente_letras}}"
+                class="w-full px-1 py-0.5 md:px-3 md:py-2 text-[9px] md:text-sm border border-slate-300 rounded bg-slate-50 placeholder-gray-400"
+                placeholder="Saldo en letras" readonly />
+            </div>
+          </div>
+
+          <!-- Método de Pago -->
+          <div class="space-y-0.5 md:space-y-2 border border-slate-200 rounded p-0.5 md:p-3">
+            <h2 class="text-[8px] md:text-sm font-bold text-gray-800 uppercase tracking-wide border-b pb-0.5 md:pb-2">
+              Método de Pago</h2>
+            <select name="payment_type" id="payment_type_mobile"
+              class="w-full px-1 py-0.5 md:px-3 md:py-2 text-[9px] md:text-sm border border-slate-300 rounded bg-white">
+              <option value="">-- Seleccionar --</option>
+              <option value="efectivo">💵 Efectivo</option>
+              <option value="tarjeta">💳 Tarjeta</option>
+              <option value="transferencia">🏦 Transferencia</option>
+            </select>
+          </div>
+
+          <!-- Envío -->
+          <div class="space-y-0.5 md:space-y-2 border border-slate-200 rounded p-0.5 md:p-3">
+            <h2 class="text-[8px] md:text-sm font-bold text-gray-800 uppercase tracking-wide border-b pb-0.5 md:pb-2">
+              Notificación</h2>
+            <div class="flex gap-1 md:gap-3">
+              <div
+                class="flex-1 bg-blue-50 border border-blue-200 rounded px-1 py-0.5 md:px-3 md:py-2 flex items-center justify-center gap-1 md:gap-2">
+                <span class="text-[8px] md:text-sm text-blue-800 font-bold">Email</span>
+                <span class="text-[7px] md:text-xs text-blue-600">Auto</span>
+              </div>
+              <div
+                class="flex-1 bg-green-50 border border-green-200 rounded px-1 py-0.5 md:px-3 md:py-2 flex items-center justify-center gap-1 md:gap-2">
+                <span class="text-[8px] md:text-sm text-green-800 font-bold">WhatsApp</span>
+                <span class="text-[7px] md:text-xs text-green-600">Auto</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer Móvil -->
+      <div class="p-1 md:p-4 bg-white border-t border-slate-200">
+        <input type="hidden" name="send_email" value="on">
+        <input type="hidden" name="send_whatsapp" value="on">
+        <input type="hidden" name="price" value="{{reservacion.saldo_pendiente}}">
+        <input type="hidden" name="price_text" value="{{reservacion.saldo_pendiente_letras}}">
+        <input type="hidden" name="enganche" value="{{reservacion.enganche}}">
+
+        <div class="flex gap-2 md:gap-4">
+          <a href="/rooms/list/reservations"
+            class="flex-1 px-2 py-1 md:px-4 md:py-2 border border-red-500 text-red-600 rounded text-[9px] md:text-sm font-medium text-center">
+            Cancelar
+          </a>
+          <button type="submit"
+            class="flex-1 px-2 py-1 md:px-4 md:py-2 bg-green-600 text-white rounded text-[9px] md:text-sm font-medium">
+            Convertir
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- FORMULARIO DESKTOP (>= 1024px)             -->
+  <!-- ========================================== -->
+  <div class="hidden lg:flex min-h-screen items-center justify-center p-4">
+    <form id="formConvert" action="/api/rooms/convertReservationToRent/{{reservacion.id_reservacion}}" method="POST"
+      class="w-full max-w-4xl bg-white rounded-lg shadow-lg border border-slate-300 mx-auto overflow-hidden">
+
+      <!-- Header Desktop -->
+      <div
+        class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white px-3 py-1.5 border-b border-blue-700">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 text-blue-200"
+              viewBox="0 0 24 24">
+              <path
+                d="M3.75 3a.75.75 0 000 1.5h.75v14.25A2.25 2.25 0 006.75 21h10.5A2.25 2.25 0 0019.5 18.75V4.5h.75a.75.75 0 000-1.5h-16.5zM9 6h6a.75.75 0 010 1.5H9A.75.75 0 019 6zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 9zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 12zm0 3h6a.75.75 0 010 1.5H9A.75.75 0 019 15z" />
+            </svg>
+            <div>
+              <h1 class="text-lg font-bold">Conversión a Renta</h1>
+              <p class="text-sm text-blue-200 opacity-90">Habitación {{reservacion.habitacion_numero}}</p>
+            </div>
+          </div>
+          <a href="/rooms/list/reservations"
+            class="text-sm hover:opacity-90 transition opacity-80 flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-4 h-4" viewBox="0 0 24 24">
+              <path fill-rule="evenodd"
+                d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z"
+                clip-rule="evenodd" />
+            </svg>
+            Volver al listado
+          </a>
+        </div>
+      </div>
+
+      <div class="p-2 border-b border-slate-200">
+        <input type="hidden" name="habitacion_id_value" value="{{reservacion.habitacion_id}}" />
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Columna Izquierda -->
+          <div class="space-y-3">
+            <div class="space-y-2 border border-slate-200 rounded-lg p-2">
+              <h2 class="text-[10px] font-bold text-gray-800 uppercase tracking-wide">Información del
+                Cliente</h2>
+              <div class="space-y-1">
+                <div>
+                  <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wide">Nombre
+                    completo</label>
+                  <input name="client_name" value="{{reservacion.nombre_cliente}}"
+                    class="w-full px-2 py-0.5 text-[10px] border border-slate-300 rounded bg-slate-50 text-gray-600"
+                    readonly />
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wide">Correo
+                      electrónico</label>
+                    <input name="email" value="{{reservacion.correo}}"
+                      class="w-full px-2 py-0.5 text-[10px] border border-slate-300 rounded bg-slate-50 text-gray-600"
+                      readonly />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wide">Teléfono</label>
+                    <input name="phone" value="{{reservacion.telefono}}"
+                      class="w-full px-2 py-0.5 text-[10px] border border-slate-300 rounded bg-slate-50 text-gray-600"
+                      readonly />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 border border-slate-200 rounded-lg p-2">
+              <h2 class="text-[10px] font-bold text-gray-800 uppercase tracking-wide">Fechas de Estancia
+              </h2>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wide">Fecha ingreso</label>
+                  <input name="check_in" value="{{reservacion.fecha_ingreso}}"
+                    class="w-full px-2 py-0.5 text-[10px] border border-slate-300 rounded bg-slate-50 text-gray-600"
+                    readonly />
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wide">Fecha salida</label>
+                  <input name="check_out" value="{{reservacion.fecha_salida}}"
+                    class="w-full px-2 py-0.5 text-[10px] border border-slate-300 rounded bg-slate-50 text-gray-600"
+                    readonly />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Derecha -->
+          <div class="space-y-3">
+            <div class="space-y-2 border border-slate-200 rounded-lg p-2">
+              <h2 class="text-[10px] font-bold text-gray-800 uppercase tracking-wide">Desglose de Pago
+              </h2>
+              <div class="space-y-1">
+                <div class="bg-blue-50 border border-blue-200 rounded p-1 space-y-0.5">
+                  <div class="flex justify-between text-[10px]">
+                    <span class="text-gray-600">Total:</span>
+                    <span class="font-bold text-blue-900">${{reservacion.monto}}</span>
+                  </div>
+                  <div class="flex justify-between text-[10px] border-t border-blue-200 pt-0.5">
+                    <span class="text-gray-600">Enganche:</span>
+                    <span class="font-bold text-green-700">${{reservacion.enganche}}</span>
+                  </div>
+                  <div class="flex justify-between text-[10px] border-t border-blue-200 pt-0.5">
+                    <span class="text-gray-600 font-bold">Saldo Pendiente:</span>
+                    <span class="font-bold text-orange-700">${{reservacion.saldo_pendiente}}</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-gray-700 uppercase tracking-wide">Saldo en
+                    letras</label>
+                  <input value="{{reservacion.saldo_pendiente_letras}}"
+                    class="w-full px-2 py-0.5 text-[10px] border border-slate-300 rounded bg-slate-50 text-gray-600"
+                    readonly />
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-1 border border-slate-200 rounded-lg p-2">
+              <h2 class="text-[10px] font-bold text-gray-800 uppercase tracking-wide">Tipo de Pago</h2>
               <select name="payment_type" id="payment_type"
-                class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-green-500 focus:border-green-500">
-                <option value="">-- Selecciona un método de pago --</option>
+                class="w-full px-2 py-0.5 text-[10px] border border-slate-300 rounded bg-white focus:ring-2 focus:ring-blue-500">
+                <option value="">-- Seleccionar --</option>
                 <option value="efectivo">💵 Efectivo</option>
                 <option value="tarjeta">💳 Tarjeta</option>
                 <option value="transferencia">🏦 Transferencia</option>
               </select>
             </div>
-          </div>
 
-          <!-- Envío Automático -->
-          <div class="space-y-1 border border-slate-200 rounded-mdp-1">
-            <h2 class="text-xs font-semibold text-gray-900 border-b pb-1">Envío Automático</h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div class="bg-blue-50 border border-blue-200 rounded px-2 py-1.5">
-                <div class="flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 text-blue-600"
+            <div class="space-y-1 border border-slate-200 rounded-lg p-2">
+              <h2 class="text-[10px] font-bold text-gray-800 uppercase tracking-wide">Envío Automático
+              </h2>
+              <div class="flex gap-2">
+                <div class="flex-1 bg-blue-50 border border-blue-200 rounded p-1 flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="currentColor"
                     viewBox="0 0 24 24">
                     <path
                       d="M1.5 6.75A2.25 2.25 0 013.75 4.5h16.5a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0120.25 19.5H3.75A2.25 2.25 0 011.5 17.25V6.75zm2.776-.75A.026.026 0 004.25 6l7.75 5.167L19.75 6a.026.026 0 00-.026 0H4.276z" />
                   </svg>
                   <div>
-                    <p class="font-medium text-blue-800 text-xs">Email</p>
-                    <p class="text-blue-700 text-xs mt-0.5">Automático</p>
+                    <p class="font-medium text-blue-800 text-[10px]">Email</p>
+                    <p class="text-blue-600 text-[9px]">Automático</p>
                   </div>
                 </div>
-              </div>
-
-              <div class="bg-green-50 border border-green-200 rounded px-2 py-1.5">
-                <div class="flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-3 h-3 text-green-600"
+                <div class="flex-1 bg-green-50 border border-green-200 rounded p-1 flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-green-600" fill="currentColor"
                     viewBox="0 0 24 24">
                     <path
                       d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z" />
                   </svg>
                   <div>
-                    <p class="font-medium text-green-800 text-xs">WhatsApp</p>
-                    <p class="text-green-700 text-xs mt-0.5">Automático</p>
+                    <p class="font-medium text-green-800 text-[10px]">WhatsApp</p>
+                    <p class="text-green-600 text-[9px]">Automático</p>
                   </div>
                 </div>
               </div>
@@ -177,46 +342,34 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Footer -->
-    <div class="p-2 bg-white">
-      <input type="hidden" name="send_email" value="on">
-      <input type="hidden" name="send_whatsapp" value="on">
-      <input type="hidden" id="price" name="price" value="{{reservacion.saldo_pendiente}}">
-      <input type="hidden" id="price_text" name="price_text" value="{{reservacion.saldo_pendiente_letras}}">
-      <input type="hidden" id="enganche" name="enganche" value="{{reservacion.enganche}}">
+      <!-- Footer Desktop -->
+      <div class="p-1.5 bg-white border-t border-slate-200">
+        <input type="hidden" name="send_email" value="on">
+        <input type="hidden" name="send_whatsapp" value="on">
+        <input type="hidden" name="price" value="{{reservacion.saldo_pendiente}}">
+        <input type="hidden" name="price_text" value="{{reservacion.saldo_pendiente_letras}}">
+        <input type="hidden" name="enganche" value="{{reservacion.enganche}}">
 
-      <div class="flex gap-2">
-        <a href="/rooms/list/reservations"
-          class="flex-1 px-2 border border-red-500 text-red-600 py-1.5 rounded hover:bg-red-50 active:scale-[0.98] transition inline-flex items-center justify-center gap-1 text-xs font-medium">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
-            <path fill-rule="evenodd"
-              d="M10.03 3.97a.75.75 0 010 1.06L5.06 10h15.19a.75.75 0 010 1.5H5.06l4.97 4.97a.75.75 0 11-1.06 1.06l-6.25-6.25a.75.75 0 010-1.06l6.25-6.25a.75.75 0 011.06 0z"
-              clip-rule="evenodd" />
-          </svg>
-          <span class="text-xs">Cancelar</span>
-        </a>
-        <button type="submit"
-          class="flex-1 px-2 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 active:scale-[0.98] transition inline-flex items-center justify-center gap-1 text-xs font-medium">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
-            <path
-              d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5H12.75v6.75a.75.75 0 01-1.5 0V12.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" />
-          </svg>
-          <span class="text-xs">Convertir</span>
-        </button>
+        <div class="flex justify-end gap-4">
+          <a href="/rooms/list/reservations"
+            class="px-4 py-2 border border-red-500 text-red-600 rounded hover:bg-red-50 transition text-sm font-medium">
+            Cancelar operación
+          </a>
+          <button type="submit"
+            class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm font-medium shadow-sm">
+            Confirmar Conversión
+          </button>
+        </div>
       </div>
-    </div>
-  </form>
-
-
-
+    </form>
+  </div>
 </div>
 
 <script>
-  // Handle form submission
-  document.getElementById('formConvert').addEventListener('submit', (e) => {
-    const paymentType = document.getElementById('payment_type');
+  // Función para manejar el envío de formularios
+  function handleFormSubmit(e, typeId) {
+    const paymentType = document.getElementById(typeId);
 
     if (!paymentType.value) {
       e.preventDefault();
@@ -228,7 +381,19 @@
     const overlay = document.getElementById('loadingOverlay');
     overlay.classList.remove('hidden');
     overlay.classList.add('flex');
-  });
+  }
+
+  // Listener para Desktop
+  const formDesktop = document.getElementById('formConvert');
+  if (formDesktop) {
+    formDesktop.addEventListener('submit', (e) => handleFormSubmit(e, 'payment_type'));
+  }
+
+  // Listener para Móvil
+  const formMobile = document.getElementById('formConvert_mobile');
+  if (formMobile) {
+    formMobile.addEventListener('submit', (e) => handleFormSubmit(e, 'payment_type_mobile'));
+  }
 
   function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
