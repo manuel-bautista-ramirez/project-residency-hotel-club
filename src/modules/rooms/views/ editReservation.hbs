@@ -1,15 +1,4 @@
 <div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-2">
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm items-center justify-center hidden">
-    <div class="flex flex-col items-center gap-1">
-      <svg class="w-4 h-4 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <p class="text-xs text-blue-900 font-medium">Guardando...</p>
-    </div>
-  </div>
-
   <!-- Contenedor principal compacto -->
   <div class="w-full max-w-4xl">
     <form
@@ -17,6 +6,9 @@
       action="/api/reservaciones/{{reservacion.id}}/editar"
       method="POST"
       class="bg-white rounded-2xl shadow-sm border border-slate-300"
+      data-loading
+      data-loading-message="Guardando cambios..."
+      data-loading-subtext="Aplicando actualización"
     >
 
       <!-- Header compacto -->
@@ -108,7 +100,7 @@
                     required
                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-1 focus:ring-yellow-400 focus:border-yellow-400 outline-none"
                   />
-                  <input type="hidden" id="fecha_ingreso_with_time" name="fecha_ingreso" value=""/>
+                  <input type="hidden" id="fecha_ingreso_with_time" name="fecha_ingreso_with_time" value=""/>
                 </div>
                 <div>
                   <label for="fecha_salida" class="block text-xs font-medium text-gray-700 mb-1">Salida</label>
@@ -119,7 +111,7 @@
                     required
                     class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-1 focus:ring-yellow-400 focus:border-yellow-400 outline-none"
                   />
-                  <input type="hidden" id="fecha_salida_with_time" name="fecha_salida" value=""/>
+                  <input type="hidden" id="fecha_salida_with_time" name="fecha_salida_with_time" value=""/>
                 </div>
               </div>
 
@@ -335,22 +327,16 @@
       }
     }
 
-    // Add time to date (12:00 PM noon in local time)
+    // Add time to date (12:00 PM ingreso, 11:59 AM salida) en formato ISO local
     function addTimeToDate(date, isIngreso = true) {
-    if (!date) return null;
+      if (!date) return null;
 
-    const [year, month, day] = date.split("-").map(Number);
+      const [year, month, day] = date.split("-");
+      const hours = isIngreso ? "12" : "11";
+      const minutes = isIngreso ? "00" : "59";
 
-    const localDate = new Date(year, month - 1, day);
-
-    if (isIngreso) {
-        localDate.setHours(18, 0, 0, 0); // Fecha de ingreso
-    } else {
-        localDate.setHours(18, 0, 0, 0); // Fecha de salida
+      return `${year}-${month}-${day}T${hours}:${minutes}:00`;
     }
-
-    return localDate.toISOString().slice(0, 19);
-}
 
 
     // Check room availability
@@ -365,7 +351,10 @@
         const checkOutWithTime = addTimeToDate(checkOut, true);
 
         // Incluir el ID de la reservación actual para excluirla de la validación
-        const url = `/api/rooms/${roomToValidate}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}&exclude_reservation_id=${reservationId}`;
+        const reservationQuery = Number.isFinite(reservationId)
+          ? `&exclude_reservation_id=${reservationId}`
+          : "";
+        const url = `/api/rooms/${roomToValidate}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}${reservationQuery}`;
         const res = await fetch(url);
         const json = await res.json();
 

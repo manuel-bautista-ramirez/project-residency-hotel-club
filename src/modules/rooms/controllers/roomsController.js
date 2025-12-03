@@ -2,21 +2,21 @@
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Formato para  fechas de Mysql
+// Formato para fechas de MySQL (guardamos en UTC para evitar desfases al recuperar)
 const formatUTCForMySQL = (date) => {
-      try {
-        const year = date.getUTCFullYear();
-        const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-        const day = String(date.getUTCDate()).padStart(2, "0");
-        const hours = String(date.getUTCHours()).padStart(2, "0");
-        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-        const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-      } catch (error) {
-        console.error("Error al formatear fecha para MySQL:", error);
-        throw new Error("Error al formatear fecha");
-      }
-    };
+  try {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  } catch (error) {
+    console.error("Error al formatear fecha para MySQL:", error);
+    throw new Error("Error al formatear fecha");
+  }
+};
 
 // Helper function para manejo seguro de fechas
 const formatearFechaSafe = (fecha, formato = 'iso') => {
@@ -284,6 +284,7 @@ export const handleCreateReservation = async (req, res) => {
       nombre_cliente,
       correo,
       telefono,
+      fecha_reserva: formatUTCForMySQL(new Date()),
       fecha_ingreso: fecha_ingreso_formatted,
       fecha_salida: fecha_salida_formatted,
       monto: montoTotal,
@@ -300,6 +301,21 @@ export const handleCreateReservation = async (req, res) => {
     }
 
     console.log(`Reservación creada con ID: ${reservationId}`);
+
+    try {
+      const reservacionCreada = await findReservacionById(reservationId);
+      if (reservacionCreada) {
+        console.log("🕒 Timestamp almacenado en BD:", {
+          fecha_reserva: reservacionCreada.fecha_reserva,
+          fecha_ingreso: reservacionCreada.fecha_ingreso,
+          fecha_salida: reservacionCreada.fecha_salida,
+        });
+      } else {
+        console.warn("⚠️ No se pudo recuperar la reservación recién creada para depuración");
+      }
+    } catch (debugError) {
+      console.warn("⚠️ Error obteniendo reservación para depuración de fechas:", debugError);
+    }
 
     // Obtener el número real de la habitación
     const { getRoomNumberById } = await import("../models/ModelRoom.js");
@@ -449,7 +465,7 @@ export const renderAllRervationes = async (req, res) => {
 
       return {
         ...reservacion,
-        // Enviar fechas en formato ISO estándar; el frontend ya las parsea manualmente sin cambiar la zona horaria
+        // Enviar fechas en formato ISO estándar; el frontend las formatea manualmente
         fecha_reserva: formatearFechaSafe(reservacion.fecha_reserva, 'iso'),
         fecha_ingreso: formatearFechaSafe(reservacion.fecha_ingreso, 'iso'),
         fecha_salida: formatearFechaSafe(reservacion.fecha_salida, 'iso'),
@@ -838,6 +854,8 @@ export const handleEditReservation = async (req, res) => {
       nombre_cliente,
       fecha_ingreso,
       fecha_salida,
+      fecha_ingreso_with_time,
+      fecha_salida_with_time,
       habitacion_id,
       monto,
       monto_letras,
@@ -845,7 +863,15 @@ export const handleEditReservation = async (req, res) => {
       send_whatsapp,
     } = req.body;
 
-    console.log("Fechas recibidas :", fecha_ingreso, fecha_salida);
+    const fechaIngresoRaw = fecha_ingreso_with_time || fecha_ingreso;
+    const fechaSalidaRaw = fecha_salida_with_time || fecha_salida;
+
+    console.log("Fechas recibidas :", {
+      fecha_ingreso,
+      fecha_ingreso_with_time,
+      fecha_salida,
+      fecha_salida_with_time,
+    });
 
     console.log(`Editando reservación ${id}...`);
     console.log("Datos recibidos:", req.body);
@@ -853,8 +879,8 @@ export const handleEditReservation = async (req, res) => {
     // ===============================
     //  CONVERTIR FECHAS A LOCAL (MX)
     // ===============================
-    const fechaIngresoDate = new Date(fecha_ingreso);
-    const fechaSalidaDate = new Date(fecha_salida);
+    const fechaIngresoDate = new Date(fechaIngresoRaw);
+    const fechaSalidaDate = new Date(fechaSalidaRaw);
 
 
     fechaIngresoDate.setHours(12, 0, 0, 0);     // 12:00 PM
@@ -903,8 +929,8 @@ export const handleEditReservation = async (req, res) => {
       nombre_cliente,
       correo: reservacionActualizada.correo_cliente,
       telefono: reservacionActualizada.telefono_cliente,
-      fecha_ingreso,
-      fecha_salida,
+      fecha_ingreso: fechaIngresoRaw,
+      fecha_salida: fechaSalidaRaw,
       monto,
       habitacion_id,
       numero_habitacion: numeroHabitacion || habitacion_id,

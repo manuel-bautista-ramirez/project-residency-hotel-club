@@ -472,6 +472,7 @@
       <script>
         // Configuración para asegurar que las cards se muestren completamente
         document.addEventListener('DOMContentLoaded', function () {
+
           // Ajustar altura dinámica
           function adjustContainerHeight() {
             const section = document.getElementById('mobileTabletSection');
@@ -490,93 +491,77 @@
           adjustContainerHeight();
           window.addEventListener('resize', adjustContainerHeight);
 
-          // Función para formatear fechas a formato legible con hora de 12 horas
-          function formatearFechasEnPagina() {
-            // Función helper para formatear una fecha ISO a formato legible
-            function formatearFecha(fechaISO) {
-              if (!fechaISO) return '';
+          function toReadableDate(dateStr, type = 'reserva') {
+            if (!dateStr) return '';
 
-              try {
-                const fecha = new Date(fechaISO);
+            const normalized = dateStr.replace(' ', 'T');
+            const date = new Date(normalized);
 
-                // Verificar si la fecha es válida
-                if (isNaN(fecha.getTime())) {
-                  return fechaISO; // Retornar original si no es válida
-                }
+            if (Number.isNaN(date.getTime())) return dateStr;
 
-                // Obtener componentes de la fecha
-                const dia = String(fecha.getDate()).padStart(2, '0');
-                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-                const año = fecha.getFullYear();
-
-                // Obtener hora en formato de 12 horas
-                let horas = fecha.getHours();
-                const minutos = String(fecha.getMinutes()).padStart(2, '0');
-                const ampm = horas >= 12 ? 'PM' : 'AM';
-                horas = horas % 12;
-                horas = horas ? horas : 12; // La hora '0' debe ser '12'
-                const horasStr = String(horas).padStart(2, '0');
-
-                // Formato: DD/MM/YYYY HH:MM AM/PM
-                return `${dia}/${mes}/${año} ${horasStr}:${minutos} ${ampm}`;
-              } catch (error) {
-                console.error('Error al formatear fecha:', error);
-                return fechaISO;
-              }
+            if (type === 'ingreso') {
+              date.setUTCHours(12, 0, 0, 0);
+            } else if (type === 'salida') {
+              date.setUTCHours(11, 59, 0, 0);
             }
 
-            // Formatear fechas en la tabla (desktop)
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const year = date.getUTCFullYear();
+
+            const hours = date.getUTCHours();
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const hour12 = ((hours % 12) || 12).toString().padStart(2, '0');
+
+            return `${day}/${month}/${year} ${hour12}:${minutes} ${ampm}`;
+          }
+
+          function applyReservationFormatting() {
             const tableRows = document.querySelectorAll('#reservationsTableBody tr.reservation-row');
-            tableRows.forEach(row => {
-              // Formatear fecha de reserva
+            tableRows.forEach((row) => {
               const fechaReservaSpan = row.querySelector('td:nth-child(3) span');
-              if (fechaReservaSpan && row.dataset.reserva) {
-                fechaReservaSpan.textContent = formatearFecha(row.dataset.reserva);
-              }
-
-              // Formatear fecha de ingreso
               const fechaIngresoSpan = row.querySelector('td:nth-child(4) span');
-              if (fechaIngresoSpan && row.dataset.ingreso) {
-                fechaIngresoSpan.textContent = formatearFecha(row.dataset.ingreso);
+              const fechaSalidaSpan = row.querySelector('td:nth-child(5) span');
+
+              if (fechaReservaSpan && row.dataset.reserva) {
+                fechaReservaSpan.textContent = toReadableDate(row.dataset.reserva, 'reserva');
               }
 
-              // Formatear fecha de salida
-              const fechaSalidaSpan = row.querySelector('td:nth-child(5) span');
+              if (fechaIngresoSpan && row.dataset.ingreso) {
+                fechaIngresoSpan.textContent = toReadableDate(row.dataset.ingreso, 'ingreso');
+              }
+
               if (fechaSalidaSpan && row.dataset.salida) {
-                fechaSalidaSpan.textContent = formatearFecha(row.dataset.salida);
+                fechaSalidaSpan.textContent = toReadableDate(row.dataset.salida, 'salida');
               }
             });
 
-            // Formatear fechas en las cards (mobile/tablet)
             const cards = document.querySelectorAll('#cardsSection article.reservation-reveal');
-            cards.forEach(card => {
-              // Las fechas están en divs con estructura específica
+            cards.forEach((card) => {
               const fechaDivs = card.querySelectorAll('.grid.grid-cols-3 > div');
 
               if (fechaDivs.length >= 3) {
-                // Fecha de reserva (primera columna)
                 const fechaReservaDiv = fechaDivs[0].querySelector('.text-xs.font-semibold');
                 if (fechaReservaDiv && card.dataset.reserva) {
-                  fechaReservaDiv.textContent = formatearFecha(card.dataset.reserva);
+                  fechaReservaDiv.textContent = toReadableDate(card.dataset.reserva, 'reserva');
                 }
 
-                // Fecha de ingreso (segunda columna)
                 const fechaIngresoDiv = fechaDivs[1].querySelector('.text-xs.font-semibold');
                 if (fechaIngresoDiv && card.dataset.ingreso) {
-                  fechaIngresoDiv.textContent = formatearFecha(card.dataset.ingreso);
+                  fechaIngresoDiv.textContent = toReadableDate(card.dataset.ingreso, 'ingreso');
                 }
 
-                // Fecha de salida (tercera columna)
                 const fechaSalidaDiv = fechaDivs[2].querySelector('.text-xs.font-semibold');
                 if (fechaSalidaDiv && card.dataset.salida) {
-                  fechaSalidaDiv.textContent = formatearFecha(card.dataset.salida);
+                  fechaSalidaDiv.textContent = toReadableDate(card.dataset.salida, 'salida');
                 }
               }
             });
           }
 
-          // Ejecutar formateo de fechas después de un pequeño delay
-          setTimeout(formatearFechasEnPagina, 100);
+          setTimeout(applyReservationFormatting, 50);
 
           // Asegurar que todas las cards tengan la misma altura en tablet
           function equalizeCardHeights() {
