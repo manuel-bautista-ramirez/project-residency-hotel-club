@@ -263,6 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const durationDisplay = document.getElementById("duration-display");
   const nightsCount = document.getElementById("nights-count");
   const submitButton = document.querySelector('button[type="submit"]');
+  let lastAvailabilityStatus = null;
 
   // Inicializar texto del enganche si ya existe un valor por defecto (ej. 500)
   if (engancheField && engancheTextField) {
@@ -650,7 +651,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Check room availability
-  async function checkAvailability(checkIn, checkOut) {
+  async function checkAvailability(checkIn, checkOut, { notify = true } = {}) {
     if (!checkIn || !checkOut) return false;
 
     try {
@@ -662,20 +663,28 @@ document.addEventListener("DOMContentLoaded", () => {
       const json = await res.json();
 
       if (!json.available) {
-        showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta.", 'error');
+        if (notify && lastAvailabilityStatus !== false) {
+          showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta.", 'error');
+        }
+        lastAvailabilityStatus = false;
         checkInInput.value = "";
         checkOutInput.value = "";
         priceField.value = "";
         priceTextField.value = "";
         durationDisplay.classList.add('hidden');
-        durationDisplay.classList.remove('flex');
         return false;
       }
 
-      showNotification("Habitación disponible para las fechas seleccionadas", 'success');
+      if (notify && lastAvailabilityStatus !== true) {
+        showNotification("Habitación disponible para las fechas seleccionadas", 'success');
+      }
+      lastAvailabilityStatus = true;
       return true;
     } catch (err) {
-      showNotification('Error al verificar disponibilidad', 'error');
+      if (notify) {
+        showNotification('Error al verificar disponibilidad', 'error');
+      }
+      lastAvailabilityStatus = null;
       console.error("Error verificando disponibilidad:", err);
       return false;
     }
