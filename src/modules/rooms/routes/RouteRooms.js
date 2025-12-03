@@ -87,6 +87,27 @@ routerRoom.get("/rooms/calendario/eventos", getCalendarEvents);
 
 routerRoom.get("/api/rooms/:id/price", apiGetPriceByMonth);
 routerRoom.get("/api/rooms/:id/available", apiCheckAvailability);
+routerRoom.get("/api/rooms/status/:roomNumber", async (req, res) => {
+  try {
+    const { roomNumber } = req.params;
+    const { getHabitaciones } = await import("../models/ModelRoom.js");
+    const habitaciones = await getHabitaciones();
+    const habitacion = habitaciones.find(h => String(h.numero) === String(roomNumber));
+
+    if (!habitacion) {
+      return res.status(404).json({ error: "Habitación no encontrada" });
+    }
+
+    res.json({
+      numero: habitacion.numero,
+      estado: habitacion.estado,
+      tipo: habitacion.tipo
+    });
+  } catch (error) {
+    console.error("Error al obtener estado de habitación:", error);
+    res.status(500).json({ error: "Error al obtener estado de habitación" });
+  }
+});
 routerRoom.post("/api/rooms/update-precio", apiUpdatePrice);
 routerRoom.post("/api/rooms/update-precios-bulk", apiUpdatePricesBulk);
 

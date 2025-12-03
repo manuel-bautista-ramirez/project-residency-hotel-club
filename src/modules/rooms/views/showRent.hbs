@@ -566,6 +566,83 @@
       // Ejecutar cuando el contenido se cargue y en resize
       setTimeout(equalizeCardHeights, 100);
       window.addEventListener('resize', equalizeCardHeights);
+
+      // Función para formatear fechas a formato legible con hora de 12 horas
+      function formatearFechasEnPagina() {
+        // Función helper para formatear una fecha ISO a formato legible
+        function formatearFecha(fechaISO) {
+          if (!fechaISO) return '';
+
+          try {
+            const fecha = new Date(fechaISO);
+
+            // Verificar si la fecha es válida
+            if (isNaN(fecha.getTime())) {
+              return fechaISO; // Retornar original si no es válida
+            }
+
+            // Obtener componentes de la fecha
+            const dia = String(fecha.getDate()).padStart(2, '0');
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const año = fecha.getFullYear();
+
+            // Obtener hora en formato de 12 horas
+            let horas = fecha.getHours();
+            const minutos = String(fecha.getMinutes()).padStart(2, '0');
+            const ampm = horas >= 12 ? 'PM' : 'AM';
+            horas = horas % 12;
+            horas = horas ? horas : 12; // La hora '0' debe ser '12'
+            const horasStr = String(horas).padStart(2, '0');
+
+            // Formato: DD/MM/YYYY HH:MM AM/PM
+            return `${dia}/${mes}/${año} ${horasStr}:${minutos} ${ampm}`;
+          } catch (error) {
+            console.error('Error al formatear fecha:', error);
+            return fechaISO;
+          }
+        }
+
+        // Formatear fechas en la tabla (desktop)
+        const tableRows = document.querySelectorAll('#rentasTableBody tr.rent-reveal');
+        tableRows.forEach(row => {
+          // Formatear fecha de ingreso (columna 3)
+          const fechaIngresoSpan = row.querySelector('td:nth-child(3) span');
+          if (fechaIngresoSpan && row.dataset.ingreso) {
+            fechaIngresoSpan.textContent = formatearFecha(row.dataset.ingreso);
+          }
+
+          // Formatear fecha de salida (columna 4)
+          const fechaSalidaSpan = row.querySelector('td:nth-child(4) span');
+          if (fechaSalidaSpan && row.dataset.salida) {
+            fechaSalidaSpan.textContent = formatearFecha(row.dataset.salida);
+          }
+        });
+
+        // Formatear fechas en las cards (mobile/tablet)
+        const cards = document.querySelectorAll('#cardsSection article.rent-reveal');
+        cards.forEach(card => {
+          // Las fechas están en divs con estructura específica
+          const fechaDivs = card.querySelectorAll('.grid.grid-cols-2 > div');
+
+          if (fechaDivs.length >= 2) {
+            // Fecha de ingreso (primera columna, primer div)
+            const fechaIngresoDiv = fechaDivs[0].querySelector('.text-xs.font-semibold');
+            if (fechaIngresoDiv && card.dataset.ingreso) {
+              fechaIngresoDiv.textContent = formatearFecha(card.dataset.ingreso);
+            }
+
+            // Fecha de salida (segunda columna, primer div)
+            const fechaSalidaDiv = fechaDivs[1].querySelector('.text-xs.font-semibold');
+            if (fechaSalidaDiv && card.dataset.salida) {
+              fechaSalidaDiv.textContent = formatearFecha(card.dataset.salida);
+            }
+          }
+        });
+      }
+
+      // Ejecutar formateo de fechas después de un pequeño delay
+      setTimeout(formatearFechasEnPagina, 100);
+
     });
   </script>
 

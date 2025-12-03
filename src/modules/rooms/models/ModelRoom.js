@@ -1020,8 +1020,6 @@ export const hasActiveBookings = async (roomId) => {
            WHERE r.habitacion_id = ?
            AND COALESCE(r.estado, '') <> 'convertida_a_renta'
            AND (
-             DATE(r.fecha_salida) < CURDATE()
-             OR
              DATE(r.fecha_salida) > CURDATE()
              OR
              (DATE(r.fecha_salida) = CURDATE() AND NOW() < r.fecha_salida)

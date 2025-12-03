@@ -122,7 +122,7 @@ export const renderHabitacionesView = async (req, res) => {
 // change status
 export const changesStatus = async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body; //  "disponible"
+  const { status } = req.body; // "disponible"
 
   try {
     // 1) Ejecutar finalización automática de rentas expiradas para limpiar el estado del sistema
@@ -130,23 +130,27 @@ export const changesStatus = async (req, res) => {
       await finalizarRentasExpiradas();
     } catch (err) {
       console.warn("Error al finalizar rentas expiradas antes de cambio de estado:", err);
-      // Continuar, pero ser conservador en validaciones posteriores
     }
 
-    // 2) Si intentan marcar como disponible, verificar que no existan rentas/reservaciones activas
+    // 2) Validar cambio de limpieza --> disponible
     if (status === 'disponible') {
-      const hasActive = await hasActiveBookings(Number(id));
-      if (hasActive) {
-        console.log(`⚠️ No se permite marcar habitación ${id} como disponible: hay bookings activos`);
-        // Puedes cambiar a redireccionar con query param para mostrar mensaje en UI
-        return res.status(400).send("No se puede marcar como disponible: existe una renta o reservación activa.");
+      // Obtener el estado actual de la habitación
+      const habitaciones = await getHabitaciones();
+      const habitacion = habitaciones.find(h => Number(h.id) === Number(id));
+      if (!habitacion) {
+        return res.status(404).send("Habitación no encontrada.");
       }
+
+      // Solo permitir si el estado actual es 'limpieza'
+      if (habitacion.estado !== 'limpieza') {
+        return res.status(400).send("Solo se puede marcar como disponible si la habitación está en limpieza.");
+      }
+
+      
     }
 
     // 3) Proceder con el cambio de estado
     const success = await updateRoomStatus(id, status);
-
-    console.log("Status change result:", success);
 
     if (success) {
       return res.redirect("/rooms");
@@ -2111,16 +2115,10 @@ export const renderConvertReservationToRent = async (req, res) => {
     const { id } = req.params;
     const user = req.session.user || { role: "Administrador" };
 
-    console.log(`Cargando reservación ${id} para conversión a renta...`);
-
     const reservacion = await findReservacionById(id);
-
     if (!reservacion) {
-      console.error(`Reservación ${id} no encontrada`);
       return res.status(404).send("Reservación no encontrada");
     }
-
-    console.log("Reservación encontrada:", reservacion);
 
     // Formatear fechas al formato DD/MM/YYYY
     const formatearFecha = (fecha) => {
@@ -2226,6 +2224,29 @@ export const handleConvertReservationToRent = async (req, res) => {
 
     // Obtener el usuario de la sesión
     const usuario_id = req.session.user?.id || 1;
+
+    // VALIDACIÓN: Verificar que la habitación NO esté en limpieza
+    console.log(`🔍 Verificando estado de la habitación ${habitacion_id_value}...`);
+    const habitaciones = await getHabitaciones();
+    const habitacion = habitaciones.find(h => Number(h.id) === Number(habitacion_id_value));
+
+    if (!habitacion) {
+      return res.status(404).send("Habitación no encontrada");
+    }
+
+    // Si la habitación está en limpieza, bloquear la conversión
+    if (habitacion.estado === 'limpieza') {
+      console.log(`⚠️ Intento de conversión bloqueado: habitación ${habitacion_id_value} está en limpieza`);
+      return res.status(400).send("No se puede convertir la reservación a renta: la habitación está en limpieza. Por favor, marque la habitación como disponible primero.");
+    }
+
+    // Validar que la habitación esté disponible
+    if (habitacion.estado !== 'disponible') {
+      console.log(`⚠️ Intento de conversión bloqueado: habitación ${habitacion_id_value} está en estado ${habitacion.estado}`);
+      return res.status(400).send(`No se puede convertir la reservación a renta: la habitación está en estado "${habitacion.estado}". Debe estar disponible.`);
+    }
+
+    console.log(`✅ Habitación ${habitacion_id_value} está disponible, procediendo con la conversión...`);
 
     // IMPORTANTE: Obtener datos de la reservación para eliminar archivos
     console.log(`Obteniendo datos de la reservación ${id}...`);

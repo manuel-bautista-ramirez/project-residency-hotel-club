@@ -104,12 +104,14 @@
         <tbody id="reservationsTableBody">
           {{#if allReservationes.length}}
           {{#each allReservationes}}
-          <tr class="border-b hover:bg-gray-50 transition-colors reservation-row {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
+          <tr
+            class="border-b hover:bg-gray-50 transition-colors reservation-row {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
             data-item-id="{{this.id_reservacion}}" data-nombre="{{this.nombre_cliente}}"
             data-hab="{{this.numero_habitacion}}" data-reserva="{{this.fecha_reserva}}"
             data-ingreso="{{this.fecha_ingreso}}" data-salida="{{this.fecha_salida}}"
             data-estado="{{this.estado_etiqueta.texto}}" data-estado-clave="{{this.estado_clave}}"
-            data-origen="{{this.resumen_financiero.origen}}" data-origen-clave="{{this.resumen_financiero.origen_clave}}">
+            data-origen="{{this.resumen_financiero.origen}}"
+            data-origen-clave="{{this.resumen_financiero.origen_clave}}">
             <!-- Cada fila tiene altura fija de 3.5rem (56px) -->
             <td class="p-3 border-r align-middle" style="height: 3.5rem;">
               <div class="flex items-center">
@@ -152,7 +154,8 @@
 
             <td class="p-3 border-r align-middle" style="height: 3.5rem;">
               {{#if this.estado_etiqueta}}
-              <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{this.estado_etiqueta.clase}}">
+              <span
+                class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{this.estado_etiqueta.clase}}">
                 <i class="{{this.estado_etiqueta.icono}} mr-1.5"></i>
                 {{this.estado_etiqueta.texto}}
               </span>
@@ -275,7 +278,8 @@
     <div id="cardsSection" class="flex-1 overflow-y-auto pb-20 px-3">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         {{#each allReservationes}}
-        <article class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden reservation-reveal {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
+        <article
+          class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden reservation-reveal {{#if this.es_convertida}}hidden reservation-convertida{{/if}}"
           data-item-id="{{this.id_reservacion}}" data-nombre="{{this.nombre_cliente}}"
           data-hab="{{this.numero_habitacion}}" data-reserva="{{this.fecha_reserva}}"
           data-ingreso="{{this.fecha_ingreso}}" data-salida="{{this.fecha_salida}}"
@@ -295,7 +299,8 @@
                 </div>
               </div>
               {{#if this.estado_etiqueta}}
-              <span class="bg-white/20 text-white px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0 ml-2">
+              <span
+                class="bg-white/20 text-white px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0 ml-2">
                 {{this.estado_etiqueta.texto}}
               </span>
               {{/if}}
@@ -371,7 +376,8 @@
                   <span>Confirmar</span>
                 </a>
                 {{else}}
-                <span class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold">
+                <span
+                  class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-2 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold">
                   <i class="fa-solid fa-right-left text-[10px]"></i>
                   <span>Convertida</span>
                 </span>
@@ -489,6 +495,95 @@
       adjustContainerHeight();
       window.addEventListener('resize', adjustContainerHeight);
 
+      // Función para formatear fechas a formato legible con hora de 12 horas
+      function formatearFechasEnPagina() {
+        // Función helper para formatear una fecha ISO a formato legible
+        function formatearFecha(fechaISO) {
+          if (!fechaISO) return '';
+
+          try {
+            const fecha = new Date(fechaISO);
+
+            // Verificar si la fecha es válida
+            if (isNaN(fecha.getTime())) {
+              return fechaISO; // Retornar original si no es válida
+            }
+
+            // Obtener componentes de la fecha
+            const dia = String(fecha.getDate()).padStart(2, '0');
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const año = fecha.getFullYear();
+
+            // Obtener hora en formato de 12 horas
+            let horas = fecha.getHours();
+            const minutos = String(fecha.getMinutes()).padStart(2, '0');
+            const ampm = horas >= 12 ? 'PM' : 'AM';
+            horas = horas % 12;
+            horas = horas ? horas : 12; // La hora '0' debe ser '12'
+            const horasStr = String(horas).padStart(2, '0');
+
+            // Formato: DD/MM/YYYY HH:MM AM/PM
+            return `${dia}/${mes}/${año} ${horasStr}:${minutos} ${ampm}`;
+          } catch (error) {
+            console.error('Error al formatear fecha:', error);
+            return fechaISO;
+          }
+        }
+
+        // Formatear fechas en la tabla (desktop)
+        const tableRows = document.querySelectorAll('#reservationsTableBody tr.reservation-row');
+        tableRows.forEach(row => {
+          // Formatear fecha de reserva
+          const fechaReservaSpan = row.querySelector('td:nth-child(3) span');
+          if (fechaReservaSpan && row.dataset.reserva) {
+            fechaReservaSpan.textContent = formatearFecha(row.dataset.reserva);
+          }
+
+          // Formatear fecha de ingreso
+          const fechaIngresoSpan = row.querySelector('td:nth-child(4) span');
+          if (fechaIngresoSpan && row.dataset.ingreso) {
+            fechaIngresoSpan.textContent = formatearFecha(row.dataset.ingreso);
+          }
+
+          // Formatear fecha de salida
+          const fechaSalidaSpan = row.querySelector('td:nth-child(5) span');
+          if (fechaSalidaSpan && row.dataset.salida) {
+            fechaSalidaSpan.textContent = formatearFecha(row.dataset.salida);
+          }
+        });
+
+        // Formatear fechas en las cards (mobile/tablet)
+        const cards = document.querySelectorAll('#cardsSection article.reservation-reveal');
+        cards.forEach(card => {
+          // Las fechas están en divs con estructura específica
+          const fechaDivs = card.querySelectorAll('.grid.grid-cols-3 > div');
+
+          if (fechaDivs.length >= 3) {
+            // Fecha de reserva (primera columna)
+            const fechaReservaDiv = fechaDivs[0].querySelector('.text-xs.font-semibold');
+            if (fechaReservaDiv && card.dataset.reserva) {
+              fechaReservaDiv.textContent = formatearFecha(card.dataset.reserva);
+            }
+
+            // Fecha de ingreso (segunda columna)
+            const fechaIngresoDiv = fechaDivs[1].querySelector('.text-xs.font-semibold');
+            if (fechaIngresoDiv && card.dataset.ingreso) {
+              fechaIngresoDiv.textContent = formatearFecha(card.dataset.ingreso);
+            }
+
+            // Fecha de salida (tercera columna)
+            const fechaSalidaDiv = fechaDivs[2].querySelector('.text-xs.font-semibold');
+            if (fechaSalidaDiv && card.dataset.salida) {
+              fechaSalidaDiv.textContent = formatearFecha(card.dataset.salida);
+            }
+          }
+        });
+      }
+
+      // Ejecutar formateo de fechas después de un pequeño delay
+      setTimeout(formatearFechasEnPagina, 100);
+
+
       // Asegurar que todas las cards tengan la misma altura en tablet
       function equalizeCardHeights() {
         if (window.innerWidth >= 768 && window.innerWidth < 1024) {
@@ -513,7 +608,8 @@
   </script>
 
   <!-- Modal de confirmación de eliminación -->
-  <div id="deleteReservationModal" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 items-center justify-center px-4 hidden">
+  <div id="deleteReservationModal"
+    class="fixed inset-0 z-[9999] bg-black bg-opacity-50 items-center justify-center px-4 hidden">
     <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
       <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
         <i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl"></i>
@@ -539,6 +635,36 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal de advertencia: Habitación en limpieza -->
+  <div id="roomStatusWarningModal"
+    class="fixed inset-0 z-[9999] bg-black bg-opacity-50 items-center justify-center px-4 hidden">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
+      <div class="flex items-center justify-center w-12 h-12 mx-auto bg-amber-100 rounded-full mb-4">
+        <i class="fa-solid fa-broom text-amber-600 text-2xl"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">Habitación en Limpieza</h2>
+      <p class="mb-4 text-gray-600 text-sm sm:text-base text-center">
+        La habitación <span id="warningRoomNumber" class="font-bold text-blue-600"></span> está actualmente en estado de
+        <span class="font-semibold text-amber-600">limpieza</span>.
+      </p>
+      <p
+        class="mb-6 text-amber-700 text-xs sm:text-sm text-center font-medium bg-amber-50 p-3 rounded-lg border border-amber-200">
+        <i class="fa-solid fa-circle-info"></i> Por favor, marque la habitación como <span
+          class="font-bold">disponible</span> antes de convertir la reservación a renta.
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center gap-2">
+        <button type="button" onclick="closeRoomStatusWarningModal()"
+          class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-32 transition-colors">
+          <i class="fa-solid fa-xmark"></i> Cerrar
+        </button>
+        <a id="goToRoomsLink" href="/rooms"
+          class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold w-full sm:w-40 transition-colors text-center">
+          <i class="fa-solid fa-door-open"></i> Ir a Habitaciones
+        </a>
+      </div>
     </div>
   </div>
 
@@ -880,5 +1006,82 @@
 
     // Actualizar validación cada minuto
     setInterval(validateConfirmButtons, 60000);
+
+    // Funciones para el modal de advertencia de estado de habitación
+    function openRoomStatusWarningModal(roomNumber) {
+      const modal = document.getElementById('roomStatusWarningModal');
+      const roomNumberSpan = document.getElementById('warningRoomNumber');
+
+      if (modal && roomNumberSpan) {
+        roomNumberSpan.textContent = roomNumber;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeRoomStatusWarningModal() {
+      const modal = document.getElementById('roomStatusWarningModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    // Cerrar modal al hacer clic fuera
+    document.addEventListener('click', function (event) {
+      const modal = document.getElementById('roomStatusWarningModal');
+      if (modal && event.target === modal) {
+        closeRoomStatusWarningModal();
+      }
+    });
+
+    // Interceptar clics en botones de confirmación para validar estado de habitación
+    document.addEventListener('DOMContentLoaded', function () {
+      const confirmButtons = document.querySelectorAll('.confirm-btn');
+
+      confirmButtons.forEach(button => {
+        button.addEventListener('click', async function (event) {
+          event.preventDefault(); // Prevenir navegación inmediata
+
+          const container = button.closest('tr') || button.closest('article');
+          if (!container) {
+            window.location.href = button.href;
+            return;
+          }
+
+          const roomNumber = container.dataset.hab;
+
+          if (!roomNumber) {
+            window.location.href = button.href;
+            return;
+          }
+
+          try {
+            // Hacer petición al backend para obtener el estado de la habitación
+            const response = await fetch(`/api/rooms/status/${roomNumber}`);
+
+            if (!response.ok) {
+              // Si hay error en la petición, permitir continuar
+              window.location.href = button.href;
+              return;
+            }
+
+            const data = await response.json();
+
+            // Si la habitación está en limpieza, mostrar modal de advertencia
+            if (data.estado === 'limpieza') {
+              openRoomStatusWarningModal(roomNumber);
+            } else {
+              // Si está disponible u otro estado, permitir continuar
+              window.location.href = button.href;
+            }
+          } catch (error) {
+            console.error('Error al verificar estado de habitación:', error);
+            // En caso de error, permitir continuar
+            window.location.href = button.href;
+          }
+        });
+      });
+    });
   </script>
 </div>
