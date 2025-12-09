@@ -6,11 +6,14 @@
   <title>{{title}}</title>
  <link href="/styles.css" rel="stylesheet" />
   <link href="/css/all.main.css" rel="stylesheet" />
+  <script defer src="/js/globalLoadingOverlay.js"></script>
 </head>
 <body class="bg-gray-100 {{#if centerContent}}min-h-screen flex justify-center items-center{{/if}}">
 {{#if showNavbar}}
   {{>navbar}}
 {{/if}}
+
+  {{> loadingOverlay}}
 
   {{{body}}}
 

@@ -307,6 +307,15 @@ const displayReportResults = (reportData) => {
 document.addEventListener("DOMContentLoaded", () => {
   setupRealTimeValidation();
 
+  // Detectar si estamos en una página que usa este formulario de reportes
+  const form = $("#formReports") || $("form");
+  const submitButton = $("#btn-submit") || $("#generate-report") || $("button[type='submit']");
+
+  // Si no hay formulario ni botón, no hacemos nada (evita errores en otras vistas como /rooms/reportes)
+  if (!form || !submitButton) {
+    return;
+  }
+
   // Establecer fechas por defecto (último mes)
   const fechaFinInput = $("#fechaFin");
   const fechaInicioInput = $("#fechaInicio");
@@ -320,9 +329,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Escuchar el evento de envío del formulario
-  const submitButton = $("#btn-submit") || $("#generate-report") || $("button[type='submit']");
-  const form = $("#formReports") || $("form");
-
   if (submitButton) {
     submitButton.addEventListener("click", async (event) => {
       event.preventDefault();
