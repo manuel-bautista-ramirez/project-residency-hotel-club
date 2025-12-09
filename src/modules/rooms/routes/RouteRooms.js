@@ -61,15 +61,14 @@ routerRoom.get("/rooms/reportes", renderReservacionesView);
 
 // ----- FORMULARIOS INDIVIDUALES -----
 routerRoom.get("/rooms/reservar/:id", createResevation);
-routerRoom.post("/rooms/reservar/:id", handleCreateReservation);//
-
-routerRoom.post("/rooms/changes/status/:id", changesStatus);
+routerRoom.post("/rooms/reservar/:id", handleCreateReservation);
 
 routerRoom.get("/rooms/rentar/:id", renderFormRentar);
 routerRoom.post("/rooms/create-renta/:id", handleCreateRenta);
 
 routerRoom.get("/rooms/editar/:id", renderFormEditarReservacion);
-routerRoom.post("/api/reservaciones/:id/editar", handleEditReservation); //
+routerRoom.post("/api/reservaciones/:id/editar", handleEditReservation);
+routerRoom.post("/rooms/changes/status/:id", changesStatus);
 
 // ----- CONVERSIÓN DE RESERVACIÓN A RENTA -----
 routerRoom.get("/rooms/confirmReservations/renta/:id", renderConvertReservationToRent);
@@ -88,6 +87,27 @@ routerRoom.get("/rooms/calendario/eventos", getCalendarEvents);
 
 routerRoom.get("/api/rooms/:id/price", apiGetPriceByMonth);
 routerRoom.get("/api/rooms/:id/available", apiCheckAvailability);
+routerRoom.get("/api/rooms/status/:roomNumber", async (req, res) => {
+  try {
+    const { roomNumber } = req.params;
+    const { getHabitaciones } = await import("../models/ModelRoom.js");
+    const habitaciones = await getHabitaciones();
+    const habitacion = habitaciones.find(h => String(h.numero) === String(roomNumber));
+
+    if (!habitacion) {
+      return res.status(404).json({ error: "Habitación no encontrada" });
+    }
+
+    res.json({
+      numero: habitacion.numero,
+      estado: habitacion.estado,
+      tipo: habitacion.tipo
+    });
+  } catch (error) {
+    console.error("Error al obtener estado de habitación:", error);
+    res.status(500).json({ error: "Error al obtener estado de habitación" });
+  }
+});
 routerRoom.post("/api/rooms/update-precio", apiUpdatePrice);
 routerRoom.post("/api/rooms/update-precios-bulk", apiUpdatePricesBulk);
 

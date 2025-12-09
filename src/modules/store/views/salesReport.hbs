@@ -7,13 +7,13 @@
 
 <!-- Contenido principal -->
     <div id="notification-area" class="mb-4"></div>
-    
+
     <!-- Header -->
     <header class="mb-8 text-center">
         <h1 class="text-2xl md:text-3xl font-extrabold text-blue-900 tracking-tight">Reportes de Ventas de la Tienda</h1>
         <p class="text-gray-600 mt-2">Genera reportes de ventas y envíalos por correo o WhatsApp.</p>
     </header>
-    
+
     <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
 
         <!-- Selector de Período -->
@@ -46,7 +46,7 @@
         <!-- Filtros y Fechas -->
         <div class="mb-6">
             <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Filtros y Fechas</h2>
-            
+
             <div id="selector-diario" class="date-selector mb-4">
                 <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona el día:</label>
                 <input type="date" id="fecha-diaria" class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -76,11 +76,11 @@
                 <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona el mes:</label>
                 <input type="month" id="fecha-mensual" class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
-        
+
 	        <!-- Botones de Acción -->
 	        <div class="mt-6 pt-4 border-t border-gray-200">
 	            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-	                <button id="generar-reporte-btn" 
+	                <button id="generar-reporte-btn"
 	                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm md:text-base font-medium">
 	                    <i class="fas fa-chart-bar mr-2"></i>Generar Reporte
 	                </button>
@@ -108,25 +108,25 @@
 	                <i class="fas fa-envelope mr-2 text-blue-500"></i>Envío por Correo
 	            </h3>
 	            <div class="space-y-3">
-	                <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com" 
+	                <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
 	                       class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
 	                <input type="text" id="email-asunto" placeholder="Asunto del correo" class="border border-gray-300 rounded-lg p-2 w-full">
-	                <button id="enviar-email-btn" 
+	                <button id="enviar-email-btn"
 	                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
 	                    <i class="fas fa-envelope mr-2"></i>Enviar por Correo
 	                </button>
 	            </div>
 	        </div>
-	        
+
 	        <!-- Envío por WhatsApp -->
 	        <div class="border rounded-lg p-4">
 	            <h3 class="font-semibold text-gray-700 mb-3">
 	                <i class="fab fa-whatsapp mr-2 text-green-500"></i>Envío por WhatsApp
 	            </h3>
 	            <div class="space-y-3">
-	                <input type="tel" id="whatsapp-telefono" placeholder="10 dígitos sin espacios" 
+	                <input type="tel" id="whatsapp-telefono" placeholder="10 dígitos sin espacios"
 	                       class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-	                <button id="enviar-whatsapp-btn" 
+	                <button id="enviar-whatsapp-btn"
 	                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
 	                    <i class="fab fa-whatsapp mr-2"></i>Enviar por WhatsApp
 	                </button>
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const destinatario = document.getElementById('email-destinatario').value;
         const asunto = document.getElementById('email-asunto').value;
         if (!destinatario) { mostrarNotificacion('Ingresa un correo de destinatario', 'error'); return; }
-        
+
         mostrarNotificacion('Enviando correo...', 'info');
         try {
             const response = await fetch('/store/api/reports/email', {
@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
             mostrarNotificacion(`Error al enviar: ${error.message}`, 'error');
         }
     }
-    
+
     function mostrarNotificacion(mensaje, tipo = 'success') {
         const area = document.getElementById('notification-area');
         const notif = document.createElement('div');

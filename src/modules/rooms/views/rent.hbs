@@ -11,13 +11,13 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
         </svg>
       </div>
-      
+
       <!-- Texto animado -->
       <div class="text-center space-y-2">
         <p id="loadingMessage" class="text-blue-800 font-medium text-lg transition-all duration-300">Creando renta...</p>
         <p class="text-blue-600 text-sm opacity-0 transition-opacity duration-300 delay-1000" id="loadingSubtext">Redirigiendo al panel de control</p>
       </div>
-      
+
       <!-- Barra de progreso sutil -->
       <div class="w-48 h-1 bg-blue-100 rounded-full overflow-hidden">
         <div id="progressBar" class="h-full bg-blue-600 transition-all duration-1000 ease-out w-0"></div>
@@ -62,11 +62,11 @@
 
         <!-- Primera línea: Cliente y Fechas -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
-          
+
           <!-- Cliente -->
           <div class="border border-slate-200 rounded p-2">
             <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Cliente</h2>
-            
+
             <div class="space-y-2">
               <div>
                 <label class="block text-xs text-gray-700 mb-1">Nombre *</label>
@@ -123,7 +123,7 @@
           <!-- Fechas -->
           <div class="border border-slate-200 rounded p-2">
             <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Fechas</h2>
-            
+
             <div class="space-y-2">
               <div class="grid grid-cols-2 gap-2">
                 <div>
@@ -166,11 +166,11 @@
 
         <!-- Segunda línea: Pago, Método y Envío -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
-          
+
           <!-- Pago -->
           <div class="border border-slate-200 rounded p-2">
             <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Pago</h2>
-            
+
             <div class="space-y-2">
               <div>
                 <label class="block text-xs text-gray-700 mb-1">Precio total</label>
@@ -192,7 +192,7 @@
           <!-- Método de pago -->
           <div class="border border-slate-200 rounded p-2">
             <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Método</h2>
-            
+
             <div class="relative">
               <select id="payment_type" name="payment_type"
                 class="w-full pl-2 pr-6 py-1 text-xs border border-slate-300 rounded bg-white focus:ring-1 focus:ring-blue-400 outline-none appearance-none">
@@ -210,7 +210,7 @@
           <!-- Envío Automático -->
           <div class="border border-slate-200 rounded p-2">
             <h2 class="text-xs font-semibold text-gray-900 border-b pb-1 mb-2">Envío</h2>
-            
+
             <div class="space-y-2">
               <div class="bg-blue-50 border border-blue-200 rounded px-2 py-1.5">
                 <div class="flex items-center gap-1">
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const skeleton = document.getElementById('rentSkeleton');
   const form = document.getElementById('formRent');
   const hideOverlay = () => overlay && overlay.classList.add('hidden');
-  
+
   // Dynamic center: set available height between navbar and footer on desktop
   const centerRoot = document.getElementById('center-root');
   function applyDesktopCenter() {
@@ -291,7 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   applyDesktopCenter();
   window.addEventListener('resize', applyDesktopCenter);
-  
+
   const roomId = Number(document.getElementById("room_id").value);
   const checkInInput = document.getElementById("check_in");
   const checkOutInput = document.getElementById("check_out");
@@ -300,44 +300,60 @@ document.addEventListener("DOMContentLoaded", () => {
   const durationDisplay = document.getElementById("duration-display");
   const nightsCount = document.getElementById("nights-count");
   const submitButton = document.querySelector('button[type="submit"]');
-  
+  let lastAvailabilityStatus = null;
+
   // ============================================
   // VALIDACIÓN: Check-in FIJO en HOY, Check-out modificable
   // ============================================
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  const todayStr = `${year}-${month}-${day}`;
-  
-  console.log('📅 Fecha de HOY:', todayStr);
-  
-  // Check-in BLOQUEADO en HOY (no modificable)
-  checkInInput.value = todayStr;
-  checkInInput.setAttribute('min', todayStr);
-  checkInInput.setAttribute('max', todayStr);
+  const formatDateForInput = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const now = new Date();
+  const checkInBaseDate = new Date(now);
+  let overnightAdjustmentApplied = false;
+
+  // Si es turno nocturno (00:00 - 08:59), contabilizar como el día anterior
+  if (checkInBaseDate.getHours() < 9) {
+    checkInBaseDate.setDate(checkInBaseDate.getDate() - 1);
+    overnightAdjustmentApplied = true;
+  }
+
+  const checkInStr = formatDateForInput(checkInBaseDate);
+  console.log('📅 Fecha operativa de INGRESO:', checkInStr);
+  if (overnightAdjustmentApplied) {
+    console.log('🌙 Ajuste nocturno aplicado: llegada posterior a medianoche contabilizada como el día anterior');
+  }
+
+  // Check-in BLOQUEADO en la fecha operativa calculada (no modificable)
+  checkInInput.value = checkInStr;
+  checkInInput.setAttribute('min', checkInStr);
+  checkInInput.setAttribute('max', checkInStr);
   checkInInput.setAttribute('readonly', 'readonly');
   checkInInput.classList.add('bg-gray-100', 'cursor-not-allowed');
-  
-  // Check-out por defecto MAÑANA (pero modificable)
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowYear = tomorrow.getFullYear();
-  const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
-  const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0');
-  const tomorrowStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`;
-  
-  console.log('📅 Fecha de MAÑANA:', tomorrowStr);
-  
-  checkOutInput.setAttribute('min', tomorrowStr);
-  checkOutInput.value = tomorrowStr;
-  
+
+  // Check-out por defecto: día siguiente a la fecha operativa
+  const defaultCheckOutDate = new Date(checkInBaseDate);
+  defaultCheckOutDate.setDate(defaultCheckOutDate.getDate() + 1);
+  const checkOutDefaultStr = formatDateForInput(defaultCheckOutDate);
+
+  console.log('📅 Fecha de salida sugerida:', checkOutDefaultStr);
+
+  checkOutInput.setAttribute('min', checkOutDefaultStr);
+  checkOutInput.value = checkOutDefaultStr;
+
   // Prevenir cambios en el check-in
   checkInInput.addEventListener('click', function(e) {
     e.preventDefault();
-    showNotification('La fecha de entrada está establecida para hoy', 'info');
+    const mensajeTurno = overnightAdjustmentApplied
+      ? 'La fecha de entrada se fijó automáticamente al día anterior por horario nocturno (00:00-08:59)'
+      : 'La fecha de entrada está establecida automáticamente para el turno actual';
+    showNotification(mensajeTurno, 'info');
   });
-  
+
   checkInInput.addEventListener('keydown', function(e) {
     e.preventDefault();
   });
@@ -345,13 +361,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Reveal flow: hide overlay and skeleton, show form
   setTimeout(() => {
     if (skeleton) skeleton.classList.add('hidden');
-    
+
     // ============================================
     // CALCULAR PRECIO AUTOMÁTICAMENTE al cargar
     // ============================================
     const initialCheckIn = checkInInput.value;
     const initialCheckOut = checkOutInput.value;
-    
+
     if (initialCheckIn && initialCheckOut) {
       const nights = updateDurationDisplay(initialCheckIn, initialCheckOut);
       checkAvailability(initialCheckIn, initialCheckOut).then(isAvailable => {
@@ -372,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const notification = document.createElement('div');
-    
+
     // Configuración Tailwind responsive por tipo
     const config = {
       success: {
@@ -421,10 +437,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Clases responsive para diferentes dispositivos
     notification.className = `
-      professional-notification 
-      fixed z-50 
-      ${bgColor} ${borderColor} 
-      shadow-lg 
+      professional-notification
+      fixed z-50
+      ${bgColor} ${borderColor}
+      shadow-lg
       w-[95vw] max-w-sm
       mx-auto
       left-1/2 transform -translate-x-1/2
@@ -440,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
       translate-y-[-100%] opacity-0
       sm:translate-x-full sm:opacity-0
     `.replace(/\s+/g, ' ').trim();
-    
+
     notification.innerHTML = `
       <div class="flex items-start gap-2 sm:gap-3">
         <div class="flex-shrink-0 ${iconColor} mt-0.5">
@@ -505,7 +521,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }, 300);
       }, 3000);
-      
+
       notification.dataset.autoRemove = newAutoRemove;
     });
   }
@@ -561,30 +577,33 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log('⚠️ addTimeToDate: dateStr está vacío');
       return '';
     }
-    
+
     const [year, month, day] = dateStr.split('-');
     const time = isCheckout ? '11:59:00' : '12:00:00';
     const result = `${year}-${month}-${day} ${time}`;
-    
+
     console.log(`⏰ addTimeToDate(${dateStr}, isCheckout=${isCheckout}) → ${result}`);
-    
+
     return result;
   }
 
   // Check room availability
-  async function checkAvailability(checkIn, checkOut) {
+  async function checkAvailability(checkIn, checkOut, { notify = true } = {}) {
     if (!checkIn || !checkOut) return false;
 
     try {
       const checkInWithTime = addTimeToDate(checkIn);
       const checkOutWithTime = addTimeToDate(checkOut, true);
-      
+
       const url = `/api/rooms/${roomId}/available?check_in=${encodeURIComponent(checkInWithTime)}&check_out=${encodeURIComponent(checkOutWithTime)}`;
       const res = await fetch(url);
       const json = await res.json();
 
       if (!json.available) {
-        showNotification("La habitación no está disponible en las fechas seleccionadas. Ya existe una reservación o renta activa.", 'error');
+        if (notify && lastAvailabilityStatus !== false) {
+          showNotification("La habitación no está disponible en las fechas seleccionadas. Ya existe una reservación o renta activa.", 'error');
+        }
+        lastAvailabilityStatus = false;
         checkInInput.value = "";
         checkOutInput.value = "";
         priceField.value = "";
@@ -594,10 +613,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
       }
 
-      showNotification("Habitación disponible para las fechas seleccionadas", 'success');
+      if (notify && lastAvailabilityStatus !== true) {
+        showNotification("Habitación disponible para las fechas seleccionadas", 'success');
+      }
+      lastAvailabilityStatus = true;
       return true;
     } catch (err) {
-      showNotification('Error al verificar disponibilidad de la habitación', 'error');
+      if (notify) {
+        showNotification('Error al verificar disponibilidad de la habitación', 'error');
+      }
+      lastAvailabilityStatus = null;
       console.error("Error verificando disponibilidad:", err);
       return false;
     }
@@ -726,32 +751,32 @@ document.addEventListener("DOMContentLoaded", () => {
   // Form submission validation
   document.getElementById('formRent').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const isValid = await validateForm();
     if (!isValid) {
       return;
     }
-    
+
     const checkInWithTime = addTimeToDate(checkInInput.value);
     const checkOutWithTime = addTimeToDate(checkOutInput.value, true);
-    
+
     console.log('Enviando fechas con hora:');
     console.log('check_in:', checkInWithTime);
     console.log('check_out:', checkOutWithTime);
-    
+
     document.getElementById('check_in_with_time').value = checkInWithTime;
     document.getElementById('check_out_with_time').value = checkOutWithTime;
-    
+
     submitButton.disabled = true;
     submitButton.classList.add('opacity-50', 'cursor-not-allowed');
     submitButton.textContent = 'Creando renta...';
-    
+
     if (overlay) {
       overlay.classList.remove('hidden');
       const loadingMsg = document.getElementById('loadingMessage');
       if (loadingMsg) loadingMsg.textContent = 'Creando renta...';
     }
-    
+
     e.target.submit();
   });
 

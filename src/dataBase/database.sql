@@ -89,20 +89,49 @@ CREATE TABLE IF NOT EXISTS reservaciones (
   usuario_id INT NOT NULL,
   id_medio_mensaje INT NOT NULL,
   nombre_cliente VARCHAR(100) NOT NULL,
+
+  -- Fecha de creación de la reservación (para reportes por día/semana/mes)
   fecha_reserva DATETIME NOT NULL,
+
+  -- Fechas de estancia
   fecha_ingreso DATETIME NOT NULL,
   fecha_salida DATETIME NOT NULL,
+
+  -- Monto total de la reservación
   monto DECIMAL(10,2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
+
+  -- Enganche / anticipo
   enganche DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Monto del enganche/anticipo pagado',
   enganche_letras VARCHAR(255) DEFAULT '' COMMENT 'Enganche en letras',
+
+  -- Registro y archivos
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   pdf_path VARCHAR(500) NULL COMMENT 'Ruta del archivo PDF generado',
   qr_path VARCHAR(500) NULL COMMENT 'Ruta del archivo QR generado',
+
+  -- Estado de la reservación para flujo e historial
+  -- pendiente  : creada pero aún no confirmada (si lo usas)
+  -- confirmada : reservación vigente normal
+  -- convertida_a_renta : ya se convirtió en renta (ya no se muestra en lista, pero sí en reportes)
+  -- cancelada  : cancelada por el usuario/admin
+  estado ENUM('pendiente','confirmada','convertida_a_renta','cancelada')
+    NOT NULL DEFAULT 'confirmada',
+
+  -- Relación opcional con la renta generada a partir de esta reservación
+  id_renta INT NULL,
+
   PRIMARY KEY (id),
+
+  -- Índices para joins y filtros
   INDEX idx_habitacion (habitacion_id),
   INDEX idx_usuario (usuario_id),
   INDEX idx_medio_mensaje (id_medio_mensaje),
+
+  -- Índices para reportes/estado
+  INDEX idx_reservaciones_estado (estado),
+  INDEX idx_reservaciones_id_renta (id_renta),
+
   CONSTRAINT fk_reservaciones_habitacion
     FOREIGN KEY (habitacion_id)
     REFERENCES habitaciones (id)
@@ -160,6 +189,14 @@ CREATE TABLE IF NOT EXISTS rentas (
     ON DELETE RESTRICT
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Relación opcional: reservación -> renta generada
+ALTER TABLE reservaciones
+  ADD CONSTRAINT fk_reservaciones_renta
+    FOREIGN KEY (id_renta)
+    REFERENCES rentas (id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE;
 
 
 CREATE TABLE IF NOT EXISTS pdf_registry (
