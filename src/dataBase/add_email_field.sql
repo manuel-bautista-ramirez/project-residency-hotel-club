@@ -9,9 +9,6 @@ ADD COLUMN email VARCHAR(100) NULL UNIQUE AFTER password;
 ALTER TABLE users_hotel
 MODIFY COLUMN password VARCHAR(255) NULL COMMENT 'NULL = usuario debe crear contraseña en primer login';
 
--- Actualizar usuarios existentes con emails de ejemplo (opcional)
-UPDATE users_hotel SET email = 'victor.m.r.b.2000@gmail.com' WHERE username = 'manuel';
-UPDATE users_hotel SET email = 'iscvictormanuelramirezbautista@gmail.com' WHERE username = 'daniela';
 
 -- Modificar tabla password_resets para usar códigos en lugar de tokens largos
 ALTER TABLE password_resets 
