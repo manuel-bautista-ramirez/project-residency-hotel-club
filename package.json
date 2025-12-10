@@ -28,7 +28,8 @@
     "pino": "^9.13.0",
     "puppeteer": "^24.22.0",
     "qrcode": "^1.5.4",
-    "twilio": "^5.10.2"
+    "twilio": "^5.10.2",
+    "node-cron": "^3.0.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
