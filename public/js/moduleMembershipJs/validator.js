@@ -5,6 +5,10 @@
  */
 const Validator = {
     rules: {
+        nombre: {
+            regex: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,50}$/,
+            message: 'El nombre debe contener entre 3 y 50 caracteres (solo letras y espacios).'
+        },
         nombre_completo: {
             regex: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,50}$/,
             message: 'El nombre debe contener letras y espacios (Un mínimo de 3 caracteres).'
@@ -37,6 +41,17 @@ const Validator = {
             validator: (value) => value !== '',
             message: 'Debes seleccionar un método de pago.'
         },
+        max_integrantes: {
+            validator: (value) => {
+                const num = Number(value);
+                return Number.isInteger(num) && num >= 1;
+            },
+            message: 'Debe ser un número entero igual o mayor a 1.'
+        },
+        precio: {
+            validator: (value) => !isNaN(parseFloat(value)) && parseFloat(value) > 0,
+            message: 'El precio debe ser un número mayor a 0.'
+        },
         id_tipo_membresia: { // Actualizado para coincidir con el 'name' del select
             validator: (value) => value !== '',
             message: 'Debes seleccionar un tipo de membresía.'
@@ -51,43 +66,39 @@ const Validator = {
      */
     validateForm: function (form) {
         let isFormValid = true;
-        
-        // 1. Limpieza: Antes de validar, oculta todos los mensajes de error existentes
-        // y elimina los estilos de borde rojo para empezar desde un estado limpio.
+
+        // Limpieza: Oculta errores y quita bordes rojos antes de validar.
         form.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
         form.querySelectorAll('input, select').forEach(el => el.classList.remove('border-red-500'));
 
-        for (const fieldName in this.rules) {
-            const inputs = form.querySelectorAll(`[name="${fieldName}"]`);
-            if (inputs.length === 0) continue;
+        // CORRECCIÓN: Iterar sobre los campos del formulario en lugar de todas las reglas.
+        // Esto asegura que solo se validen los campos que realmente existen en el formulario actual.
+        const fieldsToValidate = form.querySelectorAll('input[name], select[name], textarea[name]');
 
-            inputs.forEach(input => {
-                const rule = this.rules[fieldName];
-                const value = input.value.trim();
-                let isFieldValid = false;
+        fieldsToValidate.forEach(input => {
+            const fieldName = input.name;
+            const rule = this.rules[fieldName];
 
-                if (rule.regex) {
-                    isFieldValid = rule.regex.test(value);
-                } else if (rule.validator) {
-                    isFieldValid = rule.validator(value);
-                }
+            // Si no hay una regla para este campo, o si es un campo oculto, lo ignoramos.
+            if (!rule || input.type === 'hidden') {
+                return;
+            }
 
-                if (!isFieldValid) {
-                    // Los campos de integrantes no tienen un .nextElementSibling, el error se muestra en un contenedor general.
-                    // Para otros campos, se puede mantener la lógica del nextElementSibling si existe.
-                    let errorContainer = input.nextElementSibling;
-                    if (!errorContainer || !errorContainer.classList.contains('error-message')) {
-                        // Si no hay un contenedor de error específico, se puede buscar uno general o simplemente marcar el campo.
-                        // Por ahora, solo marcamos el campo y el mensaje se podría mostrar en `membershipMessage`.
-                         this.showFieldError(input, rule.message);
-                    } else {
-                         this.showFieldError(input, rule.message);
-                    }
-                    isFormValid = false;
-                }
-            });
-        }
-        // 5. Retorno: Devuelve el estado final de la validación del formulario.
+            const value = input.value.trim();
+            let isFieldValid = false;
+
+            if (rule.regex) {
+                isFieldValid = rule.regex.test(value);
+            } else if (rule.validator) {
+                isFieldValid = rule.validator(value);
+            }
+
+            if (!isFieldValid) {
+                this.showFieldError(input, rule.message);
+                isFormValid = false;
+            }
+        });
+
         return isFormValid;
     },
 
@@ -113,3 +124,5 @@ const Validator = {
         errorContainer.classList.remove('hidden');
     }
 };
+
+export { Validator };

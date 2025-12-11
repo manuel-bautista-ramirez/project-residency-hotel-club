@@ -820,22 +820,39 @@ export const MembershipService = {
     const membresiasFormateadas = membresias.map((membresia) => {
       const diasRestantes = membresia.dias_restantes;
       const diasParaIniciar = membresia.dias_para_iniciar;
-
       let statusClass = '';
-      let statusText = '';
+      let statusText = membresia.estado; // Empezar con el estado de la BD
 
-      if (diasParaIniciar > 0) {
-        statusClass = 'bg-blue-100 text-blue-800';
-        statusText = 'Programada';
-      } else if (diasRestantes <= 0) {
+      // Prioridad 1: Estados definitivos de la BD
+      if (membresia.estado === 'Cancelada') {
+        statusClass = 'bg-gray-100 text-gray-800';
+        statusText = 'Cancelada';
+      } else if (membresia.estado === 'Vencida') {
         statusClass = 'bg-red-100 text-red-800';
         statusText = 'Vencida';
-      } else if (diasRestantes <= 8) {
-        statusClass = 'bg-yellow-100 text-yellow-800';
-        statusText = 'Por Vencer';
-      } else {
-        statusClass = 'bg-green-100 text-green-800';
-        statusText = 'Activa';
+      }
+      // Prioridad 2: Membresías futuras
+      else if (diasParaIniciar > 0) {
+        statusClass = 'bg-blue-100 text-blue-800';
+        statusText = 'Programada';
+      }
+      // Prioridad 3: Lógica basada en fechas para membresías activas
+      else if (membresia.estado === 'Activa') {
+        if (diasRestantes <= 0) {
+          statusClass = 'bg-red-100 text-red-800';
+          statusText = 'Vencida';
+        } else if (diasRestantes <= 8) {
+          statusClass = 'bg-yellow-100 text-yellow-800';
+          statusText = 'Por Vencer';
+        } else {
+          statusClass = 'bg-green-100 text-green-800';
+          statusText = 'Activa';
+        }
+      }
+      // Fallback para cualquier otro caso
+      else {
+        statusClass = 'bg-gray-100 text-gray-800';
+        statusText = membresia.estado || 'Desconocido';
       }
 
       return {
@@ -972,6 +989,24 @@ export const MembershipService = {
       error.statusCode = 404;
       throw error;
     }
+
+    // Asegurar que siempre haya 3 integrantes para la vista de edición.
+    if (membresia.tipo === 'Familiar') {
+      const TOTAL_INTEGRANTES = 3;
+      const integrantesActuales = membresia.integrantes || [];
+      const integrantesNormalizados = [];
+
+      for (let i = 0; i < TOTAL_INTEGRANTES; i++) {
+        if (i < integrantesActuales.length) {
+          integrantesNormalizados.push(integrantesActuales[i]);
+        } else {
+          // Rellenar con objetos vacíos para que la plantilla no falle.
+          integrantesNormalizados.push({ id_integrante: null, nombre_completo: '' });
+        }
+      }
+      membresia.integrantes = integrantesNormalizados;
+    }
+
     return membresia;
   },
 
@@ -987,29 +1022,26 @@ export const MembershipService = {
       telefono,
       correo,
       estado,
-      fecha_inicio,
-      fecha_fin,
-      precio_final,
       integrantes
     } = data;
 
     // Validar que la membresía a actualizar existe
     const membresia = await this.getMembershipForEdit(id);
-    const tipo = membresia.tipo || 'Individual';
 
     const membershipData = {
       nombre_completo,
       telefono,
       correo,
       estado,
-      fecha_inicio,
-      fecha_fin,
-      precio_final: parseFloat(precio_final)
+      // CORRECCIÓN: Usar los valores existentes de la BD para los campos readonly.
+      fecha_inicio: membresia.fecha_inicio,
+      fecha_fin: membresia.fecha_fin,
+      precio_final: membresia.precio_final
     };
 
     const updateData = {
       membershipData,
-      tipo: tipo,
+      tipo: membresia.tipo || 'Individual',
       integrantes: integrantes || []
     };
 
@@ -1096,5 +1128,93 @@ export const MembershipService = {
       MembershipModel.getTiposMembresia(),
     ]);
     return { membresia, tiposMembresia };
+  },
+
+  /**
+   * Procesa el escaneo de un QR, valida la membresía y registra el acceso.
+   * @param {number} id_activa - El ID de la membresía activa escaneada.
+   * @returns {Promise<object>} Un objeto con el estado y los datos de la membresía.
+   */
+  async processQRScan(id_activa) {
+    if (!id_activa) {
+      const error = new Error("El ID de la membresía es requerido.");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Obtener todos los detalles, incluyendo el campo 'estado'
+    const membershipDetails = await modelList.getMembresiaDetalles(id_activa);
+
+    if (!membershipDetails) {
+      return {
+        status: 'not_found',
+        message: 'Datos no encontrados'
+      };
+    }
+
+    // Crear un objeto base para la respuesta de detalles.
+    const detailsResponse = {
+      titular: membershipDetails.nombre_completo, // CORRECCIÓN: Usar nombre_completo
+      tipo_membresia: membershipDetails.tipo_membresia,
+      fecha_inicio: membershipDetails.fecha_inicio,
+      fecha_fin: membershipDetails.fecha_fin,
+    };
+
+    // 1. PRIMERA VALIDACIÓN: El estado en la base de datos debe ser 'Activa'.
+    if (membershipDetails.estado !== 'Activa') {
+      return {
+        status: 'inactive',
+        message: `La membresía se encuentra inactiva (${membershipDetails.estado}).`,
+        details: detailsResponse
+      };
+    }
+
+    // 2. SEGUNDA VALIDACIÓN: La fecha de vencimiento debe ser vigente.
+    if (membershipDetails.dias_restantes <= 0) {
+      return {
+        status: 'expired',
+        message: 'Esta membresía ha expirado.',
+        details: detailsResponse
+      };
+    }
+
+    // Si ambas validaciones pasan, la membresía es válida.
+    // Registrar la entrada en la tabla 'registro_entradas'.
+    await MembershipModel.recordAccess(id_activa, membershipDetails.tipo_membresia);
+
+    return {
+      status: 'active',
+      message: 'Acceso autorizado.',
+      details: {
+        ...detailsResponse,
+        integrantes: membershipDetails.integrantes,
+      }
+    };
+  },
+
+  /**
+   * Obtiene el historial de acceso para una fecha específica, con paginación.
+   * @param {string} date - La fecha en formato YYYY-MM-DD.
+   * @param {number} page - El número de página.
+   * @returns {Promise<object>} Un objeto con los registros de acceso y la información de paginación.
+   */
+  async getAccessHistory(date, page = 1) {
+    if (!date) {
+        const error = new Error("La fecha es requerida.");
+        error.statusCode = 400;
+        throw error;
+    }
+    const limit = 10; // Definir el número de registros por página
+    const { logs, total } = await MembershipModel.getAccessLogByDate(date, page, limit);
+    
+    // Los logs ya vienen con el formato de fecha correcto desde la BD.
+    return {
+      logs: logs,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalRecords: total
+      }
+    };
   }
 };

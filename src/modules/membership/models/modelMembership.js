@@ -528,6 +528,69 @@ const MembershipModel = {
       throw error;
     }
   },
+
+  /**
+   * Inserta un registro en la tabla de historial de entradas.
+   * @param {number} id_activa - El ID de la membresía activa que ingresa.
+   * @param {string} area_acceso - El área de acceso (se usará el tipo de membresía).
+   * @returns {Promise<number>} El ID del registro de entrada creado.
+   */
+  async recordAccess(id_activa, area_acceso) {
+    try {
+      // Truncar area_acceso si es más largo de 50 caracteres para evitar errores de BD.
+      const truncatedArea = area_acceso.substring(0, 50);
+      const [result] = await pool.query(
+        `INSERT INTO registro_entradas (id_activa, area_acceso) VALUES (?, ?)`,
+        [id_activa, truncatedArea]
+      );
+      return result.insertId;
+    } catch (error) {
+      console.error("Error en recordAccess del modelo:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene el historial de entradas para una fecha específica, con paginación.
+   * @param {string} date - La fecha en formato 'YYYY-MM-DD'.
+   * @param {number} page - El número de página a obtener.
+   * @param {number} limit - El número de registros por página.
+   * @returns {Promise<{logs: Array<object>, total: number}>} Un objeto con los registros y el conteo total.
+   */
+  async getAccessLogByDate(date, page = 1, limit = 10) {
+    try {
+      const offset = (page - 1) * limit;
+
+      // Consulta para obtener el total de registros para esa fecha
+      const [[{ total }]] = await pool.query(
+        `SELECT COUNT(*) as total
+         FROM registro_entradas
+         WHERE DATE(fecha_hora_entrada) = ?`,
+        [date]
+      );
+
+      // Consulta para obtener los registros de la página actual
+      const [logs] = await pool.query(
+        `SELECT
+          re.id_entrada,
+          DATE_FORMAT(re.fecha_hora_entrada, '%Y-%m-%dT%H:%i:%s') AS fecha_hora_entrada,
+          re.area_acceso,
+          c.nombre_completo AS titular
+        FROM registro_entradas re
+        JOIN membresias_activas ma ON re.id_activa = ma.id_activa
+        JOIN clientes c ON ma.id_cliente = c.id_cliente
+        WHERE DATE(re.fecha_hora_entrada) = ?
+        ORDER BY re.fecha_hora_entrada DESC
+        LIMIT ? OFFSET ?`,
+        [date, limit, offset]
+      );
+
+      return { logs, total };
+    } catch (error) {
+      console.error("Error en getAccessLogByDate del modelo:", error);
+      throw error;
+    }
+  }
 };
 
 export { MembershipModel };

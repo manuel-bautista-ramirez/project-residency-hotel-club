@@ -59,9 +59,9 @@ async function updateMembershipById(id, data) {
     // 3. Actualizar la información de la membresía en membresias_activas
     const membresiaData = {
       estado: data.membershipData.estado,
-      fecha_inicio: data.membershipData.fecha_inicio,
-      fecha_fin: data.membershipData.fecha_fin,
-      precio_final: data.membershipData.precio_final
+      fecha_inicio: data.membershipData.fecha_inicio, // Campo añadido
+      fecha_fin: data.membershipData.fecha_fin, // Campo añadido
+      precio_final: data.membershipData.precio_final // Campo añadido
     };
 
     const [membershipResult] = await connection.query(

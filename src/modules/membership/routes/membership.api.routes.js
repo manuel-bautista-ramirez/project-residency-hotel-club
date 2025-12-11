@@ -51,6 +51,14 @@ routerApi.get("/details/:id", (req, res) =>
   listMembershipController.getMembershipDetailsAPI(req, res)
 );
 
+// GET /api/memberships/qr-info/:id
+// Verifica el ID de un QR, registra el acceso si es válido y devuelve los detalles de la membresía.
+routerApi.get("/qr-info/:id", bind(listMembershipController, "getMembershipByQR"));
+
+// GET /api/memberships/access-history?date=YYYY-MM-DD
+// Obtiene el historial de entradas para una fecha específica.
+routerApi.get("/access-history", bind(listMembershipController, "getAccessHistoryAPI"));
+
 // ===================================================================
 // RUTAS DE LA API DE REPORTES
 // ===================================================================

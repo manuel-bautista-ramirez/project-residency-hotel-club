@@ -62,6 +62,9 @@ const modelList = {
             case 'scheduled':
                 baseQuery += ` AND ma.fecha_inicio > CURDATE()`;
                 break;
+            case 'cancelled': // <-- CASO CORREGIDO
+                baseQuery += ` AND ma.estado = 'Cancelada'`;
+                break;
         }
     }
 
@@ -81,16 +84,15 @@ const modelList = {
       const query = `
         SELECT 
           COUNT(*) as total,
-          SUM(CASE WHEN DATEDIFF(ma.fecha_fin, CURDATE()) > 7 THEN 1 ELSE 0 END) as activas,
-          SUM(CASE WHEN DATEDIFF(ma.fecha_fin, CURDATE()) BETWEEN 1 AND 7 THEN 1 ELSE 0 END) as por_vencer,
-          SUM(CASE WHEN DATEDIFF(ma.fecha_fin, CURDATE()) <= 0 THEN 1 ELSE 0 END) as vencidas,
+          SUM(CASE WHEN ma.estado = 'Activa' AND DATEDIFF(ma.fecha_fin, CURDATE()) > 0 THEN 1 ELSE 0 END) as activas,
+          SUM(CASE WHEN ma.estado = 'Activa' AND DATEDIFF(ma.fecha_fin, CURDATE()) BETWEEN 0 AND 8 THEN 1 ELSE 0 END) as por_vencer,
+          SUM(CASE WHEN ma.estado = 'Vencida' OR DATEDIFF(ma.fecha_fin, CURDATE()) <= 0 THEN 1 ELSE 0 END) as vencidas,
           SUM(CASE WHEN tm.max_integrantes > 1 THEN 1 ELSE 0 END) as familiares,
           SUM(CASE WHEN tm.max_integrantes = 1 THEN 1 ELSE 0 END) as individuales,
           SUM(ma.precio_final) as ingresos_totales
         FROM membresias_activas ma
         INNER JOIN membresias m ON ma.id_membresia = m.id_membresia
         INNER JOIN tipos_membresia tm ON m.id_tipo_membresia = tm.id_tipo_membresia
-        WHERE ma.estado = 'Activa'
       `;
 
       const [stats] = await pool.query(query);

@@ -18,23 +18,24 @@
         {{!-- Crear Membresía --}}
         <a href="memberships/createMembership" class="block group">
             <div
-                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
+                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-h-[200px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
                 <div
                     class="absolute inset-0 bg-gradient-to-br from-blue-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 </div>
-                <div class="p-6 flex items-start relative z-10">
+                <div class="p-4 sm:p-6 flex items-start relative z-10">
                     <div
-                        class="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl mr-4 flex-shrink-0 shadow-md">
-                        <i class="fas fa-plus-circle text-white text-xl"></i>
+                        class="bg-gradient-to-br from-blue-500 to-blue-600 p-3 sm:p-4 rounded-xl mr-3 sm:mr-4 flex-shrink-0 shadow-md">
+                        <i class="fas fa-plus-circle text-white text-lg sm:text-xl"></i>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Crear Membresía</h2>
-                        <p class="text-gray-600 text-sm leading-relaxed">Registra una nueva membresía en el sistema con
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1 sm:mb-2">Crear Membresía</h2>
+                        <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">Registra una nueva membresía en el
+                            sistema con
                             todos los detalles necesarios.</p>
                     </div>
                 </div>
-                <div class="px-6 pb-4 relative z-10">
-                    <div class="flex items-center text-blue-600 text-sm font-medium">
+                <div class="px-4 sm:px-6 pb-3 sm:pb-4 relative z-10">
+                    <div class="flex items-center text-blue-600 text-xs sm:text-sm font-medium">
                         <span>Acceder</span>
                         <i
                             class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-300"></i>
@@ -49,23 +50,24 @@
         {{!-- Ver Membresías --}}
         <a href="/memberships/listMembership" class="block group">
             <div
-                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
+                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-h-[200px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
                 <div
                     class="absolute inset-0 bg-gradient-to-br from-green-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 </div>
-                <div class="p-6 flex items-start relative z-10">
+                <div class="p-4 sm:p-6 flex items-start relative z-10">
                     <div
-                        class="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl mr-4 flex-shrink-0 shadow-md">
-                        <i class="fas fa-list text-white text-xl"></i>
+                        class="bg-gradient-to-br from-green-500 to-green-600 p-3 sm:p-4 rounded-xl mr-3 sm:mr-4 flex-shrink-0 shadow-md">
+                        <i class="fas fa-list text-white text-lg sm:text-xl"></i>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Ver Membresías</h2>
-                        <p class="text-gray-600 text-sm leading-relaxed">Consulta y gestiona la lista completa de
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1 sm:mb-2">Ver Membresías</h2>
+                        <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">Consulta y gestiona la lista
+                            completa de
                             miembros activos e inactivos.</p>
                     </div>
                 </div>
-                <div class="px-6 pb-4 relative z-10">
-                    <div class="flex items-center text-green-600 text-sm font-medium">
+                <div class="px-4 sm:px-6 pb-3 sm:pb-4 relative z-10">
+                    <div class="flex items-center text-green-600 text-xs sm:text-sm font-medium">
                         <span>Explorar</span>
                         <i
                             class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-300"></i>
@@ -77,26 +79,58 @@
             </div>
         </a>
 
+        {{!-- Control de Acceso (QR Scan) --}}
+        <a href="/memberships/scan-qr" class="block group">
+            <div
+                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-h-[200px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-teal-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                </div>
+                <div class="p-4 sm:p-6 flex items-start relative z-10">
+                    <div
+                        class="bg-gradient-to-br from-teal-500 to-teal-600 p-3 sm:p-4 rounded-xl mr-3 sm:mr-4 flex-shrink-0 shadow-md">
+                        <i class="fas fa-qrcode text-white text-lg sm:text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1 sm:mb-2">Control de Acceso</h2>
+                        <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">Escanea el código QR de los miembros
+                            para verificar y registrar su acceso.</p>
+                    </div>
+                </div>
+                <div class="px-4 sm:px-6 pb-3 sm:pb-4 relative z-10">
+                    <div class="flex items-center text-teal-600 text-xs sm:text-sm font-medium">
+                        <span>Escanear</span>
+                        <i
+                            class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-300"></i>
+                    </div>
+                </div>
+                <div
+                    class="bg-gradient-to-r from-teal-500 to-teal-600 h-1 w-0 group-hover:w-full transition-all duration-500">
+                </div>
+            </div>
+        </a>
+
         {{!-- Generar Reportes --}}
         <a href="/memberships/reports" class="block group">
             <div
-                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
+                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-h-[200px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
                 <div
                     class="absolute inset-0 bg-gradient-to-br from-purple-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 </div>
-                <div class="p-6 flex items-start relative z-10">
+                <div class="p-4 sm:p-6 flex items-start relative z-10">
                     <div
-                        class="bg-gradient-to-br from-purple-500 to-purple-600 p-4 rounded-xl mr-4 flex-shrink-0 shadow-md">
-                        <i class="fas fa-chart-bar text-white text-xl"></i>
+                        class="bg-gradient-to-br from-purple-500 to-purple-600 p-3 sm:p-4 rounded-xl mr-3 sm:mr-4 flex-shrink-0 shadow-md">
+                        <i class="fas fa-chart-bar text-white text-lg sm:text-xl"></i>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Generar Reportes</h2>
-                        <p class="text-gray-600 text-sm leading-relaxed">Accede a estadísticas detalladas e informes
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1 sm:mb-2">Generar Reportes</h2>
+                        <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">Accede a estadísticas detalladas e
+                            informes
                             avanzados de membresías.</p>
                     </div>
                 </div>
-                <div class="px-6 pb-4 relative z-10">
-                    <div class="flex items-center text-purple-600 text-sm font-medium">
+                <div class="px-4 sm:px-6 pb-3 sm:pb-4 relative z-10">
+                    <div class="flex items-center text-purple-600 text-xs sm:text-sm font-medium">
                         <span>Visualizar</span>
                         <i
                             class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-300"></i>
@@ -111,22 +145,23 @@
         {{!-- Administrar Tipos de Membresías (Nuevo) --}}
         <a href="/memberships/manageMembership" class="block group">
             <div
-                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
+                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-h-[200px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
                 <div
                     class="absolute inset-0 bg-gradient-to-br from-amber-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 </div>
-                <div class="p-6 flex items-start relative z-10">
+                <div class="p-4 sm:p-6 flex items-start relative z-10">
                     <div
-                        class="bg-gradient-to-br from-amber-500 to-amber-600 p-4 rounded-xl mr-4 flex-shrink-0 shadow-md">
-                        <i class="fas fa-cog text-white text-xl"></i>
+                        class="bg-gradient-to-br from-amber-500 to-amber-600 p-3 sm:p-4 rounded-xl mr-3 sm:mr-4 flex-shrink-0 shadow-md">
+                        <i class="fas fa-cog text-white text-lg sm:text-xl"></i>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Administración General</h2>
-                        <p class="text-gray-600 text-sm leading-relaxed">Gestiona precios, y configuraciones de las membresías.</p>
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1 sm:mb-2">Administración General</h2>
+                        <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">Gestiona precios, y configuraciones
+                            de las membresías.</p>
                     </div>
                 </div>
-                <div class="px-6 pb-4 relative z-10">
-                    <div class="flex items-center text-amber-600 text-sm font-medium">
+                <div class="px-4 sm:px-6 pb-3 sm:pb-4 relative z-10">
+                    <div class="flex items-center text-amber-600 text-xs sm:text-sm font-medium">
                         <span>Configurar</span>
                         <i
                             class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-300"></i>
@@ -140,27 +175,28 @@
     </div>
     {{else}}
     {{!-- Para Recepcionistas --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
         {{!-- Crear Membresía --}}
         <a href="/memberships/createMembership" class="block group">
             <div
-                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
+                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-h-[200px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
                 <div
                     class="absolute inset-0 bg-gradient-to-br from-blue-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 </div>
-                <div class="p-6 flex items-start relative z-10">
+                <div class="p-4 sm:p-6 flex items-start relative z-10">
                     <div
-                        class="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl mr-4 flex-shrink-0 shadow-md">
-                        <i class="fas fa-plus-circle text-white text-xl"></i>
+                        class="bg-gradient-to-br from-blue-500 to-blue-600 p-3 sm:p-4 rounded-xl mr-3 sm:mr-4 flex-shrink-0 shadow-md">
+                        <i class="fas fa-plus-circle text-white text-lg sm:text-xl"></i>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Crear Membresía</h2>
-                        <p class="text-gray-600 text-sm leading-relaxed">Registra una nueva membresía en el sistema con
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1 sm:mb-2">Crear Membresía</h2>
+                        <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">Registra una nueva membresía en el
+                            sistema con
                             todos los detalles necesarios.</p>
                     </div>
                 </div>
-                <div class="px-6 pb-4 relative z-10">
-                    <div class="flex items-center text-blue-600 text-sm font-medium">
+                <div class="px-4 sm:px-6 pb-3 sm:pb-4 relative z-10">
+                    <div class="flex items-center text-blue-600 text-xs sm:text-sm font-medium">
                         <span>Acceder</span>
                         <i
                             class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-300"></i>
@@ -175,23 +211,24 @@
         {{!-- Ver Membresías --}}
         <a href="/memberships/listMembership" class="block group">
             <div
-                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
+                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-h-[200px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
                 <div
                     class="absolute inset-0 bg-gradient-to-br from-green-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 </div>
-                <div class="p-6 flex items-start relative z-10">
+                <div class="p-4 sm:p-6 flex items-start relative z-10">
                     <div
-                        class="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-xl mr-4 flex-shrink-0 shadow-md">
-                        <i class="fas fa-list text-white text-xl"></i>
+                        class="bg-gradient-to-br from-green-500 to-green-600 p-3 sm:p-4 rounded-xl mr-3 sm:mr-4 flex-shrink-0 shadow-md">
+                        <i class="fas fa-list text-white text-lg sm:text-xl"></i>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Ver Membresías</h2>
-                        <p class="text-gray-600 text-sm leading-relaxed">Consulta y gestiona la lista completa de
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1 sm:mb-2">Ver Membresías</h2>
+                        <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">Consulta y gestiona la lista
+                            completa de
                             miembros activos e inactivos.</p>
                     </div>
                 </div>
-                <div class="px-6 pb-4 relative z-10">
-                    <div class="flex items-center text-green-600 text-sm font-medium">
+                <div class="px-4 sm:px-6 pb-3 sm:pb-4 relative z-10">
+                    <div class="flex items-center text-green-600 text-xs sm:text-sm font-medium">
                         <span>Explorar</span>
                         <i
                             class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-300"></i>
@@ -199,6 +236,38 @@
                 </div>
                 <div
                     class="bg-gradient-to-r from-green-500 to-green-600 h-1 w-0 group-hover:w-full transition-all duration-500">
+                </div>
+            </div>
+        </a>
+
+        {{!-- Control de Acceso (QR Scan) --}}
+        <a href="/memberships/scan-qr" class="block group">
+            <div
+                class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-h-[200px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-500 transform group-hover:-translate-y-3 group-hover:shadow-2xl relative">
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-teal-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                </div>
+                <div class="p-4 sm:p-6 flex items-start relative z-10">
+                    <div
+                        class="bg-gradient-to-br from-teal-500 to-teal-600 p-3 sm:p-4 rounded-xl mr-3 sm:mr-4 flex-shrink-0 shadow-md">
+                        <i class="fas fa-qrcode text-white text-lg sm:text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1 sm:mb-2">Control de Acceso</h2>
+                        <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">Escanea el código QR de los miembros
+                            para
+                            verificar y registrar su acceso.</p>
+                    </div>
+                </div>
+                <div class="px-4 sm:px-6 pb-3 sm:pb-4 relative z-10">
+                    <div class="flex items-center text-teal-600 text-xs sm:text-sm font-medium">
+                        <span>Escanear</span>
+                        <i
+                            class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-300"></i>
+                    </div>
+                </div>
+                <div
+                    class="bg-gradient-to-r from-teal-500 to-teal-600 h-1 w-0 group-hover:w-full transition-all duration-500">
                 </div>
             </div>
         </a>

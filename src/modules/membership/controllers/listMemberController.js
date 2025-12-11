@@ -185,6 +185,61 @@ const listMembershipController = {
       });
     }
   },
+
+  /**
+   * Endpoint de API para obtener y validar la información de una membresía desde un QR.
+   * Si la membresía es válida y está activa, registra una nueva entrada en el historial de acceso.
+   * @async
+   * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `id` en `req.params`.
+   * @param {import('express').Response} res - El objeto de respuesta de Express.
+   */
+  async getMembershipByQR(req, res) {
+    try {
+      const { id } = req.params;
+      // Llama al servicio para procesar el QR. El servicio se encargará de la validación y el registro.
+      const result = await MembershipService.processQRScan(id);
+      res.json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      console.error("Error al procesar el QR de la membresía:", error);
+      // Devuelve un estado de error específico si el servicio lo proporciona (ej. no encontrado).
+      const statusCode = error.statusCode || 500;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || "Error al procesar el código QR.",
+        error: error.message,
+      });
+    }
+  },
+
+  /**
+   * Endpoint de API para obtener el historial de acceso de una fecha específica.
+   * @async
+   * @param {import('express').Request} req - El objeto de solicitud de Express. Se espera `date` en `req.query`.
+   * @param {import('express').Response} res - El objeto de respuesta de Express.
+   */
+  async getAccessHistoryAPI(req, res) {
+    try {
+      const { date, page } = req.query;
+      const pageNumber = parseInt(page) || 1;
+      // Si no se proporciona una fecha, se usa el día actual.
+      const targetDate = date || new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+      const historyData = await MembershipService.getAccessHistory(targetDate, pageNumber);
+      res.json({
+        success: true,
+        data: historyData,
+      });
+    } catch (error) {
+      console.error("Error en API de historial de acceso:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error al obtener el historial de acceso",
+        error: error.message,
+      });
+    }
+  },
 };
 
 export { listMembershipController };

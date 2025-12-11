@@ -1,3 +1,5 @@
+import { Validator } from './validator.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- LÓGICA PARA TIPOS DE MEMBRESÍA ---
   const tipoMembresiaModal = document.getElementById('tipoMembresiaModal');
@@ -39,6 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   tipoMembresiaForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    // 1. Validar el formulario antes de enviar
+    if (!Validator.validateForm(tipoMembresiaForm)) {
+      return;
+    }
+
     const id = document.getElementById('tipoId').value;
     const formData = new FormData(tipoMembresiaForm);
     const data = Object.fromEntries(formData.entries());
@@ -98,6 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   metodoPagoForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    // 1. Validar el formulario antes de enviar
+    if (!Validator.validateForm(metodoPagoForm)) {
+      return;
+    }
+
     const id = document.getElementById('metodoId').value;
     const formData = new FormData(metodoPagoForm);
     const data = Object.fromEntries(formData.entries());
@@ -171,4 +185,42 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Error de conexión al eliminar.');
     }
   });
+
+  // --- LÓGICA DE VALIDACIÓN EN TIEMPO REAL ---
+
+  /**
+   * Aplica un filtro a un campo de entrada para permitir solo ciertos caracteres.
+   * @param {HTMLElement} inputElement - El elemento input a filtrar.
+   * @param {RegExp} regex - La expresión regular de los caracteres NO permitidos.
+   */
+  const filterInput = (inputElement, regex) => {
+    if (!inputElement) return;
+    inputElement.addEventListener('input', (e) => {
+      const originalValue = e.target.value;
+      const sanitizedValue = originalValue.replace(regex, '');
+      if (originalValue !== sanitizedValue) {
+        e.target.value = sanitizedValue;
+      }
+    });
+  };
+
+  // Campos del modal de Tipos de Membresía
+  const tipoNombreInput = document.getElementById('tipoNombre');
+  const maxIntegrantesInput = document.getElementById('tipoMaxIntegrantes');
+  const precioInput = document.getElementById('tipoPrecio');
+
+  // Campos del modal de Métodos de Pago
+  const metodoNombreInput = document.getElementById('metodoNombre');
+
+  // Aplicar filtros
+  // Nombres: solo letras y espacios
+  filterInput(tipoNombreInput, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g);
+  filterInput(metodoNombreInput, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g);
+
+  // Integrantes: solo números enteros
+  filterInput(maxIntegrantesInput, /[^0-9]/g);
+
+  // Precio: solo números y un punto decimal
+  filterInput(precioInput, /[^0-9.]/g);
+
 });

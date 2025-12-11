@@ -1,6 +1,8 @@
+import { Validator } from './validator.js';
+
 /**
  * Objeto MembershipUI que encapsula la lógica para la edición de membresías,
- * incluyendo la validación del formulario y la gestión de integrantes.
+ * incluyendo la validación del formulario y el filtrado de campos.
  */
 const MembershipUI = {
   /**
@@ -18,11 +20,10 @@ const MembershipUI = {
   cacheDOM: function() {
     this.form = document.getElementById("editMembershipForm");
     this.integrantesContainer = document.getElementById("integrantesContainer");
-    this.addIntegranteBtn = document.getElementById("addIntegrante");
   },
 
   /**
-   * Asigna los manejadores de eventos a los botones de "Agregar" y "Eliminar" integrantes.
+   * Asigna los manejadores de eventos.
    */
   bindEvents: function () {
     // Manejar envío del formulario
@@ -32,21 +33,6 @@ const MembershipUI = {
         if (!Validator.validateForm(this.form)) {
           e.preventDefault();
           console.log("Validación del formulario de edición fallida.");
-        }
-      });
-    }
-
-    // Manejar agregar integrantes
-    if (this.addIntegranteBtn && this.integrantesContainer) {
-      this.addIntegranteBtn.addEventListener("click", () => {
-        this.addIntegrante(this.integrantesContainer);
-      });
-
-      // Delegación de eventos para eliminar integrantes (existentes y nuevos)
-      this.integrantesContainer.addEventListener('click', (e) => {
-        if (e.target.closest('.remove-integrante')) {
-          e.target.closest(".integrante-item").remove();
-          this.updateIntegrantesIndexes();
         }
       });
     }
@@ -88,7 +74,7 @@ const MembershipUI = {
         });
     }
 
-    // Delegación de eventos para los campos de integrantes creados dinámicamente
+    // Delegación de eventos para los campos de nombre de los integrantes
     if (this.integrantesContainer) {
         this.integrantesContainer.addEventListener('input', (e) => {
             if (e.target && e.target.name && e.target.name.includes('[nombre_completo]')) {
@@ -100,45 +86,6 @@ const MembershipUI = {
             }
         });
     }
-  },
-
-  /**
-   * Añade un nuevo campo de integrante al formulario.
-   * Utiliza un <template> HTML para clonar la estructura del campo.
-   * @param {HTMLElement} container - El elemento contenedor donde se añadirá el nuevo campo.
-   */
-  addIntegrante: function (container) {
-    // Busca el template que contiene el HTML para un nuevo integrante.
-    // Esta es una práctica moderna y limpia para no tener HTML mezclado en el JS.
-    const template = document.getElementById('integrante-template');
-    if (!template) {
-        console.error('Template "integrante-template" no encontrado.');
-        return;
-    }
-
-    const clone = template.content.cloneNode(true);
-    container.appendChild(clone);
-    this.updateIntegrantesIndexes();
-  },
-
-  /**
-   * Re-indexa los nombres de los campos de los integrantes restantes después de eliminar uno.
-   * Si se elimina el integrante en la posición 1, los que estaban en las posiciones 2, 3, 4...
-   * deben ser actualizados a 1, 2, 3... para evitar huecos en el array que se envía al servidor.
-   * Por ejemplo, cambia 'integrantes[2][nombre]' a 'integrantes[1][nombre]'.
-   */
-  updateIntegrantesIndexes: function () {
-    // Itera sobre todos los elementos de integrante que quedan en el DOM.
-    document.querySelectorAll(".integrante-item").forEach((item, index) => {
-      const inputs = item.querySelectorAll("input, select");
-      inputs.forEach((input) => {
-        const name = input.getAttribute("name");
-        if (name) {
-          // Reemplaza el número entre corchetes (o __INDEX__) por el nuevo índice.
-          input.setAttribute("name", name.replace(/\[.*?\]/, `[${index}]`));
-        }
-      });
-    });
   },
 };
 
