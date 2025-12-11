@@ -5,28 +5,32 @@ USE hotel_club;
 -- =====================================================
 --               MODULE LOGIN
 -- =======================================================
+
 CREATE TABLE IF NOT EXISTS users_hotel (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(50) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  role ENUM('Administrador','Usuario') NOT NULL
+  password VARCHAR(255) NULL COMMENT 'NULL = usuario debe crear contraseña en primer login',
+  email VARCHAR(100) NULL UNIQUE,
+  role ENUM('Administrador','Usuario') NOT NULL,
+  INDEX idx_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- ======= Insertar usuarios por defecto =======
 -- NOTA: Las contraseñas están hasheadas con bcrypt (10 rounds)
 -- Administrador: manuel / manuel123
 -- Usuario: daniela / daniela123
 -- Para regenerar los hashes, ejecuta: node generate-password-hashes.js
-INSERT IGNORE INTO users_hotel (username, password, role) VALUES
-  ('manuel', '$2b$10$rQJ5vZ9K7mN2L3.OXxYzKqW8rJ9fH5nL2mP4qR6sT8uV0wKYQ8Pj3x', 'Administrador'),
-  ('daniela', '$2b$10$wA0L8oO3M4/PYyZALrX9sK0gI6oM3nQ5rS7tU9vW1xLZR9Qk4yHK6', 'Usuario');
+INSERT IGNORE INTO users_hotel (username, password, email, role) VALUES
+  ('manuel', '$2b$10$rQJ5vZ9K7mN2L3.OXxYzKqW8rJ9fH5nL2mP4qR6sT8uV0wKYQ8Pj3x', 'victor.m.r.b.2000@gmail.com', 'Administrador'),
+  ('daniela', '$2b$10$wA0L8oO3M4/PYyZALrX9sK0gI6oM3nQ5rS7tU9vW1xLZR9Qk4yHK6', 'iscvictormanuelramirezbautista@gmail.com', 'Usuario');
 
 -- si te da error solo  restablece la contraseña. en el link de abajo del login
 
 CREATE TABLE IF NOT EXISTS password_resets (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
-  token VARCHAR(255) NOT NULL UNIQUE,
+  token VARCHAR(6) NOT NULL UNIQUE COMMENT 'Código de 6 dígitos para recuperación',
   expires_at DATETIME NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   KEY idx_password_resets_user (user_id),
@@ -85,20 +89,49 @@ CREATE TABLE IF NOT EXISTS reservaciones (
   usuario_id INT NOT NULL,
   id_medio_mensaje INT NOT NULL,
   nombre_cliente VARCHAR(100) NOT NULL,
+
+  -- Fecha de creación de la reservación (para reportes por día/semana/mes)
   fecha_reserva DATETIME NOT NULL,
+
+  -- Fechas de estancia
   fecha_ingreso DATETIME NOT NULL,
   fecha_salida DATETIME NOT NULL,
+
+  -- Monto total de la reservación
   monto DECIMAL(10,2) NOT NULL,
   monto_letras VARCHAR(255) NOT NULL,
+
+  -- Enganche / anticipo
   enganche DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Monto del enganche/anticipo pagado',
   enganche_letras VARCHAR(255) DEFAULT '' COMMENT 'Enganche en letras',
+
+  -- Registro y archivos
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   pdf_path VARCHAR(500) NULL COMMENT 'Ruta del archivo PDF generado',
   qr_path VARCHAR(500) NULL COMMENT 'Ruta del archivo QR generado',
+
+  -- Estado de la reservación para flujo e historial
+  -- pendiente  : creada pero aún no confirmada (si lo usas)
+  -- confirmada : reservación vigente normal
+  -- convertida_a_renta : ya se convirtió en renta (ya no se muestra en lista, pero sí en reportes)
+  -- cancelada  : cancelada por el usuario/admin
+  estado ENUM('pendiente','confirmada','convertida_a_renta','cancelada')
+    NOT NULL DEFAULT 'confirmada',
+
+  -- Relación opcional con la renta generada a partir de esta reservación
+  id_renta INT NULL,
+
   PRIMARY KEY (id),
+
+  -- Índices para joins y filtros
   INDEX idx_habitacion (habitacion_id),
   INDEX idx_usuario (usuario_id),
   INDEX idx_medio_mensaje (id_medio_mensaje),
+
+  -- Índices para reportes/estado
+  INDEX idx_reservaciones_estado (estado),
+  INDEX idx_reservaciones_id_renta (id_renta),
+
   CONSTRAINT fk_reservaciones_habitacion
     FOREIGN KEY (habitacion_id)
     REFERENCES habitaciones (id)
@@ -156,6 +189,14 @@ CREATE TABLE IF NOT EXISTS rentas (
     ON DELETE RESTRICT
     ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Relación opcional: reservación -> renta generada
+ALTER TABLE reservaciones
+  ADD CONSTRAINT fk_reservaciones_renta
+    FOREIGN KEY (id_renta)
+    REFERENCES rentas (id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE;
 
 
 CREATE TABLE IF NOT EXISTS pdf_registry (

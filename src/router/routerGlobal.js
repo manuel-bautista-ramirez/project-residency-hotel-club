@@ -9,20 +9,14 @@ import { adminRouter } from "../modules/admin/router/adminRouter.js";
 // Rutas de módulos
 
 // Importar el servicio centralizado de WhatsApp
-//import whatsappService from '../services/whatsappService.js';
+import whatsappService from '../services/whatsappService.js';
 
 // Importar y habilitar el servicio de correo electrónico
 import emailService from '../services/emailService.js';
 
 const routerGlobal = express.Router();
 
-// Ruta raíz simple (WhatsApp temporalmente deshabilitado)
-routerGlobal.get('/', (req, res) => {
-  // Redirigir directamente al login
-  res.redirect('/login');
-});
-
-/* --- Ruta Raíz con WhatsApp (TEMPORALMENTE DESHABILITADA) ---
+// Ruta raíz con verificación de WhatsApp
 routerGlobal.get('/', (req, res) => {
   const status = whatsappService.getStatus();
   if (status.connected) {
@@ -37,7 +31,6 @@ routerGlobal.get('/', (req, res) => {
     });
   }
 });
-*/
 
 
 
@@ -53,8 +46,7 @@ routerGlobal.use(adminRouter);
 
 
 
-// Ruta para mostrar la página del QR (TEMPORALMENTE DESHABILITADA)
-/*
+// Ruta para mostrar la página del QR
 routerGlobal.get('/whatsapp-qr', (req, res) => {
   const status = whatsappService.getStatus();
   if (status.connected) {
@@ -66,10 +58,8 @@ routerGlobal.get('/whatsapp-qr', (req, res) => {
     centerContent: true
   });
 });
-*/
 
-// API para obtener estado de WhatsApp en JSON (TEMPORALMENTE DESHABILITADA)
-/*
+// API para obtener estado de WhatsApp en JSON
 routerGlobal.get('/api/whatsapp/status', (req, res) => {
   try {
     const status = whatsappService.getStatus();
@@ -78,7 +68,6 @@ routerGlobal.get('/api/whatsapp/status', (req, res) => {
     res.status(500).json({ error: 'Error al obtener estado de WhatsApp' });
   }
 });
-*/
 
 
 // Middleware para manejar error 404 (después de todas las rutas)
@@ -97,7 +86,7 @@ routerGlobal.use((err, req, res, next) => {
   console.error("❌❌❌ ERROR 500 CAPTURADO ❌❌❌");
   console.error("Mensaje:", err.message);
   console.error("Stack:", err.stack);
-  
+
   const isDev = process.env.NODE_ENV === "development";
 
   res.status(500).render("error500", {

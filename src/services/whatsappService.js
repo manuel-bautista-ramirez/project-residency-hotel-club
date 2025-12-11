@@ -1,18 +1,26 @@
-// WhatsApp Service COMPLETAMENTE DESHABILITADO
-// Este archivo reemplaza temporalmente el servicio real para evitar inicialización
+// WhatsApp Service - Sistema de mensajería para comprobantes
+import { makeWASocket, useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
+import QRCode from 'qrcode';
+import fs from 'fs';
+import path from 'path';
 
-console.log('⚠️ WhatsApp Service DESHABILITADO - No se inicializará');
+console.log('✅ WhatsApp Service HABILITADO - Inicializando...');
 
-class DisabledWhatsAppService {
+class WhatsAppService {
   constructor() {
     this.isConnected = false;
     this.qrCode = null;
     this.userInfo = null;
     this.isInitializing = false;
     this.socket = null;
-    
-    // NO inicializar nada automáticamente
-    console.log('🚫 WhatsApp Service: Inicialización omitida');
+    this.sessionPath = './whatsapp_session';
+    this.qrRetryCount = 0;
+    this.maxQrRetries = 5;
+    this.onReadyCallbacks = [];
+
+    // Inicializar automáticamente
+    console.log('🔄 Iniciando conexión automática de WhatsApp...');
+    this.initializeConnection();
   }
 
   /**
@@ -29,9 +37,9 @@ class DisabledWhatsAppService {
       console.log('⚠️ Conexión ya en proceso, evitando duplicados...');
       return;
     }
-    
+
     this.isInitializing = true;
-    
+
     try {
       console.log('🔍 Verificando estado de la sesión de WhatsApp...');
 
@@ -43,7 +51,7 @@ class DisabledWhatsAppService {
       }
 
       console.log('🔄 Iniciando conexión a WhatsApp...');
-      
+
       // Crear directorio de sesión si no existe
       if (!fs.existsSync(this.sessionPath)) {
         fs.mkdirSync(this.sessionPath, { recursive: true });
@@ -69,11 +77,11 @@ class DisabledWhatsAppService {
           error: () => {},
           trace: () => {},
           fatal: () => {},
-          child: () => ({ 
-            level: 'silent', 
-            debug: () => {}, 
-            info: () => {}, 
-            warn: () => {}, 
+          child: () => ({
+            level: 'silent',
+            debug: () => {},
+            info: () => {},
+            warn: () => {},
             error: () => {},
             trace: () => {},
             fatal: () => {}
@@ -98,25 +106,25 @@ class DisabledWhatsAppService {
           this.isConnected = false;
           this.qrCode = null;
           this.isInitializing = false;
-          
+
           const statusCode = (lastDisconnect?.error)?.output?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-          
+
          // console.log('📱 Conexión cerrada debido a:', lastDisconnect?.error, ', reconectando:', shouldReconnect);
-          
+
           // Si es error 401 (Unauthorized), limpiar sesión
           if (statusCode === 401) {
             console.log('🧹 Error 401 detectado - Limpiando sesión corrupta...');
             try {
               if (fs.existsSync(this.sessionPath)) {
                 fs.rmSync(this.sessionPath, { recursive: true, force: true });
-                console.log('✅ Sesión limpiada, reiniJciando autenticación...');
+                console.log('✅ Sesión limpiada, reiniciando autenticación...');
               }
             } catch (cleanError) {
               console.error('❌ Error limpiando sesión:', cleanError);
             }
           }
-          
+
           if (shouldReconnect) {
             setTimeout(() => this.initializeConnection(), 5000);
           }
@@ -125,16 +133,16 @@ class DisabledWhatsAppService {
           this.qrCode = null;
           this.qrRetryCount = 0;
           this.isInitializing = false;
-          
+
           console.log('\n🎉 ¡WHATSAPP CONECTADO EXITOSAMENTE!');
           console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
           console.log('✅ Tu WhatsApp está ahora vinculado y listo para enviar mensajes');
           console.log('📱 El sistema enviará automáticamente los comprobantes por WhatsApp');
           console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-          
+
           // Obtener información del usuario conectado
           this.getUserInfo();
-          
+
           this.onReadyCallbacks.forEach(callback => callback());
           this.onReadyCallbacks = [];
         } else if (connection === 'connecting') {
@@ -207,7 +215,7 @@ class DisabledWhatsAppService {
       if (this.socket && this.isConnected) {
         const userInfo = this.socket.user;
         this.userInfo = userInfo;
-        
+
         console.log('👤 INFORMACIÓN DEL USUARIO CONECTADO:');
         console.log(`📱 Teléfono: ${userInfo.id.split(':')[0]}`);
         console.log(`👤 Nombre: ${userInfo.name || 'No disponible'}`);
@@ -227,7 +235,7 @@ class DisabledWhatsAppService {
       }
 
       const jid = this.formatPhoneNumber(telefono);
-      
+
       const isReservation = (rentData?.type === 'reservation');
       const titulo = isReservation ? 'COMPROBANTE DE RESERVACIÓN' : 'COMPROBANTE DE RENTA';
       const estadoLinea = isReservation ? '✅ *Reservación Confirmada*' : '✅ *Renta Registrada*';
@@ -255,8 +263,8 @@ ${estadoLinea}
       if (pdfPath && fs.existsSync(pdfPath)) {
         // Enviar PDF con mensaje
         const pdfBuffer = fs.readFileSync(pdfPath);
-        
-        const outFileName = isReservation 
+
+        const outFileName = isReservation
           ? `Comprobante_Reservacion_${rentData.id}.pdf`
           : `Comprobante_Renta_${rentData.id}.pdf`;
         await this.socket.sendMessage(jid, {
@@ -265,7 +273,7 @@ ${estadoLinea}
           fileName: outFileName,
           caption: mensaje
         });
-        
+
         console.log(`✅ Comprobante PDF enviado a ${telefono}`);
       } else {
         // Fallback: enviar solo texto si no hay PDF
@@ -299,7 +307,7 @@ ${estadoLinea}
                      `¡Bienvenido al club! 🎉`;
 
       const jid = this.formatPhoneNumber(telefono);
-      
+
       if (pdfPath && fs.existsSync(pdfPath)) {
         await this.socket.sendMessage(jid, {
           document: fs.readFileSync(pdfPath),
@@ -329,10 +337,10 @@ ${estadoLinea}
       }
 
       const jid = this.formatPhoneNumber(telefono);
-      
+
       // Enviar mensaje de texto
       await this.socket.sendMessage(jid, { text: mensaje });
-      
+
       // Enviar PDF si existe
       if (pdfPath && fs.existsSync(pdfPath)) {
         await this.socket.sendMessage(jid, {
@@ -355,12 +363,12 @@ ${estadoLinea}
   formatPhoneNumber(phone) {
     // Remover caracteres no numéricos
     let cleanPhone = phone.replace(/\D/g, '');
-    
+
     // Si el número tiene 10 dígitos y no empieza con 52, agregar código de país
     if (cleanPhone.length === 10 && !cleanPhone.startsWith('52')) {
       cleanPhone = '52' + cleanPhone;
     }
-    
+
     return cleanPhone + '@s.whatsapp.net';
   }
 
@@ -386,7 +394,7 @@ ${estadoLinea}
   }
 }
 
-// Crear instancia SIN inicialización automática
-const disabledWhatsAppService = new DisabledWhatsAppService();
+// Crear instancia CON inicialización automática
+const whatsappService = new WhatsAppService();
 
-export default disabledWhatsAppService;
+export default whatsappService;

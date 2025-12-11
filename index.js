@@ -6,7 +6,6 @@ import { app } from "./src/config/app.js";
 import { config } from "./src/config/configuration.js";
 import { routerGlobal } from "./src/router/routerGlobal.js";
 
-
 // Configuración de variables para __dirname en módulos ES
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +44,8 @@ app.use('/api/pdfs', pdfRoutes);
 
 // Importar e iniciar el servicio de cola de trabajos
 import jobQueueService from './src/services/jobQueueService.js';
+import './script/dbBackupScheduler.js';
+
 jobQueueService.startProcessing();
 
 // Iniciar servidor

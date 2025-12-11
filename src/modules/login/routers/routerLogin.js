@@ -2,30 +2,30 @@ import express from "express";
 import { roleMiddleware, authMiddleware } from "../../../middlewares/validation/accessDenied.js";
 import {
   loginUser,
-  sendPasswordResetLink,
-  resetPassword,
-  renderResetPasswordForm
+  sendPasswordResetCode,
+  verifyResetCode,
+  resetPasswordWithCode
 } from "../controllers/authControllerUsers.js";
 
 const router = express.Router();
 
 // =====================
-// Rutas de recuperación (PÚBLICAS, sin authMiddleware)
+// Rutas de recuperación por EMAIL (PÚBLICAS, sin authMiddleware)
 // =====================
 
-// Formulario para pedir recuperación
+// Formulario para pedir recuperación por email
 router.get("/password-reset/request", (req, res) =>
-  res.render("requestPassword")
+  res.render("requestPasswordEmail")
 );
 
-// Generar enlace de recuperación
-router.post("/password-reset/request", sendPasswordResetLink);
+// Enviar código de recuperación por email
+router.post("/password-reset/request", sendPasswordResetCode);
 
-// Mostrar formulario de reset (popup con token)
-router.get("/password-reset/reset/:token", renderResetPasswordForm);
+// Verificar código de recuperación
+router.post("/password-reset/verify-code", verifyResetCode);
 
-// Procesar nueva contraseña
-router.post("/password-reset/reset/:token", resetPassword);
+// Procesar nueva contraseña con código
+router.post("/password-reset/reset", resetPasswordWithCode);
 
 // =====================
 // Rutas de login/logout (PÚBLICAS)

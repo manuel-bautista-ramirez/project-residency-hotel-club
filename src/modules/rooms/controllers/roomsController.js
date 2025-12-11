@@ -2,6 +2,22 @@
 import path from "path";
 import { fileURLToPath } from "url";
 
+// Formato para fechas de MySQL (guardamos en UTC para evitar desfases al recuperar)
+const formatUTCForMySQL = (date) => {
+  try {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  } catch (error) {
+    console.error("Error al formatear fecha para MySQL:", error);
+    throw new Error("Error al formatear fecha");
+  }
+};
+
 // Helper function para manejo seguro de fechas
 const formatearFechaSafe = (fecha, formato = 'iso') => {
   if (!fecha) return null;
@@ -12,10 +28,27 @@ const formatearFechaSafe = (fecha, formato = 'iso') => {
       console.warn(`Fecha inválida encontrada: ${fecha}`);
       return null;
     }
-    
+
     switch (formato) {
       case 'date':
         return fechaObj.toISOString().split("T")[0];
+      case 'iso_mx': {
+        const formatter = new Intl.DateTimeFormat('es-MX', {
+          timeZone: 'America/Mexico_City',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        });
+        const parts = formatter.formatToParts(fechaObj).reduce((acc, p) => {
+          acc[p.type] = p.value; return acc;
+        }, {});
+        // Devolver en formato ISO con offset fijo de México: YYYY-MM-DDTHH:mm:ss-06:00
+        return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}-06:00`;
+      }
       case 'iso':
       default:
         return fechaObj.toISOString();
@@ -29,6 +62,7 @@ import { pool } from "../../../dataBase/connectionDataBase.js";
 import {
   getHabitaciones,
   findReservacionById,
+  findRentaById,
   getAllReservationes,
   getAllRentas,
   deletebyReservation,
@@ -41,11 +75,13 @@ import {
   createMessageMethod,
   checkRoomAvailability,
   createRent,
-  deleteByIdRenta,
+  deleteByIdRenta as deleteRentaFromDB,
   updateReservation,
   updateRent,
   finalizarRenta,
   finalizarRentasExpiradas,
+  hasActiveBookings, // <-- NUEVO import
+  findReservacionByRentId,
 } from "../models/ModelRoom.js"; // Ajusta la ruta según tu proyecto
 
 // Para obtener __dirname en ES modules
@@ -55,7 +91,7 @@ const __dirname = path.dirname(__filename);
 export const renderHabitacionesView = async (req, res) => {
   try {
     const user = req.session.user || { role: "Usuario" };
-    
+
     // Actualizar habitaciones de rentas expiradas antes de cargar las habitaciones
     try {
       const resultado = await finalizarRentasExpiradas();
@@ -66,7 +102,7 @@ export const renderHabitacionesView = async (req, res) => {
       console.error("⚠️ Error al actualizar habitaciones de rentas expiradas:", error);
       // No interrumpir el flujo, solo registrar el error
     }
-    
+
     const habitaciones = await getHabitaciones();
 
     res.render("ShowAllRooms", {
@@ -87,15 +123,44 @@ export const renderHabitacionesView = async (req, res) => {
 // change status
 export const changesStatus = async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body; //  "disponible"
-  const success = await updateRoomStatus(id, status);
+  const { status } = req.body; // "disponible"
 
-  console.log("Status change result:", success);
+  try {
+    // 1) Ejecutar finalización automática de rentas expiradas para limpiar el estado del sistema
+    try {
+      await finalizarRentasExpiradas();
+    } catch (err) {
+      console.warn("Error al finalizar rentas expiradas antes de cambio de estado:", err);
+    }
 
-  if (success) {
-    res.redirect("/rooms");
-  } else {
-    res.status(500).send("No se pudo actualizar el estado.");
+    // 2) Validar cambio de limpieza --> disponible
+    if (status === 'disponible') {
+      // Obtener el estado actual de la habitación
+      const habitaciones = await getHabitaciones();
+      const habitacion = habitaciones.find(h => Number(h.id) === Number(id));
+      if (!habitacion) {
+        return res.status(404).send("Habitación no encontrada.");
+      }
+
+      // Solo permitir si el estado actual es 'limpieza'
+      if (habitacion.estado !== 'limpieza') {
+        return res.status(400).send("Solo se puede marcar como disponible si la habitación está en limpieza.");
+      }
+
+
+    }
+
+    // 3) Proceder con el cambio de estado
+    const success = await updateRoomStatus(id, status);
+
+    if (success) {
+      return res.redirect("/rooms");
+    } else {
+      return res.status(500).send("No se pudo actualizar el estado.");
+    }
+  } catch (err) {
+    console.error("Error en changesStatus:", err);
+    return res.status(500).send("Error interno al cambiar el estado");
   }
 };
 
@@ -192,33 +257,25 @@ export const handleCreateReservation = async (req, res) => {
       return res.status(400).send("Las fechas proporcionadas no son válidas");
     }
 
-    fechaIngresoDate.setUTCHours(18, 0, 0, 0);
-    fechaSalidaDate.setUTCHours(18, 0, 0, 0);
 
-    const formatUTCForMySQL = (date) => {
-      try {
-        const year = date.getUTCFullYear();
-        const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-        const day = String(date.getUTCDate()).padStart(2, "0");
-        const hours = String(date.getUTCHours()).padStart(2, "0");
-        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-        const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-      } catch (error) {
-        console.error("Error al formatear fecha para MySQL:", error);
-        throw new Error("Error al formatear fecha");
-      }
-    };
+
+    fechaIngresoDate.setHours(12, 0, 0, 0);     // 12:00 PM
+    fechaSalidaDate.setHours(11, 59, 0, 0);     // 11:59 AM
 
     const fecha_ingreso_formatted = formatUTCForMySQL(fechaIngresoDate);
     const fecha_salida_formatted = formatUTCForMySQL(fechaSalidaDate);
+
+    console.log("Fechas formateadas para MySQL:", {
+      fecha_ingreso_formatted,
+      fecha_salida_formatted}
+    );
 
     // El formulario envía "price", pero también aceptar "monto" por compatibilidad
     const montoTotal = Number(price || monto) || 0;
     const monto_letras = convertMumbersWorks(montoTotal);
     const enganche_amount = Number(enganche) || 0;
     const enganche_letras = convertMumbersWorks(enganche_amount);
-    
+
     console.log("💰 Montos recibidos:", { price, monto, montoTotal, enganche_amount });
 
     const reservationData = {
@@ -227,6 +284,7 @@ export const handleCreateReservation = async (req, res) => {
       nombre_cliente,
       correo,
       telefono,
+      fecha_reserva: formatUTCForMySQL(new Date()),
       fecha_ingreso: fecha_ingreso_formatted,
       fecha_salida: fecha_salida_formatted,
       monto: montoTotal,
@@ -243,6 +301,21 @@ export const handleCreateReservation = async (req, res) => {
     }
 
     console.log(`Reservación creada con ID: ${reservationId}`);
+
+    try {
+      const reservacionCreada = await findReservacionById(reservationId);
+      if (reservacionCreada) {
+        console.log("🕒 Timestamp almacenado en BD:", {
+          fecha_reserva: reservacionCreada.fecha_reserva,
+          fecha_ingreso: reservacionCreada.fecha_ingreso,
+          fecha_salida: reservacionCreada.fecha_salida,
+        });
+      } else {
+        console.warn("⚠️ No se pudo recuperar la reservación recién creada para depuración");
+      }
+    } catch (debugError) {
+      console.warn("⚠️ Error obteniendo reservación para depuración de fechas:", debugError);
+    }
 
     // Obtener el número real de la habitación
     const { getRoomNumberById } = await import("../models/ModelRoom.js");
@@ -322,17 +395,117 @@ export const renderAllRervationes = async (req, res) => {
     const user = req.session.user || { role: "Usuario" };
     const allReservationes = await getAllReservationes();
 
-    const reservacionesFormateadas = allReservationes.map((reservacion) => ({
-      ...reservacion,
-      fecha_reserva: formatearFechaSafe(reservacion.fecha_reserva),
-      fecha_ingreso: formatearFechaSafe(reservacion.fecha_ingreso),
-      fecha_salida: formatearFechaSafe(reservacion.fecha_salida),
-    }));
+    const reservationsArray = Array.isArray(allReservationes) ? allReservationes : [];
+
+    console.log(`Reservaciones obtenidas de BD: ${reservationsArray.length}`);
+
+    // Depuración: mostrar todas las reservaciones con su estado
+    reservationsArray.forEach((r, i) => {
+      console.log(`Reservación ${i + 1}:`, {
+        id: r.id_reservacion,
+        es_convertida: r.es_convertida,
+        estado_reservacion: r.estado_reservacion,
+        numero_habitacion: r.numero_habitacion,
+        nombre_cliente: r.nombre_cliente
+      });
+    });
+
+    const currencyFormatter = new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+      minimumFractionDigits: 2,
+    });
+
+    const ahora = new Date();
+
+    const reservacionesFormateadas = reservationsArray.map((reservacion) => {
+      // Fecha ingreso/salida originales (pueden venir como strings MySQL)
+      const fechaIngresoRaw = reservacion.fecha_ingreso;
+      const fechaIngresoDate = fechaIngresoRaw ? new Date(fechaIngresoRaw) : null;
+
+      // Fecha de inicio del periodo de confirmación = fecha_ingreso - 30 minutos
+      const confirmStartDate = fechaIngresoDate ? new Date(fechaIngresoDate.getTime() - (30 * 60 * 1000)) : null;
+
+      // Enganche perdido si ahora > fecha_ingreso + 30 minutos (es decir: no se confirmó en el lapso)
+      const enganchePerdido = fechaIngresoDate ? (ahora > new Date(fechaIngresoDate.getTime() + (30 * 60 * 1000))) : false;
+
+      const esConvertida = reservacion.es_convertida === 1;
+      const origenLabel = esConvertida ? "Conversión" : "Reservación";
+      const estadoBase = reservacion.estado_reservacion || "pendiente";
+
+      const estadoEtiqueta = esConvertida
+        ? { texto: "Convertida a renta", clase: "bg-blue-100 text-blue-800", icono: "fa-solid fa-right-left" }
+        : estadoBase === "cancelada"
+          ? { texto: "Cancelada", clase: "bg-red-100 text-red-700", icono: "fa-solid fa-ban" }
+          : { texto: "Pendiente", clase: "bg-amber-100 text-amber-700", icono: "fa-solid fa-clock" };
+
+      const resumenFinanciero = esConvertida
+        ? {
+            tipo: reservacion.tipo_pago_renta || reservacion.tipo_pago,
+            monto: reservacion.monto_renta || reservacion.precio_total,
+            monto_formateado: currencyFormatter.format(
+              Number(reservacion.monto_renta || reservacion.precio_total || 0)
+            ),
+            origen: origenLabel,
+            origen_clave: "conversion",
+          }
+        : {
+            tipo: reservacion.tipo_pago,
+            monto: reservacion.precio_total,
+            monto_formateado: currencyFormatter.format(Number(reservacion.precio_total || 0)),
+            origen: origenLabel,
+            origen_clave: "reservacion",
+          };
+
+      const estado_clave = esConvertida
+        ? "convertida"
+        : estadoBase === "cancelada"
+          ? "cancelada"
+          : "pendiente";
+
+      return {
+        ...reservacion,
+        // Enviar fechas en formato ISO estándar; el frontend las formatea manualmente
+        fecha_reserva: formatearFechaSafe(reservacion.fecha_reserva, 'iso'),
+        fecha_ingreso: formatearFechaSafe(reservacion.fecha_ingreso, 'iso'),
+        fecha_salida: formatearFechaSafe(reservacion.fecha_salida, 'iso'),
+        enganche_perdido: Boolean(enganchePerdido),
+        confirm_start: confirmStartDate ? confirmStartDate.toISOString() : null, // para data-attribute en la vista
+        es_convertida: esConvertida,
+        estado_etiqueta: estadoEtiqueta,
+        resumen_financiero: resumenFinanciero,
+        origen_clave: resumenFinanciero.origen_clave,
+        estado_clave,
+      };
+    });
+
+    // Filtrar solo las reservaciones pendientes (no convertidas)
+    const reservacionesPendientes = reservacionesFormateadas.filter(r => !r.es_convertida);
+    const reservacionesConvertidas = reservacionesFormateadas.filter(r => r.es_convertida);
+
+    console.log(`Reservaciones pendientes (no convertidas): ${reservacionesPendientes.length}`);
+    console.log(`Reservaciones convertidas: ${reservacionesConvertidas.length}`);
+
+    const totalPendiente = reservacionesPendientes.reduce((sum, r) => sum + Number(r.resumen_financiero?.monto || 0), 0);
+    const totalConvertido = reservacionesConvertidas.reduce((sum, r) => sum + Number(r.resumen_financiero?.monto || 0), 0);
+
+    const resumenReservaciones = {
+      pendientes: {
+        cantidad: reservacionesPendientes.length,
+        total: currencyFormatter.format(totalPendiente),
+      },
+      convertidas: {
+        cantidad: reservacionesConvertidas.length,
+        total: currencyFormatter.format(totalConvertido),
+      },
+    };
 
     res.render("showReservations", {
-      title: "Adminstracion de  Reservaciones",
+      title: "Administración de Reservaciones",
       showFooter: true,
-      allReservationes: reservacionesFormateadas,
+      // CAMBIO IMPORTANTE: Enviar solo las reservaciones pendientes
+      allReservationes: reservacionesPendientes,
+      resumenReservaciones,
       user: {
         ...user,
         rol: user.role,
@@ -341,7 +514,7 @@ export const renderAllRervationes = async (req, res) => {
     });
   } catch (error) {
     console.error(
-      "Error al renderrizar las reservaciones:",
+      "Error al renderizar las reservaciones:",
       error?.message || error
     );
     res.status(500).send("Error al cargar las reservaciones");
@@ -357,12 +530,12 @@ export const deleteByIdResevation = async (req, res) => {
     // Obtener datos de la reservación antes de eliminarla para borrar archivos
     console.log(`Obteniendo datos de la reservación ${reservationId}...`);
     const reservacion = await findReservacionById(reservationId);
-    
+
     // Eliminar PDF y QR de la reservación si existen
     if (reservacion) {
       const fs = await import("fs");
       const fsPromises = fs.promises;
-      
+
       if (reservacion.pdf_path) {
         try {
           if (fs.default.existsSync(reservacion.pdf_path)) {
@@ -373,7 +546,7 @@ export const deleteByIdResevation = async (req, res) => {
           console.error(`Error al eliminar PDF de reservación:`, error.message);
         }
       }
-      
+
       if (reservacion.qr_path) {
         try {
           if (fs.default.existsSync(reservacion.qr_path)) {
@@ -402,10 +575,124 @@ export const deleteByIdResevation = async (req, res) => {
   }
 };
 
+// delete by id renta (eliminación permanente)
+export const deleteIdRenta = async (req, res) => {
+  try {
+    const rentaId = Number(req.params.id);
+    if (Number.isNaN(rentaId)) return res.status(400).send("ID inválido");
+
+    // 1. Obtener los datos de la renta ANTES de eliminarla
+    console.log(`Obteniendo datos de la renta ${rentaId}...`);
+    const renta = await findRentaById(rentaId);
+
+    if (!renta) {
+      return res.status(404).send("Renta no encontrada");
+    }
+
+    const habitacionId = renta.habitacion_id;
+
+    // 1.1 Obtener reservación asociada (si fue conversión)
+    const reservacionAsociada = await findReservacionByRentId(rentaId);
+
+    // Helpers para eliminar archivos compartidos
+    let fsModule;
+    let fsDefault;
+    let fsPromises;
+
+    const ensureFs = async () => {
+      if (!fsModule) {
+        fsModule = await import("fs");
+        fsDefault = fsModule.default;
+        fsPromises = fsModule.promises;
+      }
+    };
+
+    const eliminarArchivo = async (ruta, etiqueta) => {
+      if (!ruta) return;
+      try {
+        await ensureFs();
+        if (fsDefault.existsSync(ruta)) {
+          await fsPromises.unlink(ruta);
+          console.log(`✅ ${etiqueta} eliminado: ${ruta}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error al eliminar ${etiqueta}:`, error.message);
+      }
+    };
+
+    // 2. Eliminar archivos PDF y QR si existen
+    await eliminarArchivo(renta.pdf_path, "PDF de renta");
+    await eliminarArchivo(renta.qr_path, "QR de renta");
+
+    // 2.1 Eliminar reservación asociada (si aplica) y sus archivos
+    if (reservacionAsociada) {
+      console.log(`Eliminando reservación asociada ${reservacionAsociada.id} a la renta ${rentaId}...`);
+      await eliminarArchivo(reservacionAsociada.pdf_path, "PDF de reservación convertida");
+      await eliminarArchivo(reservacionAsociada.qr_path, "QR de reservación convertida");
+
+      const reservaEliminada = await deletebyReservation(reservacionAsociada.id);
+      if (!reservaEliminada) {
+        console.error(`No se pudo eliminar la reservación asociada ${reservacionAsociada.id}`);
+        return res.status(500).send("No se pudo eliminar la reservación asociada a la renta");
+      }
+      console.log(`✅ Reservación asociada ${reservacionAsociada.id} eliminada exitosamente`);
+    }
+
+    // 3. Liberar la habitación
+    console.log(`Liberando habitación ${habitacionId} y poniéndola en estado "disponible"...`);
+    const { pool } = await import("../../../dataBase/connectionDataBase.js");
+    await pool.query('UPDATE habitaciones SET estado = "disponible" WHERE id = ?', [habitacionId]);
+
+    // 4. Eliminar la renta de la base de datos
+    console.log(`Eliminando renta ${rentaId} de la base de datos...`);
+    const success = await deleteRentaFromDB(rentaId);
+
+    if (success) {
+      console.log(`🎉 Renta ${rentaId} eliminada exitosamente y habitación liberada`);
+      res.redirect("/rooms/list/rentas");
+    } else {
+      res.status(500).send("No se pudo eliminar la renta");
+    }
+  } catch (err) {
+    console.error("Error deleting renta:", err);
+    res.status(500).send("Error al eliminar la renta");
+  }
+};
+
 export const renderAllRentas = async (req, res) => {
   try {
     const user = req.session.user || { role: "Usuario" };
     const allRentas = await getAllRentas();
+
+    const rentasDirectas = allRentas.filter((renta) => renta.es_conversion === 0);
+    const rentasConvertidas = allRentas.filter((renta) => renta.es_conversion === 1);
+
+    const calcularTotal = (items) =>
+      items.reduce((total, renta) => total + Number(renta.monto || 0), 0);
+
+    const currencyFormatter = new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+      minimumFractionDigits: 2,
+    });
+
+    const resumenIngresos = {
+      directas: {
+        total: calcularTotal(rentasDirectas),
+        cantidad: rentasDirectas.length,
+      },
+      convertidas: {
+        total: calcularTotal(rentasConvertidas),
+        cantidad: rentasConvertidas.length,
+      },
+    };
+
+    resumenIngresos.directas.total_formateado = currencyFormatter.format(
+      resumenIngresos.directas.total
+    );
+    resumenIngresos.convertidas.total_formateado = currencyFormatter.format(
+      resumenIngresos.convertidas.total
+    );
 
     // Formatear fechas sin ajuste de zona horaria de forma segura
     const formatDateForDisplay = (dateStr) => {
@@ -414,13 +701,13 @@ export const renderAllRentas = async (req, res) => {
         // Extraer la fecha y hora directamente del string de MySQL
         // Formato: "2025-10-11T12:00:00.000Z" → "11/10/2025 12:00"
         const date = new Date(dateStr);
-        
+
         // Verificar si la fecha es válida
         if (isNaN(date.getTime())) {
           console.warn(`Fecha inválida en renta: ${dateStr}`);
           return "Fecha inválida";
         }
-        
+
         const day = String(date.getUTCDate()).padStart(2, '0');
         const month = String(date.getUTCMonth() + 1).padStart(2, '0');
         const year = date.getUTCFullYear();
@@ -437,6 +724,11 @@ export const renderAllRentas = async (req, res) => {
       ...renta,
       fecha_ingreso: formatDateForDisplay(renta.fecha_ingreso),
       fecha_salida: formatDateForDisplay(renta.fecha_salida),
+      origen_texto:
+        renta.es_conversion === 0
+          ? "Renta directa"
+          : "Conversión de reservación",
+      origen_clave: renta.es_conversion === 0 ? "directa" : "conversion",
     }));
 
     console.log('🔍 Usuario en renderAllRentas:', user);
@@ -445,6 +737,7 @@ export const renderAllRentas = async (req, res) => {
     res.render("showRent", {
       title: "Listado de habitaciones rentadas",
       allRentas: rentasFormateadas,
+      resumenIngresos,
       showFooter: true,
       user: {
         ...user,
@@ -458,69 +751,6 @@ export const renderAllRentas = async (req, res) => {
   }
 };
 
-// delete by id renta (eliminación permanente)
-export const deleteIdRenta = async (req, res) => {
-  try {
-    const rentaId = Number(req.params.id);
-    if (Number.isNaN(rentaId)) return res.status(400).send("ID inválido");
-
-    // Obtener datos de la renta antes de eliminarla para borrar archivos Y liberar habitación
-    console.log(`Obteniendo datos de la renta ${rentaId}...`);
-    const { pool } = await import("../../../dataBase/connectionDataBase.js");
-    const [rentas] = await pool.query("SELECT pdf_path, qr_path, habitacion_id FROM rentas WHERE id = ?", [rentaId]);
-    
-    if (rentas.length === 0) {
-      return res.status(404).send("Renta no encontrada");
-    }
-
-    const renta = rentas[0];
-    const habitacionId = renta.habitacion_id;
-
-    // Eliminar PDF y QR de la renta si existen
-    const fs = await import("fs");
-    const fsPromises = fs.promises;
-    
-    if (renta.pdf_path) {
-      try {
-        if (fs.default.existsSync(renta.pdf_path)) {
-          await fsPromises.unlink(renta.pdf_path);
-          console.log(` PDF de renta eliminado: ${renta.pdf_path}`);
-        }
-      } catch (error) {
-        console.error(`Error al eliminar PDF de renta:`, error.message);
-      }
-    }
-    
-    if (renta.qr_path) {
-      try {
-        if (fs.default.existsSync(renta.qr_path)) {
-          await fsPromises.unlink(renta.qr_path);
-          console.log(` QR de renta eliminado: ${renta.qr_path}`);
-        }
-      } catch (error) {
-        console.error(`Error al eliminar QR de renta:`, error.message);
-      }
-    }
-
-    // Liberar la habitación poniéndola en estado "disponible" (no "limpieza" porque la renta se está eliminando, no finalizando)
-    console.log(` Liberando habitación ${habitacionId} y poniéndola en estado "disponible"...`);
-    await pool.query('UPDATE habitaciones SET estado = "disponible" WHERE id = ?', [habitacionId]);
-
-    // Eliminar la renta de la base de datos
-    console.log(` Eliminando renta ${rentaId} de la base de datos...`);
-    const success = await deleteByIdRenta(rentaId);
-    if (success) {
-      console.log(`✅ Renta ${rentaId} eliminada exitosamente y habitación liberada`);
-      res.redirect("/rooms/list/rentas"); // Ajusta la ruta según tu vista de rentas
-    } else {
-      res.status(500).send("No se pudo eliminar la renta");
-    }
-  } catch (err) {
-    console.error("Error deleting renta:", err);
-    res.status(500).send("Error al eliminar la renta");
-  }
-};
-
 // Marcar renta como desocupada (finalizada) y liberar habitación
 export const marcarComoDesocupada = async (req, res) => {
   try {
@@ -530,7 +760,7 @@ export const marcarComoDesocupada = async (req, res) => {
     }
 
     console.log(`Verificando si la renta ${rentaId} puede ser desocupada...`);
-    
+
     // Verificar si la renta ya está expirada
     const [rentaInfo] = await pool.query(`
       SELECT fecha_salida, estado,
@@ -538,12 +768,12 @@ export const marcarComoDesocupada = async (req, res) => {
                WHEN estado = 'finalizada' THEN 'expirada'
                WHEN (
                  DATE(fecha_salida) < CURDATE()
-                 OR 
+                 OR
                  (DATE(fecha_salida) = CURDATE() AND NOW() >= fecha_salida)
                ) THEN 'expirada'
                ELSE 'corriente'
              END AS estado_tiempo
-      FROM rentas 
+      FROM rentas
       WHERE id = ?
     `, [rentaId]);
 
@@ -553,21 +783,21 @@ export const marcarComoDesocupada = async (req, res) => {
     }
 
     const renta = rentaInfo[0];
-    
+
     // Validar que la renta no esté expirada
     if (renta.estado_tiempo === 'expirada') {
       console.log(`⚠️ Intento de desocupar renta expirada ${rentaId}`);
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: "No se puede desocupar una renta que ya ha expirado",
         details: "Esta renta ya venció y no puede ser desocupada manualmente"
       });
     }
 
     console.log(`✅ Renta ${rentaId} está corriente, procediendo a marcar como desocupada...`);
-    
+
     // Llamar a la función del modelo que finaliza la renta y libera la habitación
     const success = await finalizarRenta(rentaId);
-    
+
     if (success) {
       console.log(`✅ Renta ${rentaId} marcada como finalizada y habitación liberada`);
       res.redirect("/rooms/list/rentas");
@@ -590,9 +820,13 @@ export const renderFormEditarReservacion = async (req, res) => {
     const reservacion = await findReservacionById(reservacionId);
     if (!reservacion) return res.status(404).send("Reservación no encontrada");
 
+
+
     // Formatear fechas para inputs tipo date de forma segura
     reservacion.fecha_ingreso = formatearFechaSafe(reservacion.fecha_ingreso, 'date') || "";
     reservacion.fecha_salida = formatearFechaSafe(reservacion.fecha_salida, 'date') || "";
+
+    console.log("Fcehas recibicidas de la reservaciona editar: ",   reservacion.fecha_ingreso, reservacion.fecha_salida  )
 
     const habitaciones = await getHabitaciones();
 
@@ -620,6 +854,8 @@ export const handleEditReservation = async (req, res) => {
       nombre_cliente,
       fecha_ingreso,
       fecha_salida,
+      fecha_ingreso_with_time,
+      fecha_salida_with_time,
       habitacion_id,
       monto,
       monto_letras,
@@ -627,54 +863,74 @@ export const handleEditReservation = async (req, res) => {
       send_whatsapp,
     } = req.body;
 
+    const fechaIngresoRaw = fecha_ingreso_with_time || fecha_ingreso;
+    const fechaSalidaRaw = fecha_salida_with_time || fecha_salida;
+
+    console.log("Fechas recibidas :", {
+      fecha_ingreso,
+      fecha_ingreso_with_time,
+      fecha_salida,
+      fecha_salida_with_time,
+    });
+
     console.log(`Editando reservación ${id}...`);
     console.log("Datos recibidos:", req.body);
 
-    // Formatear fechas para MySQL
-    const fechaIngresoDate = new Date(fecha_ingreso);
-    const fechaSalidaDate = new Date(fecha_salida);
+    // ===============================
+    //  CONVERTIR FECHAS A LOCAL (MX)
+    // ===============================
+    const fechaIngresoDate = new Date(fechaIngresoRaw);
+    const fechaSalidaDate = new Date(fechaSalidaRaw);
 
-    const formatUTCForMySQL = (date) => {
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-      const day = String(date.getUTCDate()).padStart(2, "0");
-      return `${year}-${month}-${day} 12:00:00`;
-    };
 
+    fechaIngresoDate.setHours(12, 0, 0, 0);     // 12:00 PM
+    fechaSalidaDate.setHours(11, 59, 0, 0);     // 11:59 AM
+
+
+    if (isNaN(fechaIngresoDate.getTime()) || isNaN(fechaSalidaDate.getTime())) {
+      return res.status(400).send("Fechas inválidas");
+    }
+
+
+    //
     const fecha_ingreso_formatted = formatUTCForMySQL(fechaIngresoDate);
     const fecha_salida_formatted = formatUTCForMySQL(fechaSalidaDate);
 
-    // Datos para actualizar
+    // ===================================
+    //  DATOS PARA ACTUALIZAR RESERVACIÓN
+    // ===================================
     const reservationData = {
       nombre_cliente,
       fecha_ingreso: fecha_ingreso_formatted,
       fecha_salida: fecha_salida_formatted,
       habitacion_id,
       monto,
-      monto_letras,
+      monto_letras
     };
 
-    // Obtener datos completos de la reservación ANTES de actualizar (para eliminar archivos antiguos)
+    // Obtener datos anteriores para eliminar archivos viejos
     const reservacionAnterior = await findReservacionById(id);
-    
-    // Actualizar la reservación
+
+    // Actualizar datos
     await updateReservation(id, reservationData);
     console.log("Reservación actualizada exitosamente");
 
-    // Obtener datos completos de la reservación actualizada para el PDF
+    // Obtener reservación actualizada
     const reservacionActualizada = await findReservacionById(id);
-    
-    // Obtener el número real de la habitación
+
+    // Obtener número real de la habitación
     const { getRoomNumberById } = await import("../models/ModelRoom.js");
     const numeroHabitacion = await getRoomNumberById(habitacion_id);
 
-    // Preparar datos para el PDF
+    // ===================================
+    //      DATOS PARA PDF ACTUALIZADO
+    // ===================================
     const datosParaPDF = {
       nombre_cliente,
       correo: reservacionActualizada.correo_cliente,
       telefono: reservacionActualizada.telefono_cliente,
-      fecha_ingreso: fecha_ingreso,
-      fecha_salida: fecha_salida,
+      fecha_ingreso: fechaIngresoRaw,
+      fecha_salida: fechaSalidaRaw,
       monto,
       habitacion_id,
       numero_habitacion: numeroHabitacion || habitacion_id,
@@ -683,84 +939,84 @@ export const handleEditReservation = async (req, res) => {
 
     console.log("Datos listos para PDF actualizado:", datosParaPDF);
 
-    // Generar y enviar PDF actualizado
+    // ===================================
+    //       GENERAR PDF Y QR NUEVOS
+    // ===================================
     try {
       const fs = await import("fs");
-      const path = await import("path");
       const { generateAndSendPDF } = await import("../utils/pdfGenerator.js");
       const { generarQR } = await import("../utils/qrGenerator.js");
-      const validadorDirectorios = (await import("../utils/validadorDirectorios.js")).default;
-      const envioPdfService = await import("../utils/pdfEnvio.js").then(
-        (module) => module.default
-      );
+      const envioPdfService = await import("../utils/pdfEnvio.js").then(m => m.default);
 
-      //  ELIMINAR ARCHIVOS ANTERIORES
-      console.log(" Eliminando archivos anteriores...");
-      
+      // ------------------------------
+      // ELIMINAR ARCHIVOS ANTERIORES
+      // ------------------------------
       try {
-        // Eliminar PDF anterior si existe
         if (reservacionAnterior.pdf_path && fs.existsSync(reservacionAnterior.pdf_path)) {
           fs.unlinkSync(reservacionAnterior.pdf_path);
-          console.log(`PDF anterior eliminado: ${reservacionAnterior.pdf_path}`);
+          console.log("PDF anterior eliminado:", reservacionAnterior.pdf_path);
         }
-        
-        // Eliminar QR anterior si existe
+
         if (reservacionAnterior.qr_path && fs.existsSync(reservacionAnterior.qr_path)) {
           fs.unlinkSync(reservacionAnterior.qr_path);
-          console.log(`QR anterior eliminado: ${reservacionAnterior.qr_path}`);
+          console.log("QR anterior eliminado:", reservacionAnterior.qr_path);
         }
       } catch (cleanupError) {
-        console.warn("Error al eliminar archivos anteriores:", cleanupError.message);
+        console.warn("Error al eliminar archivos anteriores:", cleanupError);
       }
 
-      // Generar nuevos archivos
-      console.log("Generando nuevos comprobantes...");
-      
-      // Generar QR
+      // ------------------------------
+      // GENERAR NUEVO QR
+      // ------------------------------
       const qrPath = await generarQR(datosParaPDF, "reservacion");
-      // Generar PDF
-      const pdfPath = await generateAndSendPDF(datosParaPDF, "reservacion", qrPath);
 
-      console.log("Comprobantes actualizados generados:");
-      console.log("PDF:", pdfPath);
-      console.log("QR:", qrPath);
+      // ------------------------------
+      // GENERAR PDF NUEVO
+      // ------------------------------
+      const pdfPath = await generateAndSendPDF(
+        datosParaPDF,
+        "reservacion",
+        qrPath
+      );
 
-      // Guardar las rutas de los nuevos archivos en la base de datos
+      // Guardar nuevas rutas
       await updateReservation(id, {
         pdf_path: pdfPath,
         qr_path: qrPath,
       });
-      console.log("Rutas de archivos guardadas en la base de datos");
 
-      // Opciones de envío
+      console.log("PDF y QR actualizados guardados");
+
+      // ------------------------------
+      // OPCIONES DE ENVÍO
+      // ------------------------------
       const opcionesEnvio = {
         sendEmail: send_email === "on",
         sendWhatsApp: send_whatsapp === "on",
       };
 
-      // Enviar comprobante actualizado
-      const resultadosEnvio = await envioPdfService.enviarComprobanteReservacion(
+      await envioPdfService.enviarComprobanteReservacion(
         datosParaPDF,
         pdfPath,
         opcionesEnvio
       );
 
-      console.log("Resultados de envío:", resultadosEnvio);
     } catch (pdfError) {
-      console.error("Error al generar/enviar PDF:", pdfError);
-      // Aunque falle el PDF, la reservación ya se actualizó
+      console.error("Error generando/enviando PDF:", pdfError);
     }
 
     res.redirect("/rooms/list/reservations");
+
   } catch (error) {
     console.error("Error al editar reservación:", error);
     res.status(500).send("Error al editar la reservación");
   }
 };
 
+
 export const renderReservacionesView = async (req, res) => {
   const user = req.session.user || { role: "Usuario" };
-  
+
   try {
     // Verificar que solo administradores puedan acceder
     if (user.role !== "Administrador") {
@@ -780,7 +1036,7 @@ export const renderReservacionesView = async (req, res) => {
         ...user,
         rol: user.role,
       },
-      showNavbar: true, 
+      showNavbar: true,
     });
   } catch (err) {
     console.error("Error al renderizar reportes de rentas:", err);
@@ -806,7 +1062,7 @@ export const createResevation = async (req, res) => {
       habitacion,
       habitaciones,
       user: req.session.user,
-      showNavbar: true, 
+      showNavbar: true,
     });
   } catch (err) {
     console.error("Error en renderFormReservar:", err);
@@ -838,11 +1094,132 @@ export const renderFormRentar = async (req, res) => {
       monto,
       monto_letras,
       user: req.session.user,
-      showNavbar: true, 
+      showNavbar: true,
     });
   } catch (err) {
     console.error("Error en renderFormRentar:", err);
     return res.status(500).send("Error al cargar el formulario de renta");
+  }
+};
+
+export const handleCreateRenta = async (req, res) => {
+  try {
+    const habitacionId = Number(req.params.id);
+    if (Number.isNaN(habitacionId)) {
+      return res.status(400).send("ID de habitación inválido");
+    }
+
+    const {
+      client_name,
+      email,
+      phone,
+      check_in,
+      check_out,
+      price,
+      price_text,
+      payment_type,
+      send_email,
+      send_whatsapp,
+    } = req.body;
+
+    const missingFields = [];
+    if (!client_name) missingFields.push("nombre del cliente");
+    if (!email) missingFields.push("email");
+    if (!phone) missingFields.push("teléfono");
+    if (!check_in) missingFields.push("fecha de entrada");
+    if (!check_out) missingFields.push("fecha de salida");
+    if (!price) missingFields.push("precio");
+    if (!payment_type) missingFields.push("tipo de pago");
+
+    if (missingFields.length) {
+      return res
+        .status(400)
+        .send(`Faltan datos obligatorios: ${missingFields.join(", ")}`);
+    }
+
+    const tiposPagoValidos = ["tarjeta", "transferencia", "efectivo"];
+    if (!tiposPagoValidos.includes(payment_type)) {
+      return res.status(400).send("Tipo de pago inválido");
+    }
+
+    const usuarioId = req.session.user?.id;
+    if (!usuarioId) {
+      return res.status(401).send("Usuario no autenticado");
+    }
+
+    const messageMethodId = await createMessageMethod(email, phone);
+
+    const montoNumerico = Number(price) || 0;
+    const montoTexto = price_text?.trim()
+      ? price_text
+      : numeroALetras(montoNumerico);
+
+    const rentData = {
+      room_id: habitacionId,
+      user_id: usuarioId,
+      message_method_id: messageMethodId,
+      client_name,
+      email,
+      phone,
+      check_in_date: check_in,
+      check_out_date: check_out,
+      payment_type,
+      amount: montoNumerico,
+      amount_text: montoTexto,
+      enganche: 0,
+    };
+
+    const rentId = await createRent(rentData);
+
+    const { getRoomNumberById } = await import("../models/ModelRoom.js");
+    const numeroHabitacion = await getRoomNumberById(habitacionId);
+
+    const datosParaPDF = {
+      client_name,
+      email,
+      phone,
+      check_in,
+      check_out,
+      payment_type,
+      price: montoNumerico.toFixed(2),
+      habitacion_id: habitacionId,
+      numero_habitacion: numeroHabitacion || habitacionId,
+    };
+
+    try {
+      const { generateAndSendPDF } = await import("../utils/pdfGenerator.js");
+      const { generarQR } = await import("../utils/qrGenerator.js");
+      const envioPdfService = await import("../utils/pdfEnvio.js").then(
+        (module) => module.default
+      );
+
+      const qrPath = await generarQR(datosParaPDF, "renta");
+      const pdfPath = await generateAndSendPDF(datosParaPDF, "renta", qrPath);
+
+      await updateRent(rentId, {
+        pdf_path: pdfPath,
+        qr_path: qrPath,
+      });
+
+      const options = {
+        sendEmail: send_email === "on",
+        sendWhatsApp: send_whatsapp === "on",
+      };
+
+      await envioPdfService.enviarComprobanteRenta(
+        datosParaPDF,
+        pdfPath,
+        options
+      );
+    } catch (pdfError) {
+      console.error("Error generando/enviando comprobante de renta:", pdfError);
+      // Continuar aunque falle el envío
+    }
+
+    return res.redirect("/rooms");
+  } catch (error) {
+    console.error("Error en handleCreateRenta:", error);
+    return res.status(500).send("Error al crear la renta");
   }
 };
 
@@ -851,179 +1228,170 @@ function numeroALetras(num) {
   return `${num} pesos`; // Implementa tu lógica si quieres algo más elaborado
 }
 
-// set new renta get mes , price , tyepe room
-
-export const handleCreateRenta = async (req, res) => {
-  const habitacion_id = req.params.id;
-  const usuario_id = req.session.user?.id;
-  const {
-    client_name,
-    email,
-    phone,
-    check_in,
-    check_out,
-    payment_type,
-    price,
-    price_text,
-    send_email,
-    send_whatsapp,
-  } = req.body;
-
-  console.log("req.body completo:", req.body);
-  console.log("Datos recibidos para renta:", {
-    habitacion_id,
-    usuario_id,
-    client_name,
-    email,
-    phone,
-    check_in,
-    check_out,
-    payment_type,
-    price,
-    price_text,
-  });
-
-  try {
-    // Las fechas ya vienen con la hora correcta desde el frontend
-    // Check-in: 12:00 PM, Check-out: 11:59 AM
-    // NO modificar las horas, solo usar las que vienen
-    const check_in_formatted = check_in;
-    const check_out_formatted = check_out;
-
-    // 1. Insertar medio de mensaje
-    console.log("Antes de createMessageMethod - email:", email, "phone:", phone);
-    const message_method_id = await createMessageMethod(email, phone);
-    console.log("ID medio de mensaje creado:", message_method_id);
-
-    // Validar tipo de pago (el formulario ya envía los valores correctos en español)
-    const tiposPagoValidos = ["tarjeta", "transferencia", "efectivo"];
-    
-    if (!tiposPagoValidos.includes(payment_type)) {
-      return res.status(400).send("Tipo de pago inválido");
-    }
-
-    const tipo_pago = payment_type;
-
-    // 2. Insertar renta
-    const rentData = {
-      room_id: habitacion_id,
-      user_id: usuario_id,
-      message_method_id: message_method_id,
-      client_name: client_name,
-      check_in_date: check_in_formatted,
-      check_out_date: check_out_formatted,
-      payment_type: tipo_pago,
-      amount: price,
-      amount_text: price_text,
-    };
-
-    console.log("Creando renta con datos:", rentData);
-    const rent_id = await createRent(rentData);
-    console.log("Renta creada con ID:", rent_id);
-
-    // Obtener el número real de la habitación
-    const { getRoomNumberById } = await import("../models/ModelRoom.js");
-    const numeroHabitacion = await getRoomNumberById(habitacion_id);
-
-    // Preparar datos para el PDF
-    const datosParaPDF = {
-      client_name,
-      email,
-      phone,
-      check_in,
-      check_out,
-      payment_type: tipo_pago,
-      price,
-      habitacion_id,
-      numero_habitacion: numeroHabitacion || habitacion_id, // Usar número real o ID como fallback
-      tipo: "renta",
-    };
-
-    console.log("Datos listos para PDF:", datosParaPDF);
-
-    // Generar PDF y QR y enviar
-    try {
-      const { generateAndSendPDF } = await import("../utils/pdfGenerator.js");
-      const { generarQR } = await import("../utils/qrGenerator.js");
-      const envioPdfService = await import("../utils/pdfEnvio.js").then(
-        (module) => module.default
-      );
-
-      // Generar PDF
-      const qrPath = await generarQR(datosParaPDF, "renta");
-      // Generar QR
-      const pdfPath = await generateAndSendPDF(datosParaPDF, "renta", qrPath);
-
-      console.log("Comprobantes generados:");
-      console.log("PDF:", pdfPath);
-      console.log("QR:", qrPath);
-
-      // Opciones de envío
-      const opcionesEnvio = {
-        sendEmail: send_email,
-        sendWhatsApp: send_whatsapp,
-      };
-
-      // Enviar comprobante
-      const resultadosEnvio = await envioPdfService.enviarComprobanteRenta(
-        datosParaPDF,
-        pdfPath,
-        opcionesEnvio
-      );
-
-      console.log("Resultados del envío:", resultadosEnvio);
-    } catch (pdfError) {
-      console.error("Error generando/enviando comprobante:", pdfError);
-      // No detenemos el flujo principal si falla el PDF
-    }
-
-    res.redirect("/rooms?success=renta");
-  } catch (err) {
-    console.error("Error creando la renta:", err);
-
-    if (err.message && err.message.includes("no está disponible")) {
-      return res
-        .status(409)
-        .send(
-          `<script>alert('${err.message}'); window.location.href='/rooms';</script>`
-        );
-    }
-
-    return res.status(500).send("Error creando la renta");
-  }
-};
-
 export const renderCalendario = (req, res) => {
-  res.render("calendar", {
-    title: "Calendario de Habitaciones",
-    showFooter: true,
-  });
+  return res.redirect("/rooms/list/calendario");
 };
 
 // Nuevo calendario mejorado con vista por habitación
-export const renderCalendarioRooms = (req, res) => {
-  const user = req.session.user || {};
-  res.render("calendar", {
-    title: "Calendario de Habitaciones",
-    showFooter: true,
-    user: {
-      ...user,
-      rol: user.role,
-    },
-    showNavbar: true, 
-  });
+export const renderCalendarioRooms = async (req, res) => {
+  try {
+    const user = req.session.user || { role: "Usuario" };
+
+    const [allRentas, allReservaciones] = await Promise.all([
+      getAllRentas(),
+      getAllReservationes()
+    ]);
+
+    // ===== Datos estilo showRent =====
+    const rentasDirectas = allRentas.filter((r) => Number(r.es_conversion) === 0);
+    const rentasConvertidas = allRentas.filter((r) => Number(r.es_conversion) === 1);
+
+    const calcularTotal = (items) =>
+      items.reduce((total, renta) => total + Number(renta.monto || 0), 0);
+
+    const currencyFormatter = new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+      minimumFractionDigits: 2,
+    });
+
+    const formatDateForDisplay = (dateStr) => {
+      if (!dateStr) return null;
+      try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return "Fecha inválida";
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const year = date.getUTCFullYear();
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+      } catch (error) {
+        console.error(`Error al formatear fecha de renta: ${dateStr}`, error);
+        return "Error en fecha";
+      }
+    };
+
+    const rentasFormateadas = allRentas.map((renta) => ({
+      ...renta,
+      fecha_ingreso: formatDateForDisplay(renta.fecha_ingreso),
+      fecha_salida: formatDateForDisplay(renta.fecha_salida),
+      origen_texto: renta.es_conversion === 0 ? "Renta directa" : "Conversión de reservación",
+      origen_clave: renta.es_conversion === 0 ? "directa" : "conversion",
+    }));
+
+    const resumenIngresos = {
+      directas: {
+        cantidad: rentasDirectas.length,
+        total: calcularTotal(rentasDirectas),
+      },
+      convertidas: {
+        cantidad: rentasConvertidas.length,
+        total: calcularTotal(rentasConvertidas),
+      },
+    };
+
+    resumenIngresos.directas.total_formateado = currencyFormatter.format(resumenIngresos.directas.total);
+    resumenIngresos.convertidas.total_formateado = currencyFormatter.format(resumenIngresos.convertidas.total);
+
+    // ===== Datos estilo showReservations =====
+    const ahora = new Date();
+    const reservacionesFormateadas = allReservaciones.map((reservacion) => {
+      const fechaIngresoRaw = reservacion.fecha_ingreso;
+      const fechaIngresoDate = fechaIngresoRaw ? new Date(fechaIngresoRaw) : null;
+      const confirmStartDate = fechaIngresoDate ? new Date(fechaIngresoDate.getTime() - (30 * 60 * 1000)) : null;
+
+      const esConvertida = reservacion.es_convertida === 1;
+      const estadoBase = reservacion.estado_reservacion || "pendiente";
+      const estadoEtiqueta = esConvertida
+        ? { texto: "Convertida a renta", clase: "bg-blue-100 text-blue-800", icono: "fa-solid fa-right-left" }
+        : estadoBase === "cancelada"
+          ? { texto: "Cancelada", clase: "bg-red-100 text-red-700", icono: "fa-solid fa-ban" }
+          : { texto: "Pendiente", clase: "bg-amber-100 text-amber-700", icono: "fa-solid fa-clock" };
+
+      const resumenFinanciero = esConvertida
+        ? {
+            tipo: reservacion.tipo_pago_renta || reservacion.tipo_pago,
+            monto: reservacion.monto_renta || reservacion.precio_total,
+            monto_formateado: currencyFormatter.format(Number(reservacion.monto_renta || reservacion.precio_total || 0)),
+            origen: "Conversión",
+            origen_clave: "conversion",
+          }
+        : {
+            tipo: reservacion.tipo_pago,
+            monto: reservacion.precio_total,
+            monto_formateado: currencyFormatter.format(Number(reservacion.precio_total || 0)),
+            origen: "Reservación",
+            origen_clave: "reservacion",
+          };
+
+      const enganchePerdido = fechaIngresoDate ? (ahora > new Date(fechaIngresoDate.getTime() + (30 * 60 * 1000))) : false;
+
+      return {
+        ...reservacion,
+        fecha_reserva: formatearFechaSafe(reservacion.fecha_reserva, 'iso'),
+        fecha_ingreso: formatearFechaSafe(reservacion.fecha_ingreso, 'iso'),
+        fecha_salida: formatearFechaSafe(reservacion.fecha_salida, 'iso'),
+        enganche_perdido: Boolean(enganchePerdido),
+        confirm_start: confirmStartDate ? confirmStartDate.toISOString() : null,
+        es_convertida: esConvertida,
+        estado_etiqueta: estadoEtiqueta,
+        resumen_financiero: resumenFinanciero,
+        origen_clave: resumenFinanciero.origen_clave,
+        estado_clave: esConvertida
+          ? "convertida"
+          : estadoBase === "cancelada"
+            ? "cancelada"
+            : "pendiente",
+      };
+    });
+
+    const reservacionesPendientes = reservacionesFormateadas.filter(r => !r.es_convertida);
+    const reservacionesConvertidas = reservacionesFormateadas.filter(r => r.es_convertida);
+    const totalPendiente = reservacionesPendientes.reduce((sum, r) => sum + Number(r.resumen_financiero?.monto || 0), 0);
+    const totalConvertido = reservacionesConvertidas.reduce((sum, r) => sum + Number(r.resumen_financiero?.monto || 0), 0);
+
+    const resumenReservaciones = {
+      pendientes: {
+        cantidad: reservacionesPendientes.length,
+        total: currencyFormatter.format(totalPendiente),
+      },
+      convertidas: {
+        cantidad: reservacionesConvertidas.length,
+        total: currencyFormatter.format(totalConvertido),
+      },
+    };
+
+    res.render("calendar", {
+      title: "Calendario de Habitaciones",
+      showFooter: true,
+      showNavbar: true,
+      user: {
+        ...user,
+        rol: user.role,
+      },
+      allRentas: rentasFormateadas,
+      resumenIngresos,
+      allReservationes: reservacionesFormateadas,
+      resumenReservaciones,
+      reservacionesPendientes
+    });
+  } catch (error) {
+    console.error("Error al renderizar calendario con datos:", error);
+    res.status(500).send("Error al cargar el calendario");
+  }
 };
 
 // API para obtener datos del calendario
 export const getCalendarData = async (req, res) => {
   try {
     const { getRoomsCalendarData } = await import("../models/ModelRoom.js");
-    
+
     // Obtener datos del modelo
     const roomsWithBookings = await getRoomsCalendarData();
 
     console.log(`Habitaciones con datos preparadas: ${roomsWithBookings.length}`);
-    
+
     res.json({ rooms: roomsWithBookings });
   } catch (error) {
     console.error("Error obteniendo datos del calendario:", error);
@@ -1045,63 +1413,54 @@ export const fetchEventos = async (req, res) => {
 export const getCalendarEvents = async (req, res) => {
   try {
     const { getAllRentas, getAllReservationes } = await import("../models/ModelRoom.js");
-    
+
     // Obtener rentas y reservaciones
     const todasLasRentas = await getAllRentas();
     const todasLasReservaciones = await getAllReservationes();
-    
+
     // Filtrar eventos relevantes para el calendario
     const ahora = new Date();
-    
+
     // Para rentas: incluir las que están activas (no finalizadas) o que empezarán en el futuro
-    const rentas = todasLasRentas.filter(renta => {
-      const fechaSalida = new Date(renta.fecha_salida);
-      // Incluir si la fecha de salida es futura o si la renta está activa (corriente)
-      return fechaSalida >= ahora || renta.estado_tiempo === 'corriente';
-    });
-    
+    // Para rentas: incluir solo las que están activas (corrientes)
+    const rentas = todasLasRentas.filter(renta => renta.estado_tiempo === 'corriente');
+
     // Para reservaciones: incluir las que empezarán en el futuro
     const reservaciones = todasLasReservaciones.filter(reservacion => {
       const fechaIngreso = new Date(reservacion.fecha_ingreso);
-      return fechaIngreso >= ahora;
+      const esConvertida = Number(reservacion.es_convertida) === 1;
+      return !esConvertida && fechaIngreso >= ahora;
     });
-    
+
     console.log(`📊 Total rentas en BD: ${todasLasRentas.length}, Próximas: ${rentas.length}`);
     console.log(`📊 Total reservaciones en BD: ${todasLasReservaciones.length}, Próximas: ${reservaciones.length}`);
-    
+
     // Convertir rentas a formato FullCalendar
     const eventosRentas = rentas.map(renta => {
-      // Determinar colores según el estado de la renta
-      let backgroundColor, borderColor, title;
-      
-      if (renta.estado_tiempo === 'expirada') {
-        backgroundColor = '#ef4444'; // Rojo para expiradas
-        borderColor = '#dc2626';
-        title = `${renta.nombre_cliente} - Hab. ${renta.numero_habitacion} (EXPIRADA)`;
-      } else {
-        backgroundColor = '#10b981'; // Verde para corrientes
-        borderColor = '#059669';
-        title = `${renta.nombre_cliente} - Hab. ${renta.numero_habitacion}`;
-      }
-      
+      const esConversion = Number(renta.es_conversion) === 1;
+      const origenTexto = esConversion ? 'Conversión de reservación' : 'Renta directa';
+      const title = `${renta.nombre_cliente} - Hab. ${renta.numero_habitacion}`;
+
       return {
         id: `renta-${renta.id_renta}`,
-        title: title,
+        title,
         start: renta.fecha_ingreso,
         end: renta.fecha_salida,
-        backgroundColor: backgroundColor,
-        borderColor: borderColor,
+        backgroundColor: esConversion ? '#f59e0b' : '#10b981',
+        borderColor: esConversion ? '#d97706' : '#059669',
         extendedProps: {
           tipo: 'renta',
+          origen: esConversion ? 'conversion' : 'directa',
           estado: renta.estado_tiempo || 'corriente',
-          correo: '', // Las rentas no tienen correo en esta consulta
-          telefono: '', // Las rentas no tienen teléfono en esta consulta
+          correo: renta.correo || '',
+          telefono: renta.telefono || '',
           habitacion: renta.numero_habitacion,
-          precio: renta.monto
+          precio: renta.monto,
+          origenTexto
         }
       };
     });
-    
+
     // Convertir reservaciones a formato FullCalendar
     const eventosReservaciones = reservaciones.map(reservacion => ({
       id: `reservacion-${reservacion.id_reservacion}`,
@@ -1118,12 +1477,12 @@ export const getCalendarEvents = async (req, res) => {
         precio: reservacion.precio_total
       }
     }));
-    
+
     // Combinar todos los eventos
     const todosLosEventos = [...eventosRentas, ...eventosReservaciones];
-    
+
     console.log(`📅 Total eventos para calendario: ${todosLosEventos.length}`);
-    
+
     res.json(todosLosEventos);
   } catch (error) {
     console.error("❌ Error obteniendo eventos del calendario:", error);
@@ -1139,7 +1498,7 @@ export const renderAllPriceView = async (req, res) => {
       title: "Precios de Habitaciones",
       showFooter: true,
       meses: precios, // <-- ENVÍA COMO 'meses' SI TU PLANTILLA USA {{#each meses}}
-      showNavbar: true, 
+      showNavbar: true,
     });
   } catch (err) {
     console.error("Error al renderizar precios:", err);
@@ -1224,7 +1583,7 @@ export const apiUpdatePrice = async (req, res) => {
     console.error("Error en apiUpdatePrice:", err);
     res.json({ success: false, error: err.message });
   }
-};
+}
 
 // Actualizar múltiples precios
 export const apiUpdatePricesBulk = async (req, res) => {
@@ -1318,9 +1677,9 @@ export const generateReport = async (req, res) => {
 
     // Validar fechas
     if (!fechaInicio || !fechaFin) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Las fechas de inicio y fin son requeridas" 
+        error: "Las fechas de inicio y fin son requeridas"
       });
     }
 
@@ -1329,7 +1688,7 @@ export const generateReport = async (req, res) => {
     if (cliente) filtros.cliente = cliente;
     if (tipoPago) filtros.tipoPago = tipoPago;
 
-    const { getReporteRentas, getReporteReservaciones, getReporteConsolidado } = 
+    const { getReporteRentas, getReporteReservaciones, getReporteConsolidado } =
       await import("../models/ModelRoom.js");
 
     let reporte;
@@ -1345,9 +1704,9 @@ export const generateReport = async (req, res) => {
         reporte = await getReporteConsolidado(fechaInicio, fechaFin, filtros);
         break;
       default:
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: "Tipo de reporte no válido. Opciones: rentas, reservaciones, consolidado" 
+          error: "Tipo de reporte no válido. Opciones: rentas, reservaciones, consolidado"
         });
     }
 
@@ -1387,7 +1746,7 @@ async function generateReportData(tipo, fechaInicio, fechaFin, filtros = {}) {
   } else if (tipo === "consolidado") {
     const rentasReporte = await getReporteRentas(fechaInicio, fechaFin, filtros);
     const reservacionesReporte = await getReporteReservaciones(fechaInicio, fechaFin, filtros);
-    
+
     return {
       tipo: "consolidado",
       fechaInicio,
@@ -1435,7 +1794,7 @@ function formatReportMessage(reporte) {
     mensaje += `• Total Rentas: ${reporte.estadisticas.totalRentas}\n`;
     mensaje += `• Ingreso Total: ${formatCurrency(reporte.estadisticas.totalIngresos)}\n`;
     mensaje += `• Promedio: ${formatCurrency(reporte.estadisticas.promedioIngreso)}\n\n`;
-    
+
     if (reporte.datos.length > 0) {
       mensaje += `*DETALLE DE RENTAS*\n`;
       reporte.datos.forEach((r, i) => {
@@ -1452,7 +1811,7 @@ function formatReportMessage(reporte) {
     mensaje += `• Monto Esperado: ${formatCurrency(reporte.estadisticas.totalMontoEsperado)}\n`;
     mensaje += `• Enganche Recibido: ${formatCurrency(reporte.estadisticas.totalEnganche)}\n`;
     mensaje += `• Pendiente: ${formatCurrency(reporte.estadisticas.pendientePorCobrar)}\n\n`;
-    
+
     if (reporte.datos.length > 0) {
       mensaje += `*DETALLE DE RESERVACIONES*\n`;
       reporte.datos.forEach((r, i) => {
@@ -1470,11 +1829,11 @@ function formatReportMessage(reporte) {
     mensaje += `• Ingresos Reales: ${formatCurrency(reporte.estadisticas.ingresosReales)}\n`;
     mensaje += `• Ingresos Esperados: ${formatCurrency(reporte.estadisticas.ingresosEsperados)}\n`;
     mensaje += `• Total General: ${formatCurrency(reporte.estadisticas.totalGeneral)}\n\n`;
-    
+
     mensaje += `🏨 *RENTAS (${reporte.rentas.estadisticas.totalRentas})*\n`;
     mensaje += `• Ingresos: ${formatCurrency(reporte.rentas.estadisticas.totalIngresos)}\n`;
     mensaje += `• Promedio: ${formatCurrency(reporte.rentas.estadisticas.promedioIngreso)}\n\n`;
-    
+
     mensaje += `📅 *RESERVACIONES (${reporte.reservaciones.estadisticas.totalReservaciones})*\n`;
     mensaje += `• Monto Esperado: ${formatCurrency(reporte.reservaciones.estadisticas.totalMontoEsperado)}\n`;
     mensaje += `• Enganche: ${formatCurrency(reporte.reservaciones.estadisticas.totalEnganche)}\n`;
@@ -1482,7 +1841,7 @@ function formatReportMessage(reporte) {
   }
 
   mensaje += `\n---\n Hotel Residencial Club`;
-  
+
   return mensaje;
 }
 
@@ -1570,7 +1929,7 @@ export const sendReportByWhatsApp = async (req, res) => {
     if (whatsappService.isConnected && whatsappService.socket) {
       // Enviar mensaje de texto
       await whatsappService.socket.sendMessage(jid, { text: mensaje });
-      
+
       // Enviar PDF
       if (fs.default.existsSync(pdfPath)) {
         await whatsappService.socket.sendMessage(jid, {
@@ -1823,16 +2182,10 @@ export const renderConvertReservationToRent = async (req, res) => {
     const { id } = req.params;
     const user = req.session.user || { role: "Administrador" };
 
-    console.log(`Cargando reservación ${id} para conversión a renta...`);
-
     const reservacion = await findReservacionById(id);
-
     if (!reservacion) {
-      console.error(`Reservación ${id} no encontrada`);
       return res.status(404).send("Reservación no encontrada");
     }
-
-    console.log("Reservación encontrada:", reservacion);
 
     // Formatear fechas al formato DD/MM/YYYY
     const formatearFecha = (fecha) => {
@@ -1926,8 +2279,8 @@ export const handleConvertReservationToRent = async (req, res) => {
 
     const formatUTCForMySQL = (date, isCheckOut = false) => {
       const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-      const day = String(date.getUTCDate()).padStart(2, '0');
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(date.getUTCDate()).padStart(2, "0");
       // Check-in: 12:00:00, Check-out: 11:59:00
       const time = isCheckOut ? '11:59:00' : '12:00:00';
       return `${year}-${month}-${day} ${time}`;
@@ -1939,15 +2292,38 @@ export const handleConvertReservationToRent = async (req, res) => {
     // Obtener el usuario de la sesión
     const usuario_id = req.session.user?.id || 1;
 
+    // VALIDACIÓN: Verificar que la habitación NO esté en limpieza
+    console.log(`🔍 Verificando estado de la habitación ${habitacion_id_value}...`);
+    const habitaciones = await getHabitaciones();
+    const habitacion = habitaciones.find(h => Number(h.id) === Number(habitacion_id_value));
+
+    if (!habitacion) {
+      return res.status(404).send("Habitación no encontrada");
+    }
+
+    // Si la habitación está en limpieza, bloquear la conversión
+    if (habitacion.estado === 'limpieza') {
+      console.log(`⚠️ Intento de conversión bloqueado: habitación ${habitacion_id_value} está en limpieza`);
+      return res.status(400).send("No se puede convertir la reservación a renta: la habitación está en limpieza. Por favor, marque la habitación como disponible primero.");
+    }
+
+    // Validar que la habitación esté disponible
+    if (habitacion.estado !== 'disponible') {
+      console.log(`⚠️ Intento de conversión bloqueado: habitación ${habitacion_id_value} está en estado ${habitacion.estado}`);
+      return res.status(400).send(`No se puede convertir la reservación a renta: la habitación está en estado "${habitacion.estado}". Debe estar disponible.`);
+    }
+
+    console.log(`✅ Habitación ${habitacion_id_value} está disponible, procediendo con la conversión...`);
+
     // IMPORTANTE: Obtener datos de la reservación para eliminar archivos
     console.log(`Obteniendo datos de la reservación ${id}...`);
     const reservacion = await findReservacionById(id);
-    
+
     // Eliminar PDF y QR de la reservación si existen
     if (reservacion) {
       const fs = await import("fs");
       const fsPromises = fs.promises;
-      
+
       if (reservacion.pdf_path) {
         try {
           if (fs.default.existsSync(reservacion.pdf_path)) {
@@ -1958,7 +2334,7 @@ export const handleConvertReservationToRent = async (req, res) => {
           console.error(` Error al eliminar PDF de reservación:`, error.message);
         }
       }
-      
+
       if (reservacion.qr_path) {
         try {
           if (fs.default.existsSync(reservacion.qr_path)) {
@@ -1970,12 +2346,6 @@ export const handleConvertReservationToRent = async (req, res) => {
         }
       }
     }
-
-    // IMPORTANTE: Eliminar la reservación ANTES de crear la renta
-    // para que no haya conflicto de disponibilidad
-    console.log(`Eliminando reservación ${id} de la base de datos...`);
-    await deletebyReservation(id);
-    console.log(`Reservación ${id} eliminada`);
 
     // Crear el registro de medios de mensaje primero
     console.log("Creando registro de medios de mensaje...");
@@ -1999,7 +2369,7 @@ export const handleConvertReservationToRent = async (req, res) => {
     };
 
     console.log("Creando renta con datos:", rentData);
-    const rent_id = await createRent(rentData);
+    const rent_id = await createRent(rentData, id); // Pasar el ID de la reservación a excluir
     console.log("Renta creada con ID:", rent_id);
 
     // Obtener el número real de la habitación
@@ -2015,10 +2385,7 @@ export const handleConvertReservationToRent = async (req, res) => {
       check_out: check_out,
       payment_type,
       price,
-      enganche: enganche || 0, // Agregar el enganche al PDF
-      habitacion_id: habitacion_id_value,
-      numero_habitacion: numeroHabitacion || habitacion_id_value,
-      tipo: "renta",
+      enganche: enganche || 0 // Agregar el enganche al PDF
     };
 
     console.log("Datos listos para PDF:", datosParaPDF);
@@ -2080,7 +2447,7 @@ export const finalizarRentasExpiradasController = async (req, res) => {
   try {
     console.log('🔄 Ejecutando actualización manual de habitaciones de rentas expiradas...');
     const resultado = await finalizarRentasExpiradas();
-    
+
     res.json({
       success: true,
       message: `Se actualizaron ${resultado.actualizadas} habitaciones de rentas expiradas a estado limpieza`,

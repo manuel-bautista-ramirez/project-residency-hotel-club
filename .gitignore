@@ -21,3 +21,4 @@ public/uploads/
 !public/js/**/fullcalendar*/**/*.css
 !public/js/**/lib/**/*.css
 
+.vscode
