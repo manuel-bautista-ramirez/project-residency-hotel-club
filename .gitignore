@@ -11,6 +11,7 @@ whatsapp_session/
 # Archivos subidos
 public/uploads/
 !public/uploads/.gitkeep
+script/backups/*
 
 # Mantener estructura de directorios
 !public/uploads/**/.gitkeep

@@ -230,8 +230,9 @@ class WhatsAppService {
   async enviarComprobanteRenta(telefono, rentData, pdfPath) {
     try {
       if (!this.isConnected) {
-        console.log('⚠️ WhatsApp no está conectado');
-        return { success: false, error: 'WhatsApp no conectado' };
+        const errorMsg = 'WhatsApp no está conectado. Por favor, escanea el código QR en http://localhost:3000/whatsapp-qr';
+        console.error(`❌ ${errorMsg}`);
+        return { success: false, error: errorMsg };
       }
 
       const jid = this.formatPhoneNumber(telefono);
@@ -293,7 +294,9 @@ ${estadoLinea}
   async enviarComprobanteMembresía(telefono, membershipData, pdfPath) {
     try {
       if (!this.isConnected) {
-        throw new Error('WhatsApp no está conectado');
+        const errorMsg = 'WhatsApp no está conectado. Por favor, escanea el código QR en http://localhost:3000/whatsapp-qr';
+        console.error(`❌ ${errorMsg}`);
+        return { success: false, error: errorMsg };
       }
 
       const { clienteNombre, numeroMembresia, tipoMembresia, fechaVencimiento, total } = membershipData;
@@ -333,7 +336,9 @@ ${estadoLinea}
   async enviarMensajeConPDF(telefono, mensaje, pdfPath, nombreArchivo) {
     try {
       if (!this.isConnected) {
-        throw new Error('WhatsApp no está conectado');
+        const errorMsg = 'WhatsApp no está conectado. Por favor, escanea el código QR en http://localhost:3000/whatsapp-qr';
+        console.error(`❌ ${errorMsg}`);
+        return { success: false, error: errorMsg };
       }
 
       const jid = this.formatPhoneNumber(telefono);
