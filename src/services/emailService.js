@@ -88,6 +88,10 @@ class EmailService {
 
     return this.send(mailOptions);
   }
+
+  isReady() {
+    return Boolean(this.transporter);
+  }
 }
 
 const emailService = new EmailService();
