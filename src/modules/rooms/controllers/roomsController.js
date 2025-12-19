@@ -1,6 +1,7 @@
 // roomsController.js
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 
 // Formato para fechas de MySQL (guardamos en UTC para evitar desfases al recuperar)
 const formatUTCForMySQL = (date) => {
@@ -733,8 +734,7 @@ export const renderAllRentas = async (req, res) => {
 
     console.log('🔍 Usuario en renderAllRentas:', user);
     console.log('🔍 Rol del usuario:', user.role);
-    console.log('📊 Total de rentas:', rentasFormateadas.length);
-    console.log('📋 Rentas:', rentasFormateadas);
+    console.log(rentasFormateadas);
     res.render("showRent", {
       title: "Listado de habitaciones rentadas",
       allRentas: rentasFormateadas,
@@ -838,9 +838,7 @@ export const renderFormEditarReservacion = async (req, res) => {
       habitaciones,
       user: req.session.user,
 
-
        showNavbar: true
-
 
     });
   } catch (err) {
@@ -1862,9 +1860,16 @@ export const sendReportByEmail = async (req, res) => {
       fechaInicio,
       fechaFin,
       destinatario,
+      email,
       asunto,
       filtros = {},
     } = req.body;
+
+    const targetEmail = destinatario || email;
+
+    if (!targetEmail) {
+      return res.status(400).json({ success: false, error: "El correo del destinatario es requerido" });
+    }
 
     // Generar el reporte usando la función existente
     const reporteData = await generateReportData(tipo, fechaInicio, fechaFin, filtros);
@@ -1878,18 +1883,20 @@ export const sendReportByEmail = async (req, res) => {
 
     // Importar servicio de email dinámicamente
     const emailService = (await import("../../../services/emailService.js")).default;
+    if (!emailService.isReady()) {
+      throw new Error('Servicio de correo no configurado');
+    }
 
     // Enviar por correo con PDF adjunto
-    const fs = await import("fs");
     await emailService.send({
-      to: destinatario,
+      to: targetEmail,
       subject: asunto || `Reporte de ${tipo} - Hotel Club`,
       text: mensaje,
       html: `<pre style="font-family: monospace; white-space: pre-wrap;">${mensaje}</pre>`,
       attachments: [
         {
           filename: `reporte_${tipo}_${new Date().toISOString().split('T')[0]}.pdf`,
-          content: fs.default.readFileSync(pdfPath),
+          content: fs.readFileSync(pdfPath),
         },
       ],
     });
@@ -1927,39 +1934,33 @@ export const sendReportByWhatsApp = async (req, res) => {
 
     // Importar servicio de WhatsApp dinámicamente
     const whatsappService = (await import("../../../services/whatsappService.js")).default;
-    const fs = await import("fs");
+
+    if (!whatsappService.isConnected || !whatsappService.socket) {
+      throw new Error('WhatsApp no está conectado');
+    }
 
     // Formatear número de teléfono
     const jid = whatsappService.formatPhoneNumber(telefono);
 
     // Enviar por WhatsApp con PDF
-    if (whatsappService.isConnected && whatsappService.socket) {
-      // Enviar mensaje de texto
-      await whatsappService.socket.sendMessage(jid, { text: mensaje });
-
-      // Enviar PDF
-      if (fs.default.existsSync(pdfPath)) {
-        await whatsappService.socket.sendMessage(jid, {
-          document: fs.default.readFileSync(pdfPath),
-          mimetype: 'application/pdf',
-          fileName: `reporte_${tipo}_${new Date().toISOString().split('T')[0]}.pdf`,
-          caption: `Reporte de ${tipo} - Hotel Club`
-        });
-        console.log(`Reporte y PDF enviados por WhatsApp a ${telefono}`);
-      } else {
-        console.log(`Reporte enviado por WhatsApp a ${telefono} (sin PDF)`);
-      }
-    } else {
-      console.warn('WhatsApp no está conectado, se generará solo el enlace');
+    if (!fs.existsSync(pdfPath)) {
+      throw new Error('No se pudo generar el archivo PDF para el reporte');
     }
 
-    // Crear URL de WhatsApp Web
-    const whatsappURL = `https://wa.me/52${telefono}?text=${encodeURIComponent(mensaje)}`;
+    // Enviar mensaje de texto
+    await whatsappService.socket.sendMessage(jid, { text: mensaje });
+
+    // Enviar PDF
+    await whatsappService.socket.sendMessage(jid, {
+      document: fs.readFileSync(pdfPath),
+      mimetype: 'application/pdf',
+      fileName: `reporte_${tipo}_${new Date().toISOString().split('T')[0]}.pdf`,
+      caption: `Reporte de ${tipo} - Hotel Club`
+    });
 
     res.json({
       success: true,
-      message: "Reporte enviado por WhatsApp exitosamente",
-      whatsappURL,
+      message: "Reporte y PDF enviados por WhatsApp exitosamente",
     });
   } catch (error) {
     console.error("Error enviando reporte por WhatsApp:", error);

@@ -42,6 +42,18 @@ const ManageModel = {
    * Elimina un tipo de membresía.
    */
   async deleteTipoMembresia(id) {
+    // Nombres de los tipos de membresía por defecto que no se pueden eliminar
+    const defaultTipos = ['Familiar', 'Individual Alberca', 'Individual General', 'Individual Gym'];
+
+    // 1. Verificar si el tipo de membresía es uno de los protegidos
+    const [tipo] = await pool.query("SELECT nombre FROM tipos_membresia WHERE id_tipo_membresia = ?", [id]);
+    if (tipo.length > 0 && defaultTipos.includes(tipo[0].nombre)) {
+      const error = new Error(`El tipo de membresía "${tipo[0].nombre}" es un valor por defecto y no puede ser eliminado.`);
+      error.isProtected = true; // Añadir una bandera para un manejo de error más específico si es necesario
+      throw error;
+    }
+
+    // 2. Si no es protegido, proceder con la eliminación
     const [result] = await pool.query("DELETE FROM tipos_membresia WHERE id_tipo_membresia = ?", [id]);
     return result.affectedRows > 0;
   },
@@ -76,6 +88,18 @@ const ManageModel = {
    * Elimina un método de pago.
    */
   async deleteMetodoPago(id) {
+    // Nombres de los métodos de pago por defecto que no se pueden eliminar
+    const defaultMetodos = ['Efectivo', 'Tarjeta de crédito', 'Tarjeta de débito', 'Transferencia bancaria'];
+
+    // 1. Verificar si el método de pago es uno de los protegidos
+    const [metodo] = await pool.query("SELECT nombre FROM metodos_pago WHERE id_metodo_pago = ?", [id]);
+    if (metodo.length > 0 && defaultMetodos.includes(metodo[0].nombre)) {
+      const error = new Error(`El método de pago "${metodo[0].nombre}" es un valor por defecto y no puede ser eliminado.`);
+      error.isProtected = true;
+      throw error;
+    }
+
+    // 2. Si no es protegido, proceder con la eliminación
     const [result] = await pool.query("DELETE FROM metodos_pago WHERE id_metodo_pago = ?", [id]);
     return result.affectedRows > 0;
   },

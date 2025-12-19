@@ -619,13 +619,11 @@
           }
         });
 
-
         // Formatear fechas en las cards (mobile/tablet)
         const cards = document.querySelectorAll('#cardsSection article.rent-reveal');
         cards.forEach(card => {
           // Las fechas están en divs con estructura específica
           const fechaDivs = card.querySelectorAll('.grid.grid-cols-2 > div');
-
 
           if (fechaDivs.length >= 2) {
             // Fecha de ingreso (primera columna, primer div)

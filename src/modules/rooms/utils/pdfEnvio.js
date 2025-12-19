@@ -49,9 +49,14 @@ export class PdfEnvioService {
       // Envío por WhatsApp
       if (opciones.sendWhatsApp && datos.telefono) {
         try {
-          await this._enviarWhatsAppReservacion(datos, pdfPath);
-          resultados.whatsapp.success = true;
-          console.log('✅ WhatsApp de reservación enviado exitosamente');
+          const whatsappResult = await this._enviarWhatsAppReservacion(datos, pdfPath);
+          if (whatsappResult && whatsappResult.success) {
+            resultados.whatsapp.success = true;
+            console.log('✅ WhatsApp de reservación enviado exitosamente');
+          } else {
+            resultados.whatsapp.error = whatsappResult?.error || 'Error desconocido';
+            console.error('❌ Error enviando WhatsApp de reservación:', whatsappResult?.error);
+          }
         } catch (whatsappError) {
           resultados.whatsapp.error = whatsappError.message;
           console.error('❌ Error enviando WhatsApp de reservación:', whatsappError);
@@ -96,9 +101,14 @@ export class PdfEnvioService {
       // Envío por WhatsApp
       if (opciones.sendWhatsApp && datos.phone) {
         try {
-          await this._enviarWhatsAppRenta(datos, pdfPath);
-          resultados.whatsapp.success = true;
-          console.log('✅ WhatsApp de renta enviado exitosamente');
+          const whatsappResult = await this._enviarWhatsAppRenta(datos, pdfPath);
+          if (whatsappResult && whatsappResult.success) {
+            resultados.whatsapp.success = true;
+            console.log('✅ WhatsApp de renta enviado exitosamente');
+          } else {
+            resultados.whatsapp.error = whatsappResult?.error || 'Error desconocido';
+            console.error('❌ Error enviando WhatsApp de renta:', whatsappResult?.error);
+          }
         } catch (whatsappError) {
           resultados.whatsapp.error = whatsappError.message;
           console.error('❌ Error enviando WhatsApp de renta:', whatsappError);
@@ -376,7 +386,7 @@ Su reservación ha sido procesada exitosamente.
 📞 +52 (XXX) XXX-XXXX
 📧 info@hotelresidencyclub.com`;
 
-    await whatsappService.enviarMensajeConPDF(
+    return await whatsappService.enviarMensajeConPDF(
       datos.telefono,
       mensaje,
       pdfPath,
@@ -425,7 +435,7 @@ Su renta ha sido procesada exitosamente.
 📞 +52 (XXX) XXX-XXXX
 📧 info@hotelresidencyclub.com`;
 
-    await whatsappService.enviarMensajeConPDF(
+    return await whatsappService.enviarMensajeConPDF(
       datos.phone,
       mensaje,
       pdfPath,

@@ -179,7 +179,22 @@ export const renderManageMembership = async (req, res) => {
             isAdmin,
             userRole,
             tiposMembresia,
-            metodosPago
+            metodosPago,
+            helpers: {
+                // Helper para verificar si un item NO es un valor por defecto
+                isNotDefault: function (name, type, options) {
+                    const defaultTipos = ['Familiar', 'Individual Alberca', 'Individual General', 'Individual Gym'];
+                    const defaultMetodos = ['Efectivo', 'Tarjeta de crédito', 'Tarjeta de débito', 'Transferencia bancaria'];
+
+                    if (type === 'tipo' && !defaultTipos.includes(name)) {
+                        return options.fn(this);
+                    }
+                    if (type === 'metodo' && !defaultMetodos.includes(name)) {
+                        return options.fn(this);
+                    }
+                    return options.inverse(this);
+                }
+            }
         });
     } catch (error) {
         console.error("Error al cargar la página de gestión de membresía:", error);
@@ -189,4 +204,47 @@ export const renderManageMembership = async (req, res) => {
             message: error.message || "Error al cargar la página de gestión."
         });
     }
+};
+
+/**
+ * Renderiza la página para escanear QR y ver el historial de acceso.
+ * Carga el historial de acceso para el día actual por defecto.
+ * @async
+ * @param {import('express').Request} req - El objeto de solicitud de Express.
+ * @param {import('express').Response} res - El objeto de respuesta de Express.
+ */
+export const renderScanQRPage = async (req, res) => {
+  try {
+    const userRole = req.session.user?.role || "Recepcionista";
+    const isAdmin = userRole === "Administrador";
+
+    // Solución definitiva para la fecha: Formatear la fecha usando la zona horaria correcta.
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
+    // Llama al servicio para obtener el historial de acceso del día actual.
+    const historyData = await MembershipService.getAccessHistory(today, 1); // Carga la primera página
+
+    res.render("scanQR", {
+      title: "Control de Acceso - Escanear QR",
+      isAdmin,
+      userRole,
+      accessLog: historyData.logs,
+      pagination: historyData.pagination,
+      showFooter: true,
+      currentDate: today,
+      helpers: {
+        formatDate: (dateString) => {
+          if (!dateString) return '';
+          const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+          return new Date(dateString).toLocaleDateString('es-MX', options);
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error al cargar la página de control de acceso:", error);
+    res.status(500).render('error500', {
+        title: "Error",
+        message: "Error al cargar la página de control de acceso."
+    });
+  }
 };
