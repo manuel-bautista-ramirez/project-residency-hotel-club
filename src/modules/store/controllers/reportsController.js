@@ -10,7 +10,7 @@ import {
 export const renderStoreDashboard = async (req, res) => {
   try {
     const user = req.session.user || {};
-    
+
     if (user.role !== "Administrador") {
       return res.status(403).send("Acceso denegado");
     }
@@ -47,6 +47,7 @@ export const renderStoreDashboard = async (req, res) => {
 
     res.render("storeDashboard", {
       title: "Dashboard de Tienda",
+       showNavbar: true,
       showFooter: true,
       user,
       lowStockProducts,
@@ -64,7 +65,7 @@ export const renderStoreDashboard = async (req, res) => {
 export const renderInventoryReport = async (req, res) => {
   try {
     const user = req.session.user || {};
-    
+
     if (user.role !== "Administrador") {
       return res.status(403).send("Acceso denegado");
     }
@@ -94,6 +95,7 @@ export const renderInventoryReport = async (req, res) => {
     res.render("inventoryReport", {
       title: "Reporte de Inventario",
       showFooter: true,
+      showNavbar: true,
       user,
       allProducts, // Pasar todos los productos a la vista
       inventoryReport,

@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS users_hotel (
 -- Usuario: daniela / daniela123
 -- Para regenerar los hashes, ejecuta: node generate-password-hashes.js
 INSERT IGNORE INTO users_hotel (username, password, email, role) VALUES
-  ('manuel', '$2b$10$rQJ5vZ9K7mN2L3.OXxYzKqW8rJ9fH5nL2mP4qR6sT8uV0wKYQ8Pj3x', 'victor.m.r.b.2000@gmail.com', 'Administrador'),
-  ('daniela', '$2b$10$wA0L8oO3M4/PYyZALrX9sK0gI6oM3nQ5rS7tU9vW1xLZR9Qk4yHK6', 'iscvictormanuelramirezbautista@gmail.com', 'Usuario');
+  ('manuel', '$2b$10$rQJ5vZ9K7mN2L3.OXxYzKqW8rJ9fH5nL2mP4qR6sT8uV0wKYQ8Pj3x', '', 'Administrador'),
+  ('daniela', '$2b$10$wA0L8oO3M4/PYyZALrX9sK0gI6oM3nQ5rS7tU9vW1xLZR9Qk4yHK6', '', 'Usuario');
 
 -- si te da error solo  restablece la contraseña. en el link de abajo del login
 
@@ -166,13 +166,13 @@ CREATE TABLE IF NOT EXISTS rentas (
   qr_path VARCHAR(500) NULL,
   estado ENUM('activa', 'finalizada', 'cancelada') DEFAULT 'activa',
   fecha_salida_real DATETIME NULL COMMENT 'Fecha y hora real en que se desocupó la habitación',
-  
+
   PRIMARY KEY (id),
   INDEX idx_habitacion (habitacion_id),
   INDEX idx_usuario (usuario_id),
   INDEX idx_medio_mensaje (id_medio_mensaje),
   INDEX idx_rentas_estado (estado),
-  
+
   CONSTRAINT fk_rentas_habitacion
     FOREIGN KEY (habitacion_id)
     REFERENCES habitaciones (id)
@@ -198,7 +198,6 @@ ALTER TABLE reservaciones
     ON DELETE SET NULL
     ON UPDATE CASCADE;
 
-
 CREATE TABLE IF NOT EXISTS pdf_registry (
   id INT AUTO_INCREMENT PRIMARY KEY,
   rent_id INT NOT NULL,
@@ -218,7 +217,6 @@ CREATE TABLE IF NOT EXISTS pdf_registry (
   INDEX idx_generated_at (generated_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
 CREATE TABLE IF NOT EXISTS job_queue (
   id INT AUTO_INCREMENT PRIMARY KEY,
   service VARCHAR(100) NOT NULL,
@@ -229,7 +227,6 @@ CREATE TABLE IF NOT EXISTS job_queue (
   attempts INT DEFAULT 0,
   error_message TEXT DEFAULT NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 
 -- =====================================================
 -- EJEMPLO DE CONSULTA CALENDARIO (habitaciones ocupadas)
@@ -245,7 +242,6 @@ FROM reservaciones r
 INNER JOIN habitaciones h ON r.habitacion_id = h.id
 WHERE r.fecha_salida >= CURDATE()
 ORDER BY r.fecha_ingreso;
-
 
 -- =====================================================
 --            GENERACIÓN DE REPORTES (Ejemplos)
@@ -277,7 +273,6 @@ FROM rentas
 WHERE MONTH(fecha_ingreso) = MONTH(CURDATE())
   AND YEAR(fecha_ingreso) = YEAR(CURDATE());
 
-
 -- =====================================================
 -- MÓDULO DE MEMBRESÍAS
 -- =====================================================
@@ -290,7 +285,6 @@ CREATE TABLE IF NOT EXISTS clientes (
     fecha_registro TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
 CREATE TABLE IF NOT EXISTS tipos_membresia (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL UNIQUE,
@@ -300,14 +294,12 @@ CREATE TABLE IF NOT EXISTS tipos_membresia (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
 CREATE TABLE IF NOT EXISTS integrantes_membresia (
     id_integrante BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_activa INT NOT NULL,
     nombre_completo VARCHAR(150) NOT NULL,
     fecha_registro TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 
 CREATE TABLE IF NOT EXISTS membresias (
     id_membresia BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -317,7 +309,6 @@ CREATE TABLE IF NOT EXISTS membresias (
     fecha_fin DATE NOT NULL,
     fecha_creacion TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 
 ALTER TABLE tipos_membresia RENAME COLUMN id TO id_tipo_membresia;
 
@@ -336,12 +327,10 @@ CREATE TABLE IF NOT EXISTS membresias_activas (
     CONSTRAINT membresias_activas_chk_3 CHECK (fecha_fin > fecha_inicio)
 ) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
 CREATE TABLE IF NOT EXISTS metodos_pago (
     id_metodo_pago BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 
 CREATE TABLE IF NOT EXISTS pagos (
     id_pago BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -376,7 +365,6 @@ INSERT IGNORE INTO tipos_membresia (nombre, descripcion, max_integrantes, precio
 ('Individual Alberca','Membresía para una persona',1,500.00),
 ('Individual General','Membresía para una persona',1,500.00),
 ('Familiar','Membresía para toda la familia',4,1200.00);
-
 
 -- =====================================================
 --               MÓDULO DE TIENDA (STORE)
