@@ -1,8 +1,8 @@
-<nav role="navigation" aria-label="Store Navigation" class="flex flex-wrap gap-2 justify-center">
+<nav role="navigation" aria-label="Store Navigation" class="flex flex-wrap gap-3 sm:gap-6 justify-center">
   {{!-- Tienda principal --}}
   {{#if (eq activePage "store")}}
   <span aria-current="page"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-blue-700 bg-blue-50 rounded-2xl border border-blue-200 shadow-inner min-w-[110px] cursor-default">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-purple-700 bg-purple-50 rounded-2xl border border-purple-200 shadow-inner sm:min-w-[110px] cursor-default">
     <!-- icon -->
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -12,7 +12,7 @@
   </span>
   {{else}}
   <a href="/store"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm min-w-[110px] hover:border-blue-300 hover:text-blue-600 transition-all">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm sm:min-w-[110px] hover:border-blue-300 hover:text-blue-600 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 ease-in-out">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -24,7 +24,7 @@
   {{!-- Ventas --}}
   {{#if (eq activePage "sales")}}
   <span aria-current="page"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-blue-700 bg-blue-50 rounded-2xl border border-blue-200 shadow-inner min-w-[110px] cursor-default">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-purple-700 bg-purple-50 rounded-2xl border border-purple-200 shadow-inner sm:min-w-[110px] cursor-default">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
@@ -33,7 +33,7 @@
   </span>
   {{else}}
   <a href="/store/sales"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm min-w-[110px] hover:border-blue-300 hover:text-blue-600 transition-all">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm sm:min-w-[110px] hover:border-blue-300 hover:text-blue-600 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 ease-in-out">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
@@ -47,7 +47,7 @@
   {{!-- Dashboard --}}
   {{#if (eq activePage "dashboard")}}
   <span aria-current="page"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-blue-700 bg-blue-50 rounded-2xl border border-blue-200 shadow-inner min-w-[110px] cursor-default">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-purple-700 bg-purple-50 rounded-2xl border border-purple-200 shadow-inner sm:min-w-[110px] cursor-default">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -56,7 +56,7 @@
   </span>
   {{else}}
   <a href="/store/dashboard"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm min-w-[110px] hover:border-blue-300 hover:text-blue-600 transition-all">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm sm:min-w-[110px] hover:border-blue-300 hover:text-blue-600 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 ease-in-out">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -67,7 +67,7 @@
   {{!-- Inventario --}}
   {{#if (eq activePage "inventory")}}
   <span aria-current="page"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-blue-700 bg-blue-50 rounded-2xl border border-blue-200 shadow-inner min-w-[110px] cursor-default">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-purple-700 bg-purple-50 rounded-2xl border border-purple-200 shadow-inner sm:min-w-[110px] cursor-default">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
@@ -76,7 +76,7 @@
   </span>
   {{else}}
   <a href="/store/inventory"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm min-w-[110px] hover:border-blue-300 hover:text-blue-600 transition-all">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm sm:min-w-[110px] hover:border-blue-300 hover:text-blue-600 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 ease-in-out">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
@@ -88,7 +88,7 @@
   {{!-- Reportes --}}
   {{#if (eq activePage "reports")}}
   <span aria-current="page"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-purple-700 bg-purple-50 rounded-2xl border border-purple-200 shadow-inner min-w-[110px] cursor-default">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-purple-700 bg-purple-50 rounded-2xl border border-purple-200 shadow-inner sm:min-w-[110px] cursor-default">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586" />
@@ -97,7 +97,7 @@
   </span>
   {{else}}
   <a href="/store/reports"
-    class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm min-w-[110px] hover:border-blue-300 hover:text-blue-600 transition-all">
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm sm:min-w-[110px] hover:border-blue-300 hover:text-blue-600 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 ease-in-out">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586" />

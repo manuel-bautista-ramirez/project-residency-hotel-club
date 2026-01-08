@@ -22,156 +22,155 @@
 </style>
 <div class="animate-fade-in">
 
-
-
-  <!-- Navigation Header -->
+  <!-- Navigation Header & Filtros Sticky -->
   <div class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30 pt-10">
     <div class="w-full px-3 sm:px-4 lg:px-8">
-      <div class="mt-2 w-full border-t border-slate-100 pt-3">
+      <div class="mt-2 w-full border-t border-slate-100 pt-3  pb-2">
         {{> storeNavButtons activePage="reports" user=user}}
       </div>
-
     </div>
   </div>
 
   <!-- Contenido principal -->
-  <div id="notification-area" class="mb-4"></div>
+  <div class="w-full px-3 sm:px-4 lg:px-8 py-6">
+    <div id="notification-area" class="mb-4"></div>
 
-  <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
+    <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
 
-    <!-- Selector de Período -->
-    <div class="mb-6">
-      <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Período del Reporte</h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-        <button
-          class="period-option border-2 border-blue-500 bg-blue-50 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md active"
-          data-period="diario">
-          <i class="fas fa-calendar-day text-xl md:text-3xl text-blue-500 mb-2 block"></i>
-          <h3 class="font-semibold text-xs md:text-sm">Diario</h3>
-        </button>
-        <button
-          class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
-          data-period="semanal">
-          <i class="fas fa-calendar-week text-xl md:text-3xl text-green-500 mb-2 block"></i>
-          <h3 class="font-semibold text-xs md:text-sm">Semanal</h3>
-        </button>
-        <button
-          class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
-          data-period="quincenal">
-          <i class="fas fa-calendar-alt text-xl md:text-3xl text-purple-500 mb-2 block"></i>
-          <h3 class="font-semibold text-xs md:text-sm">Quincenal</h3>
-        </button>
-        <button
-          class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
-          data-period="mensual">
-          <i class="fas fa-calendar text-xl md:text-3xl text-orange-500 mb-2 block"></i>
-          <h3 class="font-semibold text-xs md:text-sm">Mensual</h3>
-        </button>
-      </div>
-    </div>
-
-    <!-- Filtros y Fechas -->
-    <div class="mb-6">
-      <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Filtros y Fechas</h2>
-
-      <div id="selector-diario" class="date-selector mb-4">
-        <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona el día:</label>
-        <input type="date" id="fecha-diaria"
-          class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      <!-- Selector de Período -->
+      <div class="mb-6">
+        <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Período del Reporte</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+          <button
+            class="period-option border-2 border-blue-500 bg-blue-50 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md active"
+            data-period="diario">
+            <i class="fas fa-calendar-day text-xl md:text-3xl text-blue-500 mb-2 block"></i>
+            <h3 class="font-semibold text-xs md:text-sm">Diario</h3>
+          </button>
+          <button
+            class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+            data-period="semanal">
+            <i class="fas fa-calendar-week text-xl md:text-3xl text-green-500 mb-2 block"></i>
+            <h3 class="font-semibold text-xs md:text-sm">Semanal</h3>
+          </button>
+          <button
+            class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+            data-period="quincenal">
+            <i class="fas fa-calendar-alt text-xl md:text-3xl text-purple-500 mb-2 block"></i>
+            <h3 class="font-semibold text-xs md:text-sm">Quincenal</h3>
+          </button>
+          <button
+            class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+            data-period="mensual">
+            <i class="fas fa-calendar text-xl md:text-3xl text-orange-500 mb-2 block"></i>
+            <h3 class="font-semibold text-xs md:text-sm">Mensual</h3>
+          </button>
+        </div>
       </div>
 
-      <div id="selector-semanal" class="date-selector hidden mb-4">
-        <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona la semana:</label>
-        <input type="week" id="fecha-semanal"
-          class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-      </div>
+      <!-- Filtros y Fechas -->
+      <div class="mb-6">
+        <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Filtros y Fechas</h2>
 
-      <div id="selector-quincenal" class="date-selector hidden mb-4">
-        <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona la quincena:</label>
-        <div class="flex flex-col sm:flex-row gap-3 mb-3">
-          <div class="flex items-center space-x-2">
-            <input type="radio" id="primera-quincena" name="quincena" value="primera" checked
-              class="text-blue-600 focus:ring-blue-500">
-            <label for="primera-quincena" class="text-sm md:text-base">Primera quincena (1-15)</label>
+        <div id="selector-diario" class="date-selector mb-4">
+          <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona el día:</label>
+          <input type="date" id="fecha-diaria"
+            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div id="selector-semanal" class="date-selector hidden mb-4">
+          <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona la semana:</label>
+          <input type="week" id="fecha-semanal"
+            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div id="selector-quincenal" class="date-selector hidden mb-4">
+          <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona la quincena:</label>
+          <div class="flex flex-col sm:flex-row gap-3 mb-3">
+            <div class="flex items-center space-x-2">
+              <input type="radio" id="primera-quincena" name="quincena" value="primera" checked
+                class="text-blue-600 focus:ring-blue-500">
+              <label for="primera-quincena" class="text-sm md:text-base">Primera quincena (1-15)</label>
+            </div>
+            <div class="flex items-center space-x-2">
+              <input type="radio" id="segunda-quincena" name="quincena" value="segunda"
+                class="text-blue-600 focus:ring-blue-500">
+              <label for="segunda-quincena" class="text-sm md:text-base">Segunda quincena (16-fin)</label>
+            </div>
           </div>
-          <div class="flex items-center space-x-2">
-            <input type="radio" id="segunda-quincena" name="quincena" value="segunda"
-              class="text-blue-600 focus:ring-blue-500">
-            <label for="segunda-quincena" class="text-sm md:text-base">Segunda quincena (16-fin)</label>
+          <input type="month" id="fecha-quincenal"
+            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div id="selector-mensual" class="date-selector hidden mb-4">
+          <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona el mes:</label>
+          <input type="month" id="fecha-mensual"
+            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="mt-6 pt-4 border-t border-gray-200">
+          <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <button id="generar-reporte-btn"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm md:text-base font-medium">
+              <i class="fas fa-chart-bar mr-2"></i>Generar Reporte
+            </button>
           </div>
         </div>
-        <input type="month" id="fecha-quincenal"
-          class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
       </div>
+    </div>
 
-      <div id="selector-mensual" class="date-selector hidden mb-4">
-        <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona el mes:</label>
-        <input type="month" id="fecha-mensual"
-          class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+    <!-- Vista previa del reporte -->
+    <div id="reporte-container" class="bg-gray-50 rounded-lg p-4 md:p-7 mt-6 mb-6">
+      <div class="flex justify-center items-center h-32 md:h-40 border border-dashed border-gray-300 rounded-lg">
+        <p class="text-gray-500 text-sm md:text-base text-center">Selecciona un período y genera la vista previa del
+          reporte
+        </p>
       </div>
+    </div>
 
-      <!-- Botones de Acción -->
-      <div class="mt-6 pt-4 border-t border-gray-200">
-        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-          <button id="generar-reporte-btn"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm md:text-base font-medium">
-            <i class="fas fa-chart-bar mr-2"></i>Generar Reporte
-          </button>
+    <!-- Opciones de envío -->
+    <div id="envio-opciones" class="bg-white border rounded-lg p-4 md:p-6 mb-6 hidden">
+      <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">
+        <i class="fas fa-paper-plane mr-2"></i>Enviar Reporte
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <!-- Envío por correo -->
+        <div class="border rounded-lg p-4">
+          <h3 class="font-semibold text-gray-700 mb-3">
+            <i class="fas fa-envelope mr-2 text-blue-500"></i>Envío por Correo
+          </h3>
+          <div class="space-y-3">
+            <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
+              class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+            <input type="text" id="email-asunto" placeholder="Asunto del correo"
+              class="border border-gray-300 rounded-lg p-2 w-full">
+            <button id="enviar-email-btn"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
+              <i class="fas fa-envelope mr-2"></i>Enviar por Correo
+            </button>
+          </div>
+        </div>
+
+        <!-- Envío por WhatsApp -->
+        <div class="border rounded-lg p-4">
+          <h3 class="font-semibold text-gray-700 mb-3">
+            <i class="fab fa-whatsapp mr-2 text-green-500"></i>Envío por WhatsApp
+          </h3>
+          <div class="space-y-3">
+            <input type="tel" id="whatsapp-telefono" placeholder="10 dígitos sin espacios"
+              class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
+            <button id="enviar-whatsapp-btn"
+              class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
+              <i class="fab fa-whatsapp mr-2"></i>Enviar por WhatsApp
+            </button>
+          </div>
         </div>
       </div>
     </div>
+
+
   </div>
-
-  <!-- Vista previa del reporte -->
-  <div id="reporte-container" class="bg-gray-50 rounded-lg p-4 md:p-7 mt-6 mb-6">
-    <div class="flex justify-center items-center h-32 md:h-40 border border-dashed border-gray-300 rounded-lg">
-      <p class="text-gray-500 text-sm md:text-base text-center">Selecciona un período y genera la vista previa del
-        reporte
-      </p>
-    </div>
-  </div>
-
-  <!-- Opciones de envío -->
-  <div id="envio-opciones" class="bg-white border rounded-lg p-4 md:p-6 mb-6 hidden">
-    <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">
-      <i class="fas fa-paper-plane mr-2"></i>Enviar Reporte
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-      <!-- Envío por correo -->
-      <div class="border rounded-lg p-4">
-        <h3 class="font-semibold text-gray-700 mb-3">
-          <i class="fas fa-envelope mr-2 text-blue-500"></i>Envío por Correo
-        </h3>
-        <div class="space-y-3">
-          <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
-            class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-          <input type="text" id="email-asunto" placeholder="Asunto del correo"
-            class="border border-gray-300 rounded-lg p-2 w-full">
-          <button id="enviar-email-btn"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
-            <i class="fas fa-envelope mr-2"></i>Enviar por Correo
-          </button>
-        </div>
-      </div>
-
-      <!-- Envío por WhatsApp -->
-      <div class="border rounded-lg p-4">
-        <h3 class="font-semibold text-gray-700 mb-3">
-          <i class="fab fa-whatsapp mr-2 text-green-500"></i>Envío por WhatsApp
-        </h3>
-        <div class="space-y-3">
-          <input type="tel" id="whatsapp-telefono" placeholder="10 dígitos sin espacios"
-            class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-          <button id="enviar-whatsapp-btn"
-            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
-            <i class="fab fa-whatsapp mr-2"></i>Enviar por WhatsApp
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       let reporteActual = null;
