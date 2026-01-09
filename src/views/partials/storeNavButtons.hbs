@@ -42,8 +42,6 @@
   </a>
   {{/if}}
 
-  {{!-- Items solo para Administrador --}}
-  {{#if (eq user.role "Administrador")}}
   {{!-- Dashboard --}}
   {{#if (eq activePage "dashboard")}}
   <span aria-current="page"
@@ -64,7 +62,9 @@
     <span class="hidden sm:inline">Dashboard</span>
   </a>
   {{/if}}
-  {{!-- Inventario --}}
+
+  {{!-- Inventario (solo Administrador) --}}
+  {{#if (eq user.role "Administrador")}}
   {{#if (eq activePage "inventory")}}
   <span aria-current="page"
     class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-purple-700 bg-purple-50 rounded-2xl border border-purple-200 shadow-inner sm:min-w-[110px] cursor-default">
@@ -83,6 +83,7 @@
     </svg>
     <span class="hidden sm:inline">Inventario</span>
   </a>
+  {{/if}}
   {{/if}}
 
   {{!-- Reportes --}}
@@ -104,6 +105,5 @@
     </svg>
     <span class="hidden sm:inline">Reportes</span>
   </a>
-  {{/if}}
   {{/if}}
 </nav>

@@ -11,10 +11,6 @@ export const renderStoreDashboard = async (req, res) => {
   try {
     const user = req.session.user || {};
 
-    if (user.role !== "Administrador") {
-      return res.status(403).send("Acceso denegado");
-    }
-
     // Obtener datos para el dashboard con manejo de errores
     let lowStockProducts = [];
     let bestSelling = [];
