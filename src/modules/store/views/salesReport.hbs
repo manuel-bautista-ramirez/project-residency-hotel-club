@@ -15,9 +15,12 @@
     animation: fadeIn 0.5s ease-out forwards;
   }
 
+  /* Custom active state for period buttons */
   .period-option.active {
     border-color: #3B82F6;
-    background-color: #EBF8FF;
+    background-color: #EFF6FF;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+    transform: translateY(-2px);
   }
 </style>
 <div class="animate-fade-in">
@@ -25,7 +28,7 @@
   <!-- Navigation Header & Filtros Sticky -->
   <div class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30 pt-10">
     <div class="w-full px-3 sm:px-4 lg:px-8">
-      <div class="mt-2 w-full border-t border-slate-100 pt-3  pb-2">
+      <div class="mt-2 w-full border-t border-slate-100 pt-3 pb-2">
         {{> storeNavButtons activePage="reports" user=user}}
       </div>
     </div>
@@ -35,84 +38,118 @@
   <div class="w-full px-3 sm:px-4 lg:px-8 py-6">
     <div id="notification-area" class="mb-4"></div>
 
-    <div class="bg-white rounded-lg shadow-md p-4 md:p-6">
+    <!-- Header del Panel -->
+    <div class="mb-6 text-center pt-2">
+      <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
+        Reportes y Estadísticas
+      </h1>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
 
       <!-- Selector de Período -->
-      <div class="mb-6">
-        <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Período del Reporte</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+      <div class="mb-8">
+        <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4 flex items-center">
+          <span
+            class="p-1.5 bg-blue-100 text-blue-600 rounded-lg mr-2 text-sm shadow-sm group-hover:scale-110 transition-transform">
+            <i class="fas fa-calendar-alt"></i>
+          </span>
+          Período del Reporte
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <button
-            class="period-option border-2 border-blue-500 bg-blue-50 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md active"
+            class="period-option border-2 border-slate-200 bg-white rounded-xl p-4 text-center cursor-pointer transition-all duration-200 hover:border-blue-300 hover:bg-slate-50 active"
             data-period="diario">
-            <i class="fas fa-calendar-day text-xl md:text-3xl text-blue-500 mb-2 block"></i>
-            <h3 class="font-semibold text-xs md:text-sm">Diario</h3>
+            <div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-calendar-day text-lg"></i>
+            </div>
+            <h3 class="font-bold text-gray-700 text-sm">Diario</h3>
           </button>
+
           <button
-            class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+            class="period-option border-2 border-slate-200 bg-white rounded-xl p-4 text-center cursor-pointer transition-all duration-200 hover:border-green-300 hover:bg-slate-50"
             data-period="semanal">
-            <i class="fas fa-calendar-week text-xl md:text-3xl text-green-500 mb-2 block"></i>
-            <h3 class="font-semibold text-xs md:text-sm">Semanal</h3>
+            <div
+              class="bg-green-100 text-green-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-calendar-week text-lg"></i>
+            </div>
+            <h3 class="font-bold text-gray-700 text-sm">Semanal</h3>
           </button>
+
           <button
-            class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+            class="period-option border-2 border-slate-200 bg-white rounded-xl p-4 text-center cursor-pointer transition-all duration-200 hover:border-purple-300 hover:bg-slate-50"
             data-period="quincenal">
-            <i class="fas fa-calendar-alt text-xl md:text-3xl text-purple-500 mb-2 block"></i>
-            <h3 class="font-semibold text-xs md:text-sm">Quincenal</h3>
+            <div
+              class="bg-purple-100 text-purple-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-calendar-alt text-lg"></i>
+            </div>
+            <h3 class="font-bold text-gray-700 text-sm">Quincenal</h3>
           </button>
+
           <button
-            class="period-option border-2 border-gray-200 rounded-lg p-3 md:p-4 text-center cursor-pointer transition-all hover:shadow-md"
+            class="period-option border-2 border-slate-200 bg-white rounded-xl p-4 text-center cursor-pointer transition-all duration-200 hover:border-orange-300 hover:bg-slate-50"
             data-period="mensual">
-            <i class="fas fa-calendar text-xl md:text-3xl text-orange-500 mb-2 block"></i>
-            <h3 class="font-semibold text-xs md:text-sm">Mensual</h3>
+            <div
+              class="bg-orange-100 text-orange-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-calendar text-lg"></i>
+            </div>
+            <h3 class="font-bold text-gray-700 text-sm">Mensual</h3>
           </button>
         </div>
       </div>
 
       <!-- Filtros y Fechas -->
-      <div class="mb-6">
-        <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">Filtros y Fechas</h2>
+      <div class="mb-6 bg-slate-50 p-6 rounded-xl border border-slate-200">
+        <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-4 flex items-center">
+          <span class="p-1.5 bg-gray-200 text-gray-600 rounded-lg mr-2 text-sm shadow-sm">
+            <i class="fas fa-filter"></i>
+          </span>
+          Filtros y Fechas
+        </h2>
 
         <div id="selector-diario" class="date-selector mb-4">
-          <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona el día:</label>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Selecciona el día:</label>
           <input type="date" id="fecha-diaria"
-            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            class="border border-gray-300 rounded-lg p-3 w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow">
         </div>
 
         <div id="selector-semanal" class="date-selector hidden mb-4">
-          <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona la semana:</label>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Selecciona la semana:</label>
           <input type="week" id="fecha-semanal"
-            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            class="border border-gray-300 rounded-lg p-3 w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow">
         </div>
 
         <div id="selector-quincenal" class="date-selector hidden mb-4">
-          <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona la quincena:</label>
-          <div class="flex flex-col sm:flex-row gap-3 mb-3">
-            <div class="flex items-center space-x-2">
+          <label class="block text-sm font-bold text-gray-700 mb-2">Selecciona la quincena:</label>
+          <div class="flex flex-col sm:flex-row gap-4 mb-4">
+            <label
+              class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-white cursor-pointer hover:border-blue-400">
               <input type="radio" id="primera-quincena" name="quincena" value="primera" checked
-                class="text-blue-600 focus:ring-blue-500">
-              <label for="primera-quincena" class="text-sm md:text-base">Primera quincena (1-15)</label>
-            </div>
-            <div class="flex items-center space-x-2">
+                class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500">
+              <span class="text-sm font-medium text-gray-700">Primera quincena (1-15)</span>
+            </label>
+            <label
+              class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-white cursor-pointer hover:border-blue-400">
               <input type="radio" id="segunda-quincena" name="quincena" value="segunda"
-                class="text-blue-600 focus:ring-blue-500">
-              <label for="segunda-quincena" class="text-sm md:text-base">Segunda quincena (16-fin)</label>
-            </div>
+                class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500">
+              <span class="text-sm font-medium text-gray-700">Segunda quincena (16-fin)</span>
+            </label>
           </div>
           <input type="month" id="fecha-quincenal"
-            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            class="border border-gray-300 rounded-lg p-3 w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow">
         </div>
 
         <div id="selector-mensual" class="date-selector hidden mb-4">
-          <label class="block text-sm md:text-base text-gray-700 mb-2 font-medium">Selecciona el mes:</label>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Selecciona el mes:</label>
           <input type="month" id="fecha-mensual"
-            class="border border-gray-300 rounded-lg p-2 md:p-3 w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            class="border border-gray-300 rounded-lg p-3 w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow">
         </div>
 
         <!-- Botones de Acción -->
-        <div class="mt-6 pt-4 border-t border-gray-200">
+        <div class="mt-6 pt-4 border-t border-slate-200">
           <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button id="generar-reporte-btn"
-              class="bg-blue-500 hover:bg-blue-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm md:text-base font-medium">
+              class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg transition-all duration-300 flex items-center justify-center text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5">
               <i class="fas fa-chart-bar mr-2"></i>Generar Reporte
             </button>
           </div>
@@ -121,48 +158,63 @@
     </div>
 
     <!-- Vista previa del reporte -->
-    <div id="reporte-container" class="bg-gray-50 rounded-lg p-4 md:p-7 mt-6 mb-6">
-      <div class="flex justify-center items-center h-32 md:h-40 border border-dashed border-gray-300 rounded-lg">
-        <p class="text-gray-500 text-sm md:text-base text-center">Selecciona un período y genera la vista previa del
-          reporte
-        </p>
+    <div id="reporte-container"
+      class="bg-gray-50 rounded-2xl p-6 md:p-8 mt-6 mb-6 shadow-inner border border-gray-100 min-h-[200px] flex flex-col justify-center">
+      <div class="flex flex-col justify-center items-center h-full text-center">
+        <div class="bg-white p-4 rounded-full shadow-sm mb-3">
+          <i class="fas fa-chart-pie text-gray-300 text-4xl"></i>
+        </div>
+        <p class="text-gray-500 font-medium">Selecciona un período y genera la vista previa del reporte</p>
       </div>
     </div>
 
     <!-- Opciones de envío -->
-    <div id="envio-opciones" class="bg-white border rounded-lg p-4 md:p-6 mb-6 hidden">
-      <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">
-        <i class="fas fa-paper-plane mr-2"></i>Enviar Reporte
+    <div id="envio-opciones"
+      class="bg-white border border-gray-100 rounded-2xl shadow-md p-6 mb-6 hidden animate-fade-in">
+      <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-6 flex items-center">
+        <span class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg mr-2 text-sm shadow-sm">
+          <i class="fas fa-paper-plane"></i>
+        </span>
+        Enviar Reporte
       </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
         <!-- Envío por correo -->
-        <div class="border rounded-lg p-4">
-          <h3 class="font-semibold text-gray-700 mb-3">
-            <i class="fas fa-envelope mr-2 text-blue-500"></i>Envío por Correo
+        <div class="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+          <h3 class="font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-envelope mr-2 text-blue-500 bg-blue-50 p-1.5 rounded-lg"></i>Envío por Correo
           </h3>
-          <div class="space-y-3">
-            <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
-              class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-            <input type="text" id="email-asunto" placeholder="Asunto del correo"
-              class="border border-gray-300 rounded-lg p-2 w-full">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Destinatario</label>
+              <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
+                class="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Asunto</label>
+              <input type="text" id="email-asunto" placeholder="Asunto del correo"
+                class="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+            </div>
             <button id="enviar-email-btn"
-              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
-              <i class="fas fa-envelope mr-2"></i>Enviar por Correo
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg w-full transition-all duration-300 text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5">
+              <i class="fas fa-envelope mr-2"></i> Enviar por Correo
             </button>
           </div>
         </div>
 
         <!-- Envío por WhatsApp -->
-        <div class="border rounded-lg p-4">
-          <h3 class="font-semibold text-gray-700 mb-3">
-            <i class="fab fa-whatsapp mr-2 text-green-500"></i>Envío por WhatsApp
+        <div class="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+          <h3 class="font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fab fa-whatsapp mr-2 text-green-500 bg-green-50 p-1.5 rounded-lg"></i>Envío por WhatsApp
           </h3>
-          <div class="space-y-3">
-            <input type="tel" id="whatsapp-telefono" placeholder="10 dígitos sin espacios"
-              class="border border-gray-300 rounded-lg p-2 w-full focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Número de celular</label>
+              <input type="tel" id="whatsapp-telefono" placeholder="10 dígitos sin espacios"
+                class="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
+            </div>
             <button id="enviar-whatsapp-btn"
-              class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full transition-colors duration-200 text-sm font-medium">
-              <i class="fab fa-whatsapp mr-2"></i>Enviar por WhatsApp
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg w-full transition-all duration-300 text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5">
+              <i class="fab fa-whatsapp mr-2"></i> Enviar por WhatsApp
             </button>
           </div>
         </div>
@@ -180,11 +232,9 @@
       document.querySelectorAll('.period-option').forEach(option => {
         option.addEventListener('click', function () {
           document.querySelectorAll('.period-option').forEach(opt => {
-            opt.classList.remove('active', 'border-blue-500', 'bg-blue-50');
-            opt.classList.add('border-gray-200');
+            opt.classList.remove('active');
           });
-          this.classList.add('active', 'border-blue-500', 'bg-blue-50');
-          this.classList.remove('border-gray-200');
+          this.classList.add('active');
           periodoSeleccionado = this.getAttribute('data-period');
           document.querySelectorAll('.date-selector').forEach(selector => selector.classList.add('hidden'));
           document.getElementById(`selector-${periodoSeleccionado}`).classList.remove('hidden');
@@ -265,7 +315,7 @@
           mostrarReporte(reporteActual);
           envioOpciones.classList.remove('hidden');
         } catch (error) {
-          reporteContainer.innerHTML = `<p class="text-red-500 text-center">Error: ${error.message}</p>`;
+          reporteContainer.innerHTML = `<p class="text-red-500 text-center font-bold">Error: ${error.message}</p>`;
           envioOpciones.classList.add('hidden');
         }
       }
@@ -274,39 +324,75 @@
         const formatCurrency = (value) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
         let contenidoHTML;
 
+        // Estilos coincidentes para la tabla dinámica
         if (reporte.datos.length === 0) {
           contenidoHTML = `
                 <div class="text-center py-12">
-                    <i class="fas fa-info-circle text-4xl text-slate-400"></i>
-                    <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron ventas</h2>
-                    <p class="mt-2 text-sm text-slate-500">No hay datos de ventas para el período seleccionado.</p>
+                    <div class="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                       <i class="fas fa-info-circle text-3xl text-gray-400"></i>
+                    </div>
+                    <h2 class="mt-4 text-xl font-bold text-gray-700">No se encontraron ventas</h2>
+                    <p class="mt-2 text-sm text-gray-500">No hay datos de ventas para el período seleccionado.</p>
                 </div>`;
         } else {
           contenidoHTML = `
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Reporte de Ventas</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-blue-100 p-4 rounded-lg text-center"><h3 class="font-semibold text-blue-800">Total Ventas</h3><p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalVentas}</p></div>
-                    <div class="bg-green-100 p-4 rounded-lg text-center"><h3 class="font-semibold text-green-800">Ingreso Total</h3><p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.totalIngresos)}</p></div>
-                    <div class="bg-purple-100 p-4 rounded-lg text-center"><h3 class="font-semibold text-purple-800">Venta Promedio</h3><p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.promedioVenta)}</p></div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+                   <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2">Resumen Financiero</h2>
+                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                       <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+                          <h3 class="text-xs font-bold text-blue-600 uppercase mb-1">Total Ventas</h3>
+                          <p class="text-2xl font-bold text-blue-900">${reporte.estadisticas.totalVentas}</p>
+                       </div>
+                       <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                          <h3 class="text-xs font-bold text-green-600 uppercase mb-1">Ingreso Total</h3>
+                          <p class="text-2xl font-bold text-green-900">${formatCurrency(reporte.estadisticas.totalIngresos)}</p>
+                       </div>
+                       <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
+                          <h3 class="text-xs font-bold text-purple-600 uppercase mb-1">Venta Promedio</h3>
+                          <p class="text-2xl font-bold text-purple-900">${formatCurrency(reporte.estadisticas.promedioVenta)}</p>
+                       </div>
+                   </div>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">Detalle de Ventas</h3>
-                <div class="overflow-x-auto"><table class="min-w-full bg-white border">
-                    <thead class="bg-gray-100"><tr>
-                        <th class="px-4 py-2 border">ID Venta</th><th class="px-4 py-2 border">Cliente</th><th class="px-4 py-2 border">Fecha</th><th class="px-4 py-2 border">Tipo Pago</th><th class="px-4 py-2 border">Total</th>
-                    </tr></thead>
-                    <tbody>${reporte.datos.map(venta => `
-                        <tr>
-                            <td class="px-4 py-2 border text-center">#${venta.id}</td>
-                            <td class="px-4 py-2 border">${venta.nombre_cliente}</td>
-                            <td class="px-4 py-2 border">${new Date(venta.fecha_venta).toLocaleString('es-MX')}</td>
-                            <td class="px-4 py-2 border capitalize">${venta.tipo_pago}</td>
-                            <td class="px-4 py-2 border text-right font-semibold">${formatCurrency(venta.total)}</td>
-                        </tr>`).join('')}
-                    </tbody>
-                </table></div>`;
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                       <h3 class="font-bold text-gray-800">Detalle de Ventas</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gradient-to-r from-slate-50 to-slate-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">ID</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Cliente</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Fecha</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tipo Pago</th>
+                                    <th class="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                ${reporte.datos.map(venta => `
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-4 py-3 text-sm font-bold text-gray-900">#${venta.id}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 font-medium">${venta.nombre_cliente}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-500">${new Date(venta.fecha_venta).toLocaleDateString('es-MX')} ${new Date(venta.fecha_venta).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold capitalize
+                                            ${venta.tipo_pago === 'efectivo' ? 'bg-green-100 text-green-800' :
+              venta.tipo_pago === 'tarjeta' ? 'bg-purple-100 text-purple-800' :
+                'bg-blue-100 text-blue-800'}">
+                                            ${venta.tipo_pago}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-right font-bold text-blue-600">${formatCurrency(venta.total)}</td>
+                                </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
         }
 
         reporteContainer.innerHTML = contenidoHTML;
+        reporteContainer.classList.remove('flex', 'flex-col', 'justify-center'); // Clear alignment classes if needed
       }
 
       async function enviarEmail() {
@@ -353,10 +439,24 @@
       function mostrarNotificacion(mensaje, tipo = 'success') {
         const area = document.getElementById('notification-area');
         const notif = document.createElement('div');
-        notif.className = `p-4 mb-4 text-sm rounded-lg ${tipo === 'success' ? 'bg-green-100 text-green-800' : tipo === 'error' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`;
-        notif.textContent = mensaje;
+        // Usar los estilos de notificación del admin panel si es posible, o unos similares
+        let classes = "p-4 mb-4 text-sm font-bold rounded-lg shadow-md flex items-center gap-2 animate-fade-in ";
+        if (tipo === 'success') classes += "bg-white border-l-4 border-green-500 text-green-700";
+        else if (tipo === 'error') classes += "bg-white border-l-4 border-red-500 text-red-700";
+        else classes += "bg-white border-l-4 border-blue-500 text-blue-700";
+
+        notif.className = classes;
+        notif.innerHTML = `
+            ${tipo === 'success' ? '<i class="fas fa-check-circle text-lg"></i>' :
+            tipo === 'error' ? '<i class="fas fa-exclamation-circle text-lg"></i>' :
+              '<i class="fas fa-info-circle text-lg"></i>'}
+            ${mensaje}
+        `;
         area.appendChild(notif);
-        setTimeout(() => notif.remove(), 5000);
+        setTimeout(() => {
+          notif.classList.add('opacity-0', 'transition-opacity');
+          setTimeout(() => notif.remove(), 300);
+        }, 5000);
       }
 
       document.getElementById('generar-reporte-btn').addEventListener('click', generarReporte);
@@ -364,3 +464,4 @@
       document.getElementById('enviar-whatsapp-btn').addEventListener('click', enviarWhatsApp);
     });
   </script>
+</div>

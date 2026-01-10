@@ -28,30 +28,38 @@
 <!-- Content -->
 <div class="w-full px-3 sm:px-4 lg:px-8 py-6 animate-fade-in">
 
+  <!-- Header del Panel -->
+  <div class="mb-6 text-center pt-2">
+    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
+      Reporte de Inventario
+    </h1>
+  </div>
 
   <!-- Resumen por Categoría -->
-  <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-    <h3 class="text-xl font-bold text-gray-900 mb-6">📊 Inventario por Categoría</h3>
-    <div class="overflow-x-auto">
+  <div class="bg-white rounded-2xl shadow-md mb-8 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+      <h3 class="text-lg font-bold text-gray-900">📊 Inventario por Categoría</h3>
+    </div>
+    <div id="categoryTableWrapper" class="overflow-x-auto rounded-b-2xl hidden md:block">
       <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+        <thead class="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Productos</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Total</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor Inventario
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Categoría</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Productos</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Stock Total</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Valor Inventario
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Promedio
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Precio Promedio
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Min/Max
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Stock Min/Max
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody id="categoryTableBody" class="bg-white divide-y divide-gray-200">
           {{#each inventoryReport.por_categoria}}
-          <tr>
+          <tr class="hover:bg-slate-50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+              <span class="inline-flex px-2 py-1 text-xs font-bold rounded-full uppercase tracking-wide
                   {{#if (eq categoria 'bebidas')}}bg-blue-100 text-blue-800{{/if}}
                   {{#if (eq categoria 'snacks')}}bg-yellow-100 text-yellow-800{{/if}}
                   {{#if (eq categoria 'comida')}}bg-green-100 text-green-800{{/if}}
@@ -59,9 +67,9 @@
                 {{categoria}}
               </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{total_productos}}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{total_productos}}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{stock_total}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">${{valor_inventario}}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">${{valor_inventario}}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{precio_promedio}}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{stock_minimo}} / {{stock_maximo}}</td>
           </tr>
@@ -69,39 +77,88 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Mobile Cards for Categories -->
+    <div class="md:hidden p-4 space-y-3">
+      {{#each inventoryReport.por_categoria}}
+      <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 relative overflow-hidden">
+        <!-- Top Stripe -->
+        <div class="absolute top-0 left-0 right-0 h-1
+               {{#if (eq categoria 'bebidas')}}bg-blue-500{{/if}}
+               {{#if (eq categoria 'snacks')}}bg-yellow-500{{/if}}
+               {{#if (eq categoria 'comida')}}bg-green-500{{/if}}
+               {{#if (eq categoria 'otros')}}bg-purple-500{{/if}}">
+        </div>
+
+        <div class="flex justify-between items-center mb-3 mt-1">
+          <span class="inline-flex px-2 py-1 text-xs font-bold rounded-full uppercase tracking-wide
+                  {{#if (eq categoria 'bebidas')}}bg-blue-100 text-blue-800{{/if}}
+                  {{#if (eq categoria 'snacks')}}bg-yellow-100 text-yellow-800{{/if}}
+                  {{#if (eq categoria 'comida')}}bg-green-100 text-green-800{{/if}}
+                  {{#if (eq categoria 'otros')}}bg-purple-100 text-purple-800{{/if}}">
+            {{categoria}}
+          </span>
+          <span class="text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded-lg border border-gray-200">
+            {{total_productos}} Prods.
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="bg-white p-2 rounded-lg border border-gray-100 text-center">
+            <p class="text-xs text-gray-500 mb-0.5">Stock Total</p>
+            <p class="font-bold text-gray-800">{{stock_total}}</p>
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-gray-100 text-center">
+            <p class="text-xs text-gray-500 mb-0.5">Valor</p>
+            <p class="font-bold text-green-600">${{valor_inventario}}</p>
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-gray-100 text-center">
+            <p class="text-xs text-gray-500 mb-0.5">Promedio</p>
+            <p class="font-bold text-gray-800">${{precio_promedio}}</p>
+          </div>
+          <div class="bg-white p-2 rounded-lg border border-gray-100 text-center">
+            <p class="text-xs text-gray-500 mb-0.5">Min / Max</p>
+            <p class="font-bold text-gray-600 text-xs">{{stock_minimo}} / {{stock_maximo}}</p>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
   </div>
 
   <!-- Productos con Stock Bajo -->
   {{#if lowStockProducts}}
-  <div class="bg-white rounded-xl shadow-md p-6">
-    <h3 class="text-xl font-bold text-gray-900 mb-6">⚠️ Productos que Requieren Reabastecimiento</h3>
+  <div class="bg-white rounded-2xl shadow-md p-6 mb-8 border border-red-100">
+    <h3 class="text-xl font-bold text-red-700 mb-6 flex items-center">
+      <i class="fas fa-exclamation-triangle mr-2"></i> Productos que Requieren Reabastecimiento
+    </h3>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {{#each lowStockProducts}}
       <div
-        class="border rounded-lg p-4 {{#if (eq stock 0)}}border-red-200 bg-red-50{{else}}border-yellow-200 bg-yellow-50{{/if}}">
+        class="border rounded-xl p-4 transition-all hover:shadow-lg hover:-translate-y-0.5 {{#if (eq stock 0)}}border-red-200 bg-red-50{{else}}border-yellow-200 bg-yellow-50{{/if}}">
         <div class="flex justify-between items-start mb-2">
-          <h4 class="font-semibold text-gray-900">{{nombre}}</h4>
-          <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-              {{#if (eq categoria 'bebidas')}}bg-blue-100 text-blue-800{{/if}}
-              {{#if (eq categoria 'snacks')}}bg-yellow-100 text-yellow-800{{/if}}
-              {{#if (eq categoria 'comida')}}bg-green-100 text-green-800{{/if}}
-              {{#if (eq categoria 'otros')}}bg-purple-100 text-purple-800{{/if}}">
+          <h4 class="font-bold text-gray-900 line-clamp-1" title="{{nombre}}">{{nombre}}</h4>
+          <span class="inline-flex px-2 py-1 text-[10px] font-bold rounded-full uppercase
+              {{#if (eq categoria 'bebidas')}}bg-white text-blue-800 border border-blue-200{{/if}}
+              {{#if (eq categoria 'snacks')}}bg-white text-yellow-800 border border-yellow-200{{/if}}
+              {{#if (eq categoria 'comida')}}bg-white text-green-800 border border-green-200{{/if}}
+              {{#if (eq categoria 'otros')}}bg-white text-purple-800 border border-purple-200{{/if}}">
             {{categoria}}
           </span>
         </div>
-        <div class="flex justify-between items-center">
-          <span class="text-sm text-gray-600">Stock:</span>
+        <div class="flex justify-between items-center bg-white/50 p-2 rounded-lg mb-2">
+          <span class="text-xs font-semibold text-gray-600">Stock Actual:</span>
           <span class="font-bold {{#if (eq stock 0)}}text-red-600{{else}}text-yellow-600{{/if}}">
             {{stock}} unidades
           </span>
         </div>
-        <div class="flex justify-between items-center mt-1">
-          <span class="text-sm text-gray-600">Precio:</span>
-          <span class="font-medium text-gray-900">${{precio}}</span>
+        <div class="flex justify-between items-center px-1">
+          <span class="text-xs text-gray-600">Precio unitario:</span>
+          <span class="font-bold text-gray-900">${{precio}}</span>
         </div>
         {{#if (eq stock 0)}}
-        <div class="mt-2 text-xs text-red-600 font-medium">
-          🚨 PRODUCTO AGOTADO
+        <div class="mt-3 text-xs text-white bg-red-500 font-bold px-2 py-1 rounded text-center shadow-sm">
+          AGOTADO
         </div>
         {{/if}}
       </div>
@@ -110,34 +167,30 @@
   </div>
   {{/if}}
 
-  <!-- Gestión de Productos -->
-  <div class="bg-white rounded-xl shadow-md p-6 mt-8">
-    <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
-      <h3 class="text-xl font-bold text-gray-900 mb-4 sm:mb-0">⚙️ Gestión de Productos</h3>
+  <!-- Gestión de Productos (Desktop Table) -->
+  <div class="bg-white rounded-2xl shadow-md overflow-hidden mt-8 hidden md:block">
+    <div
+      class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <h3 class="text-lg font-bold text-gray-900">⚙️ Gestión de Productos</h3>
       <a href="/store/create"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all text-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd"
-            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-            clip-rule="evenodd" />
-        </svg>
-        Nuevo Producto
+        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg shadow-sm transition-all text-sm hover:-translate-y-0.5 hover:shadow-md">
+        <i class="fas fa-plus"></i> Nuevo Producto
       </a>
     </div>
-    <div class="overflow-x-auto">
+    <div id="inventoryTableWrapper" class="overflow-x-auto rounded-b-2xl">
       <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+        <thead class="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Producto</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Categoría</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Precio</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Stock</th>
+            <th class="px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Acciones</th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody id="inventoryTableBody" class="bg-white divide-y divide-gray-200">
           {{#each allProducts}}
-          <tr>
+          <tr class="hover:bg-slate-50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{this.nombre}}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{this.categoria}}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{this.precio}}</td>
@@ -147,13 +200,20 @@
             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
               <div class="flex items-center justify-center gap-2">
                 <button onclick="openAddStockModal({{this.id}}, '{{this.nombre}}', {{this.stock}})"
-                  class="text-green-600 hover:text-green-900" title="Añadir Stock"><i class="fas fa-plus-circle"></i>
-                  Añadir Stock</button>
-                <a href="/store/edit/{{this.id}}" class="text-indigo-600 hover:text-indigo-900" title="Editar"><i
-                    class="fas fa-edit"></i> Editar</a>
+                  class="p-1.5 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-all hover:scale-110"
+                  title="Añadir Stock">
+                  <i class="fas fa-plus-circle text-lg"></i>
+                </button>
+                <a href="/store/edit/{{this.id}}"
+                  class="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-all hover:scale-110"
+                  title="Editar">
+                  <i class="fas fa-edit text-lg"></i>
+                </a>
                 <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}')"
-                  class="text-red-600 hover:text-red-900" title="Eliminar"><i class="fas fa-trash"></i>
-                  Eliminar</button>
+                  class="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
+                  title="Eliminar">
+                  <i class="fas fa-trash text-lg"></i>
+                </button>
               </div>
             </td>
           </tr>
@@ -163,49 +223,150 @@
     </div>
   </div>
 
+  <!-- Gestión de Productos (Mobile Cards) -->
+  <div class="mt-8 md:hidden">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-gray-900">⚙️ Gestión de Productos</h3>
+      <a href="/store/create"
+        class="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-medium rounded-lg shadow-sm">
+        <i class="fas fa-plus"></i> Nuevo
+      </a>
+    </div>
+
+    <div class="space-y-4 pb-20">
+      {{#each allProducts}}
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 animate-fade-in relative overflow-hidden">
+        <!-- Side color coding based on category -->
+        <div class="absolute left-0 top-0 bottom-0 w-1.5
+             {{#if (eq categoria 'bebidas')}}bg-blue-500{{/if}}
+             {{#if (eq categoria 'snacks')}}bg-yellow-500{{/if}}
+             {{#if (eq categoria 'comida')}}bg-green-500{{/if}}
+             {{#if (eq categoria 'otros')}}bg-purple-500{{/if}}">
+        </div>
+
+        <div class="pl-2">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <h4 class="font-bold text-gray-900 text-base">{{this.nombre}}</h4>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide mt-1
+                    {{#if (eq categoria 'bebidas')}}bg-blue-50 text-blue-700{{/if}}
+                    {{#if (eq categoria 'snacks')}}bg-yellow-50 text-yellow-700{{/if}}
+                    {{#if (eq categoria 'comida')}}bg-green-50 text-green-700{{/if}}
+                    {{#if (eq categoria 'otros')}}bg-purple-50 text-purple-700{{/if}}">
+                {{this.categoria}}
+              </span>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-gray-900">${{this.precio}}</div>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg mb-3">
+            <span class="text-sm font-medium text-gray-600">Stock disponible:</span>
+            <span class="text-sm font-bold {{#if (lte this.stock 5)}}text-red-600{{else}}text-gray-900{{/if}}">
+              {{this.stock}} <span class="text-xs font-normal text-gray-500">unds.</span>
+            </span>
+          </div>
+
+          <div class="flex justify-end gap-2 border-t border-gray-100 pt-3">
+            <button onclick="openAddStockModal({{this.id}}, '{{this.nombre}}', {{this.stock}})"
+              class="flex-1 py-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1 active:scale-95 transition-transform">
+              <i class="fas fa-plus-circle"></i> Stock
+            </button>
+            <a href="/store/edit/{{this.id}}"
+              class="flex-1 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1 active:scale-95 transition-transform">
+              <i class="fas fa-edit"></i> Editar
+            </a>
+            <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}')"
+              class="p-2 bg-red-50 text-red-600 rounded-lg active:scale-95 transition-transform">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
 </div>
 
 <!-- Modal para Añadir Stock -->
-<div id="addStockModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-  <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">Añadir Stock</h2>
-    <form id="addStockForm" method="POST">
+<div id="addStockModal"
+  class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-slide-in overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
+      <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+        <i class="fas fa-boxes text-green-600"></i> Añadir Stock
+      </h2>
+    </div>
+
+    <form id="addStockForm" method="POST" class="p-6">
       <input type="hidden" id="stock-product-id" name="productId">
-      <p class="mb-4">Añadiendo stock para: <strong id="stock-product-name"></strong></p>
-      <p class="mb-4">Stock actual: <strong id="stock-product-current"></strong></p>
-      <div class="mb-4">
-        <label for="quantityToAdd" class="block text-sm font-medium text-gray-700 mb-2">Cantidad a Añadir</label>
-        <input type="number" id="quantityToAdd" name="quantityToAdd" min="1" required
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
+        <p class="text-sm text-gray-500 mb-1">Producto:</p>
+        <p class="text-lg font-bold text-gray-900 mb-3" id="stock-product-name"></p>
+        <div class="flex justify-between items-center border-t border-slate-200 pt-2">
+          <span class="text-sm text-gray-500">Stock Actual:</span>
+          <span class="font-bold text-blue-600" id="stock-product-current"></span>
+        </div>
       </div>
-      <div class="flex gap-4 mt-6">
+
+      <div class="mb-6">
+        <label for="quantityToAdd" class="block text-sm font-bold text-gray-700 mb-2">Cantidad a Añadir</label>
+        <div class="relative">
+          <input type="number" id="quantityToAdd" name="quantityToAdd" min="1" required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 font-bold text-lg text-center transition-shadow">
+          <div class="absolute right-4 top-4 text-gray-400 pointer-events-none">
+            <i class="fas fa-plus"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-2">
         <button type="button" onclick="closeAddStockModal()"
-          class="w-1/2 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg">Cancelar</button>
+          class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg transition-colors">Cancelar</button>
         <button type="submit"
-          class="w-1/2 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg">Confirmar</button>
+          class="flex-1 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">
+          <i class="fas fa-check mr-2"></i> Confirmar
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- Modal para Eliminar Producto -->
-<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-  <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md text-center">
-    <h2 class="text-2xl font-bold text-red-700 mb-4">Confirmar Eliminación</h2>
-    <p class="mb-6">¿Estás seguro de que quieres eliminar el producto <strong id="delete-product-name"></strong>? Esta
-      acción no se puede deshacer.</p>
-    <form id="deleteForm" method="GET">
-      <div class="flex gap-4 justify-center">
+<div id="deleteModal"
+  class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-slide-in overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-red-50 to-orange-50">
+      <h2 class="text-xl font-bold text-red-700 flex items-center gap-2">
+        <i class="fas fa-exclamation-circle"></i> Confirmar Eliminación
+      </h2>
+    </div>
+
+    <div class="p-6 text-center">
+      <div class="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-trash text-2xl text-red-500"></i>
+      </div>
+      <p class="mb-2 text-gray-700">¿Estás seguro de que quieres eliminar el producto?</p>
+      <p class="text-lg font-bold text-gray-900 mb-4" id="delete-product-name"></p>
+      <p class="text-xs text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">
+        ⚠️ Esta acción no se puede deshacer y afectará a los reportes históricos.
+      </p>
+    </div>
+
+    <form id="deleteForm" method="GET" class="px-6 pb-6">
+      <div class="flex gap-3">
         <button type="button" onclick="closeDeleteModal()"
-          class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg">Cancelar</button>
+          class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg transition-colors">Cancelar</button>
         <button type="submit"
-          class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg">Eliminar</button>
+          class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">
+          Eliminar
+        </button>
       </div>
     </form>
   </div>
 </div>
-
-
 
 <script>
   // Modal de Añadir Stock
@@ -220,6 +381,7 @@
     stockProductCurrent.textContent = currentStock;
     addStockModal.classList.remove('hidden');
     addStockModal.classList.add('flex');
+    setTimeout(() => document.getElementById('quantityToAdd').focus(), 100);
   }
 
   function closeAddStockModal() {
@@ -243,4 +405,48 @@
     deleteModal.classList.add('hidden');
     deleteModal.classList.remove('flex');
   }
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAddStockModal();
+      closeDeleteModal();
+    }
+  });
+
+  // Close on Backdrop Click
+  addStockModal.addEventListener('click', (e) => {
+    if (e.target === addStockModal) closeAddStockModal();
+  });
+  deleteModal.addEventListener('click', (e) => {
+    if (e.target === deleteModal) closeDeleteModal();
+  });
+
+  function adjustTableHeight(wrapperId, bodyId) {
+    const tableWrapper = document.getElementById(wrapperId);
+    const tableBody = document.getElementById(bodyId);
+
+    if (!tableWrapper || !tableBody) return;
+
+    const rowCount = tableBody.querySelectorAll('tr').length;
+
+    // Si hay 6 o más registros, activar scroll
+    if (rowCount >= 6) {
+      tableWrapper.classList.add('max-h-96', 'overflow-y-auto', 'scrollbar-thin', 'scrollbar-thumb-gray-300', 'scrollbar-track-gray-100');
+    } else {
+      tableWrapper.classList.remove('max-h-96', 'overflow-y-auto');
+      tableWrapper.style.maxHeight = 'none';
+      tableWrapper.style.overflow = 'visible';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    adjustTableHeight('inventoryTableWrapper', 'inventoryTableBody');
+    adjustTableHeight('categoryTableWrapper', 'categoryTableBody');
+  });
+
+  window.addEventListener('load', () => setTimeout(() => {
+    adjustTableHeight('inventoryTableWrapper', 'inventoryTableBody');
+    adjustTableHeight('categoryTableWrapper', 'categoryTableBody');
+  }, 200));
 </script>

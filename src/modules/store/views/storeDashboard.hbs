@@ -16,167 +16,229 @@
   }
 </style>
 
-<!-- Navigation Header & Filtros Sticky -->
-<div class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30 pt-10">
-  <div class="w-full px-3 sm:px-4 lg:px-8">
-    <div class="mt-2 w-full border-t border-slate-100 pt-3  pb-2">
-      {{> storeNavButtons activePage="dashboard" user=user}}
+
+<div class="pb-8">
+  <!-- Navigation Header & Filtros Sticky -->
+  <div class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30 pt-10">
+    <div class="w-full px-3 sm:px-4 lg:px-8">
+      <div class="mt-2 w-full border-t border-slate-100 pt-3  pb-2">
+        {{> storeNavButtons activePage="dashboard" user=user}}
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Dashboard Content -->
-<div class="w-full px-3 sm:px-4 lg:px-8 py-6 animate-fade-in">
+  <!-- Dashboard Content -->
+  <div class="w-full px-3 sm:px-4 lg:px-8 py-6 animate-fade-in">
 
-  <!-- Quick Actions -->
-  <div class="mb-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-    <h2 class="text-sm font-semibold text-blue-900 uppercase tracking-wider mb-3">Acciones Rápidas</h2>
-    <div class="flex flex-wrap gap-3">
+    <!-- Header del Panel -->
+    <div class="mb-3 text-center pt-2">
+      <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
+        Panel de Tienda
+      </h1>
+    </div>
+
+    <!-- Actions Bar -->
+    <div class="mb-4 flex flex-wrap gap-3 justify-center">
       <a href="/store/create"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-blue-600 font-medium rounded-lg shadow-sm hover:shadow-md transition-all border border-blue-100 hover:border-blue-300">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
         Nuevo Producto
       </a>
       <a href="/store"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-white text-green-600 font-medium rounded-lg shadow-sm hover:shadow-md transition-all border border-green-100 hover:border-green-300">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
         Realizar Venta
       </a>
     </div>
-  </div>
 
-  <!-- Resumen General -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-xl shadow-md p-6">
-      <div class="flex items-center">
-        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-            <path d="M12 7.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" />
-            <path fill-rule="evenodd"
-              d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 011.5 14.625v-9.75zM8.25 9.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM18.75 9a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75z"
-              clip-rule="evenodd" />
-          </svg>
+    <!-- Estadísticas (Resumen General) -->
+    <div class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-2 mb-6 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+        <!-- Valor Total Inventario -->
+        <div
+          class="bg-white rounded-lg shadow-md p-2 border-l-4 border-blue-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+          <div class="flex items-center">
+            <div
+              class="p-1.5 rounded-full bg-blue-100 text-blue-600 transition-transform duration-300 group-hover:scale-110">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                <path d="M12 7.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" />
+                <path fill-rule="evenodd"
+                  d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 011.5 14.625v-9.75zM8.25 9.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM18.75 9a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75z"
+                  clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-2">
+              <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Valor Total</h3>
+              <p class="text-xl font-bold text-gray-900">${{inventoryReport.resumen_general.valor_total_inventario}}</p>
+            </div>
+          </div>
         </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">Valor Total Inventario</p>
-          <p class="text-2xl font-bold text-gray-900">${{inventoryReport.resumen_general.valor_total_inventario}}</p>
+
+        <!-- Total Productos -->
+        <div
+          class="bg-white rounded-lg shadow-md p-2 border-l-4 border-green-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+          <div class="flex items-center">
+            <div
+              class="p-1.5 rounded-full bg-green-100 text-green-600 transition-transform duration-300 group-hover:scale-110">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                <path
+                  d="M9.375 3a1.875 1.875 0 000 3.75h1.875v4.5H3.375A1.875 1.875 0 011.5 9.375v-1.5A1.875 1.875 0 013.375 6h1.5V4.875C4.875 3.839 5.714 3 6.75 3h2.625zM9.375 3a1.875 1.875 0 000 3.75H7.5v1.875c0 1.036.84 1.875 1.875 1.875h3.75c1.035 0 1.875-.84 1.875-1.875V6.75h1.875A1.875 1.875 0 0118.75 4.875v1.5c0 1.036-.84 1.875-1.875 1.875h-7.5z" />
+              </svg>
+            </div>
+            <div class="ml-2">
+              <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Productos</h3>
+              <p class="text-xl font-bold text-gray-900">{{inventoryReport.resumen_general.productos_totales}}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stock Bajo -->
+        <div
+          class="bg-white rounded-lg shadow-md p-2 border-l-4 border-yellow-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+          <div class="flex items-center">
+            <div
+              class="p-1.5 rounded-full bg-yellow-100 text-yellow-600 transition-transform duration-300 group-hover:scale-110">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                <path fill-rule="evenodd"
+                  d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                  clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-2">
+              <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Stock Bajo</h3>
+              <p class="text-xl font-bold text-gray-900">{{inventoryReport.resumen_general.productos_stock_bajo}}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agotados -->
+        <div
+          class="bg-white rounded-lg shadow-md p-2 border-l-4 border-red-500 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
+          <div class="flex items-center">
+            <div
+              class="p-1.5 rounded-full bg-red-100 text-red-600 transition-transform duration-300 group-hover:scale-110">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                <path fill-rule="evenodd"
+                  d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.243.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z"
+                  clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-2">
+              <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wide">Agotados</h3>
+              <p class="text-xl font-bold text-gray-900">{{inventoryReport.resumen_general.productos_agotados}}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-md p-6">
-      <div class="flex items-center">
-        <div class="p-3 rounded-full bg-green-100 text-green-600">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-            <path
-              d="M9.375 3a1.875 1.875 0 000 3.75h1.875v4.5H3.375A1.875 1.875 0 011.5 9.375v-1.5A1.875 1.875 0 013.375 6h1.5V4.875C4.875 3.839 5.714 3 6.75 3h2.625zM9.375 3a1.875 1.875 0 000 3.75H7.5v1.875c0 1.036.84 1.875 1.875 1.875h3.75c1.035 0 1.875-.84 1.875-1.875V6.75h1.875A1.875 1.875 0 0118.75 4.875v1.5c0 1.036-.84 1.875-1.875 1.875h-7.5z" />
-          </svg>
-        </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">Total Productos</p>
-          <p class="text-2xl font-bold text-gray-900">{{inventoryReport.resumen_general.productos_totales}}</p>
-        </div>
+    <!-- Productos con Stock Bajo -->
+    {{#if lowStockProducts}}
+    <div class="bg-white rounded-2xl shadow-md mb-6 overflow-hidden">
+      <div
+        class="px-3 py-2 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+        <h2 class="text-base font-bold text-gray-900">⚠️ Productos con Stock Bajo</h2>
+      </div>
+
+      <div id="lowStockTableWrapper" class="overflow-x-auto rounded-b-2xl">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
+            <tr>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Producto</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Categoría</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Stock</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Precio</th>
+            </tr>
+          </thead>
+          <tbody id="lowStockTableBody" class="bg-white divide-y divide-gray-200">
+            {{#each lowStockProducts}}
+            <tr class="transition-colors duration-200 hover:bg-slate-50">
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm font-medium text-gray-900">{{nombre}}</td>
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500">{{categoria}}</td>
+              <td
+                class="px-3 py-1.5 whitespace-nowrap text-sm font-bold {{#if (eq stock 0)}}text-red-600{{else}}text-yellow-600{{/if}}">
+                {{stock}}
+              </td>
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-900">${{precio}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
       </div>
     </div>
+    {{/if}}
 
-    <div class="bg-white rounded-xl shadow-md p-6">
-      <div class="flex items-center">
-        <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-            <path fill-rule="evenodd"
-              d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
-              clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">Stock Bajo</p>
-          <p class="text-2xl font-bold text-gray-900">{{inventoryReport.resumen_general.productos_stock_bajo}}</p>
-        </div>
+    <!-- Productos Más Vendidos -->
+    {{#if bestSelling}}
+    <div class="bg-white rounded-2xl shadow-md p-0 overflow-hidden">
+      <div
+        class="px-3 py-2 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-gray-50 to-gray-100">
+        <h2 class="text-base font-bold text-gray-900">🏆 Productos Más Vendidos (30 días)</h2>
+      </div>
+
+      <div id="bestSellingTableWrapper" class="overflow-x-auto rounded-b-2xl">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
+            <tr>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Producto</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Categoría</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Vendido</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Ventas</th>
+              <th class="px-3 py-1.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Stock Actual
+              </th>
+            </tr>
+          </thead>
+          <tbody id="bestSellingTableBody" class="bg-white divide-y divide-gray-200">
+            {{#each bestSelling}}
+            <tr class="transition-colors duration-200 hover:bg-slate-50">
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm font-medium text-gray-900">{{nombre}}</td>
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500">{{categoria}}</td>
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm text-green-600 font-bold">{{total_vendido}}</td>
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm text-blue-600">{{numero_ventas}}</td>
+              <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-900">{{stock}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
       </div>
     </div>
+    {{/if}}
 
-    <div class="bg-white rounded-xl shadow-md p-6">
-      <div class="flex items-center">
-        <div class="p-3 rounded-full bg-red-100 text-red-600">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-            <path fill-rule="evenodd"
-              d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.243.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z"
-              clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-4">
-          <p class="text-sm font-medium text-gray-600">Agotados</p>
-          <p class="text-2xl font-bold text-gray-900">{{inventoryReport.resumen_general.productos_agotados}}</p>
-        </div>
-      </div>
-    </div>
   </div>
 
-  <!-- Productos con Stock Bajo -->
-  {{#if lowStockProducts}}
-  <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-    <h3 class="text-xl font-bold text-gray-900 mb-4">⚠️ Productos con Stock Bajo</h3>
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          {{#each lowStockProducts}}
-          <tr class="{{#if (eq stock 0)}}bg-red-50{{else}}bg-yellow-50{{/if}}">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{nombre}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{categoria}}</td>
-            <td
-              class="px-6 py-4 whitespace-nowrap text-sm {{#if (eq stock 0)}}text-red-600{{else}}text-yellow-600{{/if}} font-bold">
-              {{stock}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{precio}}</td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {{/if}}
 
-  <!-- Productos Más Vendidos -->
-  {{#if bestSelling}}
-  <div class="bg-white rounded-xl shadow-md p-6">
-    <h3 class="text-xl font-bold text-gray-900 mb-4">🏆 Productos Más Vendidos (30 días)</h3>
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendido</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ventas</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Actual</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          {{#each bestSelling}}
-          <tr>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{nombre}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{categoria}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-bold">{{total_vendido}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">{{numero_ventas}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{stock}}</td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {{/if}}
 
-</div>
+  <script>
+    function adjustTableHeight(wrapperId, bodyId) {
+      const tableWrapper = document.getElementById(wrapperId);
+      const tableBody = document.getElementById(bodyId);
+
+      if (!tableWrapper || !tableBody) return;
+
+      const rowCount = tableBody.querySelectorAll('tr').length;
+
+      // Si hay 6 o más registros, activar scroll
+      if (rowCount >= 6) {
+        tableWrapper.classList.add('max-h-60', 'overflow-y-auto', 'scrollbar-thin', 'scrollbar-thumb-gray-300', 'scrollbar-track-gray-100');
+      } else {
+        tableWrapper.classList.remove('max-h-60', 'overflow-y-auto');
+        tableWrapper.style.maxHeight = 'none';
+        tableWrapper.style.overflow = 'visible';
+      }
+    }
+
+    function initTableAdjustments() {
+      adjustTableHeight('lowStockTableWrapper', 'lowStockTableBody');
+      adjustTableHeight('bestSellingTableWrapper', 'bestSellingTableBody');
+    }
+
+    document.addEventListener('DOMContentLoaded', initTableAdjustments);
+    window.addEventListener('load', () => setTimeout(initTableAdjustments, 200));
+  </script>

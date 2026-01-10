@@ -76,7 +76,7 @@ export const handleCreateProduct = async (req, res) => {
     });
 
     console.log(`✅ Producto creado con ID: ${productId}`);
-    res.redirect("/store");
+    res.redirect("/store/inventory");
   } catch (error) {
     console.error("Error en handleCreateProduct:", error);
     res.status(500).send("Error al crear el producto");
@@ -134,7 +134,7 @@ export const handleUpdateProduct = async (req, res) => {
 
     if (success) {
       console.log(`✅ Producto ${id} actualizado`);
-      res.redirect("/store");
+      res.redirect("/store/inventory");
     } else {
       res.status(404).send("Producto no encontrado");
     }
@@ -158,7 +158,7 @@ export const handleDeleteProduct = async (req, res) => {
 
     if (success) {
       console.log(`✅ Producto ${id} eliminado`);
-      res.redirect("/store");
+      res.redirect("/store/inventory");
     } else {
       res.status(404).send("Producto no encontrado");
     }
