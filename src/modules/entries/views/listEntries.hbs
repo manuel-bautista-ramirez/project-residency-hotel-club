@@ -1,61 +1,218 @@
+<style>
+  .entry-row { transition: all 0.2s; border-radius: 12px; }
+  .entry-row:hover { transform: scale(1.005); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  .table-container::-webkit-scrollbar { height: 8px; }
+  .table-container::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+</style>
 
-  <!-- Espacio superior para evitar que el navbar tape contenido -->
-  <main class="pt-24 px-4 sm:px-8 max-w-screen-xl mx-auto">
-    <section class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
-      <h1 class="text-2xl font-bold text-center mb-8 text-gray-800">{{title}}</h1>
-
-      <!-- Botones de navegación -->
-      <div class="flex justify-center mb-6 space-x-4">
-        <a href="/entries" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Ir al Módulo Principal</a>
-        <a href="/entries/reports" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">Ver Reportes</a>
+<main class="pt-24 px-4 sm:px-8 max-w-screen-xl mx-auto pb-20">
+  <section class="bg-white rounded-[2rem] shadow-2xl p-6 md:p-8 border border-gray-100">
+    
+    <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+      <div>
+        <h1 class="text-3xl font-black text-gray-800 tracking-tighter">Control de Registros</h1>
+        <p class="text-gray-400 text-sm font-medium">Visualización de ingresos históricos</p>
       </div>
+      
+      <div class="flex flex-wrap justify-center gap-3">
+        <a href="/entries" class="bg-indigo-50 text-indigo-600 px-6 py-2.5 rounded-2xl hover:bg-indigo-100 transition font-bold text-sm">Principal</a>
+        {{#if (eq user.role "Administrador")}}
+          <a href="/entries/reports" class="bg-green-500 text-white px-6 py-2.5 rounded-2xl hover:bg-green-600 transition font-bold text-sm shadow-md">Ver Reportes</a>
+          <button id="btnBulkDelete" onclick="deleteSelected()" class="hidden bg-red-600 text-white px-6 py-2.5 rounded-2xl font-bold transition shadow-lg flex items-center gap-2">
+            🗑️ Eliminar Seleccionados (<span id="selectedCount">0</span>)
+          </button>
+        {{/if}}
+      </div>
+    </header>
 
-      <!-- Tabla -->
-      <div class="overflow-x-auto">
-        <table class="min-w-full table-auto border-collapse">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="px-4 py-2 text-left">ID</th>
-              <th class="px-4 py-2 text-left">Nombre</th>
-              <th class="px-4 py-2 text-left">Apellido</th>
-              <th class="px-4 py-2 text-left">Área</th>
-              <th class="px-4 py-2 text-left">Costo</th>
-              <th class="px-4 py-2 text-left">Pago</th>
-              <th class="px-4 py-2 text-left">Fecha</th>
-              <th class="px-4 py-2 text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#each entries}}
-              <tr class="border-b hover:bg-gray-50">
-                <td class="px-4 py-3">{{this.id}}</td>
-                <td class="px-4 py-3">{{this.first_name}}</td>
-                <td class="px-4 py-3">{{this.last_name}}</td>
-                <td class="px-4 py-3">{{this.area}}</td>
-                <td class="px-4 py-3">${{this.cost}}</td>
-                <td class="px-4 py-3">{{this.payment_method}}</td>
-                <td class="px-4 py-3">{{this.entry_date}}</td>
-                <td class="px-4 py-3 text-center">
-                  {{#if (eq ../user.role "Administrador")}}
-                    <div class="flex flex-col sm:flex-row items-center justify-center gap-2">
-                      <form action="/api/entries/{{this.id}}/delete" method="POST" onsubmit="return confirm('¿Eliminar este registro?');">
-                        <button type="submit" class="text-red-600 hover:text-red-800 font-medium">Eliminar</button>
-                      </form>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-gray-50 p-4 rounded-3xl border border-gray-100">
+      <input type="text" id="nameSearch" onkeyup="dualFilter()" placeholder="🔍 Buscar por nombre..." class="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm">
+      <input type="text" id="dateSearch" onkeyup="dualFilter()" placeholder="📅 Buscar por fecha (DD/MM/AAAA)..." class="w-full px-5 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-400 focus:outline-none text-sm">
+    </div>
 
-                      <form action="/api/entries/{{this.id}}/edit" method="POST" class="flex items-center gap-2">
-                        <input type="text" name="first_name" placeholder="Nombre" class="border px-2 py-1 rounded text-sm w-24" required>
-                        <input type="text" name="last_name" placeholder="Apellido" class="border px-2 py-1 rounded text-sm w-24" required>
-                        <button type="submit" class="text-blue-600 hover:text-blue-800 font-medium">Editar</button>
-                      </form>
-                    </div>
-                  {{else}}
-                    <span class="text-sm text-gray-400">—</span>
-                  {{/if}}
+    <div class="table-container overflow-x-auto">
+      <table class="min-w-full border-separate border-spacing-y-3" id="entriesTable">
+        <thead>
+          <tr class="text-gray-400 text-[10px] uppercase tracking-[0.2em]">
+            {{#if (eq user.role "Administrador")}}
+              <th class="px-6 py-2 text-left"><input type="checkbox" id="selectAll" onclick="toggleAllCheckboxes()" class="w-4 h-4 rounded border-gray-300 text-indigo-600"></th>
+            {{/if}}
+            <th class="px-6 py-2 text-left">ID</th>
+            <th class="px-6 py-2 text-left">Nombre</th>
+            <th class="px-6 py-2 text-left">Área</th>
+            <th class="px-6 py-2 text-left">Costo</th>
+            <th class="px-6 py-2 text-left">Pago</th>
+            <th class="px-6 py-2 text-left">Fecha</th>
+            <th class="px-6 py-2 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"> {{#each entries}}
+            <tr class="entry-row bg-white border border-gray-100 shadow-sm">
+              {{#if (eq ../user.role "Administrador")}}
+                <td class="px-6 py-4 rounded-l-2xl border-y border-l border-gray-50">
+                  <input type="checkbox" class="row-checkbox w-4 h-4 rounded text-indigo-600 border-gray-300" value="{{this.id}}" onchange="updateBulkButton()">
                 </td>
-              </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+              {{/if}}
+              
+              <td class="px-6 py-4 text-sm font-black text-indigo-900 border-y border-gray-50">#{{this.visual_id}}</td>
+
+              <td class="px-6 py-4 border-y border-gray-50 search-name">
+                <div class="flex flex-col">
+                  <span class="text-sm font-bold text-gray-800">{{this.first_name}}</span>
+                  <span class="text-[10px] text-gray-400 uppercase tracking-widest">{{this.last_name}}</span>
+                </div>
+              </td>
+
+              <td class="px-6 py-4 border-y border-gray-50">
+                <span class="px-3 py-1 text-[10px] font-black rounded-lg uppercase
+                  {{#if (eq this.area 'Canchas')}} bg-blue-50 text-blue-600 {{/if}}
+                  {{#if (eq this.area 'Alberca')}} bg-emerald-50 text-emerald-600 {{/if}}
+                  {{#if (eq this.area 'Gimnasio')}} bg-amber-50 text-amber-600 {{/if}}">
+                  {{this.area}}
+                </span>
+              </td>
+
+              <td class="px-6 py-4 text-sm font-black text-gray-900 border-y border-gray-50">${{this.cost}}</td>
+              <td class="px-6 py-4 text-xs font-semibold text-gray-500 border-y border-gray-50">{{this.payment_method}}</td>
+              <td class="px-6 py-4 text-[11px] font-medium text-gray-400 border-y border-gray-50 search-date">{{this.entry_date}}</td>
+              
+              <td class="px-6 py-4 text-center rounded-r-2xl border-y border-r border-gray-50">
+                {{#if (eq ../user.role "Administrador")}}
+                  <div class="flex items-center justify-center gap-2">
+                    <button onclick="editEntry('{{this.id}}', '{{this.first_name}}', '{{this.last_name}}')" class="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition">✏️</button>
+                    <button onclick="confirmSingleDelete('{{this.id}}')" class="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition">🗑️</button>
+                    <form id="delete-form-{{this.id}}" action="/api/entries/{{this.id}}/delete" method="POST" class="hidden"></form>
+                  </div>
+                {{else}}
+                  <span class="text-gray-300">🔒</span>
+                {{/if}}
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  const colors = { primary: '#4f46e5', danger: '#ef4444', success: '#10b981', background: '#ffffff' };
+
+  // --- NUEVA LÓGICA DE ORDENAMIENTO (CORRECCIÓN) ---
+  // Esta función se ejecuta al cargar y voltea las filas para que el ID #1 esté arriba
+  document.addEventListener('DOMContentLoaded', () => {
+    const tbody = document.getElementById('tableBody');
+    const rows = Array.from(tbody.querySelectorAll('.entry-row'));
+    // Invertimos las filas: la última persona registrada irá abajo del todo
+    // y la primera (ID 1) quedará arriba.
+    rows.reverse().forEach(row => tbody.appendChild(row));
+  });
+
+  function dualFilter() {
+    const nameQ = document.getElementById('nameSearch').value.toLowerCase();
+    const dateQ = document.getElementById('dateSearch').value.toLowerCase();
+    document.querySelectorAll('.entry-row').forEach(row => {
+      const name = row.querySelector('.search-name').textContent.toLowerCase();
+      const date = row.querySelector('.search-date').textContent.toLowerCase();
+      row.style.display = (name.includes(nameQ) && date.includes(dateQ)) ? '' : 'none';
+    });
+  }
+
+  function toggleAllCheckboxes() {
+    const isChecked = document.getElementById('selectAll').checked;
+    document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = isChecked);
+    updateBulkButton();
+  }
+
+  function updateBulkButton() {
+    const selected = document.querySelectorAll('.row-checkbox:checked');
+    const btn = document.getElementById('btnBulkDelete');
+    if (btn) {
+      btn.classList.toggle('hidden', selected.length === 0);
+      btn.classList.toggle('flex', selected.length > 0);
+      document.getElementById('selectedCount').textContent = selected.length;
+    }
+  }
+
+  async function editEntry(id, currentName, currentLast) {
+    const { value: formValues } = await Swal.fire({
+      title: '<span style="color:#1e1b4b; font-family:sans-serif;">Editar Registro</span>',
+      html:
+        `<div style="text-align:left; font-size:14px; color:#64748b; margin-bottom:8px;">Nombre(s)</div>` +
+        `<input id="swal-name" class="swal2-input" style="margin-top:0; border-radius:12px; font-size:16px;" value="${currentName}">` +
+        `<div style="text-align:left; font-size:14px; color:#64748b; margin-bottom:8px; margin-top:15px;">Apellidos</div>` +
+        `<input id="swal-last" class="swal2-input" style="margin-top:0; border-radius:12px; font-size:16px;" value="${currentLast}">`,
+      showCancelButton: true,
+      confirmButtonText: 'Actualizar Datos',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: colors.primary,
+      cancelButtonColor: '#94a3b8',
+      borderRadius: '2rem',
+      preConfirm: () => {
+        const name = document.getElementById('swal-name').value;
+        const last = document.getElementById('swal-last').value;
+        if (!name || !last) { Swal.showValidationMessage('Ambos campos son obligatorios'); }
+        return { first_name: name, last_name: last }
+      }
+    });
+
+    if (formValues) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/api/entries/${id}/edit`;
+      for (const key in formValues) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = formValues[key];
+        form.appendChild(input);
+      }
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+
+  async function confirmSingleDelete(id) {
+    const result = await Swal.fire({
+      title: '¿Eliminar este registro?',
+      text: "Esta acción no se puede deshacer.",
+      icon: 'warning',
+      iconColor: colors.danger,
+      showCancelButton: true,
+      confirmButtonColor: colors.danger,
+      cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      borderRadius: '2rem'
+    });
+    if (result.isConfirmed) document.getElementById(`delete-form-${id}`).submit();
+  }
+
+  async function deleteSelected() {
+    const selected = document.querySelectorAll('.row-checkbox:checked');
+    const ids = Array.from(selected).map(cb => cb.value);
+    const result = await Swal.fire({
+      title: `¿Borrar ${ids.length} registros?`,
+      icon: 'error',
+      showCancelButton: true,
+      confirmButtonColor: colors.danger,
+      confirmButtonText: 'Eliminar lote',
+      borderRadius: '2rem'
+    });
+
+    if (result.isConfirmed) {
+      Swal.fire({ title: 'Borrando...', didOpen: () => Swal.showLoading(), borderRadius: '2rem' });
+      try {
+        const response = await fetch('/api/entries/bulk-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        if (response.ok) {
+          Swal.fire({ title: '¡Hecho!', icon: 'success', confirmButtonColor: colors.primary, borderRadius: '2rem' }).then(() => location.reload());
+        }
+      } catch (err) { Swal.fire('Error', 'No se pudo completar la acción', 'error'); }
+    }
+  }
+</script>
