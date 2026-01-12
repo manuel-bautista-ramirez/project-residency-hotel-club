@@ -462,15 +462,34 @@ INSERT IGNORE INTO productos (id, nombre, descripcion, categoria, precio, stock)
 (20, 'Gafas de Sol', 'Lentes de sol UV protection', 'otros', 150.00, 12);
 
 -- =====================================================
---             MÓDULO ENTRADAS DIARIAS
+--           MÓDULO ENTRADAS DIARIAS (ACTUALIZADO)
 -- =====================================================
+
 CREATE TABLE daily_entries (
   id INT AUTO_INCREMENT PRIMARY KEY,
   first_name VARCHAR(50) NOT NULL,
   last_name VARCHAR(50) NOT NULL,
-  area ENUM('Courts', 'Pool', 'Gym') NOT NULL,
+  -- El ENUM ahora incluye las opciones en español e inglés
+  area ENUM('Courts', 'Pool', 'Gym', 'Canchas', 'Alberca', 'Gimnasio') NOT NULL,
   cost DECIMAL(10,2) NOT NULL,
+  -- Columna agregada mediante el primer ALTER
+  payment_method VARCHAR(20) NOT NULL, 
   entry_date DATETIME DEFAULT CURRENT_TIMESTAMP,
   user_id INT NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users_hotel(id)
 );
+
+-- =====================================================
+--           TABLA DE CONFIGURACIONES (SETTINGS)
+-- =====================================================
+
+CREATE TABLE settings (
+    setting_key VARCHAR(50) PRIMARY KEY,
+    setting_value DECIMAL(10,2) NOT NULL
+);
+
+-- Inserción de precios base
+INSERT INTO settings (setting_key, setting_value) VALUES 
+('price_canchas', 60.00),
+('price_alberca', 100.00),
+('price_gym', 40.00);

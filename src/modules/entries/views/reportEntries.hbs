@@ -1,69 +1,258 @@
-  <main class="pt-24 px-4 sm:px-8">
-    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-6">
-      <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">{{title}}</h1>
+<style>
+  /* Botones de Filtro */
+  .filter-btn { 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .filter-btn.active { 
+    border-color: #4f46e5; 
+    background-color: #4f46e5; 
+    color: white; 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  }
+  .filter-btn:hover:not(.active) {
+    background-color: #f9fafb;
+    border-color: #4f46e5;
+    color: #4f46e5;
+  }
 
-      <!-- Botones de navegación -->
-      <div class="flex justify-center mb-6 space-x-4">
-        <a href="/entries" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Ir al Módulo Principal</a>
-        <a href="/entries/list" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Ver Lista de Registros</a>
+  /* Estética de Tarjetas */
+  .report-card {
+    border: none;
+    background: linear-gradient(145deg, #ffffff, #f3f4f6);
+    transition: transform 0.3s ease;
+  }
+  .report-card:hover {
+    transform: scale(1.02);
+  }
+  .list-item-custom {
+    background: white;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #f3f4f6;
+  }
+
+  .logo-container img { max-height: 70px; width: auto; }
+
+  @media print {
+    .no-pdf, nav, footer, button { display: none !important; }
+    body { background: white !important; padding: 0; }
+    #report-area { box-shadow: none !important; margin: 0 !important; width: 100% !important; border: none !important; }
+    .report-card { page-break-inside: avoid; border: 1px solid #eee !important; margin-bottom: 15px; display: block !important; background: white !important; }
+    canvas { max-width: 100% !important; height: auto !important; }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<main class="pt-24 px-4 sm:px-8 pb-12 bg-gray-50">
+  <div id="report-area" class="max-w-6xl mx-auto bg-white rounded-[2rem] shadow-2xl p-6 md:p-10 border border-gray-100">
+    
+    <div class="flex flex-col md:flex-row justify-between items-center border-b-2 border-gray-50 pb-8 mb-8 text-center md:text-left">
+      <div class="logo-container mb-4 md:mb-0">
+        <img src="/img/logo.png" alt="Logo" onerror="this.style.display='none'">
+        <h2 class="text-2xl font-black text-indigo-900 tracking-tighter">HOTEL CLUB</h2>
+        <span class="text-[10px] text-gray-400 uppercase tracking-widest">Sistema de Control de Ingresos</span>
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <!-- Diario -->
-        <div class="card border-t-4 border-blue-500 p-4 rounded-lg shadow">
-          <h2 class="text-xl font-semibold text-blue-600 mb-2">Reporte Diario</h2>
-          <ul class="space-y-2 text-sm">
-            {{#each reports.daily}}
-              <li class="flex justify-between border-b pb-1">
-                <span>{{this.date}}</span>
-                <span class="font-semibold text-blue-600">${{this.total}}</span>
-              </li>
-            {{/each}}
-          </ul>
-        </div>
-
-        <!-- Semanal -->
-        <div class="card border-t-4 border-green-500 p-4 rounded-lg shadow">
-          <h2 class="text-xl font-semibold text-green-600 mb-2">Reporte Semanal</h2>
-          <ul class="space-y-2 text-sm">
-            {{#each reports.weekly}}
-              <li class="flex justify-between border-b pb-1">
-                <span>Semana {{this.week}}</span>
-                <span class="font-semibold text-green-600">${{this.total}}</span>
-              </li>
-            {{/each}}
-          </ul>
-        </div>
-
-        <!-- Quincenal -->
-        <div class="card border-t-4 border-yellow-500 p-4 rounded-lg shadow">
-          <h2 class="text-xl font-semibold text-yellow-600 mb-2">Reporte Quincenal</h2>
-          <ul class="space-y-2 text-sm">
-            {{#each reports.biweekly}}
-              <li class="flex justify-between border-b pb-1">
-                <span>{{this.year}}/{{this.month}} - Quincena {{this.biweek}}</span>
-                <span class="font-semibold text-yellow-600">${{this.total}}</span>
-              </li>
-            {{/each}}
-          </ul>
-        </div>
-
-        <!-- Mensual -->
-        <div class="card border-t-4 border-red-500 p-4 rounded-lg shadow">
-          <h2 class="text-xl font-semibold text-red-600 mb-2">Reporte Mensual</h2>
-          <ul class="space-y-2 text-sm">
-            {{#each reports.monthly}}
-              <li class="flex justify-between border-b pb-1">
-                <span>{{this.year}}/{{this.month}}</span>
-                <span class="font-semibold text-red-600">${{this.total}}</span>
-              </li>
-            {{/each}}
-          </ul>
-        </div>
+      <div>
+        <h1 class="text-3xl font-black text-gray-800 tracking-tight">{{title}}</h1>
+        <p class="text-indigo-600 font-semibold" id="currentDateDisplay"></p>
       </div>
     </div>
-  </main>
 
+    <div class="no-pdf flex flex-wrap justify-center gap-4 mb-8">
+        <a href="/entries" class="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-2xl font-bold text-sm hover:bg-gray-50 transition shadow-sm">
+           <span>🏠</span> Inicio Módulo
+        </a>
+        <a href="/entries/list" class="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-2xl font-bold text-sm hover:bg-black transition shadow-md">
+           <span>⬅️</span> Lista de Registros
+        </a>
+        <button onclick="printReport()" class="flex items-center gap-2 px-8 py-3 bg-red-600 text-white rounded-2xl font-bold text-sm hover:bg-red-700 transition shadow-lg">
+           <span>📄</span> Guardar PDF
+        </button>
+    </div>
 
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div class="bg-gradient-to-br from-indigo-600 to-indigo-900 text-white p-8 rounded-[2rem] shadow-xl flex flex-col justify-center text-center">
+            <h3 class="text-indigo-200 text-xs font-bold uppercase tracking-[0.2em]">Ingreso Total Global</h3>
+            <p class="text-5xl font-black mt-2 tracking-tighter">${{stats.totalGlobal}}</p>
+            <div class="mt-4 pt-4 border-t border-indigo-400/30">
+                <span class="text-sm text-indigo-100 font-medium">Mayor Ingreso: {{stats.topArea}}</span>
+            </div>
+        </div>
 
+        <div class="lg:col-span-2 bg-gray-50/50 border border-gray-100 p-6 rounded-[2rem] grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="p-6 bg-white rounded-3xl shadow-sm border border-blue-100 text-center">
+                <span class="text-blue-500 text-[10px] font-black uppercase tracking-widest">Canchas</span>
+                <p class="text-3xl font-black text-blue-900 mt-1">${{stats.totalCanchas}}</p>
+            </div>
+            <div class="p-6 bg-white rounded-3xl shadow-sm border border-teal-100 text-center">
+                <span class="text-teal-500 text-[10px] font-black uppercase tracking-widest">Alberca</span>
+                <p class="text-3xl font-black text-teal-900 mt-1">${{stats.totalAlberca}}</p>
+            </div>
+            <div class="p-6 bg-white rounded-3xl shadow-sm border border-amber-100 text-center">
+                <span class="text-amber-500 text-[10px] font-black uppercase tracking-widest">Gimnasio</span>
+                <p class="text-3xl font-black text-amber-900 mt-1">${{stats.totalGym}}</p>
+            </div>
+        </div>
+    </div>
 
+    <div class="bg-white p-8 rounded-[2rem] mb-12 border-2 border-gray-50 shadow-sm">
+        <h3 class="text-center text-gray-400 font-bold uppercase text-[10px] mb-8 tracking-[0.3em]">Análisis Comparativo por Área</h3>
+        <div class="h-72">
+            <canvas id="incomeChart"></canvas>
+        </div>
+    </div>
+
+    <div class="no-pdf text-center mb-12">
+        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Selecciona el periodo a visualizar</h3>
+        <div class="flex flex-wrap justify-center gap-3">
+            <button onclick="filterReport('all', this)" class="filter-btn active px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Todos</button>
+            <button onclick="filterReport('daily', this)" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Diario</button>
+            <button onclick="filterReport('weekly', this)" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Semanal</button>
+            <button onclick="filterReport('biweekly', this)" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Quincenal</button>
+            <button onclick="filterReport('monthly', this)" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Mensual</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="cards-container">
+      
+      <div class="report-card daily-card p-8 rounded-[2rem] shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">📅 Diario</h2>
+            <span class="px-3 py-1 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full">DETALLADO</span>
+        </div>
+        <ul class="space-y-1">
+          {{#each reports.daily}}
+            <li class="list-item-custom flex justify-between items-center">
+              <span class="text-gray-500 font-medium text-xs">{{this.date}}</span> 
+              <span class="font-black text-gray-900">${{this.total}}</span>
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+
+      <div class="report-card weekly-card p-8 rounded-[2rem] shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">📊 Semanal</h2>
+            <span class="px-3 py-1 bg-green-100 text-green-600 text-[10px] font-bold rounded-full">RENDIMIENTO</span>
+        </div>
+        <ul class="space-y-1">
+          {{#each reports.weekly}}
+            <li class="list-item-custom flex justify-between items-center">
+              <span class="text-gray-500 font-medium text-xs">Semana {{this.week}} - {{this.year}}</span> 
+              <span class="font-black text-green-700">${{this.total}}</span>
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+
+      <div class="report-card biweekly-card p-8 rounded-[2rem] shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">🌗 Quincenal</h2>
+            <span class="px-3 py-1 bg-orange-100 text-orange-600 text-[10px] font-bold rounded-full">PROYECCIÓN</span>
+        </div>
+        <ul class="space-y-1">
+          {{#each reports.biweekly}}
+            <li class="list-item-custom flex justify-between items-center">
+              <span class="text-gray-500 font-medium text-xs">Q{{this.biweek}} ({{this.year}})</span> 
+              <span class="font-black text-orange-700">${{this.total}}</span>
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+
+      <div class="report-card monthly-card p-8 rounded-[2rem] shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">🏢 Mensual</h2>
+            <span class="px-3 py-1 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full">CIERRE</span>
+        </div>
+        <ul class="space-y-1">
+          {{#each reports.monthly}}
+            <li class="list-item-custom flex justify-between items-center">
+              <span class="text-gray-500 font-medium text-xs">{{this.monthName}} {{this.year}}</span> 
+              <span class="font-black text-purple-700">${{this.total}}</span>
+            </li>
+          {{/each}}
+        </ul>
+      </div>
+
+    </div>
+    
+    <div class="mt-16 pt-8 border-t border-gray-50 text-center">
+      <p class="text-[10px] text-gray-300 uppercase tracking-[0.5em]">© 2026 Hotel Club - Operaciones Inteligentes</p>
+    </div>
+  </div>
+</main>
+
+<script>
+  // 1. FECHA AUTOMÁTICA CORREGIDA (FORZANDO ZONA HORARIA MÉXICO)
+  // Esto corrige que después de las 6:00 PM se brinque al día siguiente
+  function getLocalDate() {
+    const options = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      timeZone: 'America/Mexico_City' 
+    };
+    return new Intl.DateTimeFormat('es-MX', options).format(new Date());
+  }
+
+  // Aplicamos la fecha corregida al encabezado del reporte
+  document.getElementById('currentDateDisplay').innerText = getLocalDate();
+
+  // 2. GRÁFICA (Mantenemos tu lógica pero con los datos de tus variables)
+  const ctx = document.getElementById('incomeChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Canchas', 'Alberca', 'Gimnasio'],
+      datasets: [{
+        label: 'Ingresos por Área',
+        data: [{{stats.totalCanchas}}, {{stats.totalAlberca}}, {{stats.totalGym}}],
+        backgroundColor: [
+            'rgba(79, 70, 229, 0.8)', 
+            'rgba(16, 185, 129, 0.8)', 
+            'rgba(245, 158, 11, 0.8)'
+        ],
+        borderColor: ['#4f46e5', '#10b981', '#f59e0b'],
+        borderWidth: 2,
+        borderRadius: 15
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 3. FILTROS DINÁMICOS
+  function filterReport(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cards = document.querySelectorAll('.report-card');
+    cards.forEach(c => {
+      if (type === 'all') {
+        c.style.display = 'block';
+      } else {
+        c.style.display = c.classList.contains(type + '-card') ? 'block' : 'none';
+      }
+    });
+  }
+
+  // 4. PREPARACIÓN PARA IMPRESIÓN
+  function printReport() {
+    const cards = document.querySelectorAll('.report-card');
+    cards.forEach(c => c.style.display = 'block');
+    setTimeout(() => { window.print(); }, 500);
+  }
+</script>
