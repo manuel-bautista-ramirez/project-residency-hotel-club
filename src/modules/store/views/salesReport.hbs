@@ -313,7 +313,13 @@
           if (!response.ok) throw new Error(data.error || 'Error al generar el reporte');
           reporteActual = data.reporte;
           mostrarReporte(reporteActual);
-          envioOpciones.classList.remove('hidden');
+
+          // Mostrar u ocultar opciones de envío según si hay datos
+          if (reporteActual && reporteActual.datos && reporteActual.datos.length > 0) {
+            envioOpciones.classList.remove('hidden');
+          } else {
+            envioOpciones.classList.add('hidden');
+          }
         } catch (error) {
           reporteContainer.innerHTML = `<p class="text-red-500 text-center font-bold">Error: ${error.message}</p>`;
           envioOpciones.classList.add('hidden');
@@ -462,6 +468,10 @@
       document.getElementById('generar-reporte-btn').addEventListener('click', generarReporte);
       document.getElementById('enviar-email-btn').addEventListener('click', enviarEmail);
       document.getElementById('enviar-whatsapp-btn').addEventListener('click', enviarWhatsApp);
+
+      // Hacer disponible mostrarNotificacion como showNotification para compatibilidad con scripts externos
+      window.showNotification = mostrarNotificacion;
     });
   </script>
+  <script src="/js/ModuleRooms/js/reportsInputValidation.js"></script>
 </div>

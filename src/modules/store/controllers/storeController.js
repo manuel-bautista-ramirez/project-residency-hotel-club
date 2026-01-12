@@ -334,6 +334,7 @@ export const showSaleDetail = async (req, res) => {
     res.render("saleDetail", {
       title: `Venta #${id}`,
       showFooter: true,
+      showNavbar: true,
       sale,
       user
     });
@@ -450,6 +451,14 @@ export const sendReportByEmail = async (req, res) => {
 
     const reporte = await getSalesReport(fechaInicio, fechaFin);
 
+    // Validar si hay datos antes de generar y enviar
+    if (!reporte.datos || reporte.datos.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No se encontraron ventas para el periodo seleccionado. No se puede enviar un reporte vacío."
+      });
+    }
+
     // Generar PDF del reporte
     const { generateReportPDF } = await import("../utils/storeReportGenerator.js");
     const pdfPath = await generateReportPDF(reporte);
@@ -488,6 +497,14 @@ export const sendReportByWhatsApp = async (req, res) => {
     const { fechaInicio, fechaFin, telefono } = req.body;
 
     const reporte = await getSalesReport(fechaInicio, fechaFin);
+
+    // Validar si hay datos antes de generar y enviar
+    if (!reporte.datos || reporte.datos.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No se encontraron ventas para el periodo seleccionado. No se puede enviar un reporte vacío."
+      });
+    }
 
     // Generar PDF del reporte
     const { generateReportPDF } = await import("../utils/storeReportGenerator.js");
