@@ -12,7 +12,6 @@ import {
   deleteSale,
   getSalesReport
 } from "../models/ModelStore.js";
-import { createMessageMethod } from "../../rooms/models/ModelRoom.js";
 
 // =====================================================
 //         CONTROLADORES DE PRODUCTOS
@@ -44,7 +43,7 @@ export const showStore = async (req, res) => {
 // Renderizar formulario de crear producto
 export const renderCreateProduct = (req, res) => {
   const user = req.session.user || {};
-  
+
   if (user.role !== "Administrador") {
     return res.status(403).send("Acceso denegado");
   }
@@ -60,7 +59,7 @@ export const renderCreateProduct = (req, res) => {
 export const handleCreateProduct = async (req, res) => {
   try {
     const user = req.session.user || {};
-    
+
     if (user.role !== "Administrador") {
       return res.status(403).send("Acceso denegado");
     }
@@ -77,7 +76,7 @@ export const handleCreateProduct = async (req, res) => {
     });
 
     console.log(`✅ Producto creado con ID: ${productId}`);
-    res.redirect("/store");
+    res.redirect("/store/inventory");
   } catch (error) {
     console.error("Error en handleCreateProduct:", error);
     res.status(500).send("Error al crear el producto");
@@ -88,7 +87,7 @@ export const handleCreateProduct = async (req, res) => {
 export const renderEditProduct = async (req, res) => {
   try {
     const user = req.session.user || {};
-    
+
     if (user.role !== "Administrador") {
       return res.status(403).send("Acceso denegado");
     }
@@ -116,7 +115,7 @@ export const renderEditProduct = async (req, res) => {
 export const handleUpdateProduct = async (req, res) => {
   try {
     const user = req.session.user || {};
-    
+
     if (user.role !== "Administrador") {
       return res.status(403).send("Acceso denegado");
     }
@@ -135,7 +134,7 @@ export const handleUpdateProduct = async (req, res) => {
 
     if (success) {
       console.log(`✅ Producto ${id} actualizado`);
-      res.redirect("/store");
+      res.redirect("/store/inventory");
     } else {
       res.status(404).send("Producto no encontrado");
     }
@@ -149,7 +148,7 @@ export const handleUpdateProduct = async (req, res) => {
 export const handleDeleteProduct = async (req, res) => {
   try {
     const user = req.session.user || {};
-    
+
     if (user.role !== "Administrador") {
       return res.status(403).send("Acceso denegado");
     }
@@ -159,7 +158,7 @@ export const handleDeleteProduct = async (req, res) => {
 
     if (success) {
       console.log(`✅ Producto ${id} eliminado`);
-      res.redirect("/store");
+      res.redirect("/store/inventory");
     } else {
       res.status(404).send("Producto no encontrado");
     }
@@ -310,6 +309,7 @@ export const showSales = async (req, res) => {
 
     res.render("salesList", {
       title: "Ventas Realizadas",
+      showNavbar: true,
       showFooter: true,
       sales,
       user
@@ -334,6 +334,7 @@ export const showSaleDetail = async (req, res) => {
     res.render("saleDetail", {
       title: `Venta #${id}`,
       showFooter: true,
+      showNavbar: true,
       sale,
       user
     });
@@ -347,20 +348,20 @@ export const showSaleDetail = async (req, res) => {
 export const handleDeleteSale = async (req, res) => {
   try {
     const user = req.session.user || {};
-    
+
     if (user.role !== "Administrador") {
       return res.status(403).send("Acceso denegado");
     }
 
     const { id } = req.params;
-    
+
     // Obtener venta antes de eliminar para borrar archivos
     const venta = await getSaleById(id);
-    
+
     if (venta) {
       const fs = await import("fs");
       const fsPromises = fs.promises;
-      
+
       // Eliminar PDF
       if (venta.pdf_path) {
         try {
@@ -372,7 +373,7 @@ export const handleDeleteSale = async (req, res) => {
           console.error("⚠️ Error al eliminar PDF:", error.message);
         }
       }
-      
+
       // Eliminar QR
       if (venta.qr_path) {
         try {
@@ -411,6 +412,7 @@ export const renderReports = (req, res) => {
   res.render("salesReport", {
     title: "Reportes de Ventas",
     showFooter: true,
+    showNavbar: true,
     user
   });
 };
@@ -448,6 +450,14 @@ export const sendReportByEmail = async (req, res) => {
     const { fechaInicio, fechaFin, destinatario, asunto } = req.body;
 
     const reporte = await getSalesReport(fechaInicio, fechaFin);
+
+    // Validar si hay datos antes de generar y enviar
+    if (!reporte.datos || reporte.datos.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No se encontraron ventas para el periodo seleccionado. No se puede enviar un reporte vacío."
+      });
+    }
 
     // Generar PDF del reporte
     const { generateReportPDF } = await import("../utils/storeReportGenerator.js");
@@ -487,6 +497,14 @@ export const sendReportByWhatsApp = async (req, res) => {
     const { fechaInicio, fechaFin, telefono } = req.body;
 
     const reporte = await getSalesReport(fechaInicio, fechaFin);
+
+    // Validar si hay datos antes de generar y enviar
+    if (!reporte.datos || reporte.datos.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No se encontraron ventas para el periodo seleccionado. No se puede enviar un reporte vacío."
+      });
+    }
 
     // Generar PDF del reporte
     const { generateReportPDF } = await import("../utils/storeReportGenerator.js");

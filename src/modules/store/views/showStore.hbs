@@ -1,131 +1,163 @@
-<!-- Navigation Header -->
-<div class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30">
+<!-- Navigation Header & Filtros Sticky -->
+<div class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30 pt-10">
   <div class="w-full px-3 sm:px-4 lg:px-8">
-    <!-- Fila superior: Logo + Menú compacto en una línea -->
-    <div class="flex items-center justify-between py-2 sm:py-2 gap-2 min-h-[48px]">
-      <!-- Logo y Título -->
-      <div class="flex items-center gap-2 flex-shrink-0">
-        {{#if (eq user.role "Administrador")}}
-        <a href="/store/dashboard" class="bg-blue-50 p-1 sm:p-1.5 rounded hover:bg-blue-100 transition-colors"
-          title="Dashboard">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </a>
-        {{/if}}
-        <h1 class="text-base sm:text-lg font-bold text-gray-800 whitespace-nowrap">
-          🛒 Tienda
-        </h1>
+    <div class="mt-2 w-full border-t border-slate-100 pt-3">
+      {{> storeNavButtons activePage="store" user=user}}
+    </div>
+
+    <!-- Filtros Integrados en Header -->
+    <div class="py-3 sm:py-4">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="w-full relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400 text-lg"></i>
+          </div>
+          <input type="text" id="searchProduct" placeholder="Buscar productos..."
+            class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition-all shadow-sm" />
+        </div>
+        <div class="w-full sm:w-56">
+          <select id="filterCategory"
+            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white cursor-pointer transition-all shadow-sm">
+            <option value="">Todas las categorías</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="snacks">Snacks</option>
+            <option value="comida">Comida</option>
+            <option value="otros">Otros</option>
+          </select>
+        </div>
       </div>
-
-      <!-- Navegación - En una línea horizontal -->
-      <nav class="flex gap-0.5 sm:gap-1 items-center justify-end flex-wrap">
-        <!-- Tienda -->
-        <span class="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded border border-blue-200 shadow-sm cursor-default">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-          </svg>
-          <span class="hidden sm:inline text-xs">Tienda</span>
-        </span>
-
-        <!-- Compras -->
-        <a href="/store/sales" class="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-white hover:text-blue-600 rounded border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          <span class="hidden sm:inline text-xs">Compras</span>
-        </a>
-
-        {{#if (eq user.role "Administrador")}}
-        <!-- Inventario -->
-        <a href="/store/inventory" class="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-white hover:text-blue-600 rounded border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-          <span class="hidden sm:inline text-xs">Inventario</span>
-        </a>
-
-        <!-- Reportes -->
-        <a href="/store/reports" class="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-white hover:text-blue-600 rounded border border-gray-200 hover:border-blue-200 hover:shadow-sm transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <span class="hidden sm:inline text-xs">Reportes</span>
-        </a>
-        {{/if}}
-      </nav>
     </div>
   </div>
 </div>
 
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+</style>
 <!-- Contenido -->
-<div class="w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
-  <!-- Filtros -->
-  <div class="bg-white rounded-xl shadow-md p-3 sm:p-4 mb-4 sm:mb-6">
-    <div class="flex flex-col gap-3 sm:gap-4">
-      <div class="w-full">
-        <input type="text" id="searchProduct" placeholder="Buscar productos..."
-          class="w-full pl-3 sm:pl-4 pr-3 sm:pr-4 py-2 sm:py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm sm:text-base" />
-      </div>
-      <div class="w-full">
-        <select id="filterCategory"
-          class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm sm:text-base">
-          <option value="">Todas las categorías</option>
-          <option value="bebidas">Bebidas</option>
-          <option value="snacks">Snacks</option>
-          <option value="comida">Comida</option>
-          <option value="otros">Otros</option>
-        </select>
-      </div>
-    </div>
-  </div>
+<div class="w-full px-3 sm:px-4 lg:px-8 pt-4 sm:pt-8 pb-16 animate-fade-in">
 
   <!-- Grid de Productos -->
-  <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 lg:gap-6">
+  <div id="productsGrid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
     {{#if products}}
     {{#each products}}
     <div
-      class="group product-card bg-white rounded-lg sm:rounded-xl shadow-sm sm:shadow-md overflow-hidden hover:shadow-lg sm:hover:shadow-xl transition-all duration-300 ease-in-out flex flex-col"
+      class="group product-card bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 ease-out flex flex-col hover:-translate-y-2 border border-slate-100 overflow-hidden relative"
       data-id="{{this.id}}" data-nombre="{{this.nombre}}" data-precio="{{this.precio}}"
       data-categoria="{{this.categoria}}" data-stock="{{this.stock}}">
-      <div class="relative h-32 sm:h-40 lg:h-48 bg-slate-50">
+
+      <!-- Decoración de Categoría (Barra lateral) -->
+      <div class="absolute left-0 top-0 bottom-0 w-1.5 z-10
+        {{#if (eq this.categoria 'bebidas')}}bg-blue-500{{/if}}
+        {{#if (eq this.categoria 'snacks')}}bg-orange-500{{/if}}
+        {{#if (eq this.categoria 'comida')}}bg-green-500{{/if}}
+        {{#if (eq this.categoria 'otros')}}bg-purple-500{{/if}}">
+      </div>
+
+      <!-- Imagen/Icono Container -->
+      <div
+        class="relative h-36 sm:h-44 lg:h-52 bg-gradient-to-b from-slate-50 to-white group-hover:from-slate-100 transition-colors duration-500">
         {{#if this.imagen}}
         <img src="{{this.imagen}}" alt="{{this.nombre}}"
-          class="w-full h-full object-contain object-center transition-transform duration-300 ease-in-out group-hover:scale-110 p-2">
+          class="w-full h-full object-contain object-center transition-transform duration-700 ease-in-out group-hover:scale-110 p-6 drop-shadow-md">
         {{else}}
         <div class="w-full h-full flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 sm:w-16 sm:h-16 text-slate-300" viewBox="0 0 24 24"
-            fill="currentColor">
-            <path
-              d="M21.822 7.431A1 1 0 0 0 21 7H7.333L6.179 4.23A1.994 1.994 0 0 0 4.333 3H2a1 1 0 0 0 0 2h2.333l4.744 11.385A1 1 0 0 0 10 17h8a1 1 0 0 0 .931-.648l3-8a1 1 0 0 0-.109-.921z" />
-          </svg>
+          <div class="p-5 rounded-full bg-white shadow-inner transition-transform duration-500 group-hover:scale-110">
+            <i class="text-4xl sm:text-5xl transition-colors duration-500
+              {{#if (eq this.categoria 'bebidas')}}fas fa-wine-bottle text-blue-400 group-hover:text-blue-600{{/if}}
+              {{#if (eq this.categoria 'snacks')}}fas fa-cookie-bite text-orange-400 group-hover:text-orange-600{{/if}}
+              {{#if (eq this.categoria 'comida')}}fas fa-utensils text-green-400 group-hover:text-green-600{{/if}}
+              {{#if (eq this.categoria 'otros')}}fas fa-tags text-purple-400 group-hover:text-purple-600{{/if}}
+              {{#unless this.categoria}}fas fa-box-open text-slate-300{{/unless}}"></i>
+          </div>
+        </div>
+        {{/if}}
+
+        <!-- Badge de categoría flotante -->
+        <div class="absolute top-3 right-3">
+          <span class="flex items-center gap-1.5 px-2.5 py-1 backdrop-blur-md shadow-sm rounded-full text-[10px] font-black uppercase tracking-widest border
+            {{#if (eq this.categoria 'bebidas')}}bg-blue-50/80 text-blue-700 border-blue-100{{/if}}
+            {{#if (eq this.categoria 'snacks')}}bg-orange-50/80 text-orange-700 border-orange-100{{/if}}
+            {{#if (eq this.categoria 'comida')}}bg-green-50/80 text-green-700 border-green-100{{/if}}
+            {{#if (eq this.categoria 'otros')}}bg-purple-50/80 text-purple-700 border-purple-100{{/if}}">
+            <i class="text-[9px]
+              {{#if (eq this.categoria 'bebidas')}}fas fa-tint{{/if}}
+              {{#if (eq this.categoria 'snacks')}}fas fa-cookie{{/if}}
+              {{#if (eq this.categoria 'comida')}}fas fa-hamburger{{/if}}
+              {{#if (eq this.categoria 'otros')}}fas fa-ellipsis-h{{/if}}"></i>
+            {{this.categoria}}
+          </span>
+        </div>
+
+        <!-- Indicador de Stock Bajo -->
+        {{#if (and (gt this.stock 0) (lte this.stock 5))}}
+        <div class="absolute bottom-2 left-4">
+          <span
+            class="flex items-center gap-1 text-[9px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100 animate-pulse">
+            <i class="fas fa-exclamation-triangle"></i> Stock Bajo
+          </span>
         </div>
         {{/if}}
       </div>
-      <div class="p-2 sm:p-4 flex-grow flex flex-col justify-between">
-        <div>
-          <h3 class="text-sm sm:text-lg font-bold text-slate-800 mb-1 line-clamp-2">{{this.nombre}}</h3>
-          <p class="text-xs sm:text-sm text-slate-500 mb-2">{{this.categoria}}</p>
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 mb-2 sm:mb-3">
-            <span class="text-lg sm:text-2xl font-bold text-blue-600">${{this.precio}}</span>
-            <span class="text-xs sm:text-sm text-slate-600 flex-shrink-0">Stock: {{this.stock}}</span>
+
+      <!-- Información del Producto -->
+      <div class="p-4 sm:p-5 flex-grow flex flex-col">
+        <div class="mb-4">
+          <h3
+            class="text-sm sm:text-base font-extrabold text-slate-800 mb-2 line-clamp-2 leading-tight group-hover:text-blue-700 transition-colors">
+            {{this.nombre}}
+          </h3>
+          <div class="flex items-baseline gap-2">
+            <span class="text-xl sm:text-2xl font-black text-slate-900 drop-shadow-sm">${{this.precio}}</span>
+            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">MXN</span>
           </div>
         </div>
-        <button
-          class="sell-btn mt-2 w-full px-2 sm:px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed active:scale-95"
-          {{#unless (gt this.stock 0)}}disabled{{/unless}}>
-          {{#if (gt this.stock 0)}}Vender{{else}}Agotado{{/if}}
-        </button>
+
+        <div class="mt-auto space-y-3">
+          <!-- Info de Stock -->
+          <div class="flex items-center justify-between text-[11px] font-bold">
+            <span class="text-slate-400 uppercase tracking-wider">Disponibilidad</span>
+            <span
+              class="{{#if (eq this.stock 0)}}text-red-500{{else if (lte this.stock 5)}}text-orange-500{{else}}text-green-600{{/if}} border-b-2 border-transparent">
+              {{#if (eq this.stock 0)}}Agotado{{else}}{{this.stock}} unidades{{/if}}
+            </span>
+          </div>
+
+          <!-- Botón de Acción -->
+          <button class="sell-btn w-full group/btn py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2
+              {{#if (gt this.stock 0)}}
+              bg-slate-900 text-white hover:bg-blue-600 shadow-lg hover:shadow-blue-200 active:scale-95
+              {{else}}
+              bg-slate-100 text-slate-400 cursor-not-allowed
+              {{/if}}" {{#unless (gt this.stock 0)}}disabled{{/unless}}>
+            {{#if (gt this.stock 0)}}
+            <i class="fas fa-cart-plus group-hover/btn:animate-bounce"></i> Realizar Venta
+            {{else}}
+            <i class="fas fa-ban"></i> Sin Inventario
+            {{/if}}
+          </button>
+        </div>
       </div>
     </div>
     {{/each}}
     {{else}}
-    <div class="col-span-full text-center py-8 sm:py-12">
+    <div class="col-span-full text-center py-12">
+      <div class="bg-slate-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-box-open text-4xl text-slate-300"></i>
+      </div>
       <p class="text-lg sm:text-xl font-semibold text-slate-600">No hay productos disponibles</p>
     </div>
     {{/if}}
@@ -133,48 +165,88 @@
 </div>
 
 <!-- Modal de Venta Rápida -->
-<div id="sale-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-  <div class="bg-white rounded-lg sm:rounded-xl shadow-2xl p-4 sm:p-6 lg:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
-    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Registrar Venta</h2>
-    <form id="sale-form" action="/store/sell" method="POST">
+<div id="sale-modal"
+  class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm p-4 animate-fade-in">
+  <div
+    class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-in overflow-hidden">
+    <!-- Modal Header -->
+    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+      <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+        <span class="p-1.5 bg-white rounded-lg shadow-sm text-blue-600">
+          <i class="fas fa-cash-register"></i>
+        </span>
+        Registrar Venta
+      </h2>
+      <p class="text-sm text-gray-600 mt-1 pl-10">Complete los detalles de la venta</p>
+    </div>
+
+    <form id="sale-form" action="/store/sell" method="POST" class="p-6">
       <input type="hidden" id="modal-product-id">
-      <div class="mb-3 sm:mb-4">
-        <p class="text-base sm:text-lg font-semibold line-clamp-2" id="modal-product-name"></p>
-        <p class="text-sm sm:text-base text-gray-600" id="modal-product-price"></p>
+
+      <!-- Detalle del Producto -->
+      <div class="mb-5 bg-blue-50 p-4 rounded-xl border border-blue-100 flex justify-between items-center">
+        <div>
+          <p class="text-xs text-blue-600 uppercase font-bold tracking-wide mb-1">Producto</p>
+          <p class="text-base font-bold text-gray-900 line-clamp-1" id="modal-product-name"></p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs text-blue-600 uppercase font-bold tracking-wide mb-1">Precio</p>
+          <p class="text-lg font-bold text-blue-700" id="modal-product-price"></p>
+        </div>
       </div>
 
-      <div class="mb-3 sm:mb-4">
-        <label for="modal-quantity" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Cantidad</label>
-        <input type="number" id="modal-quantity" value="1" min="1"
-          class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base" />
+      <div class="mb-5">
+        <label for="modal-quantity" class="block text-sm font-bold text-gray-700 mb-2">Cantidad</label>
+        <div class="relative">
+          <input type="number" id="modal-quantity" value="1" min="1"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-bold text-lg text-center" />
+          <div class="absolute right-3 top-3 text-gray-400">
+            <i class="fas fa-sort"></i>
+          </div>
+        </div>
       </div>
 
-      <div class="mb-4 sm:mb-6">
-        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">Método de Pago</label>
+      <div class="mb-6">
+        <label class="block text-sm font-bold text-gray-700 mb-2">Método de Pago</label>
         <div class="grid grid-cols-3 gap-2">
-          <label class="flex items-center justify-center p-2 sm:p-3 border-2 rounded-lg cursor-pointer hover:border-purple-600 transition-colors">
+          <label
+            class="group flex flex-col items-center justify-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all relative">
             <input type="radio" name="tipo_pago" value="efectivo" class="sr-only peer" checked>
-            <span class="font-semibold peer-checked:text-purple-600 text-xs sm:text-sm">Efectivo</span>
+            <div
+              class="absolute inset-0 border-2 border-blue-500 rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+            </div>
+            <i class="fas fa-money-bill-wave text-xl mb-1 text-gray-400 peer-checked:text-blue-600 z-10"></i>
+            <span class="font-bold text-gray-500 peer-checked:text-blue-700 text-xs sm:text-sm z-10">Efectivo</span>
           </label>
-          <label class="flex items-center justify-center p-2 sm:p-3 border-2 rounded-lg cursor-pointer hover:border-purple-600 transition-colors">
+          <label
+            class="group flex flex-col items-center justify-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all relative">
             <input type="radio" name="tipo_pago" value="tarjeta" class="sr-only peer">
-            <span class="font-semibold peer-checked:text-purple-600 text-xs sm:text-sm">Tarjeta</span>
+            <div
+              class="absolute inset-0 border-2 border-blue-500 rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+            </div>
+            <i class="fas fa-credit-card text-xl mb-1 text-gray-400 peer-checked:text-blue-600 z-10"></i>
+            <span class="font-bold text-gray-500 peer-checked:text-blue-700 text-xs sm:text-sm z-10">Tarjeta</span>
           </label>
-          <label class="flex items-center justify-center p-2 sm:p-3 border-2 rounded-lg cursor-pointer hover:border-purple-600 transition-colors">
+          <label
+            class="group flex flex-col items-center justify-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all relative">
             <input type="radio" name="tipo_pago" value="transferencia" class="sr-only peer">
-            <span class="font-semibold peer-checked:text-purple-600 text-xs sm:text-sm">Transf.</span>
+            <div
+              class="absolute inset-0 border-2 border-blue-500 rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity">
+            </div>
+            <i class="fas fa-mobile-alt text-xl mb-1 text-gray-400 peer-checked:text-blue-600 z-10"></i>
+            <span class="font-bold text-gray-500 peer-checked:text-blue-700 text-xs sm:text-sm z-10">Transf.</span>
           </label>
         </div>
       </div>
 
-      <div class="flex gap-2 sm:gap-4">
+      <div class="flex gap-3 pt-2 border-t border-gray-100">
         <button type="button" id="cancel-sale-btn"
-          class="flex-1 py-2 sm:py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg transition-colors text-sm sm:text-base">
-          Cancelar
+          class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors text-sm flex items-center justify-center gap-2">
+          <i class="fas fa-times"></i> Cancelar
         </button>
         <button type="submit" id="confirm-sale-btn"
-          class="flex-1 px-3 sm:px-5 py-2 sm:py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors text-sm sm:text-base">
-          Confirmar
+          class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-sm flex items-center justify-center gap-2">
+          <i class="fas fa-check"></i> Confirmar Venta
         </button>
       </div>
     </form>
@@ -188,147 +260,180 @@
     return `${numero.toFixed(2)} pesos`;
   }
 
+  // Definir mostrarNotificacion para uso global y compatibilidad
+  function mostrarNotificacion(mensaje, tipo = 'success') {
+    const notif = document.createElement('div');
+    let classes = "fixed top-4 right-4 z-[100] p-4 mb-4 text-sm font-bold rounded-lg shadow-xl flex items-center gap-2 animate-fade-in transition-all duration-300 ";
+
+    if (tipo === 'success') classes += "bg-white border-l-4 border-green-500 text-green-700";
+    else if (tipo === 'error') classes += "bg-white border-l-4 border-red-500 text-red-700";
+    else if (tipo === 'warning') classes += "bg-white border-l-4 border-yellow-500 text-yellow-700";
+    else classes += "bg-white border-l-4 border-blue-500 text-blue-700";
+
+    notif.className = classes;
+    notif.style.minWidth = "300px";
+
+    const icon = tipo === 'success' ? 'fa-check-circle' :
+      tipo === 'error' ? 'fa-exclamation-circle' :
+        tipo === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+
+    notif.innerHTML = `
+        <i class="fas ${icon} text-lg"></i>
+        <div class="flex-grow">${mensaje}</div>
+        <button class="ml-2 hover:opacity-70" onclick="this.parentElement.remove()">&times;</button>
+    `;
+    document.body.appendChild(notif);
+    setTimeout(() => {
+      notif.classList.add('opacity-0', 'translate-x-full');
+      setTimeout(() => notif.remove(), 300);
+    }, 5000);
+  }
+  window.showNotification = mostrarNotificacion;
+
   document.addEventListener('DOMContentLoaded', () => {
+
     console.log('🛒 Inicializando tienda...');
 
     const products = {{{ json products }}};
-    console.log('📦 Productos cargados:', products);
 
-    const modal = document.getElementById('sale-modal');
-    const form = document.getElementById('sale-form');
-    const cancelBtn = document.getElementById('cancel-sale-btn');
+  console.log('📦 Productos cargados:', products);
 
-    if (!modal || !form || !cancelBtn) {
-      console.error('❌ No se encontraron elementos del modal');
+  const modal = document.getElementById('sale-modal');
+  const form = document.getElementById('sale-form');
+  const cancelBtn = document.getElementById('cancel-sale-btn');
+
+  if (!modal || !form || !cancelBtn) {
+    console.error('❌ No se encontraron elementos del modal');
+    return;
+  }
+
+  const openModal = (product) => {
+    const precio = parseFloat(product.precio);
+    document.getElementById('modal-product-id').value = product.id;
+    document.getElementById('modal-product-name').textContent = product.nombre;
+    document.getElementById('modal-product-price').textContent = `$${precio.toFixed(2)}`;
+    document.getElementById('modal-quantity').max = product.stock;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden'; // Prevenir scroll cuando el modal está abierto
+
+    // Auto focus quantity
+    setTimeout(() => {
+      document.getElementById('modal-quantity').focus();
+      document.getElementById('modal-quantity').select();
+    }, 100);
+  };
+
+  const closeModal = () => {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    form.reset();
+    document.body.style.overflow = 'auto'; // Restaurar scroll
+  };
+
+  // Agregar event listeners a los botones de vender
+  document.querySelectorAll('.sell-btn').forEach((button, index) => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const card = e.target.closest('.product-card');
+      if (!card) return;
+
+      const productId = card.dataset.id;
+      const product = products.find(p => p.id == productId);
+
+      if (product) {
+        openModal(product);
+      } else {
+        mostrarNotificacion('Error: Producto no encontrado', 'error');
+      }
+    });
+  });
+
+  cancelBtn.addEventListener('click', closeModal);
+
+  // Cerrar modal al hacer click en el fondo (backdrop)
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function (event) {
+    if (event.key === "Escape" && !modal.classList.contains('hidden')) {
+      closeModal();
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const productId = document.getElementById('modal-product-id').value;
+    const quantity = parseInt(document.getElementById('modal-quantity').value, 10);
+    const paymentMethod = form.querySelector('input[name="tipo_pago"]:checked').value;
+    const product = products.find(p => p.id == productId);
+
+    if (quantity > product.stock) {
+      mostrarNotificacion('La cantidad excede el stock disponible.', 'warning');
       return;
     }
 
-    const openModal = (product) => {
-      const precio = parseFloat(product.precio);
-      document.getElementById('modal-product-id').value = product.id;
-      document.getElementById('modal-product-name').textContent = product.nombre;
-      document.getElementById('modal-product-price').textContent = `$${precio.toFixed(2)}`;
-      document.getElementById('modal-quantity').max = product.stock;
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      document.body.style.overflow = 'hidden'; // Prevenir scroll cuando el modal está abierto
+    const precio = parseFloat(product.precio);
+    const total = precio * quantity;
+
+    const saleData = {
+      productos: JSON.stringify([{
+        id: product.id,
+        nombre: product.nombre,
+        precio: precio,
+        cantidad: quantity,
+        subtotal: total
+      }]),
+      total: total,
+      tipo_pago: paymentMethod,
+      nombre_cliente: 'Cliente de Mostrador',
+      total_letras: convertirNumeroALetras(total)
     };
 
-    const closeModal = () => {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      form.reset();
-      document.body.style.overflow = 'auto'; // Restaurar scroll
-    };
+    // Añadir campos que faltan en el formulario
+    saleData.id_producto = productId;
+    saleData.cantidad = quantity;
 
-    // Agregar event listeners a los botones de vender
-    document.querySelectorAll('.sell-btn').forEach((button, index) => {
-      console.log(`🔘 Configurando botón ${index + 1}`);
-      button.addEventListener('click', (e) => {
-        console.log('🛒 Click en botón vender');
-        e.preventDefault();
-
-        const card = e.target.closest('.product-card');
-        if (!card) {
-          console.error('❌ No se encontró la tarjeta del producto');
-          return;
-        }
-
-        const productId = card.dataset.id;
-        console.log('🆔 ID del producto:', productId);
-
-        const product = products.find(p => p.id == productId);
-        console.log('📦 Producto encontrado:', product);
-
-        if (product) {
-          openModal(product);
-        } else {
-          console.error('❌ Producto no encontrado');
-          alert('Error: Producto no encontrado');
-        }
+    try {
+      const response = await fetch('/store/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(saleData)
       });
-    });
-
-    cancelBtn.addEventListener('click', closeModal);
-
-    // Cerrar modal al hacer click en el fondo (backdrop)
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
+      const result = await response.json();
+      if (result.success) {
+        mostrarNotificacion(`✅ Vendido: ${quantity}x ${product.nombre} - Total: $${total.toFixed(2)}`, 'success');
         closeModal();
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        mostrarNotificacion('❌ Error: ' + (result.error || 'No se pudo registrar la venta'), 'error');
       }
+    } catch (error) {
+      mostrarNotificacion('❌ Error de conexión al registrar la venta.', 'error');
+    }
+  });
+
+  // Lógica de filtros
+  const searchInput = document.getElementById('searchProduct');
+  const categoryFilter = document.getElementById('filterCategory');
+  const applyFilters = () => {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedCategory = categoryFilter.value;
+    document.querySelectorAll('.product-card').forEach(card => {
+      const productName = card.dataset.nombre.toLowerCase();
+      const productCategory = card.dataset.categoria;
+      const matchesSearch = productName.includes(searchTerm);
+      const matchesCategory = !selectedCategory || productCategory === selectedCategory;
+      card.style.display = (matchesSearch && matchesCategory) ? 'flex' : 'none';
     });
+  };
+  searchInput.addEventListener('input', applyFilters);
+  categoryFilter.addEventListener('change', applyFilters);
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const productId = document.getElementById('modal-product-id').value;
-      const quantity = parseInt(document.getElementById('modal-quantity').value, 10);
-      const paymentMethod = form.querySelector('input[name="tipo_pago"]:checked').value;
-      const product = products.find(p => p.id == productId);
-
-      if (quantity > product.stock) {
-        alert('La cantidad excede el stock disponible.');
-        return;
-      }
-
-      const precio = parseFloat(product.precio);
-      const total = precio * quantity;
-
-      const saleData = {
-        productos: JSON.stringify([{
-          id: product.id,
-          nombre: product.nombre,
-          precio: precio,
-          cantidad: quantity,
-          subtotal: total
-        }]),
-        total: total,
-        tipo_pago: paymentMethod,
-        nombre_cliente: 'Cliente de Mostrador',
-        total_letras: convertirNumeroALetras(total)
-      };
-
-      // Añadir campos que faltan en el formulario
-      saleData.id_producto = productId;
-      saleData.cantidad = quantity;
-
-      console.log('💰 Datos de venta:', saleData);
-
-      try {
-        const response = await fetch('/store/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(saleData)
-        });
-        const result = await response.json();
-        if (result.success) {
-          alert('✅ Venta registrada exitosamente');
-          closeModal();
-          window.location.reload(); // Recargar para ver el stock actualizado
-        } else {
-          alert('❌ Error: ' + (result.error || 'No se pudo registrar la venta'));
-        }
-      } catch (error) {
-        alert('❌ Error de conexión al registrar la venta.');
-      }
-    });
-
-    // Lógica de filtros
-    const searchInput = document.getElementById('searchProduct');
-    const categoryFilter = document.getElementById('filterCategory');
-    const applyFilters = () => {
-      const searchTerm = searchInput.value.toLowerCase();
-      const selectedCategory = categoryFilter.value;
-      document.querySelectorAll('.product-card').forEach(card => {
-        const productName = card.dataset.nombre.toLowerCase();
-        const productCategory = card.dataset.categoria;
-        const matchesSearch = productName.includes(searchTerm);
-        const matchesCategory = !selectedCategory || productCategory === selectedCategory;
-        card.style.display = (matchesSearch && matchesCategory) ? 'flex' : 'none';
-      });
-    };
-    searchInput.addEventListener('input', applyFilters);
-    categoryFilter.addEventListener('change', applyFilters);
-
-    console.log('✅ Tienda inicializada correctamente');
   });
 </script>
+<script src="/js/ModuleStore/js/storeValidation.js"></script>

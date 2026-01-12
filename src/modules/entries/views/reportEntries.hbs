@@ -1,14 +1,15 @@
 <style>
   /* Botones de Filtro */
-  .filter-btn { 
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+  .filter-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid #e5e7eb;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
-  .filter-btn.active { 
-    border-color: #4f46e5; 
-    background-color: #4f46e5; 
-    color: white; 
+  .filter-btn.active {
+    border-color: #4f46e5;
+    background-color: #4f46e5;
+    color: white;
+
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
   }
@@ -50,7 +51,7 @@
 
 <main class="pt-24 px-4 sm:px-8 pb-12 bg-gray-50">
   <div id="report-area" class="max-w-6xl mx-auto bg-white rounded-[2rem] shadow-2xl p-6 md:p-10 border border-gray-100">
-    
+
     <div class="flex flex-col md:flex-row justify-between items-center border-b-2 border-gray-50 pb-8 mb-8 text-center md:text-left">
       <div class="logo-container mb-4 md:mb-0">
         <img src="/img/logo.png" alt="Logo" onerror="this.style.display='none'">
@@ -119,7 +120,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="cards-container">
-      
+
       <div class="report-card daily-card p-8 rounded-[2rem] shadow-sm border border-gray-100">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">📅 Diario</h2>
@@ -128,7 +129,9 @@
         <ul class="space-y-1">
           {{#each reports.daily}}
             <li class="list-item-custom flex justify-between items-center">
-              <span class="text-gray-500 font-medium text-xs">{{this.date}}</span> 
+
+              <span class="text-gray-500 font-medium text-xs">{{this.date}}</span>
+
               <span class="font-black text-gray-900">${{this.total}}</span>
             </li>
           {{/each}}
@@ -143,7 +146,9 @@
         <ul class="space-y-1">
           {{#each reports.weekly}}
             <li class="list-item-custom flex justify-between items-center">
-              <span class="text-gray-500 font-medium text-xs">Semana {{this.week}} - {{this.year}}</span> 
+
+              <span class="text-gray-500 font-medium text-xs">Semana {{this.week}} - {{this.year}}</span>
+
               <span class="font-black text-green-700">${{this.total}}</span>
             </li>
           {{/each}}
@@ -158,7 +163,9 @@
         <ul class="space-y-1">
           {{#each reports.biweekly}}
             <li class="list-item-custom flex justify-between items-center">
-              <span class="text-gray-500 font-medium text-xs">Q{{this.biweek}} ({{this.year}})</span> 
+
+              <span class="text-gray-500 font-medium text-xs">Q{{this.biweek}} ({{this.year}})</span>
+
               <span class="font-black text-orange-700">${{this.total}}</span>
             </li>
           {{/each}}
@@ -173,7 +180,9 @@
         <ul class="space-y-1">
           {{#each reports.monthly}}
             <li class="list-item-custom flex justify-between items-center">
-              <span class="text-gray-500 font-medium text-xs">{{this.monthName}} {{this.year}}</span> 
+
+              <span class="text-gray-500 font-medium text-xs">{{this.monthName}} {{this.year}}</span>
+
               <span class="font-black text-purple-700">${{this.total}}</span>
             </li>
           {{/each}}
@@ -181,10 +190,7 @@
       </div>
 
     </div>
-    
-    <div class="mt-16 pt-8 border-t border-gray-50 text-center">
-      <p class="text-[10px] text-gray-300 uppercase tracking-[0.5em]">© 2026 Hotel Club - Operaciones Inteligentes</p>
-    </div>
+
   </div>
 </main>
 
@@ -192,12 +198,14 @@
   // 1. FECHA AUTOMÁTICA CORREGIDA (FORZANDO ZONA HORARIA MÉXICO)
   // Esto corrige que después de las 6:00 PM se brinque al día siguiente
   function getLocalDate() {
-    const options = { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
+
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
-      timeZone: 'America/Mexico_City' 
+      timeZone: 'America/Mexico_City'
+
     };
     return new Intl.DateTimeFormat('es-MX', options).format(new Date());
   }
@@ -215,8 +223,9 @@
         label: 'Ingresos por Área',
         data: [{{stats.totalCanchas}}, {{stats.totalAlberca}}, {{stats.totalGym}}],
         backgroundColor: [
-            'rgba(79, 70, 229, 0.8)', 
-            'rgba(16, 185, 129, 0.8)', 
+
+            'rgba(79, 70, 229, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
             'rgba(245, 158, 11, 0.8)'
         ],
         borderColor: ['#4f46e5', '#10b981', '#f59e0b'],
@@ -256,3 +265,4 @@
     setTimeout(() => { window.print(); }, 500);
   }
 </script>
+

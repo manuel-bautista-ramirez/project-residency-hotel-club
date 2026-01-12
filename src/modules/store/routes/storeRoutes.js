@@ -24,7 +24,7 @@ import {
   getDashboardData,
   getStockAlerts
 } from "../controllers/reportsController.js";
-import { authMiddleware } from "../../../middlewares/validation/accessDenied.js"; 
+import { authMiddleware } from "../../../middlewares/validation/accessDenied.js";
 
 const routerStore = express.Router();
 
@@ -59,7 +59,7 @@ routerStore.post("/store/inventory/add-stock/:id", handleAddStock);
 routerStore.get("/store/checkout",  renderCheckout);
 routerStore.post("/store/checkout", handleCheckout);
 
-// Lista de ventas
+// Mostrar lista de ventas
 routerStore.get("/store/sales", showSales);
 
 // Detalle de venta

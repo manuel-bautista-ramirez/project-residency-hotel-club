@@ -33,7 +33,7 @@ export const renderMainPage = async (req, res) => {
 export const renderAllEntries = async (req, res) => {
   try {
     const entries = await getAllEntries(); // Viene de la DB (normalmente del más antiguo al más nuevo)
-    
+
     // Total de registros para calcular el ID visual
     const total = entries.length;
 
@@ -46,13 +46,13 @@ export const renderAllEntries = async (req, res) => {
       const minutes = String(d.getMinutes()).padStart(2, '0');
       const ampm = hours >= 12 ? 'p. m.' : 'a. m.';
       hours = hours % 12;
-      hours = hours ? hours : 12; 
+      hours = hours ? hours : 12;
       const strTime = `${hours}:${minutes} ${ampm}`;
-      
+
       return {
         ...entry,
         // El ID visual será su posición real en la lista (1, 2, 3...)
-        visual_id: index + 1, 
+        visual_id: index + 1,
         entry_date: `${day}/${month}/${year}, ${strTime}`
       };
     });
@@ -130,24 +130,26 @@ export const renderReports = async (req, res) => {
     const weekly = await getWeeklyReport();
     const biweekly = await getBiweeklyReport();
     const monthly = await getMonthlyReport();
-    const allEntries = await getAllEntries(); 
+
+    const allEntries = await getAllEntries();
 
     // CORRECCIÓN CLAVE: Mapeo de fechas diarias
     const formattedDaily = daily.map(item => {
       // Si el item.date viene como objeto Date de la DB, lo tratamos con cuidado
       const d = new Date(item.date);
-      
+
       // Si la fecha detectada es mañana (día 12) pero aún estamos a día 11 en México,
       // la lógica de getUTCDate() que pusimos antes puede no ser suficiente si la DB
       // ya agrupó los datos como '2026-01-12'.
-      
+
       // Para mostrarlo correctamente basado en la cadena de texto de la DB:
       const dateString = d.toISOString().split('T')[0]; // YYYY-MM-DD
       const [year, month, day] = dateString.split('-');
-      
-      return { 
-        ...item, 
-        date: `${day}/${month}/${year}` 
+
+      return {
+        ...item,
+        date: `${day}/${month}/${year}`
+
       };
     });
 
@@ -172,16 +174,19 @@ export const renderReports = async (req, res) => {
     const topArea = Object.keys(areaStats).reduce((a, b) => areaStats[a] > areaStats[b] ? a : b, "Ninguna");
 
     return res.render("reportEntries", {
+      showNavbar: true,
+      showFooter: true,
       title: "Reporte de Ingresos Oficial",
       reports: { daily: formattedDaily, weekly, biweekly, monthly: formattedMonthly },
-      stats: { 
-        topArea, 
+      stats: {
+        topArea,
         totalGlobal: totalGlobal.toFixed(2),
         totalCanchas: totalCanchas.toFixed(2),
         totalAlberca: totalAlberca.toFixed(2),
         totalGym: totalGym.toFixed(2)
       },
       user: req.session.user
+
     });
   } catch (err) {
     console.error("Error en reporte:", err);
@@ -203,3 +208,4 @@ export const bulkDeleteEntries = async (req, res) => {
     return res.status(500).json({ error: "Error interno al eliminar" });
   }
 };
+

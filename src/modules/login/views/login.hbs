@@ -9,7 +9,15 @@
     </div>
     <div class="mb-4">
       <label for="password" class="block text-gray-700 font-medium mb-2">Contraseña:</label>
-      <input type="password" id="password" name="password" class="w-full px-3 sm:px-4 py-2 border border-blue-300 rounded-lg focus:outline-none">
+      <div class="relative">
+        <input type="password" id="password" name="password" class="w-full px-3 sm:px-4 py-2 pr-10 border border-blue-300 rounded-lg focus:outline-none">
+        <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none">
+          <svg class="w-5 h-5" id="eyeIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+          </svg>
+        </button>
+      </div>
     </div>
     <div class="flex justify-center">
       <button type="submit" class="w-30 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none">
@@ -34,11 +42,29 @@
         ¿Olvidaste tu contraseña?
       </a>
     </div>
-    
+
   </form>
 
   <script type="module" src="/js/ModuleLogin/validationClient.js"></script>
   <script>
+    // Toggle mostrar/ocultar contraseña
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    togglePasswordBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+
+      // Cambiar el icono
+      if (isPassword) {
+        eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-2.391m5.005-2.905A6.987 6.987 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.005 10.005 0 01-4.132 5.411m-3.42 0a6.933 6.933 0 01-2.582 1.414M6.228 6.228a10.05 10.05 0 013.772-2.51m5.009 5.009a6.981 6.981 0 01-1.414 2.581m0 0a6.933 6.933 0 01-2.415 1.265"></path>';
+      } else {
+        eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+      }
+    });
+
     document.querySelectorAll('input').forEach(input => {
       input.addEventListener('focus', () => {
         input.classList.add('focus:ring-2', '');
