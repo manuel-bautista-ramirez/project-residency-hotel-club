@@ -364,10 +364,11 @@ Su reservación ha sido procesada exitosamente.
 
 📋 *DETALLES DE SU RESERVACIÓN*
 
+📌 *Folio:* #${datos.id || 'S/N'}
 🏠 *Habitación:* ${habitacion}
-📅 *Check-in:* ${datos.fecha_ingreso}
-📅 *Check-out:* ${datos.fecha_salida}
-💰 *Monto Total:* $${Number(datos.monto).toLocaleString('es-MX')} MXN
+📅 *Check-in:* ${datos.fecha_ingreso || datos.check_in}
+📅 *Check-out:* ${datos.fecha_salida || datos.check_out}
+💰 *Monto Total:* $${Number(datos.monto || datos.price).toLocaleString('es-MX')} MXN
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -412,6 +413,7 @@ Su renta ha sido procesada exitosamente.
 
 📋 *DETALLES DE SU RENTA*
 
+📌 *Folio:* #${datos.id || 'S/N'}
 🏠 *Habitación:* ${habitacion}
 📅 *Check-in:* ${datos.check_in}
 📅 *Check-out:* ${datos.check_out}

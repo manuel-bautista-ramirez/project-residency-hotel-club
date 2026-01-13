@@ -268,7 +268,8 @@ export const handleCreateReservation = async (req, res) => {
 
     console.log("Fechas formateadas para MySQL:", {
       fecha_ingreso_formatted,
-      fecha_salida_formatted}
+      fecha_salida_formatted
+    }
     );
 
     // El formulario envía "price", pero también aceptar "monto" por compatibilidad
@@ -324,6 +325,7 @@ export const handleCreateReservation = async (req, res) => {
 
     // Preparar datos para el PDF
     const datosParaPDF = {
+      id: reservationId,
       nombre_cliente,
       correo,
       telefono,
@@ -442,21 +444,21 @@ export const renderAllRervationes = async (req, res) => {
 
       const resumenFinanciero = esConvertida
         ? {
-            tipo: reservacion.tipo_pago_renta || reservacion.tipo_pago,
-            monto: reservacion.monto_renta || reservacion.precio_total,
-            monto_formateado: currencyFormatter.format(
-              Number(reservacion.monto_renta || reservacion.precio_total || 0)
-            ),
-            origen: origenLabel,
-            origen_clave: "conversion",
-          }
+          tipo: reservacion.tipo_pago_renta || reservacion.tipo_pago,
+          monto: reservacion.monto_renta || reservacion.precio_total,
+          monto_formateado: currencyFormatter.format(
+            Number(reservacion.monto_renta || reservacion.precio_total || 0)
+          ),
+          origen: origenLabel,
+          origen_clave: "conversion",
+        }
         : {
-            tipo: reservacion.tipo_pago,
-            monto: reservacion.precio_total,
-            monto_formateado: currencyFormatter.format(Number(reservacion.precio_total || 0)),
-            origen: origenLabel,
-            origen_clave: "reservacion",
-          };
+          tipo: reservacion.tipo_pago,
+          monto: reservacion.precio_total,
+          monto_formateado: currencyFormatter.format(Number(reservacion.precio_total || 0)),
+          origen: origenLabel,
+          origen_clave: "reservacion",
+        };
 
       const estado_clave = esConvertida
         ? "convertida"
@@ -744,7 +746,7 @@ export const renderAllRentas = async (req, res) => {
         ...user,
         rol: user.role,
       },
-       showNavbar: true,
+      showNavbar: true,
     });
   } catch (error) {
     console.error("Error al renderizar las rentas loco:", error.message);
@@ -827,7 +829,7 @@ export const renderFormEditarReservacion = async (req, res) => {
     reservacion.fecha_ingreso = formatearFechaSafe(reservacion.fecha_ingreso, 'date') || "";
     reservacion.fecha_salida = formatearFechaSafe(reservacion.fecha_salida, 'date') || "";
 
-    console.log("Fcehas recibicidas de la reservaciona editar: ",   reservacion.fecha_ingreso, reservacion.fecha_salida  )
+    console.log("Fcehas recibicidas de la reservaciona editar: ", reservacion.fecha_ingreso, reservacion.fecha_salida)
 
     const habitaciones = await getHabitaciones();
 
@@ -837,7 +839,7 @@ export const renderFormEditarReservacion = async (req, res) => {
       reservacion,
       habitaciones,
       user: req.session.user,
-       showNavbar: true
+      showNavbar: true
     });
   } catch (err) {
     console.error("Error en renderFormEditarReservacion:", err);
@@ -927,6 +929,7 @@ export const handleEditReservation = async (req, res) => {
     //      DATOS PARA PDF ACTUALIZADO
     // ===================================
     const datosParaPDF = {
+      id: id,
       nombre_cliente,
       correo: reservacionActualizada.correo_cliente,
       telefono: reservacionActualizada.telefono_cliente,
@@ -1176,6 +1179,7 @@ export const handleCreateRenta = async (req, res) => {
     const numeroHabitacion = await getRoomNumberById(habitacionId);
 
     const datosParaPDF = {
+      id: rentId,
       client_name,
       email,
       phone,
@@ -1312,19 +1316,19 @@ export const renderCalendarioRooms = async (req, res) => {
 
       const resumenFinanciero = esConvertida
         ? {
-            tipo: reservacion.tipo_pago_renta || reservacion.tipo_pago,
-            monto: reservacion.monto_renta || reservacion.precio_total,
-            monto_formateado: currencyFormatter.format(Number(reservacion.monto_renta || reservacion.precio_total || 0)),
-            origen: "Conversión",
-            origen_clave: "conversion",
-          }
+          tipo: reservacion.tipo_pago_renta || reservacion.tipo_pago,
+          monto: reservacion.monto_renta || reservacion.precio_total,
+          monto_formateado: currencyFormatter.format(Number(reservacion.monto_renta || reservacion.precio_total || 0)),
+          origen: "Conversión",
+          origen_clave: "conversion",
+        }
         : {
-            tipo: reservacion.tipo_pago,
-            monto: reservacion.precio_total,
-            monto_formateado: currencyFormatter.format(Number(reservacion.precio_total || 0)),
-            origen: "Reservación",
-            origen_clave: "reservacion",
-          };
+          tipo: reservacion.tipo_pago,
+          monto: reservacion.precio_total,
+          monto_formateado: currencyFormatter.format(Number(reservacion.precio_total || 0)),
+          origen: "Reservación",
+          origen_clave: "reservacion",
+        };
 
       const enganchePerdido = fechaIngresoDate ? (ahora > new Date(fechaIngresoDate.getTime() + (30 * 60 * 1000))) : false;
 

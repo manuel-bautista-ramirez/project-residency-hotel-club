@@ -63,28 +63,28 @@ class WhatsAppService {
       // Crear socket de WhatsApp con logger completo
       const logger = {
         level: 'silent',
-        debug: () => {},
-        info: () => {},
-        warn: () => {},
-        error: () => {},
-        trace: () => {},
-        fatal: () => {},
+        debug: () => { },
+        info: () => { },
+        warn: () => { },
+        error: () => { },
+        trace: () => { },
+        fatal: () => { },
         child: () => ({
           level: 'silent',
-          debug: () => {},
-          info: () => {},
-          warn: () => {},
-          error: () => {},
-          trace: () => {},
-          fatal: () => {},
+          debug: () => { },
+          info: () => { },
+          warn: () => { },
+          error: () => { },
+          trace: () => { },
+          fatal: () => { },
           child: () => ({
             level: 'silent',
-            debug: () => {},
-            info: () => {},
-            warn: () => {},
-            error: () => {},
-            trace: () => {},
-            fatal: () => {}
+            debug: () => { },
+            info: () => { },
+            warn: () => { },
+            error: () => { },
+            trace: () => { },
+            fatal: () => { }
           })
         })
       };
@@ -110,7 +110,7 @@ class WhatsAppService {
           const statusCode = (lastDisconnect?.error)?.output?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
-         // console.log('📱 Conexión cerrada debido a:', lastDisconnect?.error, ', reconectando:', shouldReconnect);
+          // console.log('📱 Conexión cerrada debido a:', lastDisconnect?.error, ', reconectando:', shouldReconnect);
 
           // Si es error 401 (Unauthorized), limpiar sesión
           if (statusCode === 401) {
@@ -302,12 +302,12 @@ ${estadoLinea}
       const { clienteNombre, numeroMembresia, tipoMembresia, fechaVencimiento, total } = membershipData;
 
       const mensaje = `🏆 *COMPROBANTE DE MEMBRESÍA*\n\n` +
-                     `👤 Cliente: ${clienteNombre}\n` +
-                     `🎫 Membresía: #${numeroMembresia}\n` +
-                     `📋 Tipo: ${tipoMembresia}\n` +
-                     `📅 Vencimiento: ${fechaVencimiento}\n` +
-                     `💰 Total: $${total}\n\n` +
-                     `¡Bienvenido al club! 🎉`;
+        `👤 Cliente: ${clienteNombre}\n` +
+        `🎫 Membresía: #${numeroMembresia}\n` +
+        `📋 Tipo: ${tipoMembresia}\n` +
+        `📅 Vencimiento: ${fechaVencimiento}\n` +
+        `💰 Total: $${total}\n\n` +
+        `¡Bienvenido al club! 🎉`;
 
       const jid = this.formatPhoneNumber(telefono);
 
@@ -342,24 +342,28 @@ ${estadoLinea}
       }
 
       const jid = this.formatPhoneNumber(telefono);
+      console.log(`📤 Intentando enviar mensaje a: ${jid}`);
 
-      // Enviar mensaje de texto
-      await this.socket.sendMessage(jid, { text: mensaje });
-
-      // Enviar PDF si existe
       if (pdfPath && fs.existsSync(pdfPath)) {
+        // Enviar PDF con el mensaje como leyenda (caption) en un solo envío
+        // Esto es mucho más confiable que enviar dos mensajes por separado
         await this.socket.sendMessage(jid, {
           document: fs.readFileSync(pdfPath),
           fileName: nombreArchivo || 'documento.pdf',
-          mimetype: 'application/pdf'
+          mimetype: 'application/pdf',
+          caption: mensaje
         });
+        console.log(`✅ Comprobante PDF + Mensaje enviado exitosamente a ${telefono}`);
+      } else {
+        // Fallback: enviar solo texto si no hay PDF
+        await this.socket.sendMessage(jid, { text: mensaje });
+        console.log(`⚠️ PDF no encontrado en ${pdfPath}, se envió solo texto a ${telefono}`);
       }
 
-      console.log(`✅ Mensaje con PDF enviado a ${telefono}`);
       return { success: true, message: 'Mensaje enviado exitosamente' };
 
     } catch (error) {
-      console.error('❌ Error enviando mensaje:', error);
+      console.error(`❌ Error detallado enviando mensaje a ${telefono}:`, error);
       return { success: false, error: error.message };
     }
   }
@@ -367,14 +371,26 @@ ${estadoLinea}
   // Formatear número de teléfono para WhatsApp
   formatPhoneNumber(phone) {
     // Remover caracteres no numéricos
-    let cleanPhone = phone.replace(/\D/g, '');
+    let cleanPhone = String(phone).replace(/\D/g, '');
 
-    // Si el número tiene 10 dígitos y no empieza con 52, agregar código de país
-    if (cleanPhone.length === 10 && !cleanPhone.startsWith('52')) {
-      cleanPhone = '52' + cleanPhone;
+    // Caso especial para México
+    if (cleanPhone.length === 10) {
+      // Los números de México (10 dígitos) requieren el prefijo 521 para WhatsApp móvil
+      cleanPhone = '521' + cleanPhone;
+    } else if (cleanPhone.length === 12 && cleanPhone.startsWith('52')) {
+      // Si ya tiene el 52 pero le falta el 1, y son 10 dígitos después
+      // El formato correcto para WhatsApp es 521 + 10 dígitos
+      if (cleanPhone[2] !== '1') {
+        cleanPhone = '521' + cleanPhone.substring(2);
+      }
     }
 
-    return cleanPhone + '@s.whatsapp.net';
+    // Asegurarse de que termine con el dominio de WhatsApp
+    if (!cleanPhone.endsWith('@s.whatsapp.net')) {
+      return cleanPhone + '@s.whatsapp.net';
+    }
+
+    return cleanPhone;
   }
 
   // Obtener estado de conexión

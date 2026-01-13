@@ -168,130 +168,131 @@
   {{/if}}
 
   <!-- Gestión de Productos (Desktop Table) -->
-  <div class="bg-white rounded-2xl shadow-md overflow-hidden mt-8 hidden md:block">
-    <div
-      class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <h3 class="text-lg font-bold text-gray-900">⚙️ Gestión de Productos</h3>
-      <a href="/store/create"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg shadow-sm transition-all text-sm hover:-translate-y-0.5 hover:shadow-md">
-        <i class="fas fa-plus"></i> Nuevo Producto
-      </a>
-    </div>
-    <div id="inventoryTableWrapper" class="overflow-x-auto rounded-b-2xl">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Producto</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Categoría</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Precio</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Stock</th>
-            <th class="px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="inventoryTableBody" class="bg-white divide-y divide-gray-200">
-          {{#each allProducts}}
-          <tr class="hover:bg-slate-50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{this.nombre}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{this.categoria}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{this.precio}}</td>
-            <td
-              class="px-6 py-4 whitespace-nowrap text-sm font-bold {{#if (lte this.stock 5)}}text-red-600{{else}}text-gray-900{{/if}}">
-              {{this.stock}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-              <div class="flex items-center justify-center gap-2">
-                <button onclick="openAddStockModal({{this.id}}, '{{this.nombre}}', {{this.stock}})"
-                  class="p-1.5 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-all hover:scale-110"
-                  title="Añadir Stock">
-                  <i class="fas fa-plus-circle text-lg"></i>
-                </button>
-                <a href="/store/edit/{{this.id}}"
-                  class="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-all hover:scale-110"
-                  title="Editar">
-                  <i class="fas fa-edit text-lg"></i>
-                </a>
-                <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}')"
-                  class="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
-                  title="Eliminar">
-                  <i class="fas fa-trash text-lg"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Gestión de Productos (Mobile Cards) -->
-  <div class="mt-8 md:hidden">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-bold text-gray-900">⚙️ Gestión de Productos</h3>
-      <a href="/store/create"
-        class="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-medium rounded-lg shadow-sm">
-        <i class="fas fa-plus"></i> Nuevo
-      </a>
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden mt-5 hidden md:block">
+      <div
+        class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <h3 class="text-lg font-bold text-gray-900">⚙️ Gestión de Productos</h3>
+        <a href="/store/create"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg shadow-sm transition-all text-sm hover:-translate-y-0.5 hover:shadow-md">
+          <i class="fas fa-plus"></i> Nuevo Producto
+        </a>
+      </div>
+      <div id="inventoryTableWrapper" class="overflow-x-auto rounded-b-2xl">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-slate-50 to-slate-100 sticky top-0 z-10">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Producto</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Categoría</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Precio</th>
+              <th class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Stock</th>
+              <th class="px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTableBody" class="bg-white divide-y divide-gray-200">
+            {{#each allProducts}}
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{this.nombre}}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{this.categoria}}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{this.precio}}</td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm font-bold {{#if (lte this.stock 5)}}text-red-600{{else}}text-gray-900{{/if}}">
+                {{this.stock}}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                <div class="flex items-center justify-center gap-2">
+                  <button onclick="openAddStockModal({{this.id}}, '{{this.nombre}}', {{this.stock}})"
+                    class="p-1.5 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-all hover:scale-110"
+                    title="Añadir Stock">
+                    <i class="fas fa-plus-circle text-lg"></i>
+                  </button>
+                  <a href="/store/edit/{{this.id}}"
+                    class="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-all hover:scale-110"
+                    title="Editar">
+                    <i class="fas fa-edit text-lg"></i>
+                  </a>
+                  <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}')"
+                    class="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
+                    title="Eliminar">
+                    <i class="fas fa-trash text-lg"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <div class="space-y-4 pb-20">
-      {{#each allProducts}}
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 animate-fade-in relative overflow-hidden">
-        <!-- Side color coding based on category -->
-        <div class="absolute left-0 top-0 bottom-0 w-1.5
+    <!-- Gestión de Productos (Mobile Cards) -->
+    <div class="mt-8 md:hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-gray-900">⚙️ Gestión de Productos</h3>
+        <a href="/store/create"
+          class="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-medium rounded-lg shadow-sm">
+          <i class="fas fa-plus"></i> Nuevo
+        </a>
+      </div>
+
+      <div class="space-y-4 pb-20">
+        {{#each allProducts}}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 animate-fade-in relative overflow-hidden">
+          <!-- Side color coding based on category -->
+          <div class="absolute left-0 top-0 bottom-0 w-1.5
              {{#if (eq categoria 'bebidas')}}bg-blue-500{{/if}}
              {{#if (eq categoria 'snacks')}}bg-yellow-500{{/if}}
              {{#if (eq categoria 'comida')}}bg-green-500{{/if}}
              {{#if (eq categoria 'otros')}}bg-purple-500{{/if}}">
-        </div>
+          </div>
 
-        <div class="pl-2">
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <h4 class="font-bold text-gray-900 text-base">{{this.nombre}}</h4>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide mt-1
+          <div class="pl-2">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <h4 class="font-bold text-gray-900 text-base">{{this.nombre}}</h4>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide mt-1
                     {{#if (eq categoria 'bebidas')}}bg-blue-50 text-blue-700{{/if}}
                     {{#if (eq categoria 'snacks')}}bg-yellow-50 text-yellow-700{{/if}}
                     {{#if (eq categoria 'comida')}}bg-green-50 text-green-700{{/if}}
                     {{#if (eq categoria 'otros')}}bg-purple-50 text-purple-700{{/if}}">
-                {{this.categoria}}
+                  {{this.categoria}}
+                </span>
+              </div>
+              <div class="text-right">
+                <div class="text-lg font-bold text-gray-900">${{this.precio}}</div>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg mb-3">
+              <span class="text-sm font-medium text-gray-600">Stock disponible:</span>
+              <span class="text-sm font-bold {{#if (lte this.stock 5)}}text-red-600{{else}}text-gray-900{{/if}}">
+                {{this.stock}} <span class="text-xs font-normal text-gray-500">unds.</span>
               </span>
             </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-gray-900">${{this.precio}}</div>
+
+            <div class="flex justify-end gap-2 border-t border-gray-100 pt-3">
+              <button onclick="openAddStockModal({{this.id}}, '{{this.nombre}}', {{this.stock}})"
+                class="flex-1 py-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1 active:scale-95 transition-transform">
+                <i class="fas fa-plus-circle"></i> Stock
+              </button>
+              <a href="/store/edit/{{this.id}}"
+                class="flex-1 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1 active:scale-95 transition-transform">
+                <i class="fas fa-edit"></i> Editar
+              </a>
+              <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}')"
+                class="p-2 bg-red-50 text-red-600 rounded-lg active:scale-95 transition-transform">
+                <i class="fas fa-trash"></i>
+              </button>
             </div>
           </div>
-
-          <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg mb-3">
-            <span class="text-sm font-medium text-gray-600">Stock disponible:</span>
-            <span class="text-sm font-bold {{#if (lte this.stock 5)}}text-red-600{{else}}text-gray-900{{/if}}">
-              {{this.stock}} <span class="text-xs font-normal text-gray-500">unds.</span>
-            </span>
-          </div>
-
-          <div class="flex justify-end gap-2 border-t border-gray-100 pt-3">
-            <button onclick="openAddStockModal({{this.id}}, '{{this.nombre}}', {{this.stock}})"
-              class="flex-1 py-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1 active:scale-95 transition-transform">
-              <i class="fas fa-plus-circle"></i> Stock
-            </button>
-            <a href="/store/edit/{{this.id}}"
-              class="flex-1 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1 active:scale-95 transition-transform">
-              <i class="fas fa-edit"></i> Editar
-            </a>
-            <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}')"
-              class="p-2 bg-red-50 text-red-600 rounded-lg active:scale-95 transition-transform">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
         </div>
+        {{/each}}
       </div>
-      {{/each}}
     </div>
   </div>
-</div>
+
 
 <!-- Modal para Añadir Stock -->
 <div id="addStockModal"
-  class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
+  class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-[70] backdrop-blur-sm animate-fade-in">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-slide-in overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
       <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -336,7 +337,7 @@
 
 <!-- Modal para Eliminar Producto -->
 <div id="deleteModal"
-  class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
+  class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-[70] backdrop-blur-sm animate-fade-in">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-slide-in overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-red-50 to-orange-50">
       <h2 class="text-xl font-bold text-red-700 flex items-center gap-2">

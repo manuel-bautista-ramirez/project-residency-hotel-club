@@ -512,29 +512,38 @@ export const sendReportByWhatsApp = async (req, res) => {
 
     // Enviar por WhatsApp
     const whatsappService = (await import("../../../services/whatsappService.js")).default;
-    const fs = await import("fs");
 
-    const jid = whatsappService.formatPhoneNumber(telefono);
-
-    if (whatsappService.isConnected && whatsappService.socket) {
-      await whatsappService.socket.sendMessage(jid, {
-        document: fs.default.readFileSync(pdfPath),
-        mimetype: 'application/pdf',
-        fileName: `reporte_ventas_${fechaInicio}_${fechaFin}.pdf`,
-        caption: `📊 Reporte de Ventas\n${fechaInicio} - ${fechaFin}`
+    if (!whatsappService.isConnected) {
+      return res.status(503).json({
+        success: false,
+        error: "WhatsApp no está conectado. Por favor, asegúrate de que el servicio esté activo y vinculado."
       });
-      console.log(`✅ Reporte enviado por WhatsApp a ${telefono}`);
     }
 
-    res.json({
-      success: true,
-      message: "Reporte enviado por WhatsApp exitosamente"
-    });
+    const mensaje = `📊 *Reporte de Ventas*\n📅 Periodo: ${fechaInicio} - ${fechaFin}`;
+    const nombreArchivo = `reporte_ventas_${fechaInicio}_${fechaFin}.pdf`;
+
+    const result = await whatsappService.enviarMensajeConPDF(telefono, mensaje, pdfPath, nombreArchivo);
+
+    if (result.success) {
+      console.log(`✅ Reporte enviado por WhatsApp a ${telefono}`);
+      res.json({
+        success: true,
+        message: "Reporte enviado por WhatsApp exitosamente"
+      });
+    } else {
+      console.error(`❌ Error al enviar reporte por WhatsApp: ${result.error}`);
+      res.status(500).json({
+        success: false,
+        error: `Error al enviar WhatsApp: ${result.error}`
+      });
+    }
   } catch (error) {
     console.error("Error en sendReportByWhatsApp:", error);
     res.status(500).json({
       success: false,
-      error: "Error al enviar el reporte"
+      error: "Error al enviar el reporte",
+      details: error.message
     });
   }
 };
