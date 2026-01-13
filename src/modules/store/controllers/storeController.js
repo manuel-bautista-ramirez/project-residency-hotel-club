@@ -447,9 +447,10 @@ export const generateReport = async (req, res) => {
 // Enviar reporte por email
 export const sendReportByEmail = async (req, res) => {
   try {
-    const { fechaInicio, fechaFin, destinatario, asunto } = req.body;
+    const { fechaInicio, fechaFin, periodo, destinatario, asunto } = req.body;
 
     const reporte = await getSalesReport(fechaInicio, fechaFin);
+    if (periodo) reporte.periodo = periodo;
 
     // Validar si hay datos antes de generar y enviar
     if (!reporte.datos || reporte.datos.length === 0) {
@@ -481,7 +482,7 @@ export const sendReportByEmail = async (req, res) => {
         </div>
       `,
       attachments: [{
-        filename: `Reporte_Ventas_${fechaInicio}_${fechaFin}.pdf`,
+        filename: `Reporte_Ventas_${periodo || 'periodo'}_${fechaInicio}_${fechaFin}.pdf`,
         content: fs.default.readFileSync(pdfPath)
       }]
     });
@@ -503,9 +504,10 @@ export const sendReportByEmail = async (req, res) => {
 // Enviar reporte por WhatsApp
 export const sendReportByWhatsApp = async (req, res) => {
   try {
-    const { fechaInicio, fechaFin, telefono } = req.body;
+    const { fechaInicio, fechaFin, periodo, telefono } = req.body;
 
     const reporte = await getSalesReport(fechaInicio, fechaFin);
+    if (periodo) reporte.periodo = periodo;
 
     // Validar si hay datos antes de generar y enviar
     if (!reporte.datos || reporte.datos.length === 0) {
@@ -526,8 +528,8 @@ export const sendReportByWhatsApp = async (req, res) => {
       throw new Error("El servicio de WhatsApp no está vinculado.");
     }
 
-    const mensaje = `📊 *Reporte de Ventas*\n📅 Periodo: ${fechaInicio} al ${fechaFin}\n🏢 *Hotel Residency Club*`;
-    const nombreArchivo = `Reporte_Ventas_${fechaInicio}_${fechaFin}.pdf`;
+    const mensaje = `📊 *Reporte de Ventas (${periodo || 'General'})*\n📅 Periodo: ${fechaInicio} al ${fechaFin}\n🏢 *Hotel Residency Club*`;
+    const nombreArchivo = `Reporte_${periodo || 'Ventas'}_${fechaInicio}_${fechaFin}.pdf`;
 
     const result = await whatsappService.enviarMensajeConPDF(telefono, mensaje, pdfPath, nombreArchivo);
 

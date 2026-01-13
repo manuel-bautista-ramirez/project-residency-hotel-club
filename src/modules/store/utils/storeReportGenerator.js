@@ -4,166 +4,147 @@ import path from "path";
 import validadorDirectorios from "./validadorDirectorios.js";
 
 /**
- * Genera un reporte de ventas en formato PDF con un diseño profesional y limpio.
- * @param {Object} reporte - Datos del reporte obtenidos de la base de datos.
- * @returns {Promise<string>} - Ruta absoluta del archivo generado.
+ * Genera un reporte de ventas unificado con el diseño Indigo Corporativo.
  */
 export const generateReportPDF = async (reporte) => {
   return new Promise((resolve, reject) => {
     try {
-      // 1. Preparación de rutas y validación de carpetas
       const carpetaDestino = validadorDirectorios.obtenerRuta("pdf", "reportes");
-      const nombreArchivo = `reporte_ventas_${reporte.fechaInicio}_${reporte.fechaFin}_${Date.now()}.pdf`;
+      const periodoLabel = reporte.periodo ? reporte.periodo.toLowerCase() : "ventas";
+      const nombreArchivo = `Reporte_${periodoLabel}_${reporte.fechaInicio}_${reporte.fechaFin}_${Date.now()}.pdf`;
       const rutaAbsoluta = path.join(carpetaDestino, nombreArchivo);
 
       if (!validadorDirectorios.validarRutaEspecifica("pdf", "reportes")) {
-        throw new Error(`No se pudo acceder o crear la carpeta: ${carpetaDestino}`);
+        throw new Error(`Error de acceso al directorio de reportes`);
       }
 
-      // 2. Configuración del documento PDF (A4 con márgenes amplios)
       const doc = new PDFDocument({
         size: "A4",
-        margins: { top: 60, bottom: 60, left: 50, right: 50 },
-        bufferPages: true // Habilitado para añadir numeración al final
+        margins: { top: 40, bottom: 30, left: 50, right: 50 },
+        bufferPages: true
       });
 
-      // 3. Configuración del stream de escritura (más confiable que doc.on('end'))
       const stream = fs.createWriteStream(rutaAbsoluta);
       doc.pipe(stream);
 
-      // 4. Definición de Estilos y Colores Corporativos
       const ui = {
-        primary: "#4F46E5",    // Indigo (Acento principal)
-        secondary: "#1E293B",  // Slate 800 (Encabezados)
-        text: "#334155",       // Slate 700 (Cuerpo)
-        muted: "#94A3B8",      // Slate 400 (Secundarios)
-        light: "#F8FAFC",      // Slate 50 (Fondos de filas)
-        border: "#E2E8F0",      // Slate 200 (Divisores)
+        primary: "#4F46E5",
+        secondary: "#1E293B",
+        text: "#334155",
+        muted: "#94A3B8",
+        light: "#F8FAFC",
+        border: "#E2E8F0",
         white: "#FFFFFF",
-        accent: "#F59E0B"      // Amber (Toques visuales)
+        accent: "#F59E0B",
+        success: "#059669"
       };
 
-      // --- DISEÑO: ENCABEZADO ---
-      // Fondo superior oscuro
-      doc.rect(0, 0, doc.page.width, 140).fill(ui.secondary);
-      doc.rect(0, 137, doc.page.width, 3).fill(ui.accent);
+      const dibujarEncabezado = () => {
+        doc.rect(0, 0, doc.page.width, 100).fill(ui.secondary);
+        doc.rect(0, 97, doc.page.width, 3).fill(ui.accent);
+        doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(20).text("HOTEL RESIDENCY CLUB", 50, 35);
+        doc.fontSize(9).font("Helvetica").fillColor("#94A3B8").text("Gestión Administrativa — Módulo de Tienda", 50, 58);
+        const titulo = `REPORTE ${reporte.periodo ? reporte.periodo.toUpperCase() : "DE VENTAS"}`;
+        doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(12).text(titulo, 0, 40, { align: "right", width: doc.page.width - 50 });
+        doc.fontSize(8).font("Helvetica").fillColor("#CBD5E1").text(`${reporte.fechaInicio} al ${reporte.fechaFin}`, 0, 58, { align: "right", width: doc.page.width - 50 });
+      };
 
-      // Identidad del Hotel
-      doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(22).text("HOTEL RESIDENCY CLUB", 50, 40);
-      doc.fontSize(10).font("Helvetica").fillColor("#94A3B8").text("Gestión Administrativa - Módulo de Tienda", 50, 65);
+      const dibujarPiePagina = (pageNum, total) => {
+        doc.rect(50, doc.page.height - 50, 495, 0.5).fill(ui.border);
+        doc.fillColor(ui.muted).fontSize(7).font("Helvetica");
+        doc.text("Hotel Residency Club — Documento Administrativo Confidencial", 50, doc.page.height - 40);
+        doc.text(`Página ${pageNum} de ${total}`, 0, doc.page.height - 40, { align: "right", width: doc.page.width - 50 });
+      };
 
-      // Titular del Documento (Lado derecho)
-      doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(14).text("REPORTE DE VENTAS", 0, 45, { align: "right", width: doc.page.width - 50 });
-      doc.fontSize(9).font("Helvetica").fillColor("#CBD5E1").text(`Generado: ${new Date().toLocaleDateString('es-MX', { dateStyle: 'long' })}`, 0, 65, { align: "right", width: doc.page.width - 50 });
-      doc.text(`Período: ${reporte.fechaInicio} al ${reporte.fechaFin}`, 0, 80, { align: "right", width: doc.page.width - 50 });
+      // --- CONTENIDO ---
+      dibujarEncabezado();
+      let currentY = 130;
 
-      let currentY = 170;
+      // Resumen
+      doc.fillColor(ui.secondary).font("Helvetica-Bold").fontSize(15).text("Resumen de Operación", 50, currentY);
+      currentY += 25;
 
-      // --- SECCIÓN: RESUMEN GENERAL (TARJETAS) ---
-      doc.fillColor(ui.secondary).font("Helvetica-Bold").fontSize(16).text("Resumen de Operación", 50, currentY);
-      currentY += 30;
-
-      const cards = [
-        { label: "Ventas Totales", value: reporte.estadisticas.totalVentas, color: ui.primary },
-        { label: "Ingreso Bruto", value: `$${reporte.estadisticas.totalIngresos.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, color: "#059669" }, // Emerald 600
-        { label: "Promedio/Venta", value: `$${reporte.estadisticas.promedioVenta.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, color: ui.accent }
+      const items = [
+        { l: "Ventas Totales", v: reporte.estadisticas.totalVentas, c: ui.primary },
+        { l: "Ingresos Brutos", v: `$${Number(reporte.estadisticas.totalIngresos).toLocaleString()}`, c: ui.success },
+        { l: "Ticket Promedio", v: `$${Number(reporte.estadisticas.promedioVenta).toLocaleString()}`, c: ui.accent }
       ];
 
-      const cardW = 158;
-      const cardH = 75;
       let cardX = 50;
-
-      cards.forEach(card => {
-        // Marco de la tarjeta
-        doc.roundedRect(cardX, currentY, cardW, cardH, 8).fill(ui.light);
-        doc.roundedRect(cardX, currentY, cardW, cardH, 8).lineWidth(1).stroke(ui.border);
-
-        // Contenido
-        doc.fillColor(ui.muted).font("Helvetica").fontSize(8).text(card.label.toUpperCase(), cardX, currentY + 18, { width: cardW, align: "center" });
-        doc.fillColor(card.color).font("Helvetica-Bold").fontSize(16).text(card.value, cardX, currentY + 38, { width: cardW, align: "center" });
-
-        cardX += cardW + 10;
+      items.forEach(card => {
+        doc.roundedRect(cardX, currentY, 158, 65, 8).fillAndStroke(ui.light, ui.border);
+        doc.fillColor(ui.muted).font("Helvetica").fontSize(8).text(card.l.toUpperCase(), cardX, currentY + 15, { width: 158, align: "center" });
+        doc.fillColor(card.c).font("Helvetica-Bold").fontSize(15).text(card.v, cardX, currentY + 32, { width: 158, align: "center" });
+        cardX += 168;
       });
 
-      currentY += cardH + 40;
+      currentY += 95;
 
-      // --- SECCIÓN: MÉTODOS DE PAGO ---
-      doc.fillColor(ui.secondary).font("Helvetica-Bold").fontSize(14).text("Desglose por Método de Pago", 50, currentY);
-      currentY += 25;
+      // 1. Ranking de Productos (Si hay datos)
+      if (reporte.productosMasVendidos && reporte.productosMasVendidos.length > 0) {
+        doc.fillColor(ui.secondary).font("Helvetica-Bold").fontSize(13).text("Top Productos Vendidos", 50, currentY);
+        currentY += 20;
 
-      const pagos = [
-        { label: "Efectivo", monto: reporte.estadisticas.ventasPorTipoPago.efectivo },
-        { label: "Transferencia", monto: reporte.estadisticas.ventasPorTipoPago.transferencia },
-        { label: "Tarjeta de Crédito/Débito", monto: reporte.estadisticas.ventasPorTipoPago.tarjeta }
-      ];
+        doc.rect(50, currentY, 495, 22).fill(ui.secondary);
+        doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(8);
+        doc.text("PRODUCTO", 65, currentY + 7);
+        doc.text("CANT.", 400, currentY + 7, { width: 40, align: "center" });
+        doc.text("TOTAL", 460, currentY + 7, { width: 75, align: "right" });
+        currentY += 22;
 
-      pagos.forEach((p, i) => {
-        if (i % 2 === 0) doc.rect(50, currentY, 495, 25).fill(ui.light);
-        doc.fillColor(ui.text).font("Helvetica").fontSize(10).text(p.label, 60, currentY + 8);
-        doc.fillColor(ui.secondary).font("Helvetica-Bold").text(`$${p.monto.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, 350, currentY + 8, { width: 185, align: "right" });
-        currentY += 25;
-      });
-
-      currentY += 40;
-
-      // --- SECCIÓN: TABLA DE PRODUCTOS ---
-      doc.fillColor(ui.secondary).font("Helvetica-Bold").fontSize(14).text("Ranking: Productos Más Vendidos", 50, currentY);
-      currentY += 25;
-
-      // Cabecera de Tabla
-      doc.rect(50, currentY, 495, 30).fill(ui.secondary);
-      doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(9);
-      doc.text("PRODUCTO", 65, currentY + 10);
-      doc.text("CATEGORÍA", 280, currentY + 10);
-      doc.text("UNIDADES", 400, currentY + 10, { width: 60, align: "center" });
-      doc.text("TOTAL", 460, currentY + 10, { width: 75, align: "right" });
-
-      currentY += 30;
-
-      // Filas de Productos
-      reporte.productosMasVendidos.slice(0, 10).forEach((item, idx) => {
-        // Gestión de salto de página
-        if (currentY > doc.page.height - 100) {
-          doc.addPage();
-          currentY = 60;
-        }
-
-        if (idx % 2 !== 0) doc.rect(50, currentY, 495, 30).fill(ui.light);
-
-        doc.fillColor(ui.text).font("Helvetica").fontSize(9);
-        doc.text(item.nombre, 65, currentY + 10, { width: 210, ellipsis: true });
-        doc.text(item.categoria, 280, currentY + 10);
-        doc.text(item.cantidad_vendida.toString(), 400, currentY + 10, { width: 60, align: "center" });
-        doc.fillColor(ui.secondary).font("Helvetica-Bold").text(`$${Number(item.ingresos_producto).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, 460, currentY + 10, { width: 75, align: "right" });
-
+        reporte.productosMasVendidos.slice(0, 5).forEach((item, idx) => {
+          if (idx % 2 !== 0) doc.rect(50, currentY, 495, 22).fill(ui.light);
+          doc.fillColor(ui.text).font("Helvetica").fontSize(8);
+          doc.text(item.nombre, 65, currentY + 7, { width: 300, ellipsis: true });
+          doc.text(item.cantidad_vendida.toString(), 400, currentY + 7, { width: 40, align: "center" });
+          doc.fillColor(ui.secondary).font("Helvetica-Bold").text(`$${Number(item.ingresos_producto).toLocaleString()}`, 460, currentY + 7, { width: 75, align: "right" });
+          currentY += 22;
+        });
         currentY += 30;
-      });
-
-      // --- DISEÑO: PIE DE PÁGINA (Paginación) ---
-      const totalPages = doc.bufferedPageRange().count;
-      for (let i = 0; i < totalPages; i++) {
-        doc.switchToPage(i);
-        doc.rect(50, doc.page.height - 60, 495, 0.5).fill(ui.border);
-        doc.fillColor(ui.muted).fontSize(8).font("Helvetica");
-        doc.text("Este reporte es un documento interno del Hotel Residency Club.", 50, doc.page.height - 45);
-        doc.text(`Página ${i + 1} de ${totalPages}`, 0, doc.page.height - 45, { align: "right", width: doc.page.width - 50 });
       }
 
-      // --- FINALIZACIÓN ---
+      // 2. Listado Detallado de Transacciones
+      if (reporte.datos && reporte.datos.length > 0) {
+        if (currentY > doc.page.height - 100) { doc.addPage(); dibujarEncabezado(); currentY = 120; }
+
+        doc.fillColor(ui.secondary).font("Helvetica-Bold").fontSize(13).text("Detalle de Transacciones", 50, currentY);
+        currentY += 20;
+
+        const dibujarCabecera = (y) => {
+          doc.rect(50, y, 495, 22).fill(ui.secondary);
+          doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(8);
+          doc.text("FOLIO", 65, y + 7);
+          doc.text("CLIENTE", 110, y + 7);
+          doc.text("PAGO", 380, y + 7);
+          doc.text("TOTAL", 460, y + 7, { width: 75, align: "right" });
+        };
+
+        dibujarCabecera(currentY);
+        currentY += 22;
+
+        reporte.datos.forEach((venta, idx) => {
+          if (currentY > doc.page.height - 80) {
+            doc.addPage(); dibujarEncabezado(); currentY = 120; dibujarCabecera(currentY); currentY += 22;
+          }
+          if (idx % 2 !== 0) doc.rect(50, currentY, 495, 22).fill(ui.light);
+          doc.fillColor(ui.text).font("Helvetica").fontSize(8);
+          doc.text(`#${venta.id}`, 65, currentY + 7);
+          doc.text(venta.nombre_cliente || "Público General", 110, currentY + 7, { width: 260, ellipsis: true });
+          doc.text(venta.tipo_pago, 380, currentY + 7);
+          doc.fillColor(ui.secondary).font("Helvetica-Bold").text(`$${Number(venta.total).toLocaleString()}`, 460, currentY + 7, { width: 75, align: "right" });
+          currentY += 22;
+        });
+      }
+
+      const range = doc.bufferedPageRange();
+      for (let i = 0; i < range.count; i++) {
+        doc.switchToPage(i);
+        dibujarPiePagina(i + 1, range.count);
+      }
+
       doc.end();
-
-      stream.on("finish", () => {
-        console.log(`✅ [PDF] Generado: ${nombreArchivo}`);
-        resolve(rutaAbsoluta);
-      });
-
-      stream.on("error", (err) => {
-        console.error("❌ [PDF] Error en Stream:", err);
-        reject(err);
-      });
-
+      stream.on("finish", () => resolve(rutaAbsoluta));
     } catch (error) {
-      console.error("❌ [PDF] Error Crítico:", error.message);
       reject(error);
     }
   });

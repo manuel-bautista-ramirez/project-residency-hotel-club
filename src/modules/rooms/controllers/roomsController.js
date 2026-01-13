@@ -1859,6 +1859,7 @@ export const sendReportByEmail = async (req, res) => {
       tipo,
       fechaInicio,
       fechaFin,
+      periodo,
       destinatario,
       email,
       asunto,
@@ -1873,6 +1874,7 @@ export const sendReportByEmail = async (req, res) => {
 
     // Generar el reporte usando la función existente
     const reporteData = await generateReportData(tipo, fechaInicio, fechaFin, filtros);
+    if (periodo) reporteData.periodo = periodo;
 
     // Crear mensaje de texto del reporte
     const mensaje = formatReportMessage(reporteData);
@@ -1895,7 +1897,7 @@ export const sendReportByEmail = async (req, res) => {
       html: `<pre style="font-family: monospace; white-space: pre-wrap;">${mensaje}</pre>`,
       attachments: [
         {
-          filename: `reporte_${tipo}_${new Date().toISOString().split('T')[0]}.pdf`,
+          filename: `reporte_${tipo}_${periodo || 'periodo'}_${new Date().toISOString().split('T')[0]}.pdf`,
           content: fs.readFileSync(pdfPath),
         },
       ],
@@ -1920,10 +1922,11 @@ export const sendReportByEmail = async (req, res) => {
  */
 export const sendReportByWhatsApp = async (req, res) => {
   try {
-    const { tipo, fechaInicio, fechaFin, telefono, filtros = {} } = req.body;
+    const { tipo, fechaInicio, fechaFin, periodo, telefono, filtros = {} } = req.body;
 
     // Generar el reporte usando la función existente
     const reporteData = await generateReportData(tipo, fechaInicio, fechaFin, filtros);
+    if (periodo) reporteData.periodo = periodo;
 
     // Crear mensaje de texto del reporte
     const mensaje = formatReportMessage(reporteData);
@@ -1939,29 +1942,19 @@ export const sendReportByWhatsApp = async (req, res) => {
       throw new Error('WhatsApp no está conectado');
     }
 
-    // Formatear número de teléfono
-    const jid = whatsappService.formatPhoneNumber(telefono);
+    const mensajeWa = `📊 *Reporte de ${tipo.toUpperCase()} (${periodo || 'General'})*\n📅 Período: ${fechaInicio} al ${fechaFin}\n🏢 *Hotel Residency Club*`;
+    const nombreArchivo = `Reporte_${tipo}_${periodo || 'G'}_${fechaInicio}.pdf`;
 
-    // Enviar por WhatsApp con PDF
-    if (!fs.existsSync(pdfPath)) {
-      throw new Error('No se pudo generar el archivo PDF para el reporte');
+    const result = await whatsappService.enviarMensajeConPDF(telefono, mensajeWa, pdfPath, nombreArchivo);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        message: "Reporte y PDF enviados por WhatsApp exitosamente",
+      });
+    } else {
+      throw new Error(result.error || "Fallo el envío por WhatsApp");
     }
-
-    // Enviar mensaje de texto
-    await whatsappService.socket.sendMessage(jid, { text: mensaje });
-
-    // Enviar PDF
-    await whatsappService.socket.sendMessage(jid, {
-      document: fs.readFileSync(pdfPath),
-      mimetype: 'application/pdf',
-      fileName: `reporte_${tipo}_${new Date().toISOString().split('T')[0]}.pdf`,
-      caption: `Reporte de ${tipo} - Hotel Club`
-    });
-
-    res.json({
-      success: true,
-      message: "Reporte y PDF enviados por WhatsApp exitosamente",
-    });
   } catch (error) {
     console.error("Error enviando reporte por WhatsApp:", error);
     res.status(500).json({

@@ -414,10 +414,11 @@
 
         mostrarNotificacion('Iniciando envío de correo...', 'info');
         try {
+          const range = calcularFechas();
           const response = await fetch('/store/api/reports/email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...calcularFechas(), destinatario, asunto })
+            body: JSON.stringify({ ...range, periodo: periodoSeleccionado, destinatario, asunto })
           });
           const result = await response.json();
           if (!response.ok) throw new Error(result.error);
@@ -442,10 +443,11 @@
 
         mostrarNotificacion('Iniciando envío de WhatsApp...', 'info');
         try {
+          const range = calcularFechas();
           const response = await fetch('/store/api/reports/whatsapp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...calcularFechas(), telefono })
+            body: JSON.stringify({ ...range, periodo: periodoSeleccionado, telefono })
           });
           const result = await response.json();
           if (!response.ok) throw new Error(result.error);
