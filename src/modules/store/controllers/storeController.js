@@ -463,21 +463,30 @@ export const sendReportByEmail = async (req, res) => {
     const { generateReportPDF } = await import("../utils/storeReportGenerator.js");
     const pdfPath = await generateReportPDF(reporte);
 
-    // Enviar por email
+    // 4. Configurar y enviar el correo
     const emailService = (await import("../../../services/emailService.js")).default;
     const fs = await import("fs");
 
     await emailService.send({
       to: destinatario,
-      subject: asunto || `Reporte de Ventas - ${fechaInicio} a ${fechaFin}`,
-      text: `Reporte de ventas del ${fechaInicio} al ${fechaFin}`,
-      html: `<p>Adjunto encontrará el reporte de ventas del período solicitado.</p>`,
+      subject: asunto || `📊 Reporte de Ventas: ${fechaInicio} - ${fechaFin}`,
+      text: `Adjunto se encuentra el reporte de ventas del período ${fechaInicio} al ${fechaFin}.`,
+      html: `
+        <div style="font-family: sans-serif; color: #333;">
+          <h2>Reporte de Ventas</h2>
+          <p>Se ha generado un nuevo reporte de ventas para el <b>Hotel Residency Club</b>.</p>
+          <p><b>Período:</b> ${fechaInicio} al ${fechaFin}</p>
+          <hr />
+          <p style="font-size: 0.8em; color: #666;">Este es un correo automático, por favor no responda.</p>
+        </div>
+      `,
       attachments: [{
-        filename: `reporte_ventas_${fechaInicio}_${fechaFin}.pdf`,
+        filename: `Reporte_Ventas_${fechaInicio}_${fechaFin}.pdf`,
         content: fs.default.readFileSync(pdfPath)
       }]
     });
 
+    console.log(`✅ [Email] Reporte enviado correctamente a: ${destinatario}`);
     res.json({
       success: true,
       message: "Reporte enviado por correo exitosamente"
@@ -510,33 +519,26 @@ export const sendReportByWhatsApp = async (req, res) => {
     const { generateReportPDF } = await import("../utils/storeReportGenerator.js");
     const pdfPath = await generateReportPDF(reporte);
 
-    // Enviar por WhatsApp
+    // 4. Enviar a través del servicio de WhatsApp
     const whatsappService = (await import("../../../services/whatsappService.js")).default;
 
     if (!whatsappService.isConnected) {
-      return res.status(503).json({
-        success: false,
-        error: "WhatsApp no está conectado. Por favor, asegúrate de que el servicio esté activo y vinculado."
-      });
+      throw new Error("El servicio de WhatsApp no está vinculado.");
     }
 
-    const mensaje = `📊 *Reporte de Ventas*\n📅 Periodo: ${fechaInicio} - ${fechaFin}`;
-    const nombreArchivo = `reporte_ventas_${fechaInicio}_${fechaFin}.pdf`;
+    const mensaje = `📊 *Reporte de Ventas*\n📅 Periodo: ${fechaInicio} al ${fechaFin}\n🏢 *Hotel Residency Club*`;
+    const nombreArchivo = `Reporte_Ventas_${fechaInicio}_${fechaFin}.pdf`;
 
     const result = await whatsappService.enviarMensajeConPDF(telefono, mensaje, pdfPath, nombreArchivo);
 
     if (result.success) {
-      console.log(`✅ Reporte enviado por WhatsApp a ${telefono}`);
+      console.log(`✅ [WhatsApp] Reporte enviado correctamente a: ${telefono}`);
       res.json({
         success: true,
         message: "Reporte enviado por WhatsApp exitosamente"
       });
     } else {
-      console.error(`❌ Error al enviar reporte por WhatsApp: ${result.error}`);
-      res.status(500).json({
-        success: false,
-        error: `Error al enviar WhatsApp: ${result.error}`
-      });
+      throw new Error(result.error);
     }
   } catch (error) {
     console.error("Error en sendReportByWhatsApp:", error);

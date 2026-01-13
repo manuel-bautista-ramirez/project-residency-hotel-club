@@ -1,280 +1,112 @@
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
-import validadorDirectorios from "../../rooms/utils/validadorDirectorios.js";
+import validadorDirectorios from "./validadorDirectorios.js";
 
+/**
+ * Genera un comprobante de venta de tienda con el diseño Indigo Corporativo.
+ */
 export const generateSalePDF = async (venta, qrPath = null) => {
   return new Promise((resolve, reject) => {
     try {
-      // Validar y obtener ruta organizada
-      const rutaBase = validadorDirectorios.obtenerRuta("pdf", "ventas");
-      const fileName = `comprobante_venta_${venta.id}_${Date.now()}.pdf`;
-      const filePath = path.join(rutaBase, fileName);
+      const carpetaDestino = validadorDirectorios.obtenerRuta("pdf", "ventas");
+      const nombreArchivo = `ticket_venta_${venta.id}_${Date.now()}.pdf`;
+      const rutaAbsoluta = path.join(carpetaDestino, nombreArchivo);
 
-      console.log("=== GENERANDO PDF DE VENTA ===");
-      console.log("Venta ID:", venta.id);
-      console.log("Ruta destino:", filePath);
-
-      // Validar que el directorio existe
       if (!validadorDirectorios.validarRutaEspecifica("pdf", "ventas")) {
-        throw new Error(`No se pudo validar/crear el directorio para PDF: ${rutaBase}`);
+        throw new Error(`Error de acceso a la carpeta de ventas: ${carpetaDestino}`);
       }
 
       const doc = new PDFDocument({
         size: "A4",
-        margins: {
-          top: 30,
-          bottom: 30,
-          left: 40,
-          right: 40,
-        },
+        margins: { top: 50, bottom: 50, left: 60, right: 60 }
       });
 
-      doc.pipe(fs.createWriteStream(filePath));
+      const stream = fs.createWriteStream(rutaAbsoluta);
+      doc.pipe(stream);
 
-      // Colores corporativos
-      const colors = {
-        primary: "#1a4d8f",
-        primaryLight: "#2c5aa0",
-        secondary: "#2c3e50",
-        success: "#27ae60",
-        successLight: "#2ecc71",
-        warning: "#f39c12",
-        danger: "#e74c3c",
-        light: "#f8f9fa",
-        lightGray: "#ecf0f1",
-        dark: "#2c3e50",
-        gray: "#7f8c8d",
-        white: "#ffffff",
-        gold: "#f1c40f",
+      // --- ESTILO INDIGO CORPORATIVO ---
+      const ui = {
+        primary: "#4F46E5",    // Indigo
+        secondary: "#1E293B",  // Slate 800
+        text: "#334155",       // Slate 700
+        muted: "#64748B",      // Slate 500
+        light: "#F8FAFC",      // Slate 50
+        border: "#E2E8F0",     // Slate 200
+        white: "#FFFFFF",
+        accent: "#F59E0B"      // Amber
       };
 
-      // ===== ENCABEZADO =====
-      doc.rect(0, 0, doc.page.width, 100).fill(colors.primary);
-      doc.rect(0, 0, doc.page.width, 100).fillOpacity(0.1).fill(colors.primaryLight);
-      doc.fillOpacity(1);
+      // --- ENCABEZADO ---
+      doc.rect(0, 0, doc.page.width, 100).fill(ui.secondary);
+      doc.rect(0, 97, doc.page.width, 3).fill(ui.accent);
 
-      // Borde decorativo superior
-      doc.rect(0, 0, doc.page.width, 4).fill(colors.gold);
+      doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(22).text("HOTEL RESIDENCY CLUB", 60, 35);
+      doc.fontSize(10).font("Helvetica").fillColor("#94A3B8").text("Comprobante de Venta — Tienda", 60, 60);
 
-      // Nombre del hotel
-      doc
-        .fontSize(20)
-        .fillColor(colors.white)
-        .font("Helvetica-Bold")
-        .text("HOTEL RESIDENCY CLUB", 50, 20);
+      // Badge Folio
+      doc.rect(400, 35, 140, 35, 5).fill(ui.primary);
+      doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(11).text(`FOLIO: #${venta.id}`, 400, 47, { width: 140, align: "center" });
 
-      doc
-        .fontSize(9)
-        .fillColor(colors.lightGray)
-        .font("Helvetica")
-        .text("Tu hogar lejos de casa", 50, 42);
+      let currentY = 130;
 
-      // Badge de tipo de comprobante
-      const badgeWidth = 260;
-      const badgeX = (doc.page.width - badgeWidth) / 2;
-      
-      doc.roundedRect(badgeX, 60, badgeWidth, 30, 5).fill(colors.white);
-      
-      doc
-        .fontSize(16)
-        .fillColor(colors.primary)
-        .font("Helvetica-Bold")
-        .text("COMPROBANTE DE VENTA", badgeX, 68, {
-          width: badgeWidth,
-          align: "center",
-        });
+      // --- INFORMACIÓN ---
+      doc.fillColor(ui.secondary).font("Helvetica-Bold").fontSize(14).text("Detalles de la Operación", 60, currentY);
+      currentY += 25;
 
-      // ===== INFORMACIÓN DE LA VENTA =====
-      let yPos = 130;
-
-      // Sección de información general
-      doc
-        .fontSize(12)
-        .fillColor(colors.dark)
-        .font("Helvetica-Bold")
-        .text("INFORMACIÓN DE LA VENTA", 50, yPos);
-
-      yPos += 25;
-
-      // Tabla de información
-      const infoData = [
-        { label: "Folio:", value: `#${venta.id}` },
-        { label: "Fecha:", value: new Date(venta.fecha_venta).toLocaleString('es-MX') },
-        { label: "Cliente:", value: venta.nombre_cliente || "Cliente General" },
-        { label: "Atendido por:", value: venta.usuario },
-        { label: "Tipo de Pago:", value: venta.tipo_pago.toUpperCase() },
+      const info = [
+        { label: "Fecha:", val: new Date(venta.fecha_venta).toLocaleString('es-MX') },
+        { label: "Cliente:", val: venta.nombre_cliente || "Público General" },
+        { label: "Atendido por:", val: venta.usuario || "Sistema" },
+        { label: "Método de Pago:", val: venta.tipo_pago.toUpperCase() }
       ];
 
-      infoData.forEach((item) => {
-        doc
-          .fontSize(10)
-          .fillColor(colors.gray)
-          .font("Helvetica")
-          .text(item.label, 50, yPos, { width: 150 });
-
-        doc
-          .fontSize(10)
-          .fillColor(colors.dark)
-          .font("Helvetica-Bold")
-          .text(item.value, 200, yPos, { width: 350 });
-
-        yPos += 20;
+      info.forEach(item => {
+        doc.fillColor(ui.muted).font("Helvetica").fontSize(9).text(item.label, 60, currentY);
+        doc.fillColor(ui.text).font("Helvetica-Bold").fontSize(10).text(item.val, 160, currentY);
+        currentY += 18;
       });
 
-      yPos += 10;
+      currentY += 25;
 
-      // ===== PRODUCTOS =====
-      doc
-        .fontSize(12)
-        .fillColor(colors.dark)
-        .font("Helvetica-Bold")
-        .text("PRODUCTOS", 50, yPos);
+      // --- TABLA ---
+      doc.rect(60, currentY, 480, 25).fill(ui.light);
+      doc.fillColor(ui.secondary).font("Helvetica-Bold").fontSize(9);
+      doc.text("PRODUCTO", 75, currentY + 8);
+      doc.text("CANT.", 280, currentY + 8, { width: 40, align: "center" });
+      doc.text("PRECIO", 330, currentY + 8, { width: 80, align: "right" });
+      doc.text("SUBTOTAL", 430, currentY + 8, { width: 90, align: "right" });
 
-      yPos += 25;
+      currentY += 25;
 
-      // Encabezado de tabla
-      doc.rect(50, yPos, doc.page.width - 100, 25).fill(colors.lightGray);
-
-      doc
-        .fontSize(9)
-        .fillColor(colors.dark)
-        .font("Helvetica-Bold")
-        .text("PRODUCTO", 60, yPos + 8, { width: 200 })
-        .text("CANT.", 270, yPos + 8, { width: 50, align: "center" })
-        .text("PRECIO", 330, yPos + 8, { width: 80, align: "right" })
-        .text("SUBTOTAL", 420, yPos + 8, { width: 100, align: "right" });
-
-      yPos += 30;
-
-      // Productos
-      let subtotalGeneral = 0;
-
-      venta.productos.forEach((producto, index) => {
-        const bgColor = index % 2 === 0 ? colors.white : colors.light;
-        doc.rect(50, yPos, doc.page.width - 100, 25).fill(bgColor);
-
-        doc
-          .fontSize(9)
-          .fillColor(colors.dark)
-          .font("Helvetica")
-          .text(producto.producto_nombre, 60, yPos + 8, { width: 200 })
-          .text(producto.cantidad.toString(), 270, yPos + 8, { width: 50, align: "center" })
-          .text(`$${parseFloat(producto.precio_unitario).toFixed(2)}`, 330, yPos + 8, { width: 80, align: "right" })
-          .text(`$${parseFloat(producto.subtotal).toFixed(2)}`, 420, yPos + 8, { width: 100, align: "right" });
-
-        subtotalGeneral += parseFloat(producto.subtotal);
-        yPos += 25;
+      venta.productos.forEach((p, i) => {
+        doc.fillColor(ui.text).font("Helvetica").fontSize(9);
+        doc.text(p.producto_nombre, 75, currentY + 10, { width: 200, ellipsis: true });
+        doc.text(p.cantidad.toString(), 280, currentY + 10, { width: 40, align: "center" });
+        doc.text(`$${Number(p.precio_unitario).toFixed(2)}`, 330, currentY + 10, { width: 80, align: "right" });
+        doc.fillColor(ui.secondary).font("Helvetica-Bold").text(`$${Number(p.subtotal).toFixed(2)}`, 430, currentY + 10, { width: 90, align: "right" });
+        currentY += 25;
+        doc.rect(60, currentY, 480, 0.5).fill(ui.border);
       });
 
-      yPos += 10;
+      // --- TOTAL ---
+      currentY += 20;
+      doc.rect(350, currentY, 190, 40, 5).fill(ui.primary);
+      doc.fillColor(ui.white).font("Helvetica-Bold").fontSize(14).text("TOTAL:", 365, currentY + 12);
+      doc.text(`$${Number(venta.total).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, 410, currentY + 12, { width: 120, align: "right" });
 
-      // ===== TOTALES =====
-      // Línea divisoria
-      doc
-        .moveTo(50, yPos)
-        .lineTo(doc.page.width - 50, yPos)
-        .strokeColor(colors.gray)
-        .lineWidth(1)
-        .stroke();
-
-      yPos += 15;
-
-      // Total
-      doc.rect(350, yPos, doc.page.width - 400, 35).fill(colors.success);
-
-      doc
-        .fontSize(14)
-        .fillColor(colors.white)
-        .font("Helvetica-Bold")
-        .text("TOTAL:", 360, yPos + 10)
-        .text(`$${parseFloat(venta.total).toFixed(2)}`, 420, yPos + 10, { width: 100, align: "right" });
-
-      yPos += 50;
-
-      // Total en letras
-      if (venta.total_letras) {
-        doc
-          .fontSize(9)
-          .fillColor(colors.gray)
-          .font("Helvetica-Oblique")
-          .text(`(${venta.total_letras})`, 50, yPos, {
-            width: doc.page.width - 100,
-            align: "center",
-          });
-
-        yPos += 25;
-      }
-
-      // ===== CÓDIGO QR =====
       if (qrPath && fs.existsSync(qrPath)) {
-        yPos += 20;
-        
-        doc
-          .fontSize(10)
-          .fillColor(colors.gray)
-          .font("Helvetica")
-          .text("Escanea para verificar:", 50, yPos, { align: "center", width: doc.page.width - 100 });
-
-        yPos += 20;
-
-        const qrSize = 100;
-        const qrX = (doc.page.width - qrSize) / 2;
-        doc.image(qrPath, qrX, yPos, { width: qrSize, height: qrSize });
-
-        yPos += qrSize + 20;
+        currentY += 60;
+        doc.image(qrPath, (doc.page.width - 80) / 2, currentY, { width: 80 });
       }
 
-      // ===== PIE DE PÁGINA =====
-      const footerY = doc.page.height - 80;
+      const footerY = doc.page.height - 60;
+      doc.fillColor(ui.muted).font("Helvetica").fontSize(8).text("Hotel Residency Club — Comprobante de Venta", 0, footerY, { align: "center", width: doc.page.width });
 
-      // Línea decorativa
-      doc
-        .moveTo(50, footerY)
-        .lineTo(doc.page.width - 50, footerY)
-        .strokeColor(colors.lightGray)
-        .lineWidth(1)
-        .stroke();
-
-      doc
-        .fontSize(8)
-        .fillColor(colors.gray)
-        .font("Helvetica")
-        .text("Gracias por su compra", 50, footerY + 15, {
-          width: doc.page.width - 100,
-          align: "center",
-        });
-
-      doc
-        .fontSize(7)
-        .fillColor(colors.gray)
-        .text("Este documento es un comprobante de venta", 50, footerY + 30, {
-          width: doc.page.width - 100,
-          align: "center",
-        });
-
-      doc
-        .fontSize(7)
-        .fillColor(colors.gray)
-        .text(`Generado el ${new Date().toLocaleString('es-MX')}`, 50, footerY + 45, {
-          width: doc.page.width - 100,
-          align: "center",
-        });
-
-      // Finalizar documento
       doc.end();
-
-      doc.on("finish", () => {
-        console.log("✅ PDF de venta generado exitosamente:", filePath);
-        resolve(filePath);
-      });
-
-      doc.on("error", (error) => {
-        console.error("❌ Error al generar PDF de venta:", error);
-        reject(error);
-      });
+      stream.on("finish", () => resolve(rutaAbsoluta));
+      stream.on("error", (err) => reject(err));
     } catch (error) {
-      console.error("❌ Error en generateSalePDF:", error);
       reject(error);
     }
   });

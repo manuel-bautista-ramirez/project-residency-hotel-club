@@ -407,7 +407,12 @@
         const asunto = document.getElementById('email-asunto').value;
         if (!destinatario) { mostrarNotificacion('Ingresa un correo de destinatario', 'error'); return; }
 
-        mostrarNotificacion('Enviando correo...', 'info');
+        const btn = document.getElementById('enviar-email-btn');
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+
+        mostrarNotificacion('Iniciando envío de correo...', 'info');
         try {
           const response = await fetch('/store/api/reports/email', {
             method: 'POST',
@@ -419,6 +424,9 @@
           mostrarNotificacion(result.message, 'success');
         } catch (error) {
           mostrarNotificacion(`Error al enviar: ${error.message}`, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = originalContent;
         }
       }
 
@@ -427,7 +435,12 @@
         const telefono = document.getElementById('whatsapp-telefono').value;
         if (!telefono) { mostrarNotificacion('Ingresa un número de teléfono', 'error'); return; }
 
-        mostrarNotificacion('Enviando WhatsApp...', 'info');
+        const btn = document.getElementById('enviar-whatsapp-btn');
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+
+        mostrarNotificacion('Iniciando envío de WhatsApp...', 'info');
         try {
           const response = await fetch('/store/api/reports/whatsapp', {
             method: 'POST',
@@ -439,6 +452,9 @@
           mostrarNotificacion(result.message, 'success');
         } catch (error) {
           mostrarNotificacion(`Error al enviar: ${error.message}`, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = originalContent;
         }
       }
 

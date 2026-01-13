@@ -375,9 +375,11 @@ ${estadoLinea}
 
     // Caso especial para México
     if (cleanPhone.length === 10) {
+      console.log(`📱 Número de México de 10 dígitos detectado: ${cleanPhone}`);
       // Los números de México (10 dígitos) requieren el prefijo 521 para WhatsApp móvil
       cleanPhone = '521' + cleanPhone;
     } else if (cleanPhone.length === 12 && cleanPhone.startsWith('52')) {
+      console.log(`📱 Número de México de 12 dígitos detectado: ${cleanPhone}`);
       // Si ya tiene el 52 pero le falta el 1, y son 10 dígitos después
       // El formato correcto para WhatsApp es 521 + 10 dígitos
       if (cleanPhone[2] !== '1') {
