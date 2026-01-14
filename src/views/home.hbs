@@ -1,56 +1,88 @@
 <!-- Hero Section con imagen de fondo -->
-<section class="relative min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 overflow-hidden">
+<section class="relative h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 overflow-hidden">
   <!-- Imagen de fondo con overlay -->
   <div class="absolute inset-0 bg-black/40"></div>
   <div class="absolute inset-0 bg-gradient-to-r from-blue-900/60 to-transparent"></div>
-  
+
   <!-- Contenido del Hero -->
-  <div class="relative z-10 flex items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
+  <div class="relative z-10 flex items-center justify-center h-screen px-4 sm:px-6 lg:px-8">
+
     <div class="w-full max-w-4xl mx-auto space-y-8 md:w-11/12 lg:w-full xl:w-2/3 2xl:w-1/2">
       <div class="text-center mx-auto">
-      <!-- Bienvenida personalizada -->
-      <div class="mb-8">
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
-          Bienvenido al 
-          <span class="text-yellow-400">Hotel Jardines de la Higerra</span>
-        </h1>
-        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-8 border border-white/20">
-          <p class="text-xl sm:text-2xl text-white/90 mb-2">
-            Hola, <span class="font-semibold text-yellow-300">{{username}}</span>
-          </p>
-          <div class="flex items-center justify-center gap-2">
-            <i class="fas fa-user-circle text-yellow-400"></i>
-            <span class="text-lg text-white/80">Tu rol es: </span>
-            <span class="bg-yellow-400 text-blue-900 px-3 py-1 rounded-full font-semibold text-sm">
-              {{role}}
-            </span>
+
+        <!-- Bienvenida personalizada -->
+        <div class="mb-8">
+          <h1
+            class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl font-bold text-white mb-4 leading-tight text-center px-2">
+            Bienvenido al <span class="text-yellow-400">Hotel Jardines de la Higerra</span>
+          </h1>
+          <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 sm:p-6 mb-8 border border-white/20">
+            <p class="text-xl sm:text-2xl text-white/90 mb-2">
+              Hola, <span class="font-semibold text-yellow-300">{{username}}</span>
+            </p>
+            <div class="flex items-center justify-center gap-2">
+              <i class="fas fa-user-circle text-yellow-400"></i>
+              <span class="text-lg text-white/80">Tu rol es: </span>
+              <span class="bg-yellow-400 text-blue-900 px-3 py-1 rounded-full font-semibold text-sm">
+                {{role}}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Descripción del rol -->
-      <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-8 border border-white/20 max-w-3xl mx-auto">
-        {{#if (eq role "Administrador")}}
+        <!-- Descripción del rol -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-8 border border-white/20 max-w-3xl mx-auto">
+          {{#if (eq role "Administrador")}}
           <div class="flex items-center justify-center gap-3 mb-4">
             <i class="fas fa-crown text-yellow-400 text-2xl"></i>
             <h2 class="text-xl font-semibold text-white">Panel de Administración</h2>
           </div>
           <p class="text-white/90 text-lg">
-            Tienes acceso completo al sistema de gestión hotelera. Puedes administrar habitaciones, 
+            Tienes acceso completo al sistema de gestión hotelera. Puedes administrar habitaciones,
             usuarios, reportes y todas las funcionalidades del hotel.
           </p>
-        {{/if}}
-        {{#if (eq role "Usuario")}}
+          {{/if}}
+          {{#if (eq role "Usuario")}}
           <div class="flex items-center justify-center gap-3 mb-4">
             <i class="fas fa-concierge-bell text-yellow-400 text-2xl"></i>
             <h2 class="text-xl font-semibold text-white">Recepción</h2>
           </div>
           <p class="text-white/90 text-lg">
-            Puedes gestionar reservas, atender a los clientes y manejar las operaciones 
+            Puedes gestionar reservas, atender a los clientes y manejar las operaciones
             diarias del hotel con herramientas especializadas.
           </p>
-        {{/if}}
-      </div>
+          {{/if}}
+        </div>
+
       </div>
     </div>
   </div>
+
+</section>
+
+<!-- Script para eliminar el padding-bottom del main en esta página -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Usar setTimeout para asegurar que se ejecute después del script del footer
+    setTimeout(() => {
+      const main = document.querySelector("main");
+      const body = document.body;
+      const html = document.documentElement;
+
+      if (main) {
+        main.style.paddingBottom = "0";
+        main.style.margin = "0";
+      }
+
+      // Eliminar scroll vertical en la página home
+      if (body) {
+        body.style.overflow = "hidden";
+        body.style.height = "100vh";
+      }
+
+      if (html) {
+        html.style.overflow = "hidden";
+      }
+    }, 100);
+  });
+</script>

@@ -15,7 +15,14 @@ import {
 
 export const renderMainPage = async (req, res) => {
   try {
-    const prices = await getPrices();
+    const rawPrices = await getPrices();
+    // Convertimos los precios a enteros
+    const prices = {
+      price_canchas: Math.round(rawPrices.price_canchas),
+      price_alberca: Math.round(rawPrices.price_alberca),
+      price_gym: Math.round(rawPrices.price_gym)
+    };
+
     res.render("entriesMain", {
       title: "Daily Entries",
       showFooter: true,
@@ -92,13 +99,18 @@ export const createNewEntry = async (req, res) => {
 export const updateSettings = async (req, res) => {
   try {
     const { price_canchas, price_alberca, price_gym } = req.body;
-    await updatePrice('price_canchas', price_canchas);
-    await updatePrice('price_alberca', price_alberca);
-    await updatePrice('price_gym', price_gym);
-    return res.redirect("/entries");
+
+    // Usamos Promise.all para ejecutar todas las actualizaciones en paralelo
+    await Promise.all([
+      updatePrice('price_canchas', price_canchas),
+      updatePrice('price_alberca', price_alberca),
+      updatePrice('price_gym', price_gym)
+    ]);
+
+    return res.status(200).json({ message: "Configuración actualizada correctamente" });
   } catch (err) {
     console.error("Error al actualizar precios base:", err);
-    res.status(500).send("No se pudieron guardar los cambios");
+    res.status(500).json({ error: "No se pudieron guardar los cambios" });
   }
 };
 

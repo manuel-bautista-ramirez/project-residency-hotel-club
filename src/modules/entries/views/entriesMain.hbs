@@ -26,38 +26,49 @@
     min-width: 100px;
   }
 
-  .btn-select-canchas { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-  .btn-select-alberca { background: linear-gradient(135deg, #0d9488, #0f766e); }
-  .btn-select-gym { background: linear-gradient(135deg, #d97706, #b45309); }
+  .btn-select-canchas {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  }
+
+  .btn-select-alberca {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+  }
+
+  .btn-select-gym {
+    background: linear-gradient(135deg, #d97706, #b45309);
+  }
 </style>
 
 <main class="pt-28 max-w-screen-xl mx-auto px-4 pb-20">
   <section class="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-gray-50">
-    
+
     <header class="text-center mb-12">
-      <span class="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">Recepción Hotel Club</span>
+      <span
+        class="bg-indigo-50 text-indigo-600 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">Recepción
+        Hotel Club</span>
       <h1 class="text-4xl font-black text-gray-900 mt-4 tracking-tight">Registro de Visitantes</h1>
       <p class="text-gray-400 mt-2 font-medium">Capture los datos del cliente y seleccione el área de acceso.</p>
     </header>
 
     <form id="entryForm" action="/api/entries" method="POST" class="space-y-8">
-      
+
       <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
         <h2 class="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-          <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">01</span>
+          <span
+            class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">01</span>
           Información del Cliente
         </h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="relative">
             <label for="first_name" class="block text-xs font-bold text-gray-500 uppercase ml-1 mb-2">Nombre(s)</label>
             <input type="text" id="first_name" name="first_name" required placeholder="Ej. Juan"
-                   class="w-full rounded-2xl border-gray-200 bg-white px-5 py-3.5 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none text-gray-700 font-medium shadow-sm">
+              class="w-full rounded-2xl border-gray-200 bg-white px-5 py-3.5 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none text-gray-700 font-medium shadow-sm">
           </div>
           <div class="relative">
             <label for="last_name" class="block text-xs font-bold text-gray-500 uppercase ml-1 mb-2">Apellido(s)</label>
             <input type="text" id="last_name" name="last_name" required placeholder="Ej. Pérez"
-                   class="w-full rounded-2xl border-gray-200 bg-white px-5 py-3.5 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none text-gray-700 font-medium shadow-sm">
+              class="w-full rounded-2xl border-gray-200 bg-white px-5 py-3.5 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none text-gray-700 font-medium shadow-sm">
           </div>
         </div>
 
@@ -66,13 +77,15 @@
           <div class="flex gap-4">
             <label class="flex-1 relative cursor-pointer group">
               <input type="radio" name="payment_method" value="Efectivo" checked class="peer hidden">
-              <div class="bg-white border-2 border-gray-100 p-4 rounded-2xl text-center font-bold text-gray-500 peer-checked:border-indigo-600 peer-checked:text-indigo-600 peer-checked:bg-indigo-50 transition-all group-hover:border-indigo-200 shadow-sm">
+              <div
+                class="bg-white border-2 border-gray-100 p-4 rounded-2xl text-center font-bold text-gray-500 peer-checked:border-indigo-600 peer-checked:text-indigo-600 peer-checked:bg-indigo-50 transition-all group-hover:border-indigo-200 shadow-sm">
                 💵 Efectivo
               </div>
             </label>
             <label class="flex-1 relative cursor-pointer group">
               <input type="radio" name="payment_method" value="Transferencia" class="peer hidden">
-              <div class="bg-white border-2 border-gray-100 p-4 rounded-2xl text-center font-bold text-gray-500 peer-checked:border-indigo-600 peer-checked:text-indigo-600 peer-checked:bg-indigo-50 transition-all group-hover:border-indigo-200 shadow-sm">
+              <div
+                class="bg-white border-2 border-gray-100 p-4 rounded-2xl text-center font-bold text-gray-500 peer-checked:border-indigo-600 peer-checked:text-indigo-600 peer-checked:bg-indigo-50 transition-all group-hover:border-indigo-200 shadow-sm">
                 📱 Transferencia
               </div>
             </label>
@@ -82,55 +95,67 @@
 
       <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
         <h2 class="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-          <span class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">02</span>
+          <span
+            class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">02</span>
           Seleccione Área y Tarifa
         </h2>
-        
+
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div class="card-area rounded-[2rem] p-6 bg-white border border-gray-200 shadow-sm flex flex-col justify-between" onclick="focusPrice('price_canchas')">
+          <div
+            class="card-area rounded-[2rem] p-6 bg-white border border-gray-200 shadow-sm flex flex-col justify-between"
+            onclick="focusPrice('price_canchas')">
             <div class="flex justify-between items-start mb-4">
               <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl text-2xl">🎾</div>
-              <span class="text-[9px] font-black bg-blue-100 text-blue-700 px-2 py-1 rounded-lg uppercase">Canchas</span>
+              <span
+                class="text-[9px] font-black bg-blue-100 text-blue-700 px-2 py-1 rounded-lg uppercase">Canchas</span>
             </div>
             <div class="flex items-baseline gap-1 mb-6">
               <span class="text-xl font-bold text-gray-400">$</span>
-              <input type="number" id="price_canchas" value="{{prices.price_canchas}}" data-original="{{prices.price_canchas}}"
-                     class="price-input w-32 text-4xl font-black text-indigo-600 bg-transparent outline-none {{#unless (eq user.role 'Administrador')}}input-readonly{{/unless}}">
+              <input type="number" id="price_canchas" value="{{prices.price_canchas}}"
+                data-original="{{prices.price_canchas}}"
+                class="price-input w-32 text-4xl font-black text-indigo-600 bg-transparent outline-none {{#unless (eq user.role 'Administrador')}}input-readonly{{/unless}}">
             </div>
             <button type="button" onclick="selectArea('Canchas', 'price_canchas', this)"
-                    class="btn-select-canchas w-full text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:scale-[1.02] active:scale-95 transition-all uppercase text-[10px] tracking-widest">
+              class="btn-select-canchas w-full text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:scale-[1.02] active:scale-95 transition-all uppercase text-[10px] tracking-widest">
               Seleccionar
             </button>
           </div>
 
-          <div class="card-area rounded-[2rem] p-6 bg-white border border-gray-200 shadow-sm flex flex-col justify-between" onclick="focusPrice('price_alberca')">
+          <div
+            class="card-area rounded-[2rem] p-6 bg-white border border-gray-200 shadow-sm flex flex-col justify-between"
+            onclick="focusPrice('price_alberca')">
             <div class="flex justify-between items-start mb-4">
               <div class="p-3 bg-teal-50 text-teal-600 rounded-2xl text-2xl">🏊</div>
-              <span class="text-[9px] font-black bg-teal-100 text-teal-700 px-2 py-1 rounded-lg uppercase">Alberca</span>
+              <span
+                class="text-[9px] font-black bg-teal-100 text-teal-700 px-2 py-1 rounded-lg uppercase">Alberca</span>
             </div>
             <div class="flex items-baseline gap-1 mb-6">
               <span class="text-xl font-bold text-gray-400">$</span>
-              <input type="number" id="price_alberca" value="{{prices.price_alberca}}" data-original="{{prices.price_alberca}}"
-                     class="price-input w-32 text-4xl font-black text-teal-600 bg-transparent outline-none {{#unless (eq user.role 'Administrador')}}input-readonly{{/unless}}">
+              <input type="number" id="price_alberca" value="{{prices.price_alberca}}"
+                data-original="{{prices.price_alberca}}"
+                class="price-input w-32 text-4xl font-black text-teal-600 bg-transparent outline-none {{#unless (eq user.role 'Administrador')}}input-readonly{{/unless}}">
             </div>
             <button type="button" onclick="selectArea('Alberca', 'price_alberca', this)"
-                    class="btn-select-alberca w-full text-white py-4 rounded-2xl font-bold shadow-lg shadow-teal-200 hover:scale-[1.02] active:scale-95 transition-all uppercase text-[10px] tracking-widest">
+              class="btn-select-alberca w-full text-white py-4 rounded-2xl font-bold shadow-lg shadow-teal-200 hover:scale-[1.02] active:scale-95 transition-all uppercase text-[10px] tracking-widest">
               Seleccionar
             </button>
           </div>
 
-          <div class="card-area rounded-[2rem] p-6 bg-white border border-gray-200 shadow-sm flex flex-col justify-between" onclick="focusPrice('price_gym')">
+          <div
+            class="card-area rounded-[2rem] p-6 bg-white border border-gray-200 shadow-sm flex flex-col justify-between"
+            onclick="focusPrice('price_gym')">
             <div class="flex justify-between items-start mb-4">
               <div class="p-3 bg-amber-50 text-amber-600 rounded-2xl text-2xl">🏋️</div>
-              <span class="text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-1 rounded-lg uppercase">Gimnasio</span>
+              <span
+                class="text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-1 rounded-lg uppercase">Gimnasio</span>
             </div>
             <div class="flex items-baseline gap-1 mb-6">
               <span class="text-xl font-bold text-gray-400">$</span>
               <input type="number" id="price_gym" value="{{prices.price_gym}}" data-original="{{prices.price_gym}}"
-                     class="price-input w-32 text-4xl font-black text-amber-600 bg-transparent outline-none {{#unless (eq user.role 'Administrador')}}input-readonly{{/unless}}">
+                class="price-input w-32 text-4xl font-black text-amber-600 bg-transparent outline-none {{#unless (eq user.role 'Administrador')}}input-readonly{{/unless}}">
             </div>
             <button type="button" onclick="selectArea('Gimnasio', 'price_gym', this)"
-                    class="btn-select-gym w-full text-white py-4 rounded-2xl font-bold shadow-lg shadow-amber-200 hover:scale-[1.02] active:scale-95 transition-all uppercase text-[10px] tracking-widest">
+              class="btn-select-gym w-full text-white py-4 rounded-2xl font-bold shadow-lg shadow-amber-200 hover:scale-[1.02] active:scale-95 transition-all uppercase text-[10px] tracking-widest">
               Seleccionar
             </button>
           </div>
@@ -142,18 +167,21 @@
     </form>
 
     <div class="mt-16 flex flex-wrap justify-center gap-10 border-t border-gray-100 pt-10">
-      <a href="/entries/list" class="flex items-center gap-2 text-gray-400 font-bold hover:text-indigo-600 transition group">
+      <a href="/entries/list"
+        class="flex items-center gap-2 text-gray-400 font-bold hover:text-indigo-600 transition group">
         <span class="p-2 bg-gray-50 group-hover:bg-indigo-50 rounded-lg transition">📋</span> Ver Registros
       </a>
-      
+
       {{#if (eq user.role "Administrador")}}
-        <a href="/entries/reports" class="flex items-center gap-2 text-gray-400 font-bold hover:text-green-600 transition group">
-          <span class="p-2 bg-gray-50 group-hover:bg-green-50 rounded-lg transition">💰</span> Reportes de Ingresos
-        </a>
+      <a href="/entries/reports"
+        class="flex items-center gap-2 text-gray-400 font-bold hover:text-green-600 transition group">
+        <span class="p-2 bg-gray-50 group-hover:bg-green-50 rounded-lg transition">💰</span> Reportes de Ingresos
+      </a>
       {{else}}
-        <button onclick="restrictedAccess()" class="flex items-center gap-2 text-gray-300 font-bold hover:text-red-400 transition group">
-          <span class="p-2 bg-gray-50 group-hover:bg-red-50 rounded-lg transition">💰</span> Reportes de Ingresos
-        </button>
+      <button onclick="restrictedAccess()"
+        class="flex items-center gap-2 text-gray-300 font-bold hover:text-red-400 transition group">
+        <span class="p-2 bg-gray-50 group-hover:bg-red-50 rounded-lg transition">💰</span> Reportes de Ingresos
+      </button>
       {{/if}}
     </div>
 
@@ -168,20 +196,24 @@
             <p class="text-slate-400 text-xs">Precios predeterminados en la base de datos.</p>
           </div>
         </div>
-        <form action="/api/entries/update-settings" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+        <form id="settingsForm" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
           <div>
             <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500">Canchas</label>
-            <input type="number" name="price_canchas" value="{{prices.price_canchas}}" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-white/10 transition">
+            <input type="number" name="price_canchas" value="{{prices.price_canchas}}"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-white/10 transition">
           </div>
           <div>
             <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500">Alberca</label>
-            <input type="number" name="price_alberca" value="{{prices.price_alberca}}" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-white/10 transition">
+            <input type="number" name="price_alberca" value="{{prices.price_alberca}}"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-white/10 transition">
           </div>
           <div>
             <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-slate-500">Gimnasio</label>
-            <input type="number" name="price_gym" value="{{prices.price_gym}}" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-white/10 transition">
+            <input type="number" name="price_gym" value="{{prices.price_gym}}"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:bg-white/10 transition">
           </div>
-          <button type="submit" class="bg-indigo-600 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-500 transition shadow-xl">
+          <button type="submit"
+            class="bg-indigo-600 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-500 transition shadow-xl">
             Actualizar Base
           </button>
         </form>
@@ -242,7 +274,7 @@
         <div style="text-align:left; background:#f8fafc; padding:20px; border-radius:1.5rem; border:1px solid #e2e8f0;">
           <p style="margin-bottom:8px;"><strong style="color:#64748b">Visitante:</strong> <span style="color:#1e293b; font-weight:800">${firstName} ${lastName}</span></p>
           <p style="margin-bottom:8px;"><strong style="color:#64748b">Área:</strong> <span style="color:#4f46e5; font-weight:800">${areaName}</span></p>
-          <p style="margin-bottom:8px;"><strong style="color:#64748b">Costo:</strong> <span style="color:#10b981; font-weight:800">$${precioActual}.00</span></p>
+          <p style="margin-bottom:8px;"><strong style="color:#64748b">Costo:</strong> <span style="color:#10b981; font-weight:800">$${Math.round(precioActual)}</span></p>
           <p><strong style="color:#64748b">Método:</strong> <span style="color:#1e293b; font-weight:800">${paymentMethod}</span></p>
         </div>`,
       icon: 'question',
@@ -259,5 +291,76 @@
   function focusPrice(id) {
     const input = document.getElementById(id);
     if (!input.readOnly) input.focus();
+  }
+
+  // Manejo del formulario de configuración vía Promesas/Fetch
+  const settingsForm = document.getElementById('settingsForm');
+  if (settingsForm) {
+    settingsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(settingsForm);
+      const data = Object.fromEntries(formData.entries());
+
+      Swal.fire({
+        title: 'Actualizando...',
+        didOpen: () => Swal.showLoading(),
+        allowOutsideClick: false,
+        borderRadius: '2rem'
+      });
+
+      try {
+        const response = await fetch('/api/entries/update-settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          Swal.fire({
+            title: '¡Éxito!',
+            text: result.message,
+            icon: 'success',
+            confirmButtonColor: clubColors.primary,
+            borderRadius: '2rem'
+          }).then(() => {
+            // Actualizamos los atributos data-original para que no se vean como "modificados" si el admin editó en el dashboard
+            // Nos aseguramos de redondear para evitar decimales molestos
+            const c = Math.round(data.price_canchas);
+            const a = Math.round(data.price_alberca);
+            const g = Math.round(data.price_gym);
+
+            document.getElementById('price_canchas').setAttribute('data-original', c);
+            document.getElementById('price_alberca').setAttribute('data-original', a);
+            document.getElementById('price_gym').setAttribute('data-original', g);
+
+            document.getElementById('price_canchas').value = c;
+            document.getElementById('price_alberca').value = a;
+            document.getElementById('price_gym').value = g;
+
+            // También actualizamos los inputs del formulario de herramientas
+            const settingsInputs = document.querySelectorAll('#settingsForm input[type="number"]');
+            settingsInputs[0].value = c;
+            settingsInputs[1].value = a;
+            settingsInputs[2].value = g;
+
+            // Removemos clases de resaltado
+            document.querySelectorAll('.card-area').forEach(card => card.classList.remove('precio-especial'));
+          });
+        } else {
+          throw new Error(result.error || 'Error desconocido');
+        }
+      } catch (err) {
+        Swal.fire({
+          title: 'Error',
+          text: err.message,
+          icon: 'error',
+          confirmButtonColor: clubColors.danger,
+          borderRadius: '2rem'
+        });
+      }
+    });
   }
 </script>
