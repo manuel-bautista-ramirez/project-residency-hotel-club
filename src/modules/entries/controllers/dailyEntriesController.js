@@ -204,6 +204,7 @@ export const renderReports = async (req, res) => {
   }
 };
 // Asegúrate de que esta función esté presente al final de dailyEntriesController.js
+// ...existing exports...
 export const bulkDeleteEntries = async (req, res) => {
   try {
     const { ids } = req.body;
@@ -216,5 +217,109 @@ export const bulkDeleteEntries = async (req, res) => {
   } catch (err) {
     console.error("Error en eliminación masiva:", err);
     return res.status(500).json({ error: "Error interno al eliminar" });
+  }
+};
+
+/** --- NUEVAS FUNCIONES DE ENVÍO DE REPORTES --- **/
+import emailService from "../../../services/emailService.js";
+import whatsappService from "../../../services/whatsappService.js";
+import {
+  generateReportEmailBody,
+  generateReportWhatsAppMessage,
+  generateReportHTML,
+  generateReportPDF
+} from "../utils/reportUtils.js";
+
+// Helper interno para obtener estadísticas (reutilizando lógica de renderReports)
+async function getReportStats(periodo) {
+  const allEntries = await getAllEntries();
+
+  let totalCanchas = 0, totalAlberca = 0, totalGym = 0, totalGlobal = 0;
+  allEntries.forEach(entry => {
+    const cost = parseFloat(entry.cost) || 0;
+    totalGlobal += cost;
+    if (entry.area === 'Canchas') totalCanchas += cost;
+    else if (entry.area === 'Alberca') totalAlberca += cost;
+    else if (entry.area === 'Gimnasio') totalGym += cost;
+  });
+
+  return {
+    totalGlobal: totalGlobal.toFixed(2),
+    totalCanchas: totalCanchas.toFixed(2),
+    totalAlberca: totalAlberca.toFixed(2),
+    totalGym: totalGym.toFixed(2)
+  };
+}
+
+export const sendReportEmail = async (req, res) => {
+  try {
+    const { periodo, destinatario, asunto } = req.body;
+
+    // 1. Obtener datos
+    const stats = await getReportStats(periodo);
+    const fechaInicio = new Date().toLocaleDateString('es-MX');
+    const fechaFin = new Date().toLocaleDateString('es-MX');
+
+    // 2. Generar PDF
+    const pdfHtml = generateReportHTML({ periodo, fechaInicio, fechaFin, stats });
+    const pdfFileName = `Reporte_${periodo}_${Date.now()}.pdf`;
+    const pdfPath = await generateReportPDF(pdfHtml, pdfFileName);
+
+    // 3. Enviar con adjunto
+    await emailService.sendEmailWithAttachment(
+      destinatario,
+      asunto || `Reporte ${periodo} de Ingresos`,
+      `Adjunto encontrarás el reporte de ingresos para el periodo: ${periodo}.`,
+      {
+        filename: pdfFileName,
+        path: pdfPath
+      }
+    );
+
+    res.status(200).json({ message: "Correo enviado correctamente con PDF" });
+  } catch (error) {
+    console.error("Error enviando email:", error);
+    res.status(500).json({ error: "Error al enviar el correo" });
+  }
+};
+
+export const sendReportWhatsApp = async (req, res) => {
+  try {
+    const { periodo, telefono } = req.body;
+
+    // 1. Obtener datos
+    const stats = await getReportStats(periodo);
+    const fechaInicio = new Date().toLocaleDateString('es-MX');
+    const fechaFin = new Date().toLocaleDateString('es-MX');
+
+    // 2. Generar PDF
+    const pdfHtml = generateReportHTML({ periodo, fechaInicio, fechaFin, stats });
+    const pdfFileName = `Reporte_${periodo}_${Date.now()}.pdf`;
+    const pdfPath = await generateReportPDF(pdfHtml, pdfFileName);
+
+    // 3. Generar Mensaje
+    const message = generateReportWhatsAppMessage(periodo, fechaInicio, fechaFin, stats);
+
+    // 4. Enviar usando el servicio
+    if (!whatsappService.isConnected) {
+      return res.status(400).json({ error: "WhatsApp no está conectado" });
+    }
+
+    const result = await whatsappService.enviarMensajeConPDF(
+      telefono,
+      message,
+      pdfPath,
+      pdfFileName
+    );
+
+    if (result.success) {
+      res.status(200).json({ message: "WhatsApp enviado correctamente con PDF" });
+    } else {
+      res.status(500).json({ error: "Fallo al enviar WhatsApp: " + result.error });
+    }
+
+  } catch (error) {
+    console.error("Error enviando WhatsApp:", error);
+    res.status(500).json({ error: "Error al enviar el mensaje" });
   }
 };

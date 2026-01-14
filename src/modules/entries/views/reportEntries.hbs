@@ -3,8 +3,9 @@
   .filter-btn {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid #e5e7eb;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
+
   .filter-btn.active {
     border-color: #4f46e5;
     background-color: #4f46e5;
@@ -12,6 +13,7 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
   }
+
   .filter-btn:hover:not(.active) {
     background-color: #f9fafb;
     border-color: #4f46e5;
@@ -24,9 +26,11 @@
     background: linear-gradient(145deg, #ffffff, #f3f4f6);
     transition: transform 0.3s ease;
   }
+
   .report-card:hover {
     transform: scale(1.02);
   }
+
   .list-item-custom {
     background: white;
     margin-bottom: 0.5rem;
@@ -35,14 +39,44 @@
     border: 1px solid #f3f4f6;
   }
 
-  .logo-container img { max-height: 70px; width: auto; }
+  .logo-container img {
+    max-height: 70px;
+    width: auto;
+  }
 
   @media print {
-    .no-pdf, nav, footer, button { display: none !important; }
-    body { background: white !important; padding: 0; }
-    #report-area { box-shadow: none !important; margin: 0 !important; width: 100% !important; border: none !important; }
-    .report-card { page-break-inside: avoid; border: 1px solid #eee !important; margin-bottom: 15px; display: block !important; background: white !important; }
-    canvas { max-width: 100% !important; height: auto !important; }
+
+    .no-pdf,
+    nav,
+    footer,
+    button {
+      display: none !important;
+    }
+
+    body {
+      background: white !important;
+      padding: 0;
+    }
+
+    #report-area {
+      box-shadow: none !important;
+      margin: 0 !important;
+      width: 100% !important;
+      border: none !important;
+    }
+
+    .report-card {
+      page-break-inside: avoid;
+      border: 1px solid #eee !important;
+      margin-bottom: 15px;
+      display: block !important;
+      background: white !important;
+    }
+
+    canvas {
+      max-width: 100% !important;
+      height: auto !important;
+    }
   }
 </style>
 
@@ -51,7 +85,8 @@
 <main class="pt-24 px-4 sm:px-8 pb-12 bg-gray-50">
   <div id="report-area" class="max-w-6xl mx-auto bg-white rounded-[2rem] shadow-2xl p-6 md:p-10 border border-gray-100">
 
-    <div class="flex flex-col md:flex-row justify-between items-center border-b-2 border-gray-50 pb-8 mb-8 text-center md:text-left">
+    <div
+      class="flex flex-col md:flex-row justify-between items-center border-b-2 border-gray-50 pb-8 mb-8 text-center md:text-left">
       <div class="logo-container mb-4 md:mb-0">
         <img src="/img/logo.png" alt="Logo" onerror="this.style.display='none'">
         <h2 class="text-2xl font-black text-indigo-900 tracking-tighter">HOTEL CLUB</h2>
@@ -64,129 +99,208 @@
     </div>
 
     <div class="no-pdf flex flex-wrap justify-center gap-4 mb-8">
-        <a href="/entries" class="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-2xl font-bold text-sm hover:bg-gray-50 transition shadow-sm">
-           <span>🏠</span> Inicio Módulo
-        </a>
-        <a href="/entries/list" class="flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-2xl font-bold text-sm hover:bg-black transition shadow-md">
-           <span>⬅️</span> Lista de Registros
-        </a>
-        <button onclick="printReport()" class="flex items-center gap-2 px-8 py-3 bg-red-600 text-white rounded-2xl font-bold text-sm hover:bg-red-700 transition shadow-lg">
-           <span>📄</span> Guardar PDF
-        </button>
+      <a href="/entries"
+        class="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-2xl font-bold text-sm hover:bg-gray-50 transition shadow-sm">
+        <i class="fas fa-home text-lg sm:text-sm text-indigo-500"></i> <span class="hidden sm:inline">Panel de
+          Control</span>
+      </a>
+      <a href="/entries/list"
+        class="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-2xl font-bold text-sm hover:bg-gray-50 transition shadow-sm">
+        <i class="fas fa-list-ul text-lg sm:text-sm text-emerald-500"></i> <span class="hidden sm:inline">Ver Lista de
+          Entradas</span>
+      </a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <div class="bg-gradient-to-br from-indigo-600 to-indigo-900 text-white p-8 rounded-[2rem] shadow-xl flex flex-col justify-center text-center">
-            <h3 class="text-indigo-200 text-xs font-bold uppercase tracking-[0.2em]">Ingreso Total Global</h3>
-            <p class="text-5xl font-black mt-2 tracking-tighter">${{stats.totalGlobal}}</p>
-            <div class="mt-4 pt-4 border-t border-indigo-400/30">
-                <span class="text-sm text-indigo-100 font-medium">Mayor Ingreso: {{stats.topArea}}</span>
-            </div>
+      <div
+        class="bg-gradient-to-br from-indigo-600 to-indigo-900 text-white p-8 rounded-[2rem] shadow-xl flex flex-col justify-center text-center">
+        <h3 class="text-indigo-200 text-xs font-bold uppercase tracking-[0.2em]">Ingreso Total Global</h3>
+        <p class="text-5xl font-black mt-2 tracking-tighter">${{stats.totalGlobal}}</p>
+        <div class="mt-4 pt-4 border-t border-indigo-400/30">
+          <span class="text-sm text-indigo-100 font-medium">Mayor Ingreso: {{stats.topArea}}</span>
         </div>
+      </div>
 
-        <div class="lg:col-span-2 bg-gray-50/50 border border-gray-100 p-6 rounded-[2rem] grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="p-6 bg-white rounded-3xl shadow-sm border border-blue-100 text-center">
-                <span class="text-blue-500 text-[10px] font-black uppercase tracking-widest">Canchas</span>
-                <p class="text-3xl font-black text-blue-900 mt-1">${{stats.totalCanchas}}</p>
-            </div>
-            <div class="p-6 bg-white rounded-3xl shadow-sm border border-teal-100 text-center">
-                <span class="text-teal-500 text-[10px] font-black uppercase tracking-widest">Alberca</span>
-                <p class="text-3xl font-black text-teal-900 mt-1">${{stats.totalAlberca}}</p>
-            </div>
-            <div class="p-6 bg-white rounded-3xl shadow-sm border border-amber-100 text-center">
-                <span class="text-amber-500 text-[10px] font-black uppercase tracking-widest">Gimnasio</span>
-                <p class="text-3xl font-black text-amber-900 mt-1">${{stats.totalGym}}</p>
-            </div>
+      <div
+        class="lg:col-span-2 bg-gray-50/50 border border-gray-100 p-6 rounded-[2rem] grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="p-6 bg-white rounded-3xl shadow-sm border border-blue-100 text-center">
+          <span class="text-blue-500 text-[10px] font-black uppercase tracking-widest">Canchas</span>
+          <p class="text-3xl font-black text-blue-900 mt-1">${{stats.totalCanchas}}</p>
         </div>
+        <div class="p-6 bg-white rounded-3xl shadow-sm border border-teal-100 text-center">
+          <span class="text-teal-500 text-[10px] font-black uppercase tracking-widest">Alberca</span>
+          <p class="text-3xl font-black text-teal-900 mt-1">${{stats.totalAlberca}}</p>
+        </div>
+        <div class="p-6 bg-white rounded-3xl shadow-sm border border-amber-100 text-center">
+          <span class="text-amber-500 text-[10px] font-black uppercase tracking-widest">Gimnasio</span>
+          <p class="text-3xl font-black text-amber-900 mt-1">${{stats.totalGym}}</p>
+        </div>
+      </div>
     </div>
 
     <div class="bg-white p-8 rounded-[2rem] mb-12 border-2 border-gray-50 shadow-sm">
-        <h3 class="text-center text-gray-400 font-bold uppercase text-[10px] mb-8 tracking-[0.3em]">Análisis Comparativo por Área</h3>
-        <div class="h-72">
-            <canvas id="incomeChart"></canvas>
-        </div>
+      <h3 class="text-center text-gray-400 font-bold uppercase text-[10px] mb-8 tracking-[0.3em]">Análisis Comparativo
+        por Área</h3>
+      <div class="h-72">
+        <canvas id="incomeChart"></canvas>
+      </div>
     </div>
 
     <div class="no-pdf text-center mb-12">
-        <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Selecciona el periodo a visualizar</h3>
-        <div class="flex flex-wrap justify-center gap-3">
-            <button onclick="filterReport('all', this)" class="filter-btn active px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Todos</button>
-            <button onclick="filterReport('daily', this)" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Diario</button>
-            <button onclick="filterReport('weekly', this)" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Semanal</button>
-            <button onclick="filterReport('biweekly', this)" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Quincenal</button>
-            <button onclick="filterReport('monthly', this)" class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white">Mensual</button>
-        </div>
+      <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Selecciona el periodo a visualizar
+      </h3>
+      <div class="flex flex-wrap justify-center gap-3">
+        <button onclick="filterReport('all', this)"
+          class="filter-btn active px-6 py-2.5 rounded-xl text-sm font-bold bg-white"><i
+            class="fas fa-layer-group sm:hidden"></i> <span class="hidden sm:inline">Todos</span></button>
+        <button onclick="filterReport('daily', this)"
+          class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white"><i
+            class="fas fa-calendar-day sm:hidden"></i> <span class="hidden sm:inline">Diario</span></button>
+        <button onclick="filterReport('weekly', this)"
+          class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white"><i
+            class="fas fa-calendar-week sm:hidden"></i> <span class="hidden sm:inline">Semanal</span></button>
+        <button onclick="filterReport('biweekly', this)"
+          class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white"><i class="fas fa-history sm:hidden"></i>
+          <span class="hidden sm:inline">Quincenal</span></button>
+        <button onclick="filterReport('monthly', this)"
+          class="filter-btn px-6 py-2.5 rounded-xl text-sm font-bold bg-white"><i
+            class="fas fa-calendar-alt sm:hidden"></i> <span class="hidden sm:inline">Mensual</span></button>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="cards-container">
 
       <div class="report-card daily-card p-8 rounded-[2rem] shadow-sm border border-gray-100">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">📅 Diario</h2>
-            <span class="px-3 py-1 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full">DETALLADO</span>
+          <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight"><i
+              class="far fa-calendar-alt mr-2 text-blue-500"></i> Diario</h2>
+          <span class="px-3 py-1 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full">DETALLADO</span>
         </div>
         <ul class="space-y-1">
           {{#each reports.daily}}
-            <li class="list-item-custom flex justify-between items-center">
-              <span class="text-gray-500 font-medium text-xs">{{this.date}}</span>
-              <span class="font-black text-gray-900">${{this.total}}</span>
-            </li>
+          <li class="list-item-custom flex justify-between items-center">
+            <span class="text-gray-500 font-medium text-xs">{{this.date}}</span>
+            <span class="font-black text-gray-900">${{this.total}}</span>
+          </li>
           {{/each}}
         </ul>
       </div>
 
       <div class="report-card weekly-card p-8 rounded-[2rem] shadow-sm border border-gray-100">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">📊 Semanal</h2>
-            <span class="px-3 py-1 bg-green-100 text-green-600 text-[10px] font-bold rounded-full">RENDIMIENTO</span>
+          <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight"><i
+              class="fas fa-chart-line mr-2 text-green-500"></i> Semanal</h2>
+          <span class="px-3 py-1 bg-green-100 text-green-600 text-[10px] font-bold rounded-full">RENDIMIENTO</span>
         </div>
         <ul class="space-y-1">
           {{#each reports.weekly}}
-            <li class="list-item-custom flex justify-between items-center">
-              <span class="text-gray-500 font-medium text-xs">Semana {{this.week}} - {{this.year}}</span>
-              <span class="font-black text-green-700">${{this.total}}</span>
-            </li>
+          <li class="list-item-custom flex justify-between items-center">
+            <span class="text-gray-500 font-medium text-xs">Semana {{this.week}} - {{this.year}}</span>
+            <span class="font-black text-green-700">${{this.total}}</span>
+          </li>
           {{/each}}
         </ul>
       </div>
 
       <div class="report-card biweekly-card p-8 rounded-[2rem] shadow-sm border border-gray-100">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">🌗 Quincenal</h2>
-            <span class="px-3 py-1 bg-orange-100 text-orange-600 text-[10px] font-bold rounded-full">PROYECCIÓN</span>
+          <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight"><i
+              class="fas fa-calendar-check mr-2 text-orange-500"></i> Quincenal</h2>
+          <span class="px-3 py-1 bg-orange-100 text-orange-600 text-[10px] font-bold rounded-full">PROYECCIÓN</span>
         </div>
         <ul class="space-y-1">
           {{#each reports.biweekly}}
-            <li class="list-item-custom flex justify-between items-center">
-              <span class="text-gray-500 font-medium text-xs">Q{{this.biweek}} ({{this.year}})</span>
-              <span class="font-black text-orange-700">${{this.total}}</span>
-            </li>
+          <li class="list-item-custom flex justify-between items-center">
+            <span class="text-gray-500 font-medium text-xs">Q{{this.biweek}} ({{this.year}})</span>
+            <span class="font-black text-orange-700">${{this.total}}</span>
+          </li>
           {{/each}}
         </ul>
       </div>
 
       <div class="report-card monthly-card p-8 rounded-[2rem] shadow-sm border border-gray-100">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight">🏢 Mensual</h2>
-            <span class="px-3 py-1 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full">CIERRE</span>
+          <h2 class="text-lg font-black text-gray-800 uppercase tracking-tight"><i
+              class="fas fa-city mr-2 text-purple-500"></i> Mensual</h2>
+          <span class="px-3 py-1 bg-purple-100 text-purple-600 text-[10px] font-bold rounded-full">CIERRE</span>
         </div>
         <ul class="space-y-1">
           {{#each reports.monthly}}
-            <li class="list-item-custom flex justify-between items-center">
-              <span class="text-gray-500 font-medium text-xs">{{this.monthName}} {{this.year}}</span>
-              <span class="font-black text-purple-700">${{this.total}}</span>
-            </li>
+          <li class="list-item-custom flex justify-between items-center">
+            <span class="text-gray-500 font-medium text-xs">{{this.monthName}} {{this.year}}</span>
+            <span class="font-black text-purple-700">${{this.total}}</span>
+          </li>
           {{/each}}
         </ul>
       </div>
 
     </div>
+
+    <!-- Opciones de envío -->
+    <div id="envio-opciones"
+      class="bg-white border2 border-gray-50 rounded-[2rem] shadow-xl p-8 mt-12 animate-fade-in no-pdf">
+      <h2 class="text-xl font-black text-gray-800 mb-6 flex items-center tracking-tight">
+        <span class="p-2 bg-indigo-50 text-indigo-600 rounded-xl mr-3 shadow-sm">
+          <i class="fas fa-paper-plane"></i>
+        </span>
+        Enviar Reporte
+      </h2>
+      <div id="notification-area" class="mb-4"></div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Envío por correo -->
+        <div class="border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow bg-gray-50/50">
+          <h3 class="font-bold text-gray-800 mb-4 flex items-center text-sm uppercase tracking-wide">
+            <i class="fas fa-envelope mr-2 text-blue-500 bg-blue-50 p-1.5 rounded-lg"></i>Envío por Correo
+          </h3>
+          <div class="space-y-4">
+            <div>
+              <label
+                class="block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-widest">Destinatario</label>
+              <input type="email" id="email-destinatario" placeholder="correo@ejemplo.com"
+                class="border border-gray-200 rounded-xl p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium">
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-widest">Asunto</label>
+              <input type="text" id="email-asunto" placeholder="Asunto del correo"
+                class="border border-gray-200 rounded-xl p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium">
+            </div>
+            <button id="enviar-email-btn"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3.5 rounded-xl w-full transition-all duration-300 text-sm font-bold shadow-lg hover:shadow-blue-200 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+              <i class="fas fa-envelope text-lg sm:text-sm"></i> <span class="hidden sm:inline">Enviar por Correo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Envío por WhatsApp -->
+        <div class="border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow bg-gray-50/50">
+          <h3 class="font-bold text-gray-800 mb-4 flex items-center text-sm uppercase tracking-wide">
+            <i class="fab fa-whatsapp mr-2 text-green-500 bg-green-50 p-1.5 rounded-lg"></i>Envío por WhatsApp
+          </h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-[10px] font-black text-gray-400 mb-1 uppercase tracking-widest">Número de
+                celular</label>
+              <input type="tel" id="whatsapp-telefono" placeholder="10 dígitos sin espacios"
+                class="border border-gray-200 rounded-xl p-3 w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-medium">
+            </div>
+            <button id="enviar-whatsapp-btn"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-3.5 rounded-xl w-full transition-all duration-300 text-sm font-bold shadow-lg hover:shadow-green-200 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+              <i class="fab fa-whatsapp text-lg sm:text-sm"></i> <span class="hidden sm:inline">Enviar por
+                WhatsApp</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </main>
 
 <script>
-  // 1. FECHA AUTOMÁTICA CORREGIDA (FORZANDO ZONA HORARIA MÉXICO)
-  // Esto corrige que después de las 6:00 PM se brinque al día siguiente
+  // Variables globales
+  let periodoSeleccionado = 'all';
+
+  // 1. FECHA AUTOMÁTICA
   function getLocalDate() {
     const options = {
       weekday: 'long',
@@ -197,11 +311,9 @@
     };
     return new Intl.DateTimeFormat('es-MX', options).format(new Date());
   }
-
-  // Aplicamos la fecha corregida al encabezado del reporte
   document.getElementById('currentDateDisplay').innerText = getLocalDate();
 
-  // 2. GRÁFICA (Mantenemos tu lógica pero con los datos de tus variables)
+  // 2. GRÁFICA
   const ctx = document.getElementById('incomeChart').getContext('2d');
   new Chart(ctx, {
     type: 'bar',
@@ -209,32 +321,31 @@
       labels: ['Canchas', 'Alberca', 'Gimnasio'],
       datasets: [{
         label: 'Ingresos por Área',
-        data: [{{stats.totalCanchas}}, {{stats.totalAlberca}}, {{stats.totalGym}}],
-        backgroundColor: [
-            'rgba(79, 70, 229, 0.8)',
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(245, 158, 11, 0.8)'
-        ],
-        borderColor: ['#4f46e5', '#10b981', '#f59e0b'],
-        borderWidth: 2,
-        borderRadius: 15
+        data: [{{ stats.totalCanchas }}, {{ stats.totalAlberca }}, {{ stats.totalGym }}],
+    backgroundColor: ['rgba(79, 70, 229, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)'],
+    borderColor: ['#4f46e5', '#10b981', '#f59e0b'],
+    borderWidth: 2,
+    borderRadius: 15
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-        x: { grid: { display: false } }
-      }
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+      x: { grid: { display: false } }
     }
+  }
   });
 
   // 3. FILTROS DINÁMICOS
   function filterReport(type, btn) {
+    periodoSeleccionado = type; // Actualizar variable global
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+
+    // Mostrar/ocultar tarjetas
     const cards = document.querySelectorAll('.report-card');
     cards.forEach(c => {
       if (type === 'all') {
@@ -243,12 +354,132 @@
         c.style.display = c.classList.contains(type + '-card') ? 'block' : 'none';
       }
     });
+
+    // Actualizar asunto por defecto según el filtro
+    const asuntoInput = document.getElementById('email-asunto');
+    if (asuntoInput) {
+      const map = {
+        'all': 'Reporte General de Ingresos',
+        'daily': 'Reporte Diario de Ingresos',
+        'weekly': 'Reporte Semanal de Ingresos',
+        'biweekly': 'Reporte Quincenal de Ingresos',
+        'monthly': 'Reporte Mensual de Ingresos'
+      };
+      asuntoInput.value = map[type] || 'Reporte de Ingresos';
+    }
   }
 
-  // 4. PREPARACIÓN PARA IMPRESIÓN
+  // 4. NOTIFICACIONES
+  function mostrarNotificacion(mensaje, tipo = 'success') {
+    const area = document.getElementById('notification-area');
+    const notif = document.createElement('div');
+    let classes = "p-4 mb-4 text-sm font-bold rounded-xl shadow-md flex items-center gap-2 animate-fade-in ";
+
+    if (tipo === 'success') classes += "bg-white border-l-4 border-green-500 text-green-700";
+    else if (tipo === 'error') classes += "bg-white border-l-4 border-red-500 text-red-700";
+    else classes += "bg-white border-l-4 border-blue-500 text-blue-700";
+
+    notif.className = classes;
+    notif.innerHTML = `
+        ${tipo === 'success' ? '<i class="fas fa-check-circle text-lg"></i>' :
+        tipo === 'error' ? '<i class="fas fa-exclamation-circle text-lg"></i>' :
+          '<i class="fas fa-info-circle text-lg"></i>'}
+        ${mensaje}
+    `;
+    area.innerHTML = ''; // Limpiar anteriores
+    area.appendChild(notif);
+
+    setTimeout(() => {
+      notif.style.transition = 'opacity 0.5s ease';
+      notif.style.opacity = '0';
+      setTimeout(() => notif.remove(), 500);
+    }, 5000);
+  }
+
+  // 5. ENVÍO EMAIL
+  async function enviarEmail() {
+    const destinatario = document.getElementById('email-destinatario').value;
+    const asunto = document.getElementById('email-asunto').value;
+
+    if (!destinatario) { mostrarNotificacion('Ingresa un correo de destinatario', 'error'); return; }
+
+    const btn = document.getElementById('enviar-email-btn');
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+
+    // Simular envío o conectar a endpoint real
+    try {
+      // Ajustar la ruta a tu API real
+      const response = await fetch('/api/entries/reports/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          periodo: periodoSeleccionado,
+          destinatario,
+          asunto
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Error en el servidor');
+
+      mostrarNotificacion(result.message || 'Correo enviado correctamente', 'success');
+      document.getElementById('email-destinatario').value = ''; // Limpiar
+    } catch (error) {
+      console.error(error);
+      mostrarNotificacion(`Error al enviar: ${error.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalContent;
+    }
+  }
+
+  // 6. ENVÍO WHATSAPP
+  async function enviarWhatsApp() {
+    const telefono = document.getElementById('whatsapp-telefono').value;
+
+    if (!telefono) { mostrarNotificacion('Ingresa un número de teléfono', 'error'); return; }
+
+    const btn = document.getElementById('enviar-whatsapp-btn');
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+
+    try {
+      const response = await fetch('/api/entries/reports/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          periodo: periodoSeleccionado,
+          telefono
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Error en el servidor');
+
+      mostrarNotificacion(result.message || 'WhatsApp enviado correctamente', 'success');
+      document.getElementById('whatsapp-telefono').value = '';
+    } catch (error) {
+      console.error(error);
+      mostrarNotificacion(`Error al enviar: ${error.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalContent;
+    }
+  }
+
+  // Listeners
+  document.getElementById('enviar-email-btn').addEventListener('click', enviarEmail);
+  document.getElementById('enviar-whatsapp-btn').addEventListener('click', enviarWhatsApp);
+
+  // Inicializar asunto
+  filterReport('all', document.querySelector('.filter-btn.active') || document.querySelector('.filter-btn'));
+
   function printReport() {
     const cards = document.querySelectorAll('.report-card');
-    cards.forEach(c => c.style.display = 'block');
+    cards.forEach(c => c.style.display = 'block'); // Mostrar todo para imprimir
     setTimeout(() => { window.print(); }, 500);
   }
 </script>

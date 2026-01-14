@@ -63,7 +63,7 @@ const MembershipUI = {
    * @param {string} [text=''] - El texto a mostrar junto al spinner.
    * @returns {string} El HTML original del botón.
    */
-  showButtonSpinner: function(button, text = '') {
+  showButtonSpinner: function (button, text = '') {
     const originalHtml = button.innerHTML;
     button.disabled = true;
     button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${text}`;
@@ -75,7 +75,7 @@ const MembershipUI = {
    * @param {HTMLElement} button - El botón a restaurar.
    * @param {string} originalHtml - El HTML original que se guardó.
    */
-  hideButtonSpinner: function(button, originalHtml) {
+  hideButtonSpinner: function (button, originalHtml) {
     button.innerHTML = originalHtml;
     button.disabled = false;
   },
@@ -193,7 +193,7 @@ const MembershipUI = {
     this.procesandoCliente = true;
     this.clienteModal.classList.add("hidden");
     if (this.confirmClienteBtn) this.confirmClienteBtn.disabled = true;
-    const submitBtn = this.formCliente.querySelector('button[type="submit"]');    
+    const submitBtn = this.formCliente.querySelector('button[type="submit"]');
     const originalBtnHtml = this.showButtonSpinner(submitBtn, 'Verificando...');
     try {
       // Paso 1: Validar si el cliente ya existe
@@ -292,7 +292,7 @@ const MembershipUI = {
     this.procesandoMembresia = true;
     this.membershipModal.classList.add("hidden");
     if (this.confirmMembershipBtn) this.confirmMembershipBtn.disabled = true;
-    const submitBtn = this.formMembership.querySelector('button[type="submit"]');    
+    const submitBtn = this.formMembership.querySelector('button[type="submit"]');
     const originalBtnHtml = this.showButtonSpinner(submitBtn, 'Procesando...');
     try {
       const formData = new FormData(this.formMembership);
@@ -430,20 +430,20 @@ const MembershipUI = {
     this.updateCalculatedDetails();
 
     this.integrantesContainer.innerHTML = ""; // Limpiar siempre
-    
+
     // Si max_integrantes > 1, mostrar sección de integrantes
     if (this.maxIntegrantes > 1) {
       this.integrantesSection.classList.remove("hidden");
       this.addIntegranteBtn.classList.add("hidden"); // Siempre ocultar el botón de agregar
-      
+
       // Crear exactamente (maxIntegrantes - 1) campos fijos
       // -1 porque el titular ya cuenta como un integrante
       const numIntegrantesAdicionales = this.maxIntegrantes - 1;
-      
+
       for (let i = 0; i < numIntegrantesAdicionales; i++) {
         this.agregarIntegrante(false); // false = sin botón de eliminar
       }
-      
+
       // Actualizar el texto del header para informar al usuario
       const headerText = this.integrantesSection.querySelector('h4');
       if (headerText) {
@@ -489,7 +489,7 @@ const MembershipUI = {
   /**
    * Vincula los eventos de filtrado de entrada en tiempo real a los campos del formulario.
    */
-  bindInputFiltering: function() {
+  bindInputFiltering: function () {
     const filterInput = (inputElement, regex) => {
       inputElement.addEventListener('input', (e) => {
         const originalValue = e.target.value;
@@ -543,13 +543,13 @@ const MembershipUI = {
 
     // Delegación de eventos para los campos de integrantes creados dinámicamente
     this.integrantesContainer.addEventListener('input', (e) => {
-        if (e.target && e.target.name === 'integrantes[]') {
-            const originalValue = e.target.value;
-            const sanitizedValue = originalValue.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-            if (originalValue !== sanitizedValue) {
-                e.target.value = sanitizedValue;
-            }
+      if (e.target && e.target.name === 'integrantes[]') {
+        const originalValue = e.target.value;
+        const sanitizedValue = originalValue.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+        if (originalValue !== sanitizedValue) {
+          e.target.value = sanitizedValue;
         }
+      }
     });
   },
   /**
@@ -560,16 +560,23 @@ const MembershipUI = {
    * @param {string} type - El tipo de mensaje ('success' o 'error') para aplicar el estilo correcto.
    */
   showMessage: function (element, text, type) {
-    element.textContent = text;
-    element.classList.remove("hidden", "text-green-600", "text-red-600");
-    if (type === "success") {
-      element.classList.add("text-green-600");
-    } else {
-      element.classList.add("text-red-600");
+    if (typeof window.showNotification === 'function') {
+      window.showNotification(text, type);
     }
-    setTimeout(() => {
-      element.classList.add("hidden");
-    }, 5000);
+
+    // Fallback/Legacy local message display
+    if (element) {
+      element.textContent = text;
+      element.classList.remove("hidden", "text-green-600", "text-red-600");
+      if (type === "success") {
+        element.classList.add("text-green-600");
+      } else {
+        element.classList.add("text-red-600");
+      }
+      setTimeout(() => {
+        element.classList.add("hidden");
+      }, 5000);
+    }
   },
 };
 

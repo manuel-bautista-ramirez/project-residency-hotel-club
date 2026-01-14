@@ -147,7 +147,7 @@ const ValidationUtils = {
     element.addEventListener("input", () => {
       const value = element.value;
       const isValid = ValidationUtils.regex.nombre.test(value);
-      
+
       element.style.borderColor = isValid ? "" : "red";
     });
   },
@@ -159,7 +159,7 @@ const ValidationUtils = {
     element.addEventListener("input", () => {
       // Solo permitir números
       element.value = element.value.replace(/[^0-9]/g, "");
-      
+
       // Limitar a 10 dígitos
       if (element.value.length > 10) {
         element.value = element.value.slice(0, 10);
@@ -175,7 +175,7 @@ const ValidationUtils = {
       const value = element.value;
       // Permitir solo números y un punto decimal
       const cleanValue = value.replace(/[^0-9.]/g, "");
-      
+
       // Asegurar solo un punto decimal
       const parts = cleanValue.split(".");
       if (parts.length > 2) {
@@ -190,14 +190,14 @@ const ValidationUtils = {
   numberToText: (number) => {
     const units = [
       "cero", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
-      "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", 
+      "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete",
       "dieciocho", "diecinueve", "veinte"
     ];
-    
+
     if (number >= 0 && number <= 20) {
       return units[number] + " pesos";
     }
-    
+
     return number + " pesos";
   },
 
@@ -217,37 +217,12 @@ const ValidationUtils = {
 
   // Función para mostrar notificación
   showNotification: (message, type = "success") => {
-    const colors = {
-      success: "bg-green-50 border-green-200 text-green-800",
-      error: "bg-red-50 border-red-200 text-red-800",
-      warning: "bg-yellow-50 border-yellow-200 text-yellow-800",
-      info: "bg-blue-50 border-blue-200 text-blue-800",
-    };
-
-    const notification = document.createElement("div");
-    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-md border ${colors[type]} max-w-sm`;
-    notification.innerHTML = `
-      <div class="flex items-center justify-between">
-        <p class="text-sm">${message}</p>
-        <button class="ml-2 text-lg leading-none">&times;</button>
-      </div>
-    `;
-
-    document.body.appendChild(notification);
-
-    // Auto-remove después de 5 segundos
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 5000);
-
-    // Remove al hacer clic en X
-    notification.querySelector("button").addEventListener("click", () => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    });
+    if (typeof window.showNotification === 'function') {
+      window.showNotification(message, type);
+    } else {
+      console.warn('Global showNotification not found');
+      alert(message);
+    }
   },
 };
 

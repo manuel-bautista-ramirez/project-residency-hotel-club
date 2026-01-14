@@ -37,7 +37,13 @@ entriesRouter.post("/api/entries/update-settings", roleMiddleware("Administrador
 entriesRouter.post("/api/entries/bulk-delete", roleMiddleware("Administrador"), bulkDeleteEntries);
 
 // Acciones individuales (Solo Admin)
+// ...existing routes...
 entriesRouter.post("/api/entries/:id/edit", roleMiddleware("Administrador"), updateEntry);
 entriesRouter.post("/api/entries/:id/delete", roleMiddleware("Administrador"), deleteEntry);
+
+// Rutas de envío de reportes
+import { sendReportEmail, sendReportWhatsApp } from "../controllers/dailyEntriesController.js";
+entriesRouter.post("/api/entries/reports/email", roleMiddleware("Administrador"), sendReportEmail);
+entriesRouter.post("/api/entries/reports/whatsapp", roleMiddleware("Administrador"), sendReportWhatsApp);
 
 export { entriesRouter };
