@@ -48,19 +48,19 @@
   }
 </style>
 <!-- Contenido -->
-<div class="w-full px-3 sm:px-4 lg:px-8 pt-4 sm:pt-8 pb-32 animate-fade-in">
+<div class="w-full px-3 sm:px-4 lg:px-8  sm:pt-4 pb-7 animate-fade-in">
 
   <!-- Grid de Productos -->
   <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
     {{#if products}}
     {{#each products}}
     <div
-      class="group product-card bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 ease-out flex flex-col hover:-translate-y-2 border border-slate-100 overflow-hidden relative"
+      class="group product-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 ease-out flex flex-col border border-slate-100 overflow-hidden relative"
       data-id="{{this.id}}" data-nombre="{{this.nombre}}" data-precio="{{this.precio}}"
       data-categoria="{{this.categoria}}" data-stock="{{this.stock}}">
 
       <!-- Decoración de Categoría (Barra lateral) -->
-      <div class="absolute left-0 top-0 bottom-0 w-1.5 z-10
+      <div class="absolute left-0 top-0 bottom-0 w-1 z-10
         {{#if (eq this.categoria 'bebidas')}}bg-blue-500{{/if}}
         {{#if (eq this.categoria 'snacks')}}bg-orange-500{{/if}}
         {{#if (eq this.categoria 'comida')}}bg-green-500{{/if}}
@@ -69,14 +69,14 @@
 
       <!-- Imagen/Icono Container -->
       <div
-        class="relative h-36 sm:h-44 lg:h-52 bg-gradient-to-b from-slate-50 to-white group-hover:from-slate-100 transition-colors duration-500">
+        class="relative h-32 sm:h-40 lg:h-44 bg-gradient-to-b from-slate-50 to-white group-hover:from-slate-100 transition-colors duration-500">
         {{#if this.imagen}}
         <img src="{{this.imagen}}" alt="{{this.nombre}}"
-          class="w-full h-full object-contain object-center transition-transform duration-700 ease-in-out group-hover:scale-110 p-6 drop-shadow-md">
+          class="w-full h-full object-contain object-center transition-transform duration-700 ease-in-out group-hover:scale-105 p-4 drop-shadow-sm">
         {{else}}
         <div class="w-full h-full flex items-center justify-center">
-          <div class="p-5 rounded-full bg-white shadow-inner transition-transform duration-500 group-hover:scale-110">
-            <i class="text-4xl sm:text-5xl transition-colors duration-500
+          <div class="p-4 rounded-full bg-white shadow-sm transition-transform duration-500 group-hover:scale-105">
+            <i class="text-3xl sm:text-4xl transition-colors duration-500
               {{#if (eq this.categoria 'bebidas')}}fas fa-wine-bottle text-blue-400 group-hover:text-blue-600{{/if}}
               {{#if (eq this.categoria 'snacks')}}fas fa-cookie-bite text-orange-400 group-hover:text-orange-600{{/if}}
               {{#if (eq this.categoria 'comida')}}fas fa-utensils text-green-400 group-hover:text-green-600{{/if}}
@@ -88,12 +88,12 @@
 
         <!-- Badge de categoría flotante -->
         <div class="absolute top-3 right-3">
-          <span class="flex items-center gap-1.5 px-2.5 py-1 backdrop-blur-md shadow-sm rounded-full text-[10px] font-black uppercase tracking-widest border
-            {{#if (eq this.categoria 'bebidas')}}bg-blue-50/80 text-blue-700 border-blue-100{{/if}}
-            {{#if (eq this.categoria 'snacks')}}bg-orange-50/80 text-orange-700 border-orange-100{{/if}}
-            {{#if (eq this.categoria 'comida')}}bg-green-50/80 text-green-700 border-green-100{{/if}}
-            {{#if (eq this.categoria 'otros')}}bg-purple-50/80 text-purple-700 border-purple-100{{/if}}">
-            <i class="text-[9px]
+          <span class="flex items-center gap-1.5 px-2 py-0.5 backdrop-blur-md shadow-sm rounded-full text-[9px] font-black uppercase tracking-widest border
+            {{#if (eq this.categoria 'bebidas')}}bg-blue-50/90 text-blue-700 border-blue-100{{/if}}
+            {{#if (eq this.categoria 'snacks')}}bg-orange-50/90 text-orange-700 border-orange-100{{/if}}
+            {{#if (eq this.categoria 'comida')}}bg-green-50/90 text-green-700 border-green-100{{/if}}
+            {{#if (eq this.categoria 'otros')}}bg-purple-50/90 text-purple-700 border-purple-100{{/if}}">
+            <i class="text-[8px]
               {{#if (eq this.categoria 'bebidas')}}fas fa-tint{{/if}}
               {{#if (eq this.categoria 'snacks')}}fas fa-cookie{{/if}}
               {{#if (eq this.categoria 'comida')}}fas fa-hamburger{{/if}}
@@ -104,51 +104,50 @@
 
         <!-- Indicador de Stock Bajo -->
         {{#if (and (gt this.stock 0) (lte this.stock 5))}}
-        <div class="absolute bottom-2 left-4">
+        <div class="absolute bottom-2 right-2">
           <span
-            class="flex items-center gap-1 text-[9px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100 animate-pulse">
-            <i class="fas fa-exclamation-triangle"></i> Stock Bajo
+            class="flex items-center gap-1 text-[9px] font-bold text-orange-600 bg-white/90 px-1.5 py-0.5 rounded shadow-sm border border-orange-100 animate-pulse">
+            <i class="fas fa-exclamation-triangle"></i> ¡Quedan {{this.stock}}!
           </span>
         </div>
         {{/if}}
       </div>
 
       <!-- Información del Producto -->
-      <div class="p-4 sm:p-5 flex-grow flex flex-col">
-        <div class="mb-4">
+      <div class="p-4 flex-grow flex flex-col justify-between">
+        <div>
           <h3
-            class="text-sm sm:text-base font-extrabold text-slate-800 mb-2 line-clamp-2 leading-tight group-hover:text-blue-700 transition-colors">
+            class="text-sm font-bold text-slate-800 mb-1 leading-snug line-clamp-2 group-hover:text-blue-700 transition-colors">
             {{this.nombre}}
           </h3>
-          <div class="flex items-baseline gap-2">
-            <span class="text-xl sm:text-2xl font-black text-slate-900 drop-shadow-sm">${{this.precio}}</span>
-            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">MXN</span>
-          </div>
+          <p class="text-[10px] uppercase tracking-wide font-semibold text-slate-400 mb-3">
+            Stock: <span class="{{#if (eq this.stock 0)}}text-red-500{{else}}text-slate-600{{/if}}">{{#if (eq this.stock
+              0)}}Agotado{{else}}{{this.stock}} pzs{{/if}}</span>
+          </p>
         </div>
 
-        <div class="mt-auto space-y-3">
-          <!-- Info de Stock -->
-          <div class="flex items-center justify-between text-[11px] font-bold">
-            <span class="text-slate-400 uppercase tracking-wider">Disponibilidad</span>
-            <span
-              class="{{#if (eq this.stock 0)}}text-red-500{{else if (lte this.stock 5)}}text-orange-500{{else}}text-green-600{{/if}} border-b-2 border-transparent">
-              {{#if (eq this.stock 0)}}Agotado{{else}}{{this.stock}} unidades{{/if}}
-            </span>
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-[10px] text-slate-400 font-bold uppercase invisible h-0">Precio</span>
+            <div class="flex items-baseline gap-1">
+              <span class="text-lg font-black text-slate-900">${{this.precio}}</span>
+              <span class="text-[9px] text-slate-400 font-bold">MXN</span>
+            </div>
           </div>
 
-          <!-- Botón de Acción -->
-          <button class="add-to-cart-btn w-full group/btn py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2
-              {{#if (gt this.stock 0)}}
-              bg-slate-900 text-white hover:bg-blue-600 shadow-lg hover:shadow-blue-200 active:scale-95
-              {{else}}
-              bg-slate-100 text-slate-400 cursor-not-allowed
-              {{/if}}" {{#unless (gt this.stock 0)}}disabled{{/unless}} data-product-id="{{this.id}}">
-            {{#if (gt this.stock 0)}}
-            <i class="fas fa-cart-plus group-hover/btn:animate-bounce"></i> Agregar al Carrito
-            {{else}}
-            <i class="fas fa-ban"></i> Sin Inventario
-            {{/if}}
+          <!-- Botón de Acción Compacto -->
+          {{#if (gt this.stock 0)}}
+          <button
+            class="add-to-cart-btn w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md hover:bg-blue-600 hover:scale-110 hover:shadow-lg transition-all duration-300 group/btn"
+            data-product-id="{{this.id}}" title="Agregar al carrito">
+            <i class="fas fa-cart-plus text-sm group-hover/btn:animate-bounce"></i>
           </button>
+          {{else}}
+          <span
+            class="px-2 py-1 bg-slate-100 text-slate-400 text-[10px] font-bold rounded uppercase border border-slate-200 cursor-not-allowed">
+            Agotado
+          </span>
+          {{/if}}
         </div>
       </div>
     </div>

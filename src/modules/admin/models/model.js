@@ -32,38 +32,38 @@ export const updateUser = async (id, userData) => {
   try {
     const fields = [];
     const values = [];
-    
+
     if (userData.username !== undefined) {
       fields.push('username = ?');
       values.push(userData.username);
     }
-    
+
     if (userData.password !== undefined) {
       fields.push('password = ?');
       values.push(userData.password);
     }
-    
+
     if (userData.email !== undefined) {
       fields.push('email = ?');
       values.push(userData.email);
     }
-    
+
     if (userData.role !== undefined) {
       fields.push('role = ?');
       values.push(userData.role);
     }
-    
+
     if (fields.length === 0) {
       throw new Error('No hay campos para actualizar');
     }
-    
+
     values.push(id);
-    
+
     const result = await executeQuery(
       `UPDATE users_hotel SET ${fields.join(', ')} WHERE id = ?`,
       values
     );
-    
+
     return result.affectedRows > 0;
   } catch (error) {
     console.error('Error al actualizar usuario:', error);
@@ -91,19 +91,19 @@ export const getUserStats = async () => {
     const totalUsers = await executeQuery(
       'SELECT COUNT(*) as total FROM users_hotel'
     );
-    
+
     const adminUsers = await executeQuery(
       'SELECT COUNT(*) as total FROM users_hotel WHERE role = "Administrador"'
     );
-    
+
     const regularUsers = await executeQuery(
       'SELECT COUNT(*) as total FROM users_hotel WHERE role = "Usuario"'
     );
 
     // Obtener actividad reciente (usuarios que han hecho reservaciones en los últimos 30 días)
     const recentActivity = await executeQuery(`
-      SELECT COUNT(DISTINCT usuario_id) as active_users 
-      FROM reservaciones 
+      SELECT COUNT(DISTINCT usuario_id) as active_users
+      FROM reservaciones
       WHERE fecha_registro >= DATE_SUB(NOW(), INTERVAL 30 DAY)
     `);
 
@@ -122,7 +122,7 @@ export const getUserStats = async () => {
 // Actualizar estado del usuario (para futuras funcionalidades)
 export const updateUserStatus = async (id, active) => {
   try {
-    // Por ahora, como la tabla no tiene campo 'active', 
+    // Por ahora, como la tabla no tiene campo 'active',
     // podemos simular esto o agregar el campo en el futuro
     // Para este ejemplo, simplemente retornamos true
     return true;
@@ -136,7 +136,7 @@ export const updateUserStatus = async (id, active) => {
 export const getUsersWithActivity = async () => {
   try {
     const rows = await executeQuery(`
-      SELECT 
+      SELECT
         u.id,
         u.username,
         u.role,
@@ -176,7 +176,7 @@ export const canDeleteUser = async (id) => {
     );
 
     const hasActivity = reservations[0].count > 0 || rents[0].count > 0 || sales[0].count > 0;
-    
+
     return {
       canDelete: !hasActivity,
       reasons: {
@@ -192,6 +192,48 @@ export const canDeleteUser = async (id) => {
     };
   } catch (error) {
     console.error('Error al validar eliminación de usuario:', error);
+    throw error;
+  }
+};
+
+// Eliminar reservaciones por ID de usuario
+export const deleteReservationsByUserId = async (userId) => {
+  try {
+    const result = await executeQuery(
+      'DELETE FROM reservaciones WHERE usuario_id = ?',
+      [userId]
+    );
+    return result.affectedRows;
+  } catch (error) {
+    console.error('Error al eliminar reservaciones del usuario:', error);
+    throw error;
+  }
+};
+
+// Eliminar rentas por ID de usuario
+export const deleteRentsByUserId = async (userId) => {
+  try {
+    const result = await executeQuery(
+      'DELETE FROM rentas WHERE usuario_id = ?',
+      [userId]
+    );
+    return result.affectedRows;
+  } catch (error) {
+    console.error('Error al eliminar rentas del usuario:', error);
+    throw error;
+  }
+};
+
+// Eliminar entradas diarias por ID de usuario
+export const deleteDailyEntriesByUserId = async (userId) => {
+  try {
+    const result = await executeQuery(
+      'DELETE FROM daily_entries WHERE user_id = ?',
+      [userId]
+    );
+    return result.affectedRows;
+  } catch (error) {
+    console.error('Error al eliminar entradas diarias del usuario:', error);
     throw error;
   }
 };

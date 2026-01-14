@@ -7,6 +7,8 @@
   <title>{{title}}</title>
   <link href="/styles.css" rel="stylesheet" />
   <link href="/css/all.min.css" rel="stylesheet" />
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="bg-gray-100 h-full {{#if centerContent}}min-h-screen flex justify-center items-center{{/if}}">
@@ -25,6 +27,82 @@
   {{> footer year=(year)}}
   {{/if}}
   <script src="/js/ModuleRooms/js/lib/fullcalendar@6.1.8/index.global.min.js"></script>
+
+  {{#if user}}
+  <!-- Monitoreo Global de Seguridad y Sesión -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Función para mostrar la alerta antes de salir
+      function notifyAndRedirect(title, text, redirectUrl) {
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            icon: 'warning',
+            title: title,
+            text: text,
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#3B82F6',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+          }).then(() => {
+            window.location.href = redirectUrl;
+          });
+        } else {
+          alert(title + ": " + text);
+          window.location.href = redirectUrl;
+        }
+      }
+
+      // 1. Interceptor para peticiones Fetch (AJAX moderno)
+      const originalFetch = window.fetch;
+      window.fetch = async (...args) => {
+        try {
+          const response = await originalFetch(...args);
+          if (response.status === 403 || response.status === 401) {
+            const clone = response.clone();
+            const data = await clone.json().catch(() => ({}));
+            if (data.sessionTerminated) {
+              notifyAndRedirect('Sesión Caducada', data.message, data.redirect);
+            }
+          }
+          return response;
+        } catch (err) {
+          throw err;
+        }
+      };
+
+      // 2. Interceptor para XMLHttpRequest (jQuery/Axios antiguo)
+      const originalXHROpen = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function () {
+        this.addEventListener('load', function () {
+          if (this.status === 403 || this.status === 401) {
+            try {
+              const data = JSON.parse(this.responseText);
+              if (data.sessionTerminated) {
+                notifyAndRedirect('Sesión Caducada', data.message, data.redirect);
+              }
+            } catch (e) { }
+          }
+        });
+        return originalXHROpen.apply(this, arguments);
+      };
+
+      // 3. Chequeo proactivo cada 15 segundos (Alta Seguridad)
+      setInterval(async () => {
+        try {
+          const res = await originalFetch('/api/session/check', {
+            headers: { 'Accept': 'application/json' }
+          });
+          if (res.status === 403 || res.status === 401) {
+            const data = await res.json().catch(() => ({}));
+            if (data.sessionTerminated) {
+              notifyAndRedirect('Aviso de Seguridad', data.message, data.redirect);
+            }
+          }
+        } catch (error) { }
+      }, 15000); // 15 segundos
+    });
+  </script>
+  {{/if}}
 </body>
 
 </html>

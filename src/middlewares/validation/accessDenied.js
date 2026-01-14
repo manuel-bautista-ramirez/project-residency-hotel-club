@@ -1,5 +1,3 @@
-import { checkUserStillExists } from './userActiveCheck.js';
-
 /**
  * Middleware de autenticación para verificar si un usuario está autenticado.
  *
@@ -12,12 +10,10 @@ export const authMiddleware = async (req, res, next) => {
   if (isAuthenticated) {
     console.log(`Usuario autenticado: ${req.session.user.username}`);
     req.user = req.session.user;
-    
-    // Verificar que el usuario aún existe en la base de datos
-    await checkUserStillExists(req, res, () => {
-      // Si llegamos aquí, el usuario existe y puede continuar
-      next();
-    });
+
+    // La verificación de consistencia (usuario eliminado o rol cambiado)
+    // ahora se maneja globalmente en verifySessionConsistency
+    next();
   } else {
     console.log("Usuario no autenticado. Redirigiendo al login.");
     res.status(401).render("authMiddleware", {

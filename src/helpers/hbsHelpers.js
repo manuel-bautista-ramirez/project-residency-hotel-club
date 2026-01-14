@@ -19,14 +19,14 @@ export const hbsHelpers = {
   // Helper para comparar mayor o igual que
   gte: (a, b) => a >= b,
   json: (context) => JSON.stringify(context),
-  
+
   // Helper para formatear fechas
   formatDate: (date, format) => {
     if (!date) return '';
-    
+
     const d = new Date(date);
     if (isNaN(d.getTime())) return '';
-    
+
     // Formato por defecto: DD/MM/YYYY
     if (!format || format === 'short') {
       return d.toLocaleDateString('es-MX', {
@@ -35,7 +35,7 @@ export const hbsHelpers = {
         year: 'numeric'
       });
     }
-    
+
     // Formato completo: DD/MM/YYYY HH:mm
     if (format === 'full') {
       return d.toLocaleDateString('es-MX', {
@@ -46,7 +46,7 @@ export const hbsHelpers = {
         minute: '2-digit'
       });
     }
-    
+
     // Formato de fecha y hora: DD/MM/YYYY a las HH:mm
     if (format === 'datetime') {
       return d.toLocaleDateString('es-MX', {
@@ -58,7 +58,15 @@ export const hbsHelpers = {
         minute: '2-digit'
       });
     }
-    
+
     return d.toLocaleDateString('es-MX');
+  },
+
+  // Helper para truncar texto
+  truncate: (str, len) => {
+    if (str && str.length > len) {
+      return str.substring(0, len) + '...';
+    }
+    return str;
   }
 };

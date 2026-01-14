@@ -14,6 +14,9 @@ import whatsappService from '../services/whatsappService.js';
 // Importar y habilitar el servicio de correo electrónico
 import emailService from '../services/emailService.js';
 
+// Importar middlewares de validación de sesión
+import { verifySessionConsistency } from '../middlewares/validation/userActiveCheck.js';
+
 const routerGlobal = express.Router();
 
 // Ruta raíz con verificación de WhatsApp
@@ -34,12 +37,15 @@ routerGlobal.get('/', (req, res) => {
 
 
 
+// Middleware para verificar estado del usuario en cada petición
+routerGlobal.use(verifySessionConsistency);
+
 // Rutas de módulos
 routerGlobal.use(routerLogin);
 routerGlobal.use(routerRoom);
 routerGlobal.use("/memberships", membershipRoutes);
 routerGlobal.use("/api/memberships", membershipApiRoutes);
-routerGlobal.use( entriesRouter);
+routerGlobal.use(entriesRouter);
 routerGlobal.use(routerStore);
 routerGlobal.use(adminRouter);
 
@@ -66,6 +72,15 @@ routerGlobal.get('/api/whatsapp/status', (req, res) => {
     res.json(status);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener estado de WhatsApp' });
+  }
+});
+
+// API para verificar integridad de sesión (llamada por el frontend proactivamente)
+routerGlobal.get('/api/session/check', (req, res) => {
+  if (req.session.user) {
+    res.json({ success: true, user: req.session.user });
+  } else {
+    res.status(401).json({ success: false, message: 'No session' });
   }
 });
 

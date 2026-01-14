@@ -1,17 +1,20 @@
 import bcrypt from 'bcrypt';
-import { 
-  getAllUsers, 
-  getUserStats, 
-  findById, 
-  updateUser, 
+import {
+  getAllUsers,
+  getUserStats,
+  findById,
+  updateUser,
   deleteUser,
-  canDeleteUser 
+  canDeleteUser,
+  deleteReservationsByUserId,
+  deleteRentsByUserId,
+  deleteDailyEntriesByUserId
 } from '../models/model.js';
-import { 
-  findUserByUsername, 
+import {
+  findUserByUsername,
   findUserByEmail,
   addUser,
-  addUserWithoutPassword 
+  addUserWithoutPassword
 } from '../../login/models/userModel.js';
 
 // Mostrar el panel principal de administración
@@ -19,7 +22,7 @@ export const showAdminPanel = async (req, res) => {
   try {
     const users = await getAllUsers();
     const stats = await getUserStats();
-    
+
     res.render('homeAdmintration', {
       layout: 'main',
       title: 'Panel de Administración',
@@ -52,7 +55,7 @@ export const showCreateUserForm = async (req, res) => {
 export const createUserController = async (req, res) => {
   try {
     const { username, password, role } = req.body;
-    
+
     // Validaciones en el controlador
     if (!username || !password || !role) {
       return res.status(400).json({
@@ -132,7 +135,7 @@ export const createUserController = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Validar ID
     if (!id || isNaN(parseInt(id))) {
       return res.status(400).json({
@@ -142,7 +145,7 @@ export const getUserById = async (req, res) => {
     }
 
     const user = await findById(id);
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -152,7 +155,7 @@ export const getUserById = async (req, res) => {
 
     // No enviar la contraseña
     delete user.password;
-    
+
     res.json({
       success: true,
       user
@@ -172,7 +175,7 @@ export const updateUserController = async (req, res) => {
   try {
     const { id } = req.params;
     const { username, role, password } = req.body;
-    
+
     // Validar ID
     if (!id || isNaN(parseInt(id))) {
       return res.status(400).json({
@@ -236,7 +239,7 @@ export const updateUserController = async (req, res) => {
 
     // Preparar datos de actualización
     const updateData = { username, role };
-    
+
     // Si se proporciona nuevo email, agregarlo (password contiene el email)
     if (password && password.trim() !== '') {
       updateData.email = password;
@@ -265,7 +268,7 @@ export const updateUserController = async (req, res) => {
     }
 
     await updateUser(id, updateData);
-    
+
     res.json({
       success: true,
       message: 'Usuario actualizado exitosamente'
@@ -284,7 +287,8 @@ export const updateUserController = async (req, res) => {
 export const deleteUserController = async (req, res) => {
   try {
     const { id } = req.params;
-    
+    const { force } = req.query; // Leer parámetro force
+
     // Validar ID
     if (!id || isNaN(parseInt(id))) {
       return res.status(400).json({
@@ -292,7 +296,7 @@ export const deleteUserController = async (req, res) => {
         message: 'ID de usuario inválido'
       });
     }
-    
+
     // Verificar que el usuario existe
     const user = await findById(id);
     if (!user) {
@@ -310,30 +314,46 @@ export const deleteUserController = async (req, res) => {
       });
     }
 
-    // Verificar si el usuario puede ser eliminado
+    // Si se solicita forzar la eliminación (Borrado permanente real)
+    if (force === 'true') {
+      console.log(`🧨 FORZANDO ELIMINACIÓN DE USUARIO #${id} y sus dependencias...`);
+
+      // Eliminar dependencias primero
+      await deleteReservationsByUserId(id);
+      await deleteRentsByUserId(id);
+      await deleteDailyEntriesByUserId(id);
+
+      // Eliminar usuario físicamente
+      await deleteUser(id);
+
+      return res.json({
+        success: true,
+        message: 'Usuario y todos sus datos asociados han sido eliminados PERMANENTEMENTE.'
+      });
+    }
+
+    // Verificar si el usuario puede ser eliminado físicamente (comportamiento normal)
     const canDelete = await canDeleteUser(id);
     if (!canDelete.canDelete) {
-      const reasons = [];
-      if (canDelete.reasons.hasReservations) {
-        reasons.push(`${canDelete.counts.reservations} reservaciones`);
-      }
-      if (canDelete.reasons.hasRents) {
-        reasons.push(`${canDelete.counts.rents} rentas`);
-      }
-      if (canDelete.reasons.hasSales) {
-        reasons.push(`${canDelete.counts.sales} ventas`);
-      }
+      console.log(`⚠️ No se puede eliminar por integridad, procediendo a INACTIVAR por seguridad (#${id})`);
 
-      return res.status(400).json({
-        success: false,
-        message: `No se puede eliminar el usuario porque tiene actividad registrada: ${reasons.join(', ')}`,
-        canDelete: false,
-        details: canDelete
+      // Realizar una "Baja de Seguridad": Cambiamos rol e invalidamos el username
+      const softDeleteData = {
+        username: `ELIMINADO_${user.username}_${Date.now().toString().slice(-4)}`,
+        role: 'Inactivo'
+      };
+
+      await updateUser(id, softDeleteData);
+
+      return res.json({
+        success: true,
+        isSoftDelete: true, // Bandera para indicar que fue borrado lógico
+        message: 'El usuario tiene historial (ventas/reservas) y ha sido INACTIVADO para preservar los datos. ¿Deseas borrarlo permanentemente?'
       });
     }
 
     await deleteUser(id);
-    
+
     res.json({
       success: true,
       message: 'Usuario eliminado exitosamente'
@@ -352,13 +372,13 @@ export const deleteUserController = async (req, res) => {
 export const getAllUsersController = async (req, res) => {
   try {
     const users = await getAllUsers();
-    
+
     // Remover contraseñas de la respuesta
     const safeUsers = users.map(user => {
       const { password, ...safeUser } = user;
       return safeUser;
     });
-    
+
     res.json({
       success: true,
       users: safeUsers

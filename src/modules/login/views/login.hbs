@@ -1,39 +1,45 @@
-
 <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4 sm:px-6 lg:px-8">
   <form action="/login" method="POST" class="w-full max-w-sm sm:max-w-md bg-white p-6 sm:p-8 rounded-lg shadow-md">
     <h1 class="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">Inicio de Sesión</h1>
 
     <div class="mb-4">
       <label for="username" class="block text-gray-700 font-medium mb-2">Usuario:</label>
-      <input type="text" id="username" name="username" class="w-full px-3 sm:px-4 py-2 border border-blue-300 rounded-lg focus:outline-none">
+      <input type="text" id="username" name="username"
+        class="w-full px-3 sm:px-4 py-2 border border-blue-300 rounded-lg focus:outline-none">
     </div>
     <div class="mb-4">
       <label for="password" class="block text-gray-700 font-medium mb-2">Contraseña:</label>
       <div class="relative">
-        <input type="password" id="password" name="password" class="w-full px-3 sm:px-4 py-2 pr-10 border border-blue-300 rounded-lg focus:outline-none">
-        <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none">
+        <input type="password" id="password" name="password"
+          class="w-full px-3 sm:px-4 py-2 pr-10 border border-blue-300 rounded-lg focus:outline-none">
+        <button type="button" id="togglePassword"
+          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none">
           <svg class="w-5 h-5" id="eyeIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+            </path>
           </svg>
         </button>
       </div>
     </div>
     <div class="flex justify-center">
-      <button type="submit" class="w-30 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none">
-      Iniciar Sesión
+      <button type="submit"
+        class="w-30 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none">
+        Iniciar Sesión
       </button>
     </div>
     {{#if error}}
-      <div class="flex justify-center mt-4 py-2">
-        <p class="text-red-500 text-center text-sm sm:text-base">{{error}}</p>
-      </div>
+    <div class="flex justify-center mt-4 py-2">
+      <p class="text-red-500 text-center text-sm sm:text-base">{{error}}</p>
+    </div>
     {{/if}}
 
     {{#if success}}
-      <div class="flex justify-center mt-4 py-2">
-        <p class="text-green-600 text-center text-sm sm:text-base">{{success}}</p>
-      </div>
+    <div class="flex justify-center mt-4 py-2">
+      <p class="text-green-600 text-center text-sm sm:text-base">{{success}}</p>
+    </div>
     {{/if}}
 
     <!-- Enlace para recuperación de contraseña -->
@@ -86,19 +92,51 @@
         input.classList.remove('focus:ring-2', 'focus:ring-blue-500');
       });
     });
+
+    // Detectar mensajes de cierre de sesión forzado
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlMessage = urlParams.get('message');
+
+      // Mensaje inyectado directamente por el servidor (Handlebars)
+      const serverMessage = "{{message}}";
+
+      if (urlMessage || serverMessage) {
+        const isRevoked = (urlMessage === 'admin_revoked' || serverMessage.includes('privilegios'));
+
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            icon: isRevoked ? 'warning' : 'error',
+            title: isRevoked ? 'Permisos Modificados' : 'Cuenta Restringida',
+            text: serverMessage || (urlMessage === 'admin_revoked' ? 'Tus privilegios de acceso han cambiado. Es necesario iniciar sesión nuevamente.' : 'Tu cuenta ha sido dada de baja del sistema.'),
+            confirmButtonColor: '#3B82F6'
+          });
+        } else {
+          alert(serverMessage || 'Tu sesión ha finalizado. Por favor inicia sesión nuevamente.');
+        }
+
+        // Limpiar URL si hay parámetro
+        if (urlMessage) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    });
   </script>
 </div>
 
 <style>
-.border-red-500 {
-  border-color: #f56565 !important; /* Rojo */
-}
+  .border-red-500 {
+    border-color: #f56565 !important;
+    /* Rojo */
+  }
 
-.border-green-500 {
-  border-color: #48bb78 !important; /* Verde */
-}
+  .border-green-500 {
+    border-color: #48bb78 !important;
+    /* Verde */
+  }
 
-.focus\:ring-2 {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); /* Azul */
-}
+  .focus\:ring-2 {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    /* Azul */
+  }
 </style>
