@@ -1,36 +1,6 @@
 <div id="center-root"
   class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-start justify-center pt-16 p-4">
-  <!-- Loading Overlay Mejorado -->
-  <div id="loadingOverlay"
-    class="fixed inset-0 z-[60] bg-white/90 backdrop-blur-md flex items-center justify-center transition-all duration-500 ease-out opacity-0 pointer-events-none">
-    <div class="flex flex-col items-center gap-4 transform scale-95 transition-all duration-500 ease-out">
-      <!-- Spinner mejorado con animación más suave -->
-      <div class="relative">
-        <div class="w-16 h-16 border-4 border-blue-100 rounded-full"></div>
-        <div
-          class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0">
-        </div>
-        <!-- Checkmark que aparecerá al final -->
-        <svg class="w-16 h-16 text-green-500 absolute top-0 left-0 opacity-0 transition-all duration-300" fill="none"
-          stroke="currentColor" viewBox="0 0 24 24" id="successCheckmark">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-      </div>
 
-      <!-- Texto animado -->
-      <div class="text-center space-y-2">
-        <p id="loadingMessage" class="text-blue-800 font-medium text-lg transition-all duration-300">Creando renta...
-        </p>
-        <p class="text-blue-600 text-sm opacity-0 transition-opacity duration-300 delay-1000" id="loadingSubtext">
-          Redirigiendo al panel de control</p>
-      </div>
-
-      <!-- Barra de progreso sutil -->
-      <div class="w-48 h-1 bg-blue-100 rounded-full overflow-hidden">
-        <div id="progressBar" class="h-full bg-blue-600 transition-all duration-1000 ease-out w-0"></div>
-      </div>
-    </div>
-  </div>
 
   <div class="w-full max-w-4xl mx-auto p-2">
 
@@ -268,10 +238,8 @@
 <script>
 
   document.addEventListener("DOMContentLoaded", () => {
-    const overlay = document.getElementById('loadingOverlay');
     const skeleton = document.getElementById('rentSkeleton');
     const form = document.getElementById('formRent');
-    const hideOverlay = () => overlay && overlay.classList.add('hidden');
 
     // Dynamic center: set available height between navbar and footer on desktop
     const centerRoot = document.getElementById('center-root');
@@ -635,11 +603,7 @@
       Guardando...
     `;
 
-      if (overlay) {
-        overlay.classList.remove('hidden');
-        const loadingMsg = document.getElementById('loadingMessage');
-        if (loadingMsg) loadingMsg.textContent = 'Creando renta...';
-      }
+
 
       e.target.submit();
     });

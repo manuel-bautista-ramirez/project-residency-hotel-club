@@ -1,4 +1,4 @@
-(() => {
+ (() => {
   const overlayEl = document.getElementById('globalLoadingOverlay');
   const messageEl = overlayEl?.querySelector('[data-loading-message]');
   const subtextEl = overlayEl?.querySelector('[data-loading-subtext]');

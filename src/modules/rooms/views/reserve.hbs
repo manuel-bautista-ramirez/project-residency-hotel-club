@@ -225,10 +225,8 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    const overlay = document.getElementById('loadingOverlay');
     const skeleton = document.getElementById('reserveSkeleton');
     const form = document.getElementById('formReserve');
-    const hideOverlay = () => overlay && overlay.classList.add('hidden');
 
     // Dynamic center: set available height between navbar and footer on desktop
     const centerRoot = document.getElementById('center-root');
@@ -702,11 +700,7 @@
       Guardando...
     `;
 
-      if (overlay) {
-        overlay.classList.remove('hidden');
-        const loadingMsg = document.getElementById('loadingMessage');
-        if (loadingMsg) loadingMsg.textContent = 'Creando reservación...';
-      }
+
 
       e.target.submit();
     });
