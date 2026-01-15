@@ -1,4 +1,26 @@
 <nav role="navigation" aria-label="Store Navigation" class="flex flex-wrap gap-3 sm:gap-6 justify-center pt-2">
+
+  {{!-- Dashboard --}}
+  {{#if (eq activePage "dashboard")}}
+  <span aria-current="page"
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-purple-700 bg-purple-50 rounded-2xl border border-purple-200 shadow-inner sm:min-w-[110px] cursor-default">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+    <span class="hidden sm:inline">Dashboard</span>
+  </span>
+  {{else}}
+  <a href="/store/dashboard"
+    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm sm:min-w-[110px] hover:border-blue-300 hover:text-blue-600 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 ease-in-out">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+    <span class="hidden sm:inline">Dashboard</span>
+  </a>
+  {{/if}}
+
   {{!-- Tienda principal --}}
   {{#if (eq activePage "store")}}
   <span aria-current="page"
@@ -41,28 +63,6 @@
     <span class="hidden sm:inline">Ventas</span>
   </a>
   {{/if}}
-
-  {{!-- Dashboard --}}
-  {{#if (eq activePage "dashboard")}}
-  <span aria-current="page"
-    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-purple-700 bg-purple-50 rounded-2xl border border-purple-200 shadow-inner sm:min-w-[110px] cursor-default">
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-    </svg>
-    <span class="hidden sm:inline">Dashboard</span>
-  </span>
-  {{else}}
-  <a href="/store/dashboard"
-    class="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-[0.95rem] font-semibold uppercase tracking-wide text-slate-600 bg-white border border-slate-200 rounded-2xl shadow-sm sm:min-w-[110px] hover:border-blue-300 hover:text-blue-600 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 ease-in-out">
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-    </svg>
-    <span class="hidden sm:inline">Dashboard</span>
-  </a>
-  {{/if}}
-
   {{!-- Inventario (solo Administrador) --}}
   {{#if (eq user.role "Administrador")}}
   {{#if (eq activePage "inventory")}}

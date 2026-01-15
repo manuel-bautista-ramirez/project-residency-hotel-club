@@ -1221,7 +1221,7 @@ export const handleCreateRenta = async (req, res) => {
       // Continuar aunque falle el envío
     }
 
-    return res.redirect("/rooms");
+    return res.redirect("/rooms?success=renta");
   } catch (error) {
     console.error("Error en handleCreateRenta:", error);
     return res.status(500).send("Error al crear la renta");
@@ -2431,11 +2431,11 @@ export const handleConvertReservationToRent = async (req, res) => {
       console.log("Resultados de envío:", resultadosEnvio);
 
       // Redirigir a la página principal de rooms
-      res.redirect("/rooms");
+      res.redirect("/rooms?success=renta");
     } catch (pdfError) {
       console.error("Error al generar/enviar PDF:", pdfError);
       // Aunque falle el PDF, la renta ya se creó
-      res.redirect("/rooms");
+      res.redirect("/rooms?success=renta");
     }
   } catch (error) {
     console.error("Error al convertir reservación a renta:", error);

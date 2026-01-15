@@ -456,6 +456,14 @@
     // Hacer la función global para que pueda ser usada desde otros scripts
     window.showCustomAlert = showCustomAlert;
 
+    function notify(message, type = 'info') {
+      if (typeof window.showNotification === 'function') {
+        window.showNotification(message, type);
+      } else {
+        alert(message);
+      }
+    }
+
 
     // Funcionalidad para cambiar entre tipos de reporte
     document.querySelectorAll('.report-type-option').forEach(option => {
@@ -674,6 +682,7 @@
             <p class="text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Generando reporte...</p>
           </div>`;
 
+      notify('Generando reporte...', 'info');
       try {
         const { fechaInicio, fechaFin } = obtenerRangoFechas();
         const params = new URLSearchParams({ tipo: tipoReporteSeleccionado, fechaInicio, fechaFin });
@@ -685,8 +694,13 @@
           throw new Error(data.error || 'Error al generar el reporte');
         }
 
-        mostrarReporte(data.reporte);
+        const hasData = mostrarReporte(data.reporte);
 
+        if (hasData) {
+          notify('Reporte generado correctamente', 'success');
+        } else {
+          notify('No hay datos disponibles para generar el reporte', 'warning');
+        }
         // Éxito: Animación temporal
         clearTimeout(updateText);
         btn.classList.remove('btn-loading');
@@ -694,6 +708,7 @@
         setTimeout(() => btn.classList.remove('btn-success'), 2000);
 
       } catch (error) {
+        notify(`Error generando reporte: ${error.message}`, 'error');
         console.error('Error:', error);
         clearTimeout(updateText);
         btn.classList.remove('btn-loading');
@@ -972,6 +987,8 @@
       } else {
         envioOpciones.classList.add('hidden');
       }
+
+      return hayDatos;
     }
 
     // Función genérica para enviar reportes (Email/WhatsApp)
@@ -988,6 +1005,7 @@
         btn.style.setProperty('--btn-loading-text', '"Enviando reporte..."');
       }, 1500);
 
+      notify('Preparando PDF para envío...', 'info');
       try {
         const { fechaInicio, fechaFin } = obtenerRangoFechas();
         const payload = {
@@ -1008,6 +1026,7 @@
 
         if (!response.ok) throw new Error(data.error || 'Error al enviar');
 
+        notify(data.message || 'Reporte enviado correctamente', 'success');
         // Éxito
         clearTimeout(updateText);
         btn.classList.remove('btn-loading');
@@ -1020,11 +1039,11 @@
         }, 3000);
 
       } catch (error) {
+        notify(`Error al enviar: ${error.message}`, 'error');
         console.error('Error al enviar:', error);
         clearTimeout(updateText);
         btn.classList.remove('btn-loading');
         btn.classList.add('btn-error');
-        alert('Error: ' + error.message);
 
         setTimeout(() => {
           btn.classList.remove('btn-error');

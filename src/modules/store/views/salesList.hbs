@@ -345,9 +345,27 @@
     saleToDelete = null;
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (saleToDelete) {
-      window.location.href = `/store/sales/delete/${saleToDelete}`;
+      try {
+        const response = await fetch(`/store/sales/delete/${saleToDelete}`, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        if (response.ok) {
+          window.location.href = '/store/sales?success=delete';
+        } else {
+          const errorMsg = await response.text();
+          alert(errorMsg || 'No se pudo eliminar la venta');
+          closeDeleteModal();
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error de red al intentar eliminar');
+      }
     }
   }
 
@@ -385,6 +403,19 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     adjustTableHeight('salesTableWrapper', 'salesTableBody');
+
+    // Notificaciones de éxito
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    if (success === 'delete') {
+      if (typeof window.showNotification === 'function') {
+        window.showNotification('Venta eliminada y stock restaurado', 'success');
+      } else {
+        alert('Venta eliminada y stock restaurado');
+      }
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
   });
 
   window.addEventListener('load', () => setTimeout(() => {

@@ -211,7 +211,7 @@
   </section>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
   const colors = { primary: '#4f46e5', danger: '#ef4444', success: '#10b981', background: '#ffffff' };
 
@@ -274,6 +274,10 @@
     });
 
     if (formValues) {
+      if (typeof window.showNotification === 'function') {
+        window.showNotification('Actualizando datos del registro...', 'info');
+      }
+
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = `/api/entries/${id}/edit`;
@@ -285,7 +289,10 @@
         form.appendChild(input);
       }
       document.body.appendChild(form);
-      form.submit();
+
+      setTimeout(() => {
+        form.submit();
+      }, 800);
     }
   }
 
@@ -302,7 +309,15 @@
       cancelButtonText: 'Cancelar',
       borderRadius: '2rem'
     });
-    if (result.isConfirmed) document.getElementById(`delete-form-${id}`).submit();
+    if (result.isConfirmed) {
+      if (typeof window.showNotification === 'function') {
+        window.showNotification('Eliminando registro...', 'info');
+      }
+
+      setTimeout(() => {
+        document.getElementById(`delete-form-${id}`).submit();
+      }, 800);
+    }
   }
 
   async function deleteSelected() {
@@ -318,17 +333,37 @@
     });
 
     if (result.isConfirmed) {
-      Swal.fire({ title: 'Borrando...', didOpen: () => Swal.showLoading(), borderRadius: '2rem' });
+      const btn = document.getElementById('btnBulkDelete');
+      let originalHTML = '';
+      if (typeof window.setLoadingState === 'function') {
+        originalHTML = window.setLoadingState(btn, 'Borrando...');
+      }
+
       try {
         const response = await fetch('/api/entries/bulk-delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids })
         });
+
         if (response.ok) {
-          Swal.fire({ title: '¡Hecho!', icon: 'success', confirmButtonColor: colors.primary, borderRadius: '2rem' }).then(() => location.reload());
+          if (typeof window.showNotification === 'function') {
+            window.showNotification(`${ids.length} registros eliminados con éxito`, 'success');
+          }
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          throw new Error('No se pudo eliminar el lote');
         }
-      } catch (err) { Swal.fire('Error', 'No se pudo completar la acción', 'error'); }
+      } catch (err) {
+        if (typeof window.showNotification === 'function') {
+          window.showNotification(err.message, 'error');
+        }
+        if (typeof window.removeLoadingState === 'function') {
+          window.removeLoadingState(btn, originalHTML);
+        }
+      }
     }
   }
 </script>
+
+<script src="/js/ModuleEntries/js/entriesValidation.js"></script>

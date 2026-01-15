@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (emailButton) {
     // Agregar validación antes del evento principal usando capture
-    emailButton.addEventListener('click', function(e) {
+    emailButton.addEventListener('click', function (e) {
       const email = document.getElementById('email-destinatario').value.trim();
       const asunto = document.getElementById('email-asunto').value.trim();
       const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -115,10 +115,10 @@ document.addEventListener('DOMContentLoaded', function () {
           emailInput.parentElement.appendChild(errorMsg);
         }
 
-        if (typeof showNotification === 'function') {
-          showNotification('Por favor, ingresa un correo electrónico', 'warning');
+        if (typeof window.showNotification === 'function') {
+          window.showNotification('Por favor, ingresa un correo electrónico', 'warning');
         } else if (typeof showCustomAlert === 'function') {
-          showCustomAlert('Por favor, ingresa un correo electrónico', 'warning', null, function() {
+          showCustomAlert('Por favor, ingresa un correo electrónico', 'warning', null, function () {
             // Limpiar campo al cerrar el modal
             emailInput.value = '';
             emailInput.classList.remove('border-red-500', 'bg-red-50');
@@ -140,10 +140,10 @@ document.addEventListener('DOMContentLoaded', function () {
         emailInput.classList.add('border-red-500', 'bg-red-50');
         emailInput.classList.remove('border-gray-300', 'border-green-500', 'bg-green-50');
 
-        if (typeof showNotification === 'function') {
-          showNotification('Por favor, ingresa un correo electrónico válido', 'error');
+        if (typeof window.showNotification === 'function') {
+          window.showNotification('Por favor, ingresa un correo electrónico válido', 'error');
         } else if (typeof showCustomAlert === 'function') {
-          showCustomAlert('Por favor, ingresa un correo electrónico válido', 'error', null, function() {
+          showCustomAlert('Por favor, ingresa un correo electrónico válido', 'error', null, function () {
             // Limpiar campo al cerrar el modal
             emailInput.value = '';
             emailInput.classList.remove('border-red-500', 'bg-red-50');
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (whatsappButton) {
     // Agregar validación antes del evento principal usando capture
-    whatsappButton.addEventListener('click', function(e) {
+    whatsappButton.addEventListener('click', function (e) {
       const telefono = document.getElementById('whatsapp-telefono').value.trim();
 
       if (!telefono) {
@@ -187,10 +187,10 @@ document.addEventListener('DOMContentLoaded', function () {
           phoneInput.parentElement.appendChild(errorMsg);
         }
 
-        if (typeof showNotification === 'function') {
-          showNotification('Por favor, ingresa un número de teléfono', 'warning');
+        if (typeof window.showNotification === 'function') {
+          window.showNotification('Por favor, ingresa un número de teléfono', 'warning');
         } else if (typeof showCustomAlert === 'function') {
-          showCustomAlert('Por favor, ingresa un número de teléfono', 'warning', null, function() {
+          showCustomAlert('Por favor, ingresa un número de teléfono', 'warning', null, function () {
             // Limpiar campo al cerrar el modal
             phoneInput.value = '';
             phoneInput.classList.remove('border-red-500', 'bg-red-50');
@@ -223,10 +223,10 @@ document.addEventListener('DOMContentLoaded', function () {
           phoneInput.parentElement.appendChild(errorMsg);
         }
 
-        if (typeof showNotification === 'function') {
-          showNotification('El número debe tener exactamente 10 dígitos', 'error');
+        if (typeof window.showNotification === 'function') {
+          window.showNotification('El número debe tener exactamente 10 dígitos', 'error');
         } else if (typeof showCustomAlert === 'function') {
-          showCustomAlert('El número debe tener exactamente 10 dígitos', 'error', null, function() {
+          showCustomAlert('El número debe tener exactamente 10 dígitos', 'error', null, function () {
             // Limpiar campo al cerrar el modal
             phoneInput.value = '';
             phoneInput.classList.remove('border-red-500', 'bg-red-50');
@@ -246,16 +246,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Exportar funciones para uso global si es necesario
 window.ReportsInputValidation = {
-  validateEmail: function(email) {
+  validateEmail: function (email) {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email.trim());
   },
 
-  validatePhone: function(phone) {
+  validatePhone: function (phone) {
     return /^\d{10}$/.test(phone.trim());
   },
 
-  formatPhone: function(phone) {
+  formatPhone: function (phone) {
     return phone.replace(/\D/g, '').slice(0, 10);
   }
 };

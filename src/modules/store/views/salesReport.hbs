@@ -36,7 +36,6 @@
 
   <!-- Contenido principal -->
   <div class="w-full px-3 sm:px-4 lg:px-8">
-    <div id="notification-area" class="mb-4"></div>
 
     <!-- Header del Panel -->
     <div class="mb-6 text-center pt-2">
@@ -305,6 +304,7 @@
         const { fechaInicio, fechaFin } = fechas;
 
         reporteContainer.innerHTML = `<div class="flex justify-center items-center h-40"><i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i></div>`;
+        mostrarNotificacion('Generando reporte...', 'info');
 
         try {
           const params = new URLSearchParams({ fechaInicio, fechaFin });
@@ -317,11 +317,14 @@
           // Mostrar u ocultar opciones de envío según si hay datos
           if (reporteActual && reporteActual.datos && reporteActual.datos.length > 0) {
             envioOpciones.classList.remove('hidden');
+            mostrarNotificacion('Reporte generado correctamente', 'success');
           } else {
             envioOpciones.classList.add('hidden');
+            mostrarNotificacion('No hay datos disponibles para el período seleccionado', 'warning');
           }
         } catch (error) {
           reporteContainer.innerHTML = `<p class="text-red-500 text-center font-bold">Error: ${error.message}</p>`;
+          mostrarNotificacion(`Error generando el reporte: ${error.message}`, 'error');
           envioOpciones.classList.add('hidden');
         }
       }
@@ -493,34 +496,16 @@
       }
 
       function mostrarNotificacion(mensaje, tipo = 'success') {
-        const area = document.getElementById('notification-area');
-        const notif = document.createElement('div');
-        // Usar los estilos de notificación del admin panel si es posible, o unos similares
-        let classes = "p-4 mb-4 text-sm font-bold rounded-lg shadow-md flex items-center gap-2 animate-fade-in ";
-        if (tipo === 'success') classes += "bg-white border-l-4 border-green-500 text-green-700";
-        else if (tipo === 'error') classes += "bg-white border-l-4 border-red-500 text-red-700";
-        else classes += "bg-white border-l-4 border-blue-500 text-blue-700";
-
-        notif.className = classes;
-        notif.innerHTML = `
-            ${tipo === 'success' ? '<i class="fas fa-check-circle text-lg"></i>' :
-            tipo === 'error' ? '<i class="fas fa-exclamation-circle text-lg"></i>' :
-              '<i class="fas fa-info-circle text-lg"></i>'}
-            ${mensaje}
-        `;
-        area.appendChild(notif);
-        setTimeout(() => {
-          notif.classList.add('opacity-0', 'transition-opacity');
-          setTimeout(() => notif.remove(), 300);
-        }, 5000);
+        if (typeof window.showNotification === 'function') {
+          window.showNotification(mensaje, tipo);
+        } else {
+          alert(mensaje);
+        }
       }
 
       document.getElementById('generar-reporte-btn').addEventListener('click', generarReporte);
       document.getElementById('enviar-email-btn').addEventListener('click', enviarEmail);
       document.getElementById('enviar-whatsapp-btn').addEventListener('click', enviarWhatsApp);
-
-      // Hacer disponible mostrarNotificacion como showNotification para compatibilidad con scripts externos
-      window.showNotification = mostrarNotificacion;
     });
   </script>
   <script src="/js/ModuleRooms/js/reportsInputValidation.js"></script>

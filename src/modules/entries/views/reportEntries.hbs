@@ -245,7 +245,6 @@
         </span>
         Enviar Reporte
       </h2>
-      <div id="notification-area" class="mb-4"></div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Envío por correo -->
@@ -371,29 +370,11 @@
 
   // 4. NOTIFICACIONES
   function mostrarNotificacion(mensaje, tipo = 'success') {
-    const area = document.getElementById('notification-area');
-    const notif = document.createElement('div');
-    let classes = "p-4 mb-4 text-sm font-bold rounded-xl shadow-md flex items-center gap-2 animate-fade-in ";
-
-    if (tipo === 'success') classes += "bg-white border-l-4 border-green-500 text-green-700";
-    else if (tipo === 'error') classes += "bg-white border-l-4 border-red-500 text-red-700";
-    else classes += "bg-white border-l-4 border-blue-500 text-blue-700";
-
-    notif.className = classes;
-    notif.innerHTML = `
-        ${tipo === 'success' ? '<i class="fas fa-check-circle text-lg"></i>' :
-        tipo === 'error' ? '<i class="fas fa-exclamation-circle text-lg"></i>' :
-          '<i class="fas fa-info-circle text-lg"></i>'}
-        ${mensaje}
-    `;
-    area.innerHTML = ''; // Limpiar anteriores
-    area.appendChild(notif);
-
-    setTimeout(() => {
-      notif.style.transition = 'opacity 0.5s ease';
-      notif.style.opacity = '0';
-      setTimeout(() => notif.remove(), 500);
-    }, 5000);
+    if (typeof window.showNotification === 'function') {
+      window.showNotification(mensaje, tipo);
+    } else {
+      alert(mensaje);
+    }
   }
 
   // 5. ENVÍO EMAIL
@@ -404,13 +385,16 @@
     if (!destinatario) { mostrarNotificacion('Ingresa un correo de destinatario', 'error'); return; }
 
     const btn = document.getElementById('enviar-email-btn');
-    const originalContent = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+    let originalHTML = '';
 
-    // Simular envío o conectar a endpoint real
+    if (typeof window.setLoadingState === 'function') {
+      originalHTML = window.setLoadingState(btn, 'Enviando...');
+    } else {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+    }
+
     try {
-      // Ajustar la ruta a tu API real
       const response = await fetch('/api/entries/reports/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -425,13 +409,17 @@
       if (!response.ok) throw new Error(result.error || 'Error en el servidor');
 
       mostrarNotificacion(result.message || 'Correo enviado correctamente', 'success');
-      document.getElementById('email-destinatario').value = ''; // Limpiar
+      document.getElementById('email-destinatario').value = '';
     } catch (error) {
       console.error(error);
       mostrarNotificacion(`Error al enviar: ${error.message}`, 'error');
     } finally {
-      btn.disabled = false;
-      btn.innerHTML = originalContent;
+      if (typeof window.removeLoadingState === 'function') {
+        window.removeLoadingState(btn, originalHTML);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-envelope text-lg sm:text-sm"></i> <span class="hidden sm:inline">Enviar por Correo</span>';
+      }
     }
   }
 
@@ -442,9 +430,14 @@
     if (!telefono) { mostrarNotificacion('Ingresa un número de teléfono', 'error'); return; }
 
     const btn = document.getElementById('enviar-whatsapp-btn');
-    const originalContent = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+    let originalHTML = '';
+
+    if (typeof window.setLoadingState === 'function') {
+      originalHTML = window.setLoadingState(btn, 'Enviando...');
+    } else {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+    }
 
     try {
       const response = await fetch('/api/entries/reports/whatsapp', {
@@ -465,8 +458,12 @@
       console.error(error);
       mostrarNotificacion(`Error al enviar: ${error.message}`, 'error');
     } finally {
-      btn.disabled = false;
-      btn.innerHTML = originalContent;
+      if (typeof window.removeLoadingState === 'function') {
+        window.removeLoadingState(btn, originalHTML);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fab fa-whatsapp text-lg sm:text-sm"></i> <span class="hidden sm:inline">Enviar por WhatsApp</span>';
+      }
     }
   }
 
@@ -483,3 +480,5 @@
     setTimeout(() => { window.print(); }, 500);
   }
 </script>
+
+<script src="/js/ModuleEntries/js/entriesValidation.js"></script>

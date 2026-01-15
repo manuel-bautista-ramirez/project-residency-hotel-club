@@ -47,6 +47,7 @@ routerStore.post("/store/edit/:id", handleUpdateProduct);
 
 // Eliminar producto (solo administradores)
 routerStore.get("/store/delete/:id", handleDeleteProduct);
+routerStore.post("/store/delete/:id", handleDeleteProduct);
 
 // Añadir stock a producto (solo administradores)
 routerStore.post("/store/inventory/add-stock/:id", handleAddStock);
@@ -56,20 +57,18 @@ routerStore.post("/store/inventory/add-stock/:id", handleAddStock);
 // =====================================================
 
 // Checkout (finalizar compra)
-routerStore.get("/store/checkout",  renderCheckout);
+routerStore.get("/store/checkout", renderCheckout);
 routerStore.post("/store/checkout", handleCheckout);
 
 // Mostrar lista de ventas
 routerStore.get("/store/sales", showSales);
 
 // Detalle de venta
-routerStore.get("/store/sales/:id",  showSaleDetail);
+routerStore.get("/store/sales/:id", showSaleDetail);
 
 // Eliminar venta (solo administradores)
-routerStore.get(
-  "/store/sales/delete/:id",
-  handleDeleteSale
-);
+routerStore.get("/store/sales/delete/:id", handleDeleteSale);
+routerStore.post("/store/sales/delete/:id", handleDeleteSale);
 
 // =====================================================
 //              RUTAS DE REPORTES
@@ -88,7 +87,7 @@ routerStore.get("/store/reports", renderReports);
 routerStore.get("/store/api/reports", generateReport);
 
 // Enviar reporte por email
-routerStore.post("/store/api/reports/email",  sendReportByEmail);
+routerStore.post("/store/api/reports/email", sendReportByEmail);
 
 // Enviar reporte por WhatsApp
 routerStore.post(

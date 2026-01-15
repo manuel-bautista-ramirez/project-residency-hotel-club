@@ -9,6 +9,7 @@ export const getAllProducts = async () => {
   try {
     const [rows] = await pool.query(`
       SELECT * FROM productos
+      WHERE activo = 1
       ORDER BY categoria, nombre
     `);
     return rows;
@@ -66,7 +67,7 @@ export const updateProduct = async (id, productData) => {
 export const deleteProduct = async (id) => {
   try {
     const [result] = await pool.query(`
-      DELETE FROM productos WHERE id = ?
+      UPDATE productos SET activo = 0 WHERE id = ?
     `, [id]);
     return result.affectedRows > 0;
   } catch (error) {
@@ -363,10 +364,22 @@ export const setupStoreTables = async () => {
         precio DECIMAL(10, 2) NOT NULL,
         stock INT NOT NULL DEFAULT 0,
         imagen VARCHAR(500),
+        activo TINYINT(1) DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
+
+    // GESTIÓN DE MIGRACIÓN: Asegurar que la columna 'activo' existe si la tabla ya existía
+    try {
+      await pool.query('SELECT activo FROM productos LIMIT 1');
+    } catch (error) {
+      if (error.code === 'ER_BAD_FIELD_ERROR') {
+        console.log('🔧 Agregando columna "activo" a la tabla productos...');
+        await pool.query('ALTER TABLE productos ADD COLUMN activo TINYINT(1) DEFAULT 1 AFTER imagen');
+        console.log('✅ Columna "activo" agregada correctamente');
+      }
+    }
 
     // Tabla de ventas
     await pool.query(`
@@ -446,7 +459,7 @@ export const getProductsWithLowStock = async (minStock = 5) => {
     const [rows] = await pool.query(`
       SELECT id, nombre, categoria, stock, precio
       FROM productos
-      WHERE stock <= ?
+      WHERE stock <= ? AND activo = 1
       ORDER BY stock ASC, categoria
     `, [minStock]);
     return rows;
@@ -471,7 +484,7 @@ export const getBestSellingProducts = async (days = 30) => {
       FROM productos p
       INNER JOIN venta_detalles dv ON p.id = dv.producto_id
       INNER JOIN ventas v ON dv.venta_id = v.id
-      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) AND p.activo = 1
       GROUP BY p.id, p.nombre, p.categoria, p.precio, p.stock
       ORDER BY total_vendido DESC
       LIMIT 10
@@ -496,7 +509,7 @@ export const getSalesByCategory = async (days = 30) => {
       FROM productos p
       INNER JOIN venta_detalles dv ON p.id = dv.producto_id
       INNER JOIN ventas v ON dv.venta_id = v.id
-      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+      WHERE v.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY) AND p.activo = 1
       GROUP BY p.categoria
       ORDER BY ingresos_totales DESC
     `, [days]);
@@ -550,6 +563,7 @@ export const generateInventoryReport = async () => {
         MIN(stock) as stock_minimo,
         MAX(stock) as stock_maximo
       FROM productos
+      WHERE activo = 1
       GROUP BY categoria
       ORDER BY valor_inventario DESC
     `);
@@ -562,6 +576,7 @@ export const generateInventoryReport = async () => {
         COUNT(CASE WHEN stock = 0 THEN 1 END) as productos_agotados,
         COUNT(CASE WHEN stock <= 5 THEN 1 END) as productos_stock_bajo
       FROM productos
+      WHERE activo = 1
     `);
 
     return {
@@ -583,7 +598,7 @@ export const checkProductAvailability = async (products) => {
       const [product] = await pool.query(`
         SELECT id, nombre, stock, precio
         FROM productos
-        WHERE id = ?
+        WHERE id = ? AND activo = 1
       `, [item.id]);
 
       if (product.length === 0) {

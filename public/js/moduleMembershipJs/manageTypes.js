@@ -65,10 +65,18 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message}`);
+        if (typeof window.showNotification === 'function') {
+          window.showNotification(error.message, 'error');
+        } else {
+          alert(`Error: ${error.message}`);
+        }
       }
     } catch (error) {
-      alert('Error de conexión al guardar el tipo de membresía.');
+      if (typeof window.showNotification === 'function') {
+        window.showNotification('Error de conexión al guardar el tipo de membresía.', 'error');
+      } else {
+        alert('Error de conexión al guardar el tipo de membresía.');
+      }
     }
   });
 
@@ -130,10 +138,18 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message}`);
+        if (typeof window.showNotification === 'function') {
+          window.showNotification(error.message, 'error');
+        } else {
+          alert(`Error: ${error.message}`);
+        }
       }
     } catch (error) {
-      alert('Error de conexión al guardar el método de pago.');
+      if (typeof window.showNotification === 'function') {
+        window.showNotification('Error de conexión al guardar el método de pago.', 'error');
+      } else {
+        alert('Error de conexión al guardar el método de pago.');
+      }
     }
   });
 
@@ -179,10 +195,18 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message}`);
+        if (typeof window.showNotification === 'function') {
+          window.showNotification(error.message, 'error');
+        } else {
+          alert(`Error: ${error.message}`);
+        }
       }
     } catch (error) {
-      alert('Error de conexión al eliminar.');
+      if (typeof window.showNotification === 'function') {
+        window.showNotification('Error de conexión al eliminar.', 'error');
+      } else {
+        alert('Error de conexión al eliminar.');
+      }
     }
   });
 

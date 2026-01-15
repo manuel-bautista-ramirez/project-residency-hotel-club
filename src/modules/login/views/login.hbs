@@ -103,16 +103,20 @@
 
       if (urlMessage || serverMessage) {
         const isRevoked = (urlMessage === 'admin_revoked' || serverMessage.includes('privilegios'));
+        const type = isRevoked ? 'warning' : 'error';
+        const msg = serverMessage || (urlMessage === 'admin_revoked' ? 'Tus privilegios de acceso han cambiado. Es necesario iniciar sesión nuevamente.' : 'Tu cuenta ha sido dada de baja del sistema.');
 
-        if (typeof Swal !== 'undefined') {
+        if (typeof window.showNotification === 'function') {
+          window.showNotification(msg, type);
+        } else if (typeof Swal !== 'undefined') {
           Swal.fire({
-            icon: isRevoked ? 'warning' : 'error',
+            icon: type,
             title: isRevoked ? 'Permisos Modificados' : 'Cuenta Restringida',
-            text: serverMessage || (urlMessage === 'admin_revoked' ? 'Tus privilegios de acceso han cambiado. Es necesario iniciar sesión nuevamente.' : 'Tu cuenta ha sido dada de baja del sistema.'),
+            text: msg,
             confirmButtonColor: '#3B82F6'
           });
         } else {
-          alert(serverMessage || 'Tu sesión ha finalizado. Por favor inicia sesión nuevamente.');
+          alert(msg);
         }
 
         // Limpiar URL si hay parámetro

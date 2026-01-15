@@ -209,7 +209,7 @@
                   title="Editar">
                   <i class="fas fa-edit text-lg"></i>
                 </a>
-                <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}')"
+                <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}', {{this.stock}})"
                   class="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
                   title="Eliminar">
                   <i class="fas fa-trash text-lg"></i>
@@ -277,7 +277,7 @@
               class="flex-1 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1 active:scale-95 transition-transform">
               <i class="fas fa-edit"></i> Editar
             </a>
-            <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}')"
+            <button onclick="openDeleteModal({{this.id}}, '{{this.nombre}}', {{this.stock}})"
               class="p-2 bg-red-50 text-red-600 rounded-lg active:scale-95 transition-transform">
               <i class="fas fa-trash"></i>
             </button>
@@ -356,7 +356,7 @@
       </p>
     </div>
 
-    <form id="deleteForm" method="GET" class="px-6 pb-6">
+    <form id="deleteForm" method="POST" class="px-6 pb-6">
       <div class="flex gap-3">
         <button type="button" onclick="closeDeleteModal()"
           class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg transition-colors">Cancelar</button>
@@ -378,33 +378,12 @@
 
   // Definir mostrarNotificacion para uso global y compatibilidad
   function mostrarNotificacion(mensaje, tipo = 'success') {
-    const notif = document.createElement('div');
-    let classes = "fixed top-4 right-4 z-[100] p-4 mb-4 text-sm font-bold rounded-lg shadow-xl flex items-center gap-2 animate-fade-in transition-all duration-300 ";
-
-    if (tipo === 'success') classes += "bg-white border-l-4 border-green-500 text-green-700";
-    else if (tipo === 'error') classes += "bg-white border-l-4 border-red-500 text-red-700";
-    else if (tipo === 'warning') classes += "bg-white border-l-4 border-yellow-500 text-yellow-700";
-    else classes += "bg-white border-l-4 border-blue-500 text-blue-700";
-
-    notif.className = classes;
-    notif.style.minWidth = "300px";
-
-    const icon = tipo === 'success' ? 'fa-check-circle' :
-      tipo === 'error' ? 'fa-exclamation-circle' :
-        tipo === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
-
-    notif.innerHTML = `
-        <i class="fas ${icon} text-lg"></i>
-        <div class="flex-grow">${mensaje}</div>
-        <button class="ml-2 hover:opacity-70" onclick="this.parentElement.remove()">&times;</button>
-    `;
-    document.body.appendChild(notif);
-    setTimeout(() => {
-      notif.classList.add('opacity-0', 'translate-x-full');
-      setTimeout(() => notif.remove(), 300);
-    }, 5000);
+    if (typeof window.showNotification === 'function') {
+      window.showNotification(mensaje, tipo);
+    } else {
+      alert(mensaje);
+    }
   }
-  window.showNotification = mostrarNotificacion;
 
   function openAddStockModal(id, name, currentStock) {
     addStockForm.action = `/store/inventory/add-stock/${id}`;
@@ -425,7 +404,11 @@
   const deleteForm = document.getElementById('deleteForm');
   const deleteProductName = document.getElementById('delete-product-name');
 
-  function openDeleteModal(id, name) {
+  function openDeleteModal(id, name, stock) {
+    if (stock > 0) {
+      mostrarNotificacion(`No se puede eliminar "${name}" porque aún tiene ${stock} unidades en stock. El stock debe estar en 0 Para proceder.`, 'error');
+      return;
+    }
     deleteForm.action = `/store/delete/${id}`;
     deleteProductName.textContent = name;
     deleteModal.classList.remove('hidden');
@@ -474,6 +457,18 @@
   document.addEventListener('DOMContentLoaded', () => {
     adjustTableHeight('inventoryTableWrapper', 'inventoryTableBody');
     adjustTableHeight('categoryTableWrapper', 'categoryTableBody');
+
+    // Manejar notificaciones por parámetros URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    if (success && typeof mostrarNotificacion === 'function') {
+      if (success === 'delete') {
+        mostrarNotificacion('Producto eliminado correctamente', 'success');
+      }
+      // Limpiar URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
   });
 
   window.addEventListener('load', () => setTimeout(() => {

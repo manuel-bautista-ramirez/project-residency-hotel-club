@@ -299,7 +299,22 @@
       confirmButtonColor: clubColors.success,
       borderRadius: '2.5rem'
     }).then(result => {
-      if (result.isConfirmed) document.getElementById('entryForm').submit();
+      if (result.isConfirmed) {
+        // Mostrar notificación de carga
+        if (typeof window.showNotification === 'function') {
+          window.showNotification('Registrando entrada, por favor espere...', 'info');
+        }
+
+        // Bloquear todos los botones de selección para evitar doble clic
+        document.querySelectorAll('.card-area button').forEach(b => {
+          b.disabled = true;
+          b.classList.add('opacity-50', 'cursor-not-allowed');
+        });
+
+        setTimeout(() => {
+          document.getElementById('entryForm').submit();
+        }, 500);
+      }
     });
   }
 
@@ -314,15 +329,14 @@
     settingsForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const formData = new FormData(settingsForm);
-      const data = Object.fromEntries(formData.entries());
+      const submitBtn = settingsForm.querySelector('button[type="submit"]');
+      let originalHTML = '';
 
-      Swal.fire({
-        title: 'Actualizando...',
-        didOpen: () => Swal.showLoading(),
-        allowOutsideClick: false,
-        borderRadius: '2rem'
-      });
+      const data = Object.fromEntries(new FormData(settingsForm).entries());
+
+      if (typeof window.setLoadingState === 'function') {
+        originalHTML = window.setLoadingState(submitBtn, 'Actualizando...');
+      }
 
       try {
         const response = await fetch('/api/entries/update-settings', {
@@ -334,12 +348,11 @@
         const result = await response.json();
 
         if (response.ok) {
-          Swal.close();
-          showNotification(result.message, 'success');
+          if (typeof window.showNotification === 'function') {
+            window.showNotification(result.message || 'Tarifas actualizadas correctamente', 'success');
+          }
 
           // Actualizamos los atributos data-original...
-          // Actualizamos los atributos data-original para que no se vean como "modificados" si el admin editó en el dashboard
-          // Nos aseguramos de redondear para evitar decimales molestos
           const c = Math.round(data.price_canchas);
           const a = Math.round(data.price_alberca);
           const g = Math.round(data.price_gym);
@@ -364,8 +377,14 @@
           throw new Error(result.error || 'Error desconocido');
         }
       } catch (err) {
+        if (typeof window.showNotification === 'function') {
+          window.showNotification(err.message, 'error');
+        }
+      } finally {
         Swal.close();
-        showNotification(err.message, 'error');
+        if (typeof window.removeLoadingState === 'function') {
+          window.removeLoadingState(submitBtn, originalHTML);
+        }
       }
     });
   }

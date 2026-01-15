@@ -225,50 +225,6 @@ CREATE TABLE IF NOT EXISTS job_queue (
   error_message TEXT DEFAULT NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- EJEMPLO DE CONSULTA CALENDARIO (habitaciones ocupadas)
--- =====================================================
--- (Consulta de ejemplo; no modifica DB)
-SELECT
-  h.numero,
-  h.tipo,
-  r.fecha_ingreso,
-  r.fecha_salida,
-  r.nombre_cliente
-FROM reservaciones r
-INNER JOIN habitaciones h ON r.habitacion_id = h.id
-WHERE r.fecha_salida >= CURDATE()
-ORDER BY r.fecha_ingreso;
-
--- =====================================================
---            GENERACIÓN DE REPORTES (Ejemplos)
--- =====================================================
-SELECT
-    DATE(fecha_ingreso) AS dia,
-    COUNT(id) AS total_rentas,
-    SUM(monto) AS total_ingresos
-FROM rentas
-GROUP BY DATE(fecha_ingreso)
-ORDER BY DATE(fecha_ingreso);
-
-SELECT
-    COUNT(id) AS total_rentas,
-    SUM(monto) AS total_ingresos
-FROM rentas
-WHERE fecha_ingreso BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE();
-
-SELECT
-    COUNT(id) AS total_rentas,
-    SUM(monto) AS total_ingresos
-FROM rentas
-WHERE fecha_ingreso BETWEEN CURDATE() - INTERVAL 15 DAY AND CURDATE();
-
-SELECT
-    COUNT(id) AS total_rentas,
-    SUM(monto) AS total_ingresos
-FROM rentas
-WHERE MONTH(fecha_ingreso) = MONTH(CURDATE())
-  AND YEAR(fecha_ingreso) = YEAR(CURDATE());
 
 -- =====================================================
 -- MÓDULO DE MEMBRESÍAS
@@ -376,6 +332,7 @@ CREATE TABLE IF NOT EXISTS productos (
   precio DECIMAL(10, 2) NOT NULL,
   stock INT NOT NULL DEFAULT 0,
   imagen VARCHAR(500),
+  activo TINYINT(1) DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_categoria (categoria),

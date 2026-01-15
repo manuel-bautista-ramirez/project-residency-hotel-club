@@ -348,25 +348,18 @@
 </style>
 
 <script>
-  // Carrito global
-  let cart = [];
+  // Carrito global con persistencia en localStorage
+  let cart = JSON.parse(localStorage.getItem('hotel_cart')) || [];
   let currentProduct = null;
   const products = {{{ json products }}};
 
   // Función de notificación
   function mostrarNotificacion(mensaje, tipo = 'success') {
-    const notif = document.createElement('div');
-    let classes = "fixed top-4 right-4 z-[100] p-4 mb-4 text-sm font-bold rounded-lg shadow-xl flex items-center gap-2 animate-fade-in transition-all duration-300 ";
-    if (tipo === 'success') classes += "bg-white border-l-4 border-green-500 text-green-700";
-    else if (tipo === 'error') classes += "bg-white border-l-4 border-red-500 text-red-700";
-    else if (tipo === 'warning') classes += "bg-white border-l-4 border-yellow-500 text-yellow-700";
-    else classes += "bg-white border-l-4 border-blue-500 text-blue-700";
-    notif.className = classes;
-    notif.style.minWidth = "300px";
-    const icon = tipo === 'success' ? 'fa-check-circle' : tipo === 'error' ? 'fa-exclamation-circle' : tipo === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
-    notif.innerHTML = `<i class="fas ${icon} text-lg"></i><div class="flex-grow">${mensaje}</div><button class="ml-2 hover:opacity-70" onclick="this.parentElement.remove()">&times;</button>`;
-    document.body.appendChild(notif);
-    setTimeout(() => { notif.classList.add('opacity-0', 'translate-x-full'); setTimeout(() => notif.remove(), 300); }, 5000);
+    if (typeof window.showNotification === 'function') {
+      window.showNotification(mensaje, tipo);
+    } else {
+      alert(mensaje);
+    }
   }
 
   // Abrir modal de cantidad
@@ -446,6 +439,9 @@
       return;
     }
 
+    // 1. Guardar el nombre para la notificación ANTES de limpiar currentProduct
+    const savedName = currentProduct.nombre;
+
     if (existingItem) {
       existingItem.cantidad += quantity;
     } else {
@@ -458,12 +454,18 @@
       });
     }
 
-    updateCart();
+    // 2. CERRAR EL MODAL (esto pone currentProduct = null)
     closeQuantityModal();
-    mostrarNotificacion(`${quantity}x ${currentProduct.nombre} agregado al carrito`, 'success');
+
+    // 3. ACTUALIZAR INTERFAZ Y MOSTRAR NOTIFICACIÓN USANDO EL NOMBRE GUARDADO
+    updateCart();
+    mostrarNotificacion(`${quantity}x ${savedName} agregado al carrito`, 'success');
   }
 
   function updateCart() {
+    // Guardar en localStorage
+    localStorage.setItem('hotel_cart', JSON.stringify(cart));
+
     const cartCount = document.getElementById('cart-count');
     const cartFloatBtn = document.getElementById('cart-float-btn');
     const totalItems = cart.reduce((sum, item) => sum + item.cantidad, 0);
@@ -581,6 +583,19 @@
       total_letras: `${total.toFixed(2)} pesos`
     };
 
+    // Deshabilitar botón de confirmación
+    const confirmBtn = document.querySelector('#checkout-modal button[onclick="confirmSale()"]');
+    const originalBtnHTML = confirmBtn.innerHTML;
+    confirmBtn.disabled = true;
+    confirmBtn.classList.add('opacity-75', 'cursor-not-allowed');
+    confirmBtn.innerHTML = `
+      <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Guardando...
+    `;
+
     try {
       const response = await fetch('/store/checkout', {
         method: 'POST',
@@ -589,20 +604,48 @@
       });
       const result = await response.json();
       if (result.success) {
+        // CERRAR TODOS LOS MODALES INMEDIATAMENTE
+        const checkoutModal = document.getElementById('checkout-modal');
+        const cartModal = document.getElementById('cart-modal');
+
+        if (checkoutModal) {
+          checkoutModal.classList.add('hidden');
+          checkoutModal.classList.remove('flex');
+        }
+        if (cartModal) {
+          cartModal.classList.add('hidden');
+          cartModal.classList.remove('flex');
+        }
+
+        // MOSTRAR NOTIFICACIÓN CON LOS MODALES YA CERRADOS
         mostrarNotificacion(`✅ Venta realizada - Total: $${total.toFixed(2)}`, 'success');
+
         cart = [];
+        localStorage.removeItem('hotel_cart'); // LIMPIAR PERSISTENCIA
         updateCart();
-        closeCheckoutModal();
-        setTimeout(() => window.location.reload(), 2000);
+
+        // Recargar después de un pequeño delay para que vean la notificación
+        setTimeout(() => window.location.reload(), 1500);
       } else {
         mostrarNotificacion('❌ Error: ' + (result.error || 'No se pudo registrar la venta'), 'error');
+        // Restaurar botón en caso de error
+        confirmBtn.disabled = false;
+        confirmBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        confirmBtn.innerHTML = originalBtnHTML;
       }
     } catch (error) {
       mostrarNotificacion('❌ Error de conexión al registrar la venta.', 'error');
+      // Restaurar botón en caso de error
+      confirmBtn.disabled = false;
+      confirmBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+      confirmBtn.innerHTML = originalBtnHTML;
     }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar UI con el carrito guardado
+    updateCart();
+
     // Validación en tiempo real al escribir en el input
     const qtyInput = document.getElementById('qty-input');
     if (qtyInput) {

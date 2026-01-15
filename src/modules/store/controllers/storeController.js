@@ -12,6 +12,7 @@ import {
   deleteSale,
   getSalesReport
 } from "../models/ModelStore.js";
+import { pool } from "../../../dataBase/connectionDataBase.js";
 
 // =====================================================
 //         CONTROLADORES DE PRODUCTOS
@@ -154,16 +155,34 @@ export const handleDeleteProduct = async (req, res) => {
     }
 
     const { id } = req.params;
+
+    // VALIDACIÓN: Obtener el producto
+    const product = await getProductById(id);
+    if (!product) {
+      return res.status(404).send("Producto no encontrado");
+    }
+
+    // ⛔ VALIDACIÓN 1: El stock debe ser 0
+    if (product.stock > 0) {
+      return res.status(400).send(`No se puede eliminar el producto "${product.nombre}" porque aún tiene ${product.stock} unidades en stock. El stock debe estar en 0 para proceder.`);
+    }
+
+    // Ahora deleteProduct realiza un "Borrado Lógico" (activo = 0)
+    // Esto permite mantener la integridad de las ventas históricas.
     const success = await deleteProduct(id);
 
     if (success) {
-      console.log(`✅ Producto ${id} eliminado`);
-      res.redirect("/store/inventory");
+      console.log(`✅ Producto ${id} marcado como inactivo (soft delete)`);
+      res.redirect("/store/inventory?success=delete");
     } else {
       res.status(404).send("Producto no encontrado");
     }
   } catch (error) {
     console.error("Error en handleDeleteProduct:", error);
+    // Si llegara a fallar por la base de datos (por si acaso falla la validación previa)
+    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).send("No se puede eliminar este producto porque está referenciado en ventas o reportes existentes.");
+    }
     res.status(500).send("Error al eliminar el producto");
   }
 };

@@ -2,7 +2,8 @@
   <!-- Loading Overlay -->
   <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
     <div class="flex flex-col items-center gap-3">
-      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" role="img">
+      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24" aria-hidden="true" role="img">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
       </svg>
@@ -10,7 +11,7 @@
     </div>
   </div>
   <!-- Header -->
-  <header class="text-center py-7 sm:py-8 px-2">
+  <header class="text-center py-5 sm:py-8 px-2">
     <h1 class=" pt-3 text-2xl sm:text-4xl font-extrabold text-blue-900 tracking-tight mb-5 leading-tight">
       <span class="block sm:inline">🏨</span>
       <span class="block sm:inline">Habitaciones</span>
@@ -71,7 +72,8 @@
   <!-- Grid de Habitaciones -->
   <section id="roomsGrid" class="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-0 hidden">
     {{#each habitaciones}}
-    <div class="group room-card bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col justify-between transform transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl opacity-0 translate-y-2">
+    <div
+      class="group room-card bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col justify-between transform transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl opacity-0 translate-y-2">
       <!-- Header de la card -->
       <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white">
         <h2 class="text-xl font-bold flex items-center gap-3">
@@ -92,23 +94,26 @@
             <span class="font-medium">Estado actual:</span>
           </p>
           {{#if (eq this.estado 'disponible')}}
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-100 text-green-800 font-medium border border-green-200">
-              <i class="fa-solid fa-check-circle text-green-600 text-lg"></i>
-              <span>Disponible</span>
-            </div>
+          <div
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-100 text-green-800 font-medium border border-green-200">
+            <i class="fa-solid fa-check-circle text-green-600 text-lg"></i>
+            <span>Disponible</span>
+          </div>
           {{/if}}
           {{#if (eq this.estado 'ocupado')}}
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-100 text-red-800 font-medium border border-red-200">
-              <i class="fa-solid fa-user text-red-600 text-lg"></i>
-              <span>Ocupado</span>
-            </div>
+          <div
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-100 text-red-800 font-medium border border-red-200">
+            <i class="fa-solid fa-user text-red-600 text-lg"></i>
+            <span>Ocupado</span>
+          </div>
           {{/if}}
           {{#if (eq this.estado 'limpieza')}}
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-100 text-orange-800 font-medium border border-orange-200 cursor-pointer hover:bg-orange-200 transition-all duration-200 animate-pulse"
-                  onclick="openModal({{this.id}})">
-              <i class="fa-solid fa-broom text-orange-600 text-lg"></i>
-              <span>En Limpieza</span>
-            </div>
+          <div
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-100 text-orange-800 font-medium border border-orange-200 cursor-pointer hover:bg-orange-200 transition-all duration-200 animate-pulse"
+            onclick="openModal({{this.id}})">
+            <i class="fa-solid fa-broom text-orange-600 text-lg"></i>
+            <span>En Limpieza</span>
+          </div>
           {{/if}}
         </div>
       </div>
@@ -118,23 +123,24 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {{! Botón de Reservar siempre activo }}
           <a href="/rooms/reservar/{{this.id}}"
-             class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
-             <i class="fa-solid fa-calendar-check text-lg"></i>
-             <span>Reservar</span>
+            class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+            <i class="fa-solid fa-calendar-check text-lg"></i>
+            <span>Reservar</span>
           </a>
 
           {{! Botón de Rentar con validación de estado }}
           {{#if (eq this.estado 'disponible')}}
-            <a href="/rooms/rentar/{{this.id}}"
-               class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
-               <i class="fa-solid fa-key text-lg"></i>
-               <span>Rentar</span>
-            </a>
+          <a href="/rooms/rentar/{{this.id}}"
+            class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+            <i class="fa-solid fa-key text-lg"></i>
+            <span>Rentar</span>
+          </a>
           {{else}}
-            <span class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-400 text-white font-medium rounded-xl cursor-not-allowed">
-              <i class="fa-solid fa-key text-lg"></i>
-              <span>Rentar</span>
-            </span>
+          <span
+            class="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-400 text-white font-medium rounded-xl cursor-not-allowed">
+            <i class="fa-solid fa-key text-lg"></i>
+            <span>Rentar</span>
+          </span>
           {{/if}}
         </div>
       </div>
@@ -145,25 +151,27 @@
 
 <!-- Modales de limpieza fuera de los cards -->
 {{#each habitaciones}}
-  {{#if (eq this.estado 'limpieza')}}
-  <div id="modal-clean-{{this.id}}" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
-    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md">
-      <h2 class="text-lg sm:text-xl font-bold mb-4 text-orange-700 text-center">Confirmar limpieza</h2>
-      <p class="mb-6 text-gray-700 text-sm sm:text-base text-center">
-        ¿Deseas cambiar el estado a <span class="font-bold text-gray-800">Disponible</span> para la habitación <span class="font-bold text-blue-600">{{this.numero}}</span>?
-      </p>
-      <form action="/rooms/changes/status/{{this.id}}" method="POST" class="flex flex-col gap-3 w-full">
-        <input type="hidden" name="status" value="disponible" />
-        <div class="flex flex-col sm:flex-row justify-end gap-2">
-          <button type="button" onclick="closeModal({{this.id}})"
-                  class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold w-full sm:w-auto transition-colors">Cancelar</button>
-          <button type="submit"
-                  class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold w-full sm:w-auto transition-colors">Confirmar</button>
-        </div>
-      </form>
-    </div>
+{{#if (eq this.estado 'limpieza')}}
+<div id="modal-clean-{{this.id}}"
+  class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
+  <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md">
+    <h2 class="text-lg sm:text-xl font-bold mb-4 text-orange-700 text-center">Confirmar limpieza</h2>
+    <p class="mb-6 text-gray-700 text-sm sm:text-base text-center">
+      ¿Deseas cambiar el estado a <span class="font-bold text-gray-800">Disponible</span> para la habitación <span
+        class="font-bold text-blue-600">{{this.numero}}</span>?
+    </p>
+    <form action="/rooms/changes/status/{{this.id}}" method="POST" class="flex flex-col gap-3 w-full">
+      <input type="hidden" name="status" value="disponible" />
+      <div class="flex flex-col sm:flex-row justify-end gap-2">
+        <button type="button" onclick="closeModal({{this.id}})"
+          class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold w-full sm:w-auto transition-colors">Cancelar</button>
+        <button type="submit"
+          class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold w-full sm:w-auto transition-colors">Confirmar</button>
+      </div>
+    </form>
   </div>
-  {{/if}}
+</div>
+{{/if}}
 {{/each}}
 
 
@@ -185,37 +193,7 @@
     }
   }
 
-  // Función para mostrar notificaciones
-  function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-20 right-4 z-[70] px-6 py-4 rounded-lg text-white font-medium shadow-2xl transition-all duration-300 transform translate-x-0 ${
-      type === 'success' ? 'bg-green-500' :
-      type === 'error' ? 'bg-red-500' :
-      type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
-    }`;
-    notification.innerHTML = `
-      <div class="flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-          <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
-        </svg>
-        <span>${message}</span>
-      </div>
-    `;
-    notification.setAttribute('role', 'status');
-    document.body.appendChild(notification);
-
-    // Animación de entrada
-    setTimeout(() => notification.style.transform = 'translateX(0)', 10);
-
-    // Remover después de 5 segundos
-    setTimeout(() => {
-      notification.style.opacity = '0';
-      notification.style.transform = 'translateX(100%)';
-      setTimeout(() => notification.remove(), 300);
-    }, 5000);
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const loadingOverlay = document.getElementById('loadingOverlay');
     const roomsGrid = document.getElementById('roomsGrid');
     const roomsSkeletons = document.getElementById('roomsSkeletons');
@@ -247,8 +225,22 @@
       }
     }, true);
 
+    // Manejar notificaciones de éxito por redirección
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    if (success && typeof window.showNotification === 'function') {
+      if (success === 'renta') {
+        window.showNotification('Renta creada exitosamente', 'success');
+      } else if (success === 'reservacion') {
+        window.showNotification('Reservación creada exitosamente', 'success');
+      }
+      // Limpiar el parámetro de la URL sin recargar
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+
     // Manejar el back/forward cache del navegador
-    window.addEventListener('pageshow', function(event) {
+    window.addEventListener('pageshow', function (event) {
       if (event.persisted) {
         // La página se restauró desde la caché, forzar un estado limpio
         loadingOverlay.classList.add('hidden'); // Asegurarse de que el overlay esté oculto

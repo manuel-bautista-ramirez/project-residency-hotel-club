@@ -26,11 +26,11 @@ const MembershipUI = {
 
     // Búsqueda y filtros
     const debounce = (func, delay) => {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+      };
     };
 
     if (this.searchInput) {
@@ -58,7 +58,7 @@ const MembershipUI = {
         e.preventDefault();
         e.stopPropagation();
         // Pasar el botón como contexto
-        this.handleViewMembersClick({ 
+        this.handleViewMembersClick({
           currentTarget: viewMembersBtn,
           preventDefault: () => e.preventDefault(),
           stopPropagation: () => e.stopPropagation()
@@ -144,15 +144,15 @@ const MembershipUI = {
 
     const template = document.getElementById('integrantes-modal-template');
     if (!template) {
-        console.error('Template "integrantes-modal-template" no encontrado.');
-        return;
+      console.error('Template "integrantes-modal-template" no encontrado.');
+      return;
     }
     const modalClone = template.content.cloneNode(true);
     const listContainer = modalClone.querySelector('[data-template-content="integrantes-list"]');
 
     integrantes.forEach(int => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
+      const row = document.createElement('tr');
+      row.innerHTML = `
             <td class="py-2">
                 <div class="flex items-center">
                     <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
@@ -162,7 +162,7 @@ const MembershipUI = {
                 </div>
             </td>
         `;
-        listContainer.appendChild(row);
+      listContainer.appendChild(row);
     });
 
     const modalElement = modalClone.firstElementChild;
@@ -171,7 +171,7 @@ const MembershipUI = {
     const closeModal = () => modalElement.remove();
     modalElement.querySelector('.close-integrantes-modal').addEventListener('click', closeModal);
     modalElement.addEventListener('click', (e) => {
-        if (e.target === modalElement) closeModal();
+      if (e.target === modalElement) closeModal();
     });
   },
 
@@ -262,8 +262,8 @@ const MembershipUI = {
   showDetailsModal: function (details) {
     const template = document.getElementById('details-modal-template');
     if (!template) {
-        console.error('Template "details-modal-template" no encontrado.');
-        return;
+      console.error('Template "details-modal-template" no encontrado.');
+      return;
     }
     const modalClone = template.content.cloneNode(true);
 
@@ -277,18 +277,18 @@ const MembershipUI = {
         <div><p class="text-sm font-semibold text-gray-500">Periodo</p><p class="text-lg font-medium text-gray-900">${this.formatDate(details.fecha_inicio)} - ${this.formatDate(details.fecha_fin)}</p></div>`;
 
     if (details.integrantes && details.integrantes.length > 0) {
-        infoHtml += `<div><p class="text-sm font-semibold text-gray-500">Integrantes</p><ul class="list-disc list-inside mt-1 space-y-1">${details.integrantes.map(int => `<li class="text-gray-700">${int.nombre_completo}</li>`).join('')}</ul></div>`;
+      infoHtml += `<div><p class="text-sm font-semibold text-gray-500">Integrantes</p><ul class="list-disc list-inside mt-1 space-y-1">${details.integrantes.map(int => `<li class="text-gray-700">${int.nombre_completo}</li>`).join('')}</ul></div>`;
     }
 
     if (details.pagos && details.pagos.length > 0) {
-        infoHtml += `<div><p class="text-sm font-semibold text-gray-500">Último Pago</p><p class="text-lg font-medium text-gray-900">$${details.pagos[0].monto} (${details.pagos[0].metodo_pago})</p></div>`;
+      infoHtml += `<div><p class="text-sm font-semibold text-gray-500">Último Pago</p><p class="text-lg font-medium text-gray-900">$${details.pagos[0].monto} (${details.pagos[0].metodo_pago})</p></div>`;
     }
     infoContainer.innerHTML = infoHtml;
 
     // Populate QR
     let qrHtml = `<img src="${details.qr_path}?t=${new Date().getTime()}" alt="Código QR" class="w-48 h-48">`;
     if (details.isAdmin) {
-        qrHtml += `<a href="${details.qr_path}" download="qr-membresia-${details.id_activa}.png" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><i class="fas fa-download mr-2"></i>Descargar QR</a>`;
+      qrHtml += `<a href="${details.qr_path}" download="qr-membresia-${details.id_activa}.png" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"><i class="fas fa-download mr-2"></i>Descargar QR</a>`;
     }
     qrContainer.innerHTML = qrHtml;
 
@@ -298,7 +298,7 @@ const MembershipUI = {
     const closeModal = () => modalElement.remove();
     modalElement.querySelectorAll('.close-details-modal').forEach(btn => btn.addEventListener('click', closeModal));
     modalElement.addEventListener('click', (e) => {
-        if (e.target === modalElement) closeModal();
+      if (e.target === modalElement) closeModal();
     });
   },
 
@@ -431,25 +431,25 @@ const MembershipUI = {
     }
 
     memberships.forEach(membresia => {
-        const row = document.createElement('tr');
-        row.className = 'table-row bg-white hover:bg-green-50 transition-all duration-200 group';
+      const row = document.createElement('tr');
+      row.className = 'table-row bg-white hover:bg-green-50 transition-all duration-200 group';
 
-        let actionsHtml = '';
-        if (membresia.isFamily) {
-            actionsHtml += `<button class="view-members-btn action-btn bg-purple-100 text-purple-600 hover:bg-purple-200" title="Ver integrantes" data-id-activa="${membresia.id_activa}"><i class="fas fa-users"></i></button>`;
-        }
-        actionsHtml += `<button class="view-details-btn action-btn bg-green-100 text-green-600 hover:bg-green-200" title="Ver detalles" data-id="${membresia.id_activa}"><i class="fas fa-eye"></i></button>`;
-        if (membresia.canRenew) {
-            actionsHtml += `<a href="/memberships/renew/${membresia.id_activa}" class="action-btn bg-blue-100 text-blue-600 hover:bg-blue-200" title="Renovar"><i class="fas fa-sync-alt"></i></a>`;
-        }
-        // --- CORRECCIÓN: Mover el botón de historial de pagos a su posición correcta ---
-        actionsHtml += `<button class="view-history-payments-btn action-btn bg-indigo-100 text-indigo-600 hover:bg-indigo-200" title="Ver historial de pagos" data-id-activa="${membresia.id_activa}"><i class="fa-solid fa-file-invoice-dollar"></i></button>`;
-        if (membresia.isAdmin) {
-            actionsHtml += `<a href="/memberships/editMembership/${membresia.id_activa}" class="action-btn bg-amber-100 text-amber-600 hover:bg-amber-200" title="Editar"><i class="fas fa-edit"></i></a>`;
-            actionsHtml += `<button type="button" class="delete-btn action-btn bg-red-100 text-red-600 hover:bg-red-200" data-id="${membresia.id_activa}" data-name="${membresia.nombre_completo}"><i class="fas fa-trash-alt"></i></button>`;
-        }
+      let actionsHtml = '';
+      if (membresia.isFamily) {
+        actionsHtml += `<button class="view-members-btn action-btn bg-purple-100 text-purple-600 hover:bg-purple-200" title="Ver integrantes" data-id-activa="${membresia.id_activa}"><i class="fas fa-users"></i></button>`;
+      }
+      actionsHtml += `<button class="view-details-btn action-btn bg-green-100 text-green-600 hover:bg-green-200" title="Ver detalles" data-id="${membresia.id_activa}"><i class="fas fa-eye"></i></button>`;
+      if (membresia.canRenew) {
+        actionsHtml += `<a href="/memberships/renew/${membresia.id_activa}" class="action-btn bg-blue-100 text-blue-600 hover:bg-blue-200" title="Renovar"><i class="fas fa-sync-alt"></i></a>`;
+      }
+      // --- CORRECCIÓN: Mover el botón de historial de pagos a su posición correcta ---
+      actionsHtml += `<button class="view-history-payments-btn action-btn bg-indigo-100 text-indigo-600 hover:bg-indigo-200" title="Ver historial de pagos" data-id-activa="${membresia.id_activa}"><i class="fa-solid fa-file-invoice-dollar"></i></button>`;
+      if (membresia.isAdmin) {
+        actionsHtml += `<a href="/memberships/editMembership/${membresia.id_activa}" class="action-btn bg-amber-100 text-amber-600 hover:bg-amber-200" title="Editar"><i class="fas fa-edit"></i></a>`;
+        actionsHtml += `<button type="button" class="delete-btn action-btn bg-red-100 text-red-600 hover:bg-red-200" data-id="${membresia.id_activa}" data-name="${membresia.nombre_completo}"><i class="fas fa-trash-alt"></i></button>`;
+      }
 
-        row.innerHTML = `
+      row.innerHTML = `
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
@@ -468,15 +468,15 @@ const MembershipUI = {
             <td class="px-4 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">
                     ${membresia.isFamily
-                        ? `<span 
+          ? `<span
                                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                                 <i class="fas fa-users mr-1 text-green-600"></i> Familiar
                             </span>`
-                        : `<span
+          : `<span
                                 class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
                                 <i class="fas fa-user mr-1 text-blue-600"></i> ${membresia.tipo_membresia}
                             </span>`
-                    }
+        }
                 </div>
             </td>
             <td class="px-4 py-4 whitespace-nowrap">
@@ -489,11 +489,22 @@ const MembershipUI = {
                 <div class="flex items-center space-x-2">${actionsHtml}</div>
             </td>
         `;
-        this.tableBody.appendChild(row);
+      this.tableBody.appendChild(row);
     });
 
     // Volver a aplicar el formato para los nuevos elementos
     this.applyInitialFormatting();
+  },
+
+  /**
+   * Muestra una notificación al usuario utilizando el sistema global.
+   */
+  showMessage: function (text, type = 'info') {
+    if (typeof window.showNotification === 'function') {
+      window.showNotification(text, type);
+    } else {
+      alert(text);
+    }
   }
 };
 
