@@ -90,7 +90,7 @@ const _getReportDateRange = (period, date) => {
       // La lógica anterior era imprecisa. Esta nueva implementación calcula correctamente
       // el inicio (lunes) y fin (domingo) de la semana ISO 8601.
       const week = parseInt(date.substring(5), 10);
-      
+
       // Calcula el primer día del año.
       const firstDayOfYear = new Date(year, 0, 1);
       // El día de la semana del 1 de enero (0=Domingo, 1=Lunes, ...).
@@ -98,7 +98,7 @@ const _getReportDateRange = (period, date) => {
       // Ajuste para encontrar el lunes de la primera semana del año.
       // Si el 1 de enero es martes (2), necesitamos retroceder 1 día. Si es domingo (0), retrocedemos 6.
       const dayOffset = (firstDayOfWeek === 0 ? -6 : 1 - firstDayOfWeek);
-      
+
       startDate = new Date(year, 0, 1 + dayOffset + (week - 1) * 7);
       endDate = new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000);
       break;
@@ -145,23 +145,23 @@ export const MembershipService = {
       if (!qrData || qrData.trim() === '') {
         throw new Error('Datos QR vacíos o inválidos');
       }
-  
+
       // Guardar en public/uploads/qrs/
       const qrDir = path.join(process.cwd(), 'public', 'uploads', 'qrs');
       if (!fs.existsSync(qrDir)) {
         fs.mkdirSync(qrDir, { recursive: true });
       }
-  
+
       // Limpiar nombre para el archivo
       const cleanName = titularNombre.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
       const qrFilename = `qr_${membershipId}_${cleanName}.png`;
       const qrFullPath = path.join(qrDir, qrFilename);
-      
+
       // Ruta relativa para acceso web (desde public/)
       const qrWebPath = `/uploads/qrs/${qrFilename}`;
-  
+
       console.log('📊 Generando QR con datos:', qrData.substring(0, 100) + '...');
-  
+
       // Generar QR con configuración robusta
       await QRCode.toFile(qrFullPath, qrData, {
         errorCorrectionLevel: 'H', // Mayor corrección de errores
@@ -173,31 +173,31 @@ export const MembershipService = {
           light: '#FFFFFF'
         }
       });
-  
+
       console.log(`✅ QR generado: ${qrFullPath}`);
       console.log(`✅ Ruta web: ${qrWebPath}`);
-      
+
       return qrWebPath;
-  
+
     } catch (error) {
       console.error('❌ Error generando QR:', error);
-      
+
       // Intentar con datos mínimos como fallback
       try {
         console.log('🔄 Intentando con datos mínimos de respaldo...');
-        
+
         const fallbackData = JSON.stringify({
           id: membershipId,
           t: 'Membresía',
           d: new Date().toISOString().split('T')[0]
         });
-        
+
         const qrDir = path.join(process.cwd(), 'public', 'uploads', 'qrs');
         const cleanName = titularNombre.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
         const qrFilename = `qr_${membershipId}_${cleanName}_fallback.png`;
         const qrFullPath = path.join(qrDir, qrFilename);
         const qrWebPath = `/uploads/qrs/${qrFilename}`;
-        
+
         await QRCode.toFile(qrFullPath, fallbackData, {
           errorCorrectionLevel: 'H',
           type: 'png',
@@ -208,10 +208,10 @@ export const MembershipService = {
             light: '#FFFFFF'
           }
         });
-        
+
         console.log(`✅ QR de respaldo generado: ${qrWebPath}`);
         return qrWebPath;
-        
+
       } catch (fallbackError) {
         console.error('❌ Error incluso con datos de respaldo:', fallbackError);
         throw new Error(`Error al generar QR: ${error.message}`);
@@ -247,9 +247,9 @@ export const MembershipService = {
         typeof item === "string"
           ? { nombre_completo: item, id_relacion: null }
           : {
-              nombre_completo: item.nombre_completo || item.nombre || "",
-              id_relacion: item.id_relacion || null,
-            }
+            nombre_completo: item.nombre_completo || item.nombre || "",
+            id_relacion: item.id_relacion || null,
+          }
       );
       await MembershipModel.addFamilyMembers(id_activa, integrantesData);
     }
@@ -295,6 +295,7 @@ export const MembershipService = {
    * @returns {Promise<Buffer>} El buffer del archivo PDF generado.
    */
   async _generateReceiptPDF(data) {
+    let browser = null;
     try {
       const templatePath = path.resolve("src", "views", "partials", "membership-receipt-template.hbs");
       const templateFile = await fs.promises.readFile(templatePath, "utf8");
@@ -316,14 +317,25 @@ export const MembershipService = {
           </body>
         </html>`;
 
-      const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+      browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: 'new'
+      });
       const page = await browser.newPage();
-      await page.setContent(finalHtml, { waitUntil: "networkidle0" });
-      const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
-      await browser.close();
 
+      // Usar 'load' es más seguro para contenido inyectado
+      await page.setContent(finalHtml, { waitUntil: "load", timeout: 15000 });
+
+      const pdfBuffer = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
+      });
+
+      await browser.close();
       return pdfBuffer;
     } catch (error) {
+      if (browser) await browser.close();
       console.error("❌ Error generando el PDF del comprobante:", error);
       throw new Error("No se pudo generar el comprobante en PDF.");
     }
@@ -351,9 +363,25 @@ export const MembershipService = {
     integrantesDB,
     metodo_pago,
     precio_final,
-    precioEnLetras
+    precioEnLetras,
+    qrPath = null
   ) {
-    // 1. Preparar datos para el PDF
+    // 1. Convertir QR a Base64 para el PDF si existe
+    let qrBase64 = null;
+    let qrFullPath = null;
+    if (qrPath) {
+      try {
+        qrFullPath = path.join(process.cwd(), 'public', qrPath);
+        if (fs.existsSync(qrFullPath)) {
+          const qrBuffer = await fs.promises.readFile(qrFullPath);
+          qrBase64 = `data:image/png;base64,${qrBuffer.toString('base64')}`;
+        }
+      } catch (e) {
+        console.error("⚠️ No se pudo procesar el QR para el PDF:", e.message);
+      }
+    }
+
+    // 2. Preparar datos para el PDF
     const pdfData = {
       titularNombre: cliente.nombre_completo,
       tipoMembresia: tipo?.nombre || "N/D",
@@ -363,35 +391,51 @@ export const MembershipService = {
       precioFinal: parseFloat(precio_final).toFixed(2),
       precioEnLetras: precioEnLetras,
       integrantes: integrantesDB,
+      qrBase64: qrBase64, // Inyectamos el QR en el PDF
     };
 
-    // 2. Generar el PDF en memoria
+    // 3. Generar el PDF en memoria
     const pdfBuffer = await this._generateReceiptPDF(pdfData);
 
-    // 3. Enviar por correo electrónico (funciona con buffer)
+    // 4. Enviar por correo electrónico
     if (cliente?.correo) {
       try {
         const subject = `Comprobante de Membresía - Hotel Club`;
-        const body = `Hola ${cliente.nombre_completo},\n\n¡Gracias por unirte a Hotel Club! Adjunto a este correo encontrarás el comprobante de tu membresía en formato PDF.\nTu Código Qr para entrar al club puedes pedirlo en recepción.\n\nSaludos.\n\nEste mensaje se genera automaticamente por el sistema, cualquier duda o aclaración comunicarse con nosotros.`;
-        const attachment = {
-          filename: `Comprobante-Membresia-${cliente.nombre_completo.replace(/\s/g, '_')}.pdf`,
-          content: pdfBuffer,
-        };
-        await emailService.sendEmailWithAttachment(cliente.correo, subject, body, attachment); 
+        const body = `Hola ${cliente.nombre_completo},\n\n¡Gracias por unirte a Hotel Club! Adjunto encontrarás el comprobante de tu membresía y tu código QR de acceso.\n\nSaludos.\n\nEste mensaje se genera automaticamente por el sistema.`;
+
+        const attachments = [
+          {
+            filename: `Comprobante-Membresia-${id_activa}.pdf`,
+            content: pdfBuffer,
+          }
+        ];
+
+        // Adjuntar QR si existe
+        if (qrFullPath && fs.existsSync(qrFullPath)) {
+          attachments.push({
+            filename: `Codigo-QR-Acceso-${id_activa}.png`,
+            path: qrFullPath
+          });
+        }
+
+        await emailService.send({
+          to: cliente.correo,
+          subject: subject,
+          text: body,
+          attachments: attachments
+        });
       } catch (error) {
         console.error("❌ Error enviando comprobante por correo:", error.message);
       }
     }
 
-    // 4. Enviar por WhatsApp (requiere guardado temporal)
+    // 5. Enviar por WhatsApp
     if (cliente?.telefono) {
       const tempDir = path.join(process.cwd(), 'public', 'temp');
       const tempFilePath = path.join(tempDir, `comprobante_${id_activa}_${Date.now()}.pdf`);
 
       try {
-        // Asegurarse de que el directorio temporal exista
         await fs.promises.mkdir(tempDir, { recursive: true });
-        // Escribir el PDF temporalmente
         await fs.promises.writeFile(tempFilePath, pdfBuffer);
 
         const whatsappData = {
@@ -401,16 +445,25 @@ export const MembershipService = {
           fechaVencimiento: fecha_fin,
           total: parseFloat(precio_final).toFixed(2),
         };
-        // Enviar usando la ruta del archivo
+
+        // Enviar PDF principal
         await whatsappService.enviarComprobanteMembresía(cliente.telefono, whatsappData, tempFilePath);
+
+        // Enviar imagen del QR por separado si existe
+        if (qrFullPath && fs.existsSync(qrFullPath)) {
+          await whatsappService.socket.sendMessage(
+            whatsappService.formatPhoneNumber(cliente.telefono),
+            {
+              image: fs.readFileSync(qrFullPath),
+              caption: '🎫 Aquí tienes tu Código QR para acceder al club.'
+            }
+          );
+        }
       } catch (error) {
         console.error("❌ Error enviando comprobante por WhatsApp:", error.message);
       } finally {
-        // Limpiar el archivo temporal después del envío
-        try {
-          await fs.promises.unlink(tempFilePath);
-        } catch (cleanupError) {
-          console.error("❌ Error limpiando archivo PDF temporal:", cleanupError.message);
+        if (fs.existsSync(tempFilePath)) {
+          try { await fs.promises.unlink(tempFilePath); } catch (e) { }
         }
       }
     }
@@ -508,7 +561,8 @@ export const MembershipService = {
       integrantesDB,
       membresiaCompleta.metodo_pago,
       authoritative_price,
-      precioEnLetras
+      precioEnLetras,
+      qrPath // Pasamos el QR generado
     );
 
     // Devolver la información completa para la respuesta
@@ -605,7 +659,7 @@ export const MembershipService = {
       telefono,
       correo,
     });
-    
+
     // 4. Actualizar la membresía activa existente con los nuevos datos de renovación
     await updateMembershipById(id_activa, {
       membershipData: {
@@ -640,13 +694,13 @@ export const MembershipService = {
 
     // 7. Enviar el nuevo comprobante de renovación
     const [tipoMembresia, integrantesDB, metodoPagoInfo] = await Promise.all([
-        MembershipModel.getTipoMembresiaById(id_tipo_membresia),
-        MembershipModel.getIntegrantesByActiva(id_activa),
-        MembershipModel.getMetodoPagoById(id_metodo_pago)
+      MembershipModel.getTipoMembresiaById(id_tipo_membresia),
+      MembershipModel.getIntegrantesByActiva(id_activa),
+      MembershipModel.getMetodoPagoById(id_metodo_pago)
     ]);
 
     const precioEnLetras = this.convertirNumeroALetras(parseFloat(precio_final));
-    
+
     await this.sendMembershipReceipts(
       { nombre_completo, correo, telefono }, // Datos del cliente
       tipoMembresia,                         // Datos del tipo de membresía
@@ -656,7 +710,8 @@ export const MembershipService = {
       integrantesDB,                         // Integrantes actualizados desde la BD
       metodoPagoInfo.nombre,                 // Nombre del método de pago
       precio_final,
-      precioEnLetras
+      precioEnLetras,
+      qrPath                                 // QR regenerado en la renovación
     );
 
     // Devolver datos para una posible respuesta de la API
@@ -676,9 +731,9 @@ export const MembershipService = {
 
     if (numero === 0) return 'cero';
     if (numero === 100) return 'cien';
-    
+
     let resultado = '';
-    
+
     // Simplificación básica - puedes expandir esto según necesites
     if (numero < 10) {
       resultado = unidades[numero];
@@ -696,7 +751,7 @@ export const MembershipService = {
       const resto = numero % 100;
       resultado = centenas[cen] + (resto > 0 ? ' ' + this.convertirNumeroALetras(resto) : '');
     }
-    
+
     return resultado + ' pesos';
   },
 
@@ -876,16 +931,16 @@ export const MembershipService = {
    * @returns {Promise<Array<object>>} La lista de membresías formateada.
    */
   async getFormattedMembresiasAPI(queryParams, userRole = 'Recepcionista') {
-    const { memberships } = await this.getMembershipListData(queryParams, userRole);    
+    const { memberships } = await this.getMembershipListData(queryParams, userRole);
     const isAdmin = userRole === 'Administrador';
 
     return memberships.map(membresia => {
-        return {
-            ...membresia,
-            isFamily: membresia.tipo_membresia === "Familiar",
-            canRenew: isAdmin || membresia.dias_restantes <= 0,
-            isAdmin: isAdmin
-        };
+      return {
+        ...membresia,
+        isFamily: membresia.tipo_membresia === "Familiar",
+        canRenew: isAdmin || membresia.dias_restantes <= 0,
+        isAdmin: isAdmin
+      };
     });
   },
 
@@ -1200,13 +1255,13 @@ export const MembershipService = {
    */
   async getAccessHistory(date, page = 1) {
     if (!date) {
-        const error = new Error("La fecha es requerida.");
-        error.statusCode = 400;
-        throw error;
+      const error = new Error("La fecha es requerida.");
+      error.statusCode = 400;
+      throw error;
     }
     const limit = 10; // Definir el número de registros por página
     const { logs, total } = await MembershipModel.getAccessLogByDate(date, page, limit);
-    
+
     // Los logs ya vienen con el formato de fecha correcto desde la BD.
     return {
       logs: logs,

@@ -217,14 +217,6 @@
     // Carga inicial
     setTimeout(showRooms, 500);
 
-    // Mostrar overlay al navegar a Reservar/Rentar
-    roomsGrid.addEventListener('click', (e) => {
-      const link = e.target.closest('a[href^="/rooms/"]');
-      if (link) {
-        loadingOverlay.classList.remove('hidden');
-      }
-    }, true);
-
     // Manejar notificaciones de éxito por redirección
     const urlParams = new URLSearchParams(window.location.search);
     const success = urlParams.get('success');

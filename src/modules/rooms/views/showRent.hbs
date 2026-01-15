@@ -1,3 +1,74 @@
+ <style>
+    /* Utilidad para truncar 2 líneas */
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Ajustes específicos para móvil */
+    @media (max-width: 767px) {
+      #rentControlsMobile {
+        margin-bottom: 12px;
+      }
+
+      .rent-reveal {
+        min-height: 320px;
+        /* Altura mínima para consistencia */
+        max-width: 100%;
+      }
+
+      /* Asegurar que todo el texto sea visible */
+      .rent-reveal * {
+        line-height: 1.2;
+      }
+
+      /* Mejorar espaciado interno */
+      .rent-reveal>div {
+        padding: 8px;
+      }
+    }
+
+    /* Ajustes específicos para tablet */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #cardsSection {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .rent-reveal {
+        min-height: 300px;
+        height: 100%;
+        /* Asegurar altura completa */
+      }
+
+      /* Grid de 2 columnas con buen espaciado */
+      .grid-cols-1.md\:grid-cols-2 {
+        gap: 12px;
+      }
+    }
+
+    /* Ajustar altura dinámica para mejor scroll */
+    #mobileTabletSection {
+      height: calc(100vh - 160px);
+      /* Altura ajustada */
+    }
+
+    #cardsSection {
+      height: calc(100vh - 220px);
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Mejorar la legibilidad del texto pequeño */
+    .text-\[10px\] {
+      font-size: 10px;
+      line-height: 1.1;
+    }
+  </style>
+
+
 <div class="h-screen max-w-7xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-1 flex flex-col overflow-hidden">
   <div class="flex-none">
     {{>buttons}}
@@ -449,75 +520,87 @@
     </div>
   </div>
 
-  <style>
-    /* Utilidad para truncar 2 líneas */
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+  <!-- Modal de confirmación de eliminación -->
+  <div id="deleteModal" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
+      <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+        <i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Eliminar renta?</h2>
+      <p class="mb-6 text-gray-600 text-sm sm:text-base text-center">
+        Estás a punto de eliminar la renta de la habitación <span id="deleteRoomNumber"
+          class="font-bold text-blue-600"></span> para el cliente <span id="deleteClientName"
+          class="font-bold text-gray-900"></span>.
+      </p>
+      <p class="mb-6 text-red-600 text-xs sm:text-sm text-center font-medium">
+        <i class="fa-solid fa-circle-exclamation"></i> Esta acción no se puede deshacer.
+      </p>
+      <form id="deleteForm" method="POST" class="flex flex-col gap-3 w-full">
+        <div class="flex flex-col sm:flex-row justify-end gap-2">
+          <button type="button" onclick="closeDeleteModal()"
+            class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
+            <i class="fa-solid fa-xmark"></i> Cancelar
+          </button>
+          <button type="submit"
+            class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
+            <i class="fa-solid fa-trash-can"></i> Eliminar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-    /* Ajustes específicos para móvil */
-    @media (max-width: 767px) {
-      #rentControlsMobile {
-        margin-bottom: 12px;
-      }
+  <!-- Modal para desocupar renta -->
+  <div id="desocuparModal"
+    class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
+      <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+        <i class="fa-solid fa-door-open text-green-600 text-2xl"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Desocupar habitación?</h2>
+      <p class="mb-4 text-gray-600 text-sm sm:text-base text-center">
+        ¿Estás seguro de marcar como <span class="font-bold text-green-600">DESOCUPADA</span> la habitación <span
+          id="desocuparRoomNumber" class="font-bold text-blue-600"></span>?
+      </p>
+      <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <p class="text-sm text-blue-800">
+          <i class="fa-solid fa-user text-blue-600"></i> <strong>Cliente:</strong> <span id="desocuparClientName"
+            class="font-medium"></span>
+        </p>
+      </div>
+      <p class="mb-6 text-gray-600 text-xs sm:text-sm text-center">
+        <i class="fa-solid fa-info-circle text-blue-500"></i> La renta se marcará como finalizada y la habitación pasará
+        a
+        estado <strong>"LIMPIEZA"</strong>. El registro se mantendrá para reportes.
+      </p>
+      <form id="desocuparForm" method="POST" class="flex flex-col gap-3 w-full">
+        <div class="flex flex-col sm:flex-row justify-end gap-2">
+          <button type="button" onclick="closeDesocuparModal()"
+            class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
+            <i class="fa-solid fa-xmark"></i> Cancelar
+          </button>
+          <button type="submit"
+            class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
+            <i class="fa-solid fa-door-open"></i> Desocupar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-      .rent-reveal {
-        min-height: 320px;
-        /* Altura mínima para consistencia */
-        max-width: 100%;
-      }
+  {{else}}
+  <div class="text-center py-16">
+    <i class="fa-solid fa-file-invoice-dollar text-5xl text-slate-400"></i>
+    <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron rentas</h2>
+    <p class="mt-2 text-sm text-slate-500">Actualmente no hay rentas registradas.</p>
+    <a href="/rooms"
+      class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Volver a Habitaciones</span>
+    </a>
+  </div>
+  {{/if}}
 
-      /* Asegurar que todo el texto sea visible */
-      .rent-reveal * {
-        line-height: 1.2;
-      }
-
-      /* Mejorar espaciado interno */
-      .rent-reveal>div {
-        padding: 8px;
-      }
-    }
-
-    /* Ajustes específicos para tablet */
-    @media (min-width: 768px) and (max-width: 1023px) {
-      #cardsSection {
-        padding-left: 8px;
-        padding-right: 8px;
-      }
-
-      .rent-reveal {
-        min-height: 300px;
-        height: 100%;
-        /* Asegurar altura completa */
-      }
-
-      /* Grid de 2 columnas con buen espaciado */
-      .grid-cols-1.md\:grid-cols-2 {
-        gap: 12px;
-      }
-    }
-
-    /* Ajustar altura dinámica para mejor scroll */
-    #mobileTabletSection {
-      height: calc(100vh - 160px);
-      /* Altura ajustada */
-    }
-
-    #cardsSection {
-      height: calc(100vh - 220px);
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* Mejorar la legibilidad del texto pequeño */
-    .text-\[10px\] {
-      font-size: 10px;
-      line-height: 1.1;
-    }
-  </style>
 
   <script>
     // Configuración para asegurar que las cards se muestren completamente
@@ -644,87 +727,6 @@
 
     });
   </script>
-
-  <!-- Modal de confirmación de eliminación -->
-  <div id="deleteModal" class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
-    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
-      <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-        <i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl"></i>
-      </div>
-      <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Eliminar renta?</h2>
-      <p class="mb-6 text-gray-600 text-sm sm:text-base text-center">
-        Estás a punto de eliminar la renta de la habitación <span id="deleteRoomNumber"
-          class="font-bold text-blue-600"></span> para el cliente <span id="deleteClientName"
-          class="font-bold text-gray-900"></span>.
-      </p>
-      <p class="mb-6 text-red-600 text-xs sm:text-sm text-center font-medium">
-        <i class="fa-solid fa-circle-exclamation"></i> Esta acción no se puede deshacer.
-      </p>
-      <form id="deleteForm" method="POST" class="flex flex-col gap-3 w-full">
-        <div class="flex flex-col sm:flex-row justify-end gap-2">
-          <button type="button" onclick="closeDeleteModal()"
-            class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
-            <i class="fa-solid fa-xmark"></i> Cancelar
-          </button>
-          <button type="submit"
-            class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
-            <i class="fa-solid fa-trash-can"></i> Eliminar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal para desocupar renta -->
-  <div id="desocuparModal"
-    class="fixed inset-0 z-[9999] bg-black bg-opacity-50 hidden items-center justify-center px-4">
-    <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm sm:max-w-md transform transition-all">
-      <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
-        <i class="fa-solid fa-door-open text-green-600 text-2xl"></i>
-      </div>
-      <h2 class="text-lg sm:text-xl font-bold mb-2 text-gray-900 text-center">¿Desocupar habitación?</h2>
-      <p class="mb-4 text-gray-600 text-sm sm:text-base text-center">
-        ¿Estás seguro de marcar como <span class="font-bold text-green-600">DESOCUPADA</span> la habitación <span
-          id="desocuparRoomNumber" class="font-bold text-blue-600"></span>?
-      </p>
-      <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-        <p class="text-sm text-blue-800">
-          <i class="fa-solid fa-user text-blue-600"></i> <strong>Cliente:</strong> <span id="desocuparClientName"
-            class="font-medium"></span>
-        </p>
-      </div>
-      <p class="mb-6 text-gray-600 text-xs sm:text-sm text-center">
-        <i class="fa-solid fa-info-circle text-blue-500"></i> La renta se marcará como finalizada y la habitación pasará
-        a
-        estado <strong>"LIMPIEZA"</strong>. El registro se mantendrá para reportes.
-      </p>
-      <form id="desocuparForm" method="POST" class="flex flex-col gap-3 w-full">
-        <div class="flex flex-col sm:flex-row justify-end gap-2">
-          <button type="button" onclick="closeDesocuparModal()"
-            class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
-            <i class="fa-solid fa-xmark"></i> Cancelar
-          </button>
-          <button type="submit"
-            class="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold w-full sm:w-28 transition-colors">
-            <i class="fa-solid fa-door-open"></i> Desocupar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  {{else}}
-  <div class="text-center py-16">
-    <i class="fa-solid fa-file-invoice-dollar text-5xl text-slate-400"></i>
-    <h2 class="mt-4 text-xl font-semibold text-slate-700">No se encontraron rentas</h2>
-    <p class="mt-2 text-sm text-slate-500">Actualmente no hay rentas registradas.</p>
-    <a href="/rooms"
-      class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
-      <i class="fa-solid fa-arrow-left"></i>
-      <span>Volver a Habitaciones</span>
-    </a>
-  </div>
-  {{/if}}
 
   <script>
     // Funciones para el modal de eliminación

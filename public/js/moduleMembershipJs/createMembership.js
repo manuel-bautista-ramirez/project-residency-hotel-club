@@ -57,28 +57,21 @@ const MembershipUI = {
     this.procesandoCliente = false;
     this.procesandoMembresia = false;
   },
+
   /**
-   * Muestra un spinner en un botón, lo deshabilita y opcionalmente cambia su texto.
-   * @param {HTMLElement} button - El botón donde se mostrará el spinner.
-   * @param {string} [text=''] - El texto a mostrar junto al spinner.
-   * @returns {string} El HTML original del botón.
+   * Muestra un spinner en un botón usando el helper global.
    */
-  showButtonSpinner: function (button, text = '') {
-    const originalHtml = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${text}`;
-    return originalHtml;
+  startLoading: function (button, text = 'Procesando...') {
+    this._originalBtnHtml = window.setLoadingState(button, text);
   },
 
   /**
-   * Restaura el contenido original de un botón y lo habilita.
-   * @param {HTMLElement} button - El botón a restaurar.
-   * @param {string} originalHtml - El HTML original que se guardó.
+   * Restaura el contenido original de un botón usando el helper global.
    */
-  hideButtonSpinner: function (button, originalHtml) {
-    button.innerHTML = originalHtml;
-    button.disabled = false;
+  stopLoading: function (button) {
+    window.removeLoadingState(button, this._originalBtnHtml);
   },
+
   /**
    * Asigna todos los manejadores de eventos a los elementos del DOM cacheados.
    * Centraliza la lógica de interactividad del usuario.
@@ -110,7 +103,7 @@ const MembershipUI = {
         if (this.procesandoMembresia) return;
         if (Validator.validateForm(this.formMembership)) {
           if (!this.clienteRegistrado) {
-            this.showMessage(this.membershipMessage, "Debe registrar un cliente primero", "error");
+            this.showMessage(null, "Debe registrar un cliente primero", "error");
             return;
           }
           this.mostrarModalMembresia();
@@ -141,7 +134,7 @@ const MembershipUI = {
       this.aplicarDescuentoBtn.addEventListener("click", () => {
         const descuento = parseInt(this.descuentoInput.value) || 0;
         if (descuento < 0 || descuento > 100) {
-          this.showMessage(this.membershipMessage, "El descuento debe estar entre 0 y 100%", "error");
+          this.showMessage(null, "El descuento debe estar entre 0 y 100%", "error");
           return;
         }
         this.updateCalculatedDetails();
@@ -149,8 +142,7 @@ const MembershipUI = {
     }
   },
   /**
-   * Establece la fecha mínima permitida en el campo de fecha de inicio,
-   * que corresponde al día actual para evitar seleccionar fechas pasadas.
+   * Establece la fecha mínima permitida en el campo de fecha de inicio.
    */
   setMinDate: function () {
     const today = new Date();
@@ -162,9 +154,7 @@ const MembershipUI = {
     }
   },
   /**
-   * Dispara eventos iniciales para asegurar que la UI se renderice correctamente
-   * al cargar la página. Por ejemplo, calcula el precio y la fecha de fin para
-   * la membresía seleccionada por defecto.
+   * Dispara eventos iniciales para asegurar que la UI se renderice correctamente.
    */
   triggerInitialEvents: function () {
     if (this.tipoMembresiaSelect) {
@@ -172,8 +162,7 @@ const MembershipUI = {
     }
   },
   /**
-   * Muestra un modal de confirmación con los datos del cliente antes de enviarlos al servidor.
-   * Permite al usuario verificar la información.
+   * Muestra un modal de confirmación con los datos del cliente.
    */
   mostrarModalCliente: function () {
     const formData = new FormData(this.formCliente);
@@ -185,16 +174,15 @@ const MembershipUI = {
   },
   /**
    * Función asíncrona que se ejecuta al confirmar la creación del cliente.
-   * Envía los datos del formulario al servidor usando fetch.
-   * Si la respuesta es exitosa, actualiza la UI para permitir la creación de la membresía.
-   * Maneja los estados de carga y los posibles errores.
    */
   confirmarCliente: async function () {
     this.procesandoCliente = true;
     this.clienteModal.classList.add("hidden");
     if (this.confirmClienteBtn) this.confirmClienteBtn.disabled = true;
     const submitBtn = this.formCliente.querySelector('button[type="submit"]');
-    const originalBtnHtml = this.showButtonSpinner(submitBtn, 'Verificando...');
+
+    this.startLoading(submitBtn, 'Verificando...');
+
     try {
       // Paso 1: Validar si el cliente ya existe
       const formData = new FormData(this.formCliente);
@@ -212,23 +200,19 @@ const MembershipUI = {
 
       // Paso 2: Manejar la respuesta de la validación
       if (validationData.status === 'active') {
-        this.showMessage(this.clienteMessage, 'Este cliente ya tiene una membresía activa. No se puede crear una nueva.', 'error');
-        // Aquí podrías mostrar un modal más elaborado si quisieras
-        return; // Detener el proceso
+        this.showMessage(null, 'Este cliente ya tiene una membresía activa. No se puede crear una nueva.', 'error');
+        return;
       }
 
       if (validationData.status === 'inactive') {
-        this.showMessage(this.clienteMessage, 'Este cliente tiene una membresía inactiva. Será redirigido a la página de renovación.', 'error');
-        // Mostrar un modal que ofrezca redirigir
-        // Por ahora, redirigimos directamente tras un breve delay
+        this.showMessage(null, 'Este cliente tiene una membresía inactiva. Será redirigido a la página de renovación.', 'warning');
         setTimeout(() => {
-          window.location.href = `/memberships/renew/${validationData.id_activa}`; // Asumiendo que el backend devuelve el id
+          window.location.href = `/memberships/renew/${validationData.id_activa}`;
         }, 3000);
-        return; // Detener el proceso
+        return;
       }
 
       // Paso 3: Si el cliente no existe (not_found), proceder con la creación
-      submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Procesando...`;
       const createResp = await fetch(this.formCliente.action, {
         method: "POST",
         body: new URLSearchParams(formData),
@@ -241,10 +225,10 @@ const MembershipUI = {
         this.idClienteInput.value = createData.id_cliente;
         this.clienteRegistrado = true;
         this.submitMembershipBtn.disabled = false;
-        this.submitMembershipBtn.classList.remove("bg-gray-400", "hover:bg-gray-400", "focus:ring-gray-400");
-        this.submitMembershipBtn.classList.add("bg-green-600", "hover:bg-green-700", "focus:ring-green-500");
+        this.submitMembershipBtn.classList.remove("bg-gray-400", "hover:bg-gray-400");
+        this.submitMembershipBtn.classList.add("bg-green-600", "hover:bg-green-700");
         this.submitMembershipBtn.textContent = "Crear Membresía";
-        this.showMessage(this.clienteMessage, "Cliente registrado con éxito. Ahora puede crear la membresía.", "success");
+        this.showMessage(null, "Cliente registrado con éxito. Procede con la membresía.", "success");
 
         if (this.formMembership) this.formMembership.parentElement.classList.remove('hidden');
         if (this.formCliente) this.formCliente.parentElement.classList.add('hidden');
@@ -253,16 +237,15 @@ const MembershipUI = {
         throw new Error("No se recibió un ID de cliente válido");
       }
     } catch (err) {
-      this.showMessage(this.clienteMessage, `Error: ${err.message}`, "error");
+      this.showMessage(null, `Error: ${err.message}`, "error");
     } finally {
-      this.hideButtonSpinner(submitBtn, originalBtnHtml);
+      this.stopLoading(submitBtn);
       this.procesandoCliente = false;
       if (this.confirmClienteBtn) this.confirmClienteBtn.disabled = false;
     }
   },
   /**
-   * Muestra un modal de confirmación con el resumen de la membresía
-   * antes de finalizar la creación.
+   * Muestra un modal de confirmación con el resumen de la membresía.
    */
   mostrarModalMembresia: function () {
     const formData = new FormData(this.formMembership);
@@ -284,16 +267,15 @@ const MembershipUI = {
   },
   /**
    * Función asíncrona que envía los datos del formulario de membresía al servidor.
-   * Si la creación es exitosa, invoca a `mostrarModalExito` para mostrar los resultados.
-   * Deshabilita los formularios para prevenir envíos duplicados.
-   * Gestiona los estados de carga y errores.
    */
   confirmarMembresia: async function () {
     this.procesandoMembresia = true;
     this.membershipModal.classList.add("hidden");
     if (this.confirmMembershipBtn) this.confirmMembershipBtn.disabled = true;
     const submitBtn = this.formMembership.querySelector('button[type="submit"]');
-    const originalBtnHtml = this.showButtonSpinner(submitBtn, 'Procesando...');
+
+    this.startLoading(submitBtn, 'Procesando...');
+
     try {
       const formData = new FormData(this.formMembership);
       const resp = await fetch(this.formMembership.action, {
@@ -311,18 +293,16 @@ const MembershipUI = {
         throw new Error(responseData.message || "Error desconocido");
       }
     } catch (err) {
-      this.showMessage(this.membershipMessage, "Error al crear membresía: " + err.message, "error");
+      this.showMessage(null, "Error al crear membresía: " + err.message, "error");
     } finally {
-      this.hideButtonSpinner(submitBtn, originalBtnHtml);
+      this.stopLoading(submitBtn);
       this.procesandoMembresia = false;
       if (this.confirmMembershipBtn) this.confirmMembershipBtn.disabled = false;
     }
   },
+
   /**
    * Muestra un modal de éxito después de crear la membresía.
-   * Clona un template HTML, lo rellena con los datos recibidos del servidor (incluyendo el QR),
-   * y lo añade al DOM. También configura los botones de "Cerrar" y "Ver Lista".
-   * @param {object} data - Los datos de la membresía creada, devueltos por el servidor.
    */
   mostrarModalExito: function (data) {
     const template = document.getElementById('success-modal-template');
@@ -337,14 +317,14 @@ const MembershipUI = {
     const qrImage = modalClone.getElementById('qrImage');
     qrImage.src = `${data.qr_path}?t=${new Date().getTime()}`;
     qrImage.alt = `QR de membresía ${data.titular}`;
-    const downloadContainer = modalClone.querySelector('[data-template-content="qr-download"]');
-    const downloadButton = document.createElement('button');
-    downloadButton.className = "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500";
-    downloadButton.innerHTML = `<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>Descargar QR`;
-    downloadButton.onclick = () => this.descargarQR(data.id_activa);
-    downloadContainer.appendChild(downloadButton);
+
+    // Configurar botones del clon
     const modalElement = modalClone.firstElementChild;
     document.body.appendChild(modalElement);
+
+    const downloadBtn = modalElement.querySelector('button[data-action="download-qr"]') || document.createElement('button');
+    downloadBtn.onclick = () => this.descargarQR(data.id_activa);
+
     modalElement.querySelector('[data-action="close"]').addEventListener('click', () => {
       modalElement.remove();
       window.location.reload();
@@ -353,9 +333,9 @@ const MembershipUI = {
       window.location.href = '/memberships/listMembership';
     });
   },
+
   /**
    * Inicia la descarga del archivo de imagen del código QR.
-   * @param {number} id_activa - El ID de la membresía activa para construir la URL de descarga.
    */
   descargarQR: function (id_activa) {
     const link = document.createElement("a");
@@ -365,28 +345,9 @@ const MembershipUI = {
     link.click();
     document.body.removeChild(link);
   },
+
   /**
-   * Limpia y resetea ambos formularios a su estado inicial,
-   * permitiendo registrar un nuevo cliente y membresía.
-   */
-  limpiarFormularios: function () {
-    if (this.formCliente) this.formCliente.reset();
-    if (this.formMembership) {
-      this.formMembership.reset();
-      this.integrantesContainer.innerHTML = "";
-      this.integrantesSection.classList.add("hidden");
-    }
-    this.clienteRegistrado = false;
-    this.submitMembershipBtn.disabled = true;
-    this.submitMembershipBtn.classList.remove("bg-green-600", "hover:bg-green-700", "focus:ring-green-500");
-    this.submitMembershipBtn.classList.add("bg-gray-400", "hover:bg-gray-400", "focus:ring-gray-400");
-    this.submitMembershipBtn.textContent = "Crear Membresía (complete primero el cliente)";
-  },
-  /**
-   * Realiza una llamada a una API en el backend para calcular dinámicamente
-   * la fecha de fin y el precio final de la membresía.
-   * Se ejecuta cuando cambia el tipo de membresía, la fecha de inicio o se aplica un descuento.
-   * Esto centraliza la lógica de negocio en el servidor.
+   * Actualiza dinámicamente la fecha de fin y el precio final de la membresía.
    */
   updateCalculatedDetails: async function () {
     const id_tipo_membresia = this.tipoMembresiaSelect.value;
@@ -394,11 +355,9 @@ const MembershipUI = {
     const descuento = this.descuentoInput ? parseInt(this.descuentoInput.value) || 0 : 0;
     if (!id_tipo_membresia || !fecha_inicio) return;
     try {
-      // --- CORRECCIÓN ---
-      // Deshabilitar el botón de envío mientras se calculan los detalles para evitar envíos con datos inconsistentes.
       if (this.submitMembershipBtn) this.submitMembershipBtn.disabled = true;
+      this.showMessage(null, "Calculando detalles...", "info");
 
-      this.showMessage(this.membershipMessage, "Calculando...", "success");
       const resp = await fetch("/memberships/api/calculate-details", {
         method: "POST",
         body: JSON.stringify({ id_tipo_membresia, fecha_inicio, descuento }),
@@ -409,181 +368,79 @@ const MembershipUI = {
       this.precioFinalInput.value = data.precio_final;
       this.precioFinalHidden.value = data.precio_final;
       this.fechaFinInput.value = data.fecha_fin;
-      this.membershipMessage.classList.add("hidden");
     } catch (err) {
-      this.showMessage(this.membershipMessage, `Error: ${err.message}`, "error");
+      this.showMessage(null, `Error: ${err.message}`, "error");
     } finally {
-      // Volver a habilitar el botón una vez que el cálculo ha terminado (con éxito o error).
-      // Solo si el cliente ya fue registrado.
       if (this.submitMembershipBtn && this.clienteRegistrado) this.submitMembershipBtn.disabled = false;
     }
   },
+
   /**
-   * Manejador para el evento 'change' del selector de tipo de membresía.
-   * Actualiza el número máximo de integrantes permitidos y crea exactamente
-   * el número de campos requeridos según max_integrantes del tipo seleccionado.
-   * Los integrantes no pueden agregarse ni eliminarse, deben ser exactos.
+   * Manejador para el cambio de tipo de membresía.
    */
   handleTipoMembresiaChange: function (e) {
     const selectedOption = e.target.options[e.target.selectedIndex];
     this.maxIntegrantes = parseInt(selectedOption.dataset.max, 10);
     this.updateCalculatedDetails();
-
-    this.integrantesContainer.innerHTML = ""; // Limpiar siempre
-
-    // Si max_integrantes > 1, mostrar sección de integrantes
+    this.integrantesContainer.innerHTML = "";
     if (this.maxIntegrantes > 1) {
       this.integrantesSection.classList.remove("hidden");
-      this.addIntegranteBtn.classList.add("hidden"); // Siempre ocultar el botón de agregar
-
-      // Crear exactamente (maxIntegrantes - 1) campos fijos
-      // -1 porque el titular ya cuenta como un integrante
       const numIntegrantesAdicionales = this.maxIntegrantes - 1;
-
       for (let i = 0; i < numIntegrantesAdicionales; i++) {
-        this.agregarIntegrante(false); // false = sin botón de eliminar
+        this.agregarIntegrante(false);
       }
-
-      // Actualizar el texto del header para informar al usuario
       const headerText = this.integrantesSection.querySelector('h4');
       if (headerText) {
         headerText.innerHTML = `<i class="fas fa-users mr-2"></i>Integrantes adicionales (${numIntegrantesAdicionales} requeridos)`;
       }
     } else {
-      // Si solo es para 1 persona (individual), ocultar la sección
       this.integrantesSection.classList.add("hidden");
     }
   },
+
   /**
-   * Añade dinámicamente un nuevo campo de texto para registrar un integrante familiar.
-   * @param {boolean} showRemoveButton - Si se debe mostrar el botón de eliminar.
+   * Añade un campo para integrante.
    */
   agregarIntegrante: function (showRemoveButton = true) {
     const currentIntegrantes = this.integrantesContainer.querySelectorAll(".integrante").length;
-    if (currentIntegrantes >= this.maxIntegrantes - 1 && showRemoveButton) {
-      this.showMessage(this.membershipMessage, `Máximo ${this.maxIntegrantes - 1} integrantes adicionales permitidos`, "error");
-      setTimeout(() => { this.membershipMessage.classList.add("hidden"); }, 3000);
-      return;
-    }
-
     const integranteDiv = document.createElement("div");
     integranteDiv.classList.add("integrante", "flex", "items-center", "space-x-2", "mb-2");
-
     let inputHTML = `<input type="text" name="integrantes[]" placeholder="Nombre completo del integrante #${currentIntegrantes + 1}" required class="flex-1 px-3 py-2 border border-green-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">`;
-    let buttonHTML = '';
-
-    if (showRemoveButton) {
-      buttonHTML = `<button type="button" class="removeBtn px-3 py-2 border border-transparent rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">❌ Eliminar</button>`;
-    }
-
-    integranteDiv.innerHTML = inputHTML + buttonHTML;
+    integranteDiv.innerHTML = inputHTML;
     this.integrantesContainer.appendChild(integranteDiv);
-
-    if (showRemoveButton) {
-      integranteDiv.querySelector(".removeBtn").addEventListener("click", () => {
-        integranteDiv.remove();
-      });
-    }
   },
 
   /**
-   * Vincula los eventos de filtrado de entrada en tiempo real a los campos del formulario.
+   * Vincula los eventos de filtrado de entrada.
    */
   bindInputFiltering: function () {
     const filterInput = (inputElement, regex) => {
       inputElement.addEventListener('input', (e) => {
-        const originalValue = e.target.value;
-        const sanitizedValue = originalValue.replace(regex, '');
-        if (originalValue !== sanitizedValue) {
-          e.target.value = sanitizedValue;
-        }
+        const val = e.target.value.replace(regex, '');
+        if (e.target.value !== val) e.target.value = val;
       });
     };
-
-    const nombreCompletoInput = this.formCliente.querySelector('[name="nombre_completo"]');
-    const telefonoInput = this.formCliente.querySelector('[name="telefono"]');
-    const descuentoInput = this.formMembership.querySelector('[name="descuento"]');
-
-    // Filtrar nombre completo (solo letras, espacios y caracteres españoles)
-    if (nombreCompletoInput) {
-      filterInput(nombreCompletoInput, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g);
-    }
-
-    // Filtrar teléfono (solo números, máximo 10)
-    if (telefonoInput) {
-      telefonoInput.addEventListener('input', (e) => {
-        const originalValue = e.target.value;
-        let sanitizedValue = originalValue.replace(/[^0-9]/g, '');
-        if (sanitizedValue.length > 10) {
-          sanitizedValue = sanitizedValue.slice(0, 10);
-        }
-        if (originalValue !== sanitizedValue) {
-          e.target.value = sanitizedValue;
-        }
+    const nombreInput = this.formCliente.querySelector('[name="nombre_completo"]');
+    const telInput = this.formCliente.querySelector('[name="telefono"]');
+    if (nombreInput) filterInput(nombreInput, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g);
+    if (telInput) {
+      telInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, '').slice(0, 10);
+        if (e.target.value !== val) e.target.value = val;
       });
     }
-
-    // Filtrar descuento (solo números, máximo 3 caracteres, no mayor a 100)
-    if (descuentoInput) {
-      descuentoInput.addEventListener('input', (e) => {
-        let value = e.target.value;
-        // 1. Quitar no-números
-        value = value.replace(/[^0-9]/g, '');
-        // 2. Limitar a 3 caracteres
-        if (value.length > 3) {
-          value = value.slice(0, 3);
-        }
-        // 3. Asegurar que no sea mayor a 100
-        if (parseInt(value, 10) > 100) {
-          value = '100';
-        }
-        e.target.value = value;
-      });
-    }
-
-    // Delegación de eventos para los campos de integrantes creados dinámicamente
-    this.integrantesContainer.addEventListener('input', (e) => {
-      if (e.target && e.target.name === 'integrantes[]') {
-        const originalValue = e.target.value;
-        const sanitizedValue = originalValue.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-        if (originalValue !== sanitizedValue) {
-          e.target.value = sanitizedValue;
-        }
-      }
-    });
   },
+
   /**
-   * Función de utilidad para mostrar mensajes de feedback (éxito o error) al usuario.
-   * El mensaje desaparece automáticamente después de 5 segundos.
-   * @param {HTMLElement} element - El elemento del DOM donde se mostrará el mensaje.
-   * @param {string} text - El texto del mensaje.
-   * @param {string} type - El tipo de mensaje ('success' o 'error') para aplicar el estilo correcto.
+   * Función de feedback global.
    */
   showMessage: function (element, text, type) {
     if (typeof window.showNotification === 'function') {
       window.showNotification(text, type);
     }
-
-    // Fallback/Legacy local message display
-    if (element) {
-      element.textContent = text;
-      element.classList.remove("hidden", "text-green-600", "text-red-600");
-      if (type === "success") {
-        element.classList.add("text-green-600");
-      } else {
-        element.classList.add("text-red-600");
-      }
-      setTimeout(() => {
-        element.classList.add("hidden");
-      }, 5000);
-    }
   },
 };
 
-/**
- * Punto de entrada del script.
- * Se asegura de que el DOM esté completamente cargado antes de ejecutar la lógica de inicialización.
- */
 document.addEventListener("DOMContentLoaded", function () {
   MembershipUI.init();
 });

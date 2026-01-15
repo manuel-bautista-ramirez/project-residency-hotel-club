@@ -1,21 +1,11 @@
 /**
  * Validaciones para el módulo de Entradas (Entries)
  * Maneja el registro de visitantes y configuración de tarifas
+ * Integrado con el sistema global de notificaciones y UI helpers.
  */
 
 document.addEventListener('DOMContentLoaded', function () {
   console.log('🛡️ Inicializando validaciones de Entradas...');
-
-  /**
-   * Notificaciones globales (Estilo Rooms)
-   */
-  const showMessage = (msg, type = 'success') => {
-    if (typeof window.showNotification === 'function') {
-      window.showNotification(msg, type);
-    } else {
-      alert(msg);
-    }
-  };
 
   // ============================================
   // 1. VALIDACIÓN DE FORMULARIO DE REGISTRO
@@ -84,7 +74,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       if (hasError) {
-        showMessage('Por favor completa todos los campos requeridos', 'error');
+        if (typeof window.showNotification === 'function') {
+          window.showNotification('Por favor completa todos los campos requeridos', 'error');
+        }
         if (firstErrorElement) firstErrorElement.focus();
         return false;
       }
@@ -125,51 +117,22 @@ document.addEventListener('DOMContentLoaded', function () {
       if (hasError) {
         e.preventDefault();
         e.stopPropagation();
-        showMessage('Corrige los precios antes de actualizar', 'error');
+        if (typeof window.showNotification === 'function') {
+          window.showNotification('Corrige los precios antes de actualizar', 'error');
+        }
       } else {
-        // La lógica de envío real está en entriesMain.hbs, pero aquí podemos añadir el feedback visual
-        // si se enviara de forma tradicional. Como entriesMain.hbs usa fetch,
-        // simplemente nos aseguramos de que no bloqueemos el proceso si no hay error.
         console.log('✅ Formulario de configuración validado');
       }
     });
   }
 
-  /**
-   * Función para añadir spinner de carga a un botón
-   */
-  window.setLoadingState = function (button, loadingText = 'Cargando...') {
-    if (!button) return null;
-    const originalHTML = button.innerHTML;
-    button.disabled = true;
-    button.classList.add('opacity-75', 'cursor-not-allowed');
-    button.innerHTML = `
-      <svg class="animate-spin h-4 w-4 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-      ${loadingText}
-    `;
-    return originalHTML;
-  };
-
-  /**
-   * Función para restaurar un botón
-   */
-  window.removeLoadingState = function (button, originalHTML) {
-    if (!button || !originalHTML) return;
-    button.disabled = false;
-    button.classList.remove('opacity-75', 'cursor-not-allowed');
-    button.innerHTML = originalHTML;
-  };
-
-  // --- Funciones de utilidad para errores (Estilo Store) ---
+  // ============================================
+  // 3. FUNCIONES DE UTILIDAD PARA ERRORES
+  // ============================================
   function markError(input, message) {
-    // Estilos visuales del input
     input.classList.add('border-red-500', 'bg-red-50');
     input.classList.remove('border-gray-200', 'focus:border-indigo-500', 'focus:ring-indigo-100');
 
-    // Mensaje de error
     let errorMsg = input.parentElement.querySelector('.field-error');
     if (!errorMsg) {
       errorMsg = document.createElement('p');
@@ -180,11 +143,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function clearError(input) {
-    // Restaurar estilos
     input.classList.remove('border-red-500', 'bg-red-50');
     input.classList.add('border-gray-200');
 
-    // Quitar mensaje
     const errorMsg = input.parentElement.querySelector('.field-error');
     if (errorMsg) errorMsg.remove();
   }
