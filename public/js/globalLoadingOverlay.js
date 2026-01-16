@@ -80,10 +80,11 @@
       subtextEl.classList.toggle('opacity-0', !showSubtext);
     }
 
-    setProgress(progress);
+    const initialProgress = autoProgress ? Math.max(12, clampProgress(progress)) : progress;
+    setProgress(initialProgress);
 
     if (autoProgress) {
-      startAutoProgress({ startValue: progress });
+      startAutoProgress({ startValue: initialProgress });
     }
 
     if (successCheckEl) {
@@ -110,7 +111,38 @@
 
     clearAutoProgress();
 
-    if (progressEl) setProgress(100);
+    const completeProgress = (onComplete) => {
+      if (!progressEl) return onComplete();
+
+      const animateProgress = (from, to, duration, cb) => {
+        const start = Date.now();
+        const tick = () => {
+          const t = Math.min(1, (Date.now() - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          const value = from + (to - from) * eased;
+          setProgress(value);
+          if (t < 1) {
+            requestAnimationFrame(tick);
+          } else {
+            setProgress(to);
+            cb();
+          }
+        };
+        requestAnimationFrame(tick);
+      };
+
+      const current = clampProgress(progressEl.style.width?.replace('%', '') || 0);
+
+      if (current < 95) {
+        const to95Duration = Math.min(650, Math.max(220, (95 - current) * 10));
+        animateProgress(current, 95, to95Duration, () => {
+          animateProgress(95, 100, 220, onComplete);
+        });
+        return;
+      }
+
+      animateProgress(current, 100, 220, onComplete);
+    };
 
     const finalizeHide = () => {
       overlayEl.classList.add('opacity-0', 'pointer-events-none');
@@ -125,13 +157,15 @@
       }, 300);
     };
 
-    if (success && successCheckEl) {
-      successCheckEl.style.opacity = '1';
-      successCheckEl.style.transform = 'scale(1)';
-      setTimeout(finalizeHide, delay);
-    } else {
-      finalizeHide();
-    }
+    completeProgress(() => {
+      if (success && successCheckEl) {
+        successCheckEl.style.opacity = '1';
+        successCheckEl.style.transform = 'scale(1)';
+        setTimeout(finalizeHide, delay);
+      } else {
+        finalizeHide();
+      }
+    });
   };
 
   const attachLoadingToForms = ({ selector = 'form[data-loading]' } = {}) => {
@@ -204,7 +238,6 @@
 
     window.addEventListener('load', () => {
       if (!shouldShowPageOverlay) return;
-      setProgress(100);
       const urlParams = new URLSearchParams(window.location.search);
       const hasSuccess = Boolean(urlParams.get('success'));
       hideLoadingOverlay({ success: true, delay: hasSuccess ? 1350 : 350 });
@@ -229,8 +262,8 @@
       }
       if (progress !== undefined) {
         if (autoProgress === true) {
-          clearAutoProgress();
-          autoProgressTimer = setTimeout(() => setProgress(progress), 50);
+          const initialProgress = Math.max(12, clampProgress(progress));
+          startAutoProgress({ startValue: initialProgress });
         } else {
           clearAutoProgress();
           setProgress(progress);

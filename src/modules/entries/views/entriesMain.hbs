@@ -50,7 +50,8 @@
       <p class="text-gray-400 mt-2 font-medium">Capture los datos del cliente y seleccione el área de acceso.</p>
     </header>
 
-    <form id="entryForm" action="/api/entries" method="POST" class="space-y-8">
+    <form id="entryForm" action="/api/entries" method="POST" class="space-y-8" data-loading
+      data-loading-message="Registrando entrada..." data-loading-subtext="Guardando registro">
 
       <div class="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
         <h2 class="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -283,6 +284,32 @@
     card.classList.add('ring-4', 'ring-indigo-500', 'scale-[1.03]');
     lastSelectedCard = card;
 
+    const submitEntry = () => {
+      // Bloquear todos los botones de selección para evitar doble clic
+      document.querySelectorAll('.card-area button').forEach(b => {
+        b.disabled = true;
+        b.classList.add('opacity-50', 'cursor-not-allowed');
+      });
+
+      setTimeout(() => {
+        const form = document.getElementById('entryForm');
+        if (!form) return;
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.submit();
+        }
+      }, 500);
+    };
+
+    if (typeof Swal === 'undefined') {
+      const confirmed = confirm(
+        `Confirmar Registro\n\nVisitante: ${firstName} ${lastName}\nÁrea: ${areaName}\nCosto: $${Math.round(precioActual)}\nMétodo: ${paymentMethod}`
+      );
+      if (confirmed) submitEntry();
+      return;
+    }
+
     Swal.fire({
       title: '<span style="color:#1e1b4b">Confirmar Registro</span>',
       html: `
@@ -300,20 +327,7 @@
       borderRadius: '2.5rem'
     }).then(result => {
       if (result.isConfirmed) {
-        // Mostrar notificación de carga
-        if (typeof window.showNotification === 'function') {
-          window.showNotification('Registrando entrada, por favor espere...', 'info');
-        }
-
-        // Bloquear todos los botones de selección para evitar doble clic
-        document.querySelectorAll('.card-area button').forEach(b => {
-          b.disabled = true;
-          b.classList.add('opacity-50', 'cursor-not-allowed');
-        });
-
-        setTimeout(() => {
-          document.getElementById('entryForm').submit();
-        }, 500);
+        submitEntry();
       }
     });
   }
