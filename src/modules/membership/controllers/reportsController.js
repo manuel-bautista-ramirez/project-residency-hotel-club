@@ -5,6 +5,11 @@
  */
 
 import { MembershipService } from "../services/membershipService.js";
+import emailService from "../../../services/emailService.js";
+import whatsappService from "../../../services/whatsappService.js";
+import fs from "fs";
+import os from "os";
+import path from "path";
 
 /**
  * Objeto controlador para las operaciones relacionadas con los reportes.
@@ -94,6 +99,84 @@ const reportsController = {
       userRole,
       error: error || null, // Asegura que 'error' no sea undefined en la plantilla
     });
+  },
+
+  async sendReportByEmail(req, res) {
+    try {
+      const { period, date, destinatario, asunto } = req.body;
+
+      if (!destinatario) {
+        return res.status(400).json({ success: false, error: "Destinatario requerido" });
+      }
+
+      const { pdf, filename } = await MembershipService.generateReportPDF(period, date);
+
+      await emailService.send({
+        to: destinatario,
+        subject: asunto || `📊 Reporte de Membresías (${period})`,
+        text: "Adjunto se encuentra el reporte solicitado.",
+        html: `
+          <div style="font-family: sans-serif; color: #333;">
+            <h2>Reporte de Membresías</h2>
+            <p>Adjunto se encuentra el reporte solicitado.</p>
+            <hr />
+            <p style="font-size: 0.8em; color: #666;">Este es un correo automático, por favor no responda.</p>
+          </div>
+        `,
+        attachments: [{
+          filename,
+          content: pdf,
+          contentType: "application/pdf"
+        }]
+      });
+
+      return res.json({ success: true, message: "Reporte enviado por correo exitosamente" });
+    } catch (error) {
+      console.error("Error en sendReportByEmail (membership):", error);
+      return res.status(500).json({ success: false, error: error.message || "Error al enviar el reporte" });
+    }
+  },
+
+  async sendReportByWhatsApp(req, res) {
+    let tempPath = null;
+    try {
+      const { period, date, telefono } = req.body;
+
+      if (!telefono) {
+        return res.status(400).json({ success: false, error: "Teléfono requerido" });
+      }
+
+      if (!whatsappService.isConnected) {
+        return res.status(400).json({
+          success: false,
+          error: "El servicio de WhatsApp no está vinculado. Abre /whatsapp-qr y escanea el código."
+        });
+      }
+
+      const { pdf, filename } = await MembershipService.generateReportPDF(period, date);
+
+      tempPath = path.join(os.tmpdir(), `membership_report_${Date.now()}_${filename}`);
+      await fs.promises.writeFile(tempPath, pdf);
+
+      const mensaje = `📊 *Reporte de Membresías*\n🗓️ Periodo: ${period}\n🏢 *Hotel Residency Club*`;
+      const result = await whatsappService.enviarMensajeConPDF(telefono, mensaje, tempPath, filename);
+
+      if (!result.success) {
+        return res.status(500).json({ success: false, error: result.error || "Error al enviar por WhatsApp" });
+      }
+
+      return res.json({ success: true, message: "Reporte enviado por WhatsApp exitosamente" });
+    } catch (error) {
+      console.error("Error en sendReportByWhatsApp (membership):", error);
+      return res.status(500).json({ success: false, error: error.message || "Error al enviar el reporte" });
+    } finally {
+      if (tempPath) {
+        try {
+          await fs.promises.unlink(tempPath);
+        } catch {
+        }
+      }
+    }
   },
 };
 

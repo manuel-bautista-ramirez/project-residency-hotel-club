@@ -1,26 +1,27 @@
 {{>navbar}}
 
-<div class="w-full max-w-6xl mx-auto mt-20 px-4 pb-12">
+<div class="fixed inset-0 overflow-hidden">
+    <div class="w-full max-w-6xl mx-auto px-4 h-full pt-[calc(env(safe-area-inset-top)+64px)] pb-[calc(env(safe-area-inset-bottom)+56px)] flex flex-col justify-center md:pt-[72px] md:pb-[56px]">
     {{!-- Título y área de escaneo --}}
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl mb-4 shadow-lg">
-                <i class="fa-solid fa-qrcode text-white text-2xl"></i>
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 sm:p-8 mb-0 md:mb-8">
+        <div class="text-center mb-5 sm:mb-8">
+            <div class="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl mb-3 sm:mb-4 shadow-lg">
+                <i class="fa-solid fa-qrcode text-white text-xl sm:text-2xl"></i>
             </div>
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Control de Acceso de Miembros</h1>
-            <p class="text-gray-600 mt-2 text-lg">Escanea el código QR para verificar el estado de la membresía y registrar el acceso.</p>
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">Control de Acceso de Miembros</h1>
+            <p class="text-gray-600 mt-2 text-sm sm:text-lg">Escanea el código QR para verificar el estado de la membresía y registrar el acceso.</p>
         </div>
 
         <form id="qr-scan-form" class="max-w-md mx-auto">
             <label for="qr-code-input" class="block text-sm font-medium text-gray-700 mb-2 text-center">Coloca el cursor en el campo y escanea el QR:</label>
             <input type="text" id="qr-code-input" name="qr_code"
-                   class="block w-full px-4 py-3 text-center text-lg text-gray-700 bg-gray-50 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
+                   class="block w-full px-4 py-2.5 text-center text-base sm:text-lg text-gray-700 bg-gray-50 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
                    placeholder="Esperando escaneo..." autocomplete="off" autofocus>
         </form>
     </div>
 
     {{!-- Sección de Historial de Acceso --}}
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+    <div id="access-history-section" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 sm:p-8 hidden max-h-[45vh] overflow-y-auto">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Historial de Entradas</h2>
         <div class="mb-6">
             <label for="history-date-picker" class="block text-sm font-medium text-gray-700 mb-2">Selecciona una fecha para ver el historial:</label>
@@ -76,11 +77,13 @@
             </div>
         </div>
     </div>
+    
+    </div>
 </div>
 
 {{!-- Modal para mostrar los resultados del escaneo --}}
-<div id="qr-result-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
-    <div id="modal-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 opacity-0">
+<div id="qr-result-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 items-center justify-center p-4 hidden z-[70]">
+    <div id="modal-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform transition-all duration-300 scale-95 opacity-0">
         {{!-- El contenido del modal se inyectará dinámicamente con JavaScript --}}
     </div>
 </div>

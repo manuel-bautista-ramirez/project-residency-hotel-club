@@ -149,11 +149,51 @@
                         </tfoot>
                     </table>
                 </div>
-                <div class="mt-8 flex justify-end">
-                    <a id="download-pdf-btn" href="#"
-                        class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 inline-flex items-center">
-                        <i class="fas fa-file-pdf mr-2"></i>Descargar PDF
-                    </a>
+                <div id="envio-opciones-membership"
+                    class="mt-6 bg-white border border-gray-200 rounded-2xl shadow-sm p-6 hidden">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-paper-plane mr-3 text-indigo-600"></i>Enviar Reporte
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                        <div class="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+                            <h4 class="font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-envelope mr-2 text-blue-500 bg-blue-50 p-1.5 rounded-lg"></i>Envío por Correo
+                            </h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Destinatario</label>
+                                    <input type="email" id="email-destinatario-membership" placeholder="correo@ejemplo.com"
+                                        class="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Asunto</label>
+                                    <input type="text" id="email-asunto-membership" placeholder="Asunto del correo"
+                                        class="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                </div>
+                                <button id="enviar-email-btn-membership"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg w-full transition-all duration-300 text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                                    <i class="fas fa-envelope mr-2"></i> Enviar por Correo
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+                            <h4 class="font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fab fa-whatsapp mr-2 text-green-500 bg-green-50 p-1.5 rounded-lg"></i>Envío por WhatsApp
+                            </h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Número de celular</label>
+                                    <input type="tel" id="whatsapp-telefono-membership" placeholder="10 dígitos sin espacios"
+                                        class="border border-gray-300 rounded-lg p-2.5 w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
+                                </div>
+                                <button id="enviar-whatsapp-btn-membership"
+                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg w-full transition-all duration-300 text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                                    <i class="fab fa-whatsapp mr-2"></i> Enviar por WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

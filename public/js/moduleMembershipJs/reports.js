@@ -19,6 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearPreviewBtn = document.getElementById('clear-preview-btn');
   const notificationArea = document.getElementById('notification-area');
 
+  const envioOpciones = document.getElementById('envio-opciones-membership');
+  const emailDestinatarioInput = document.getElementById('email-destinatario-membership');
+  const emailAsuntoInput = document.getElementById('email-asunto-membership');
+  const whatsappTelefonoInput = document.getElementById('whatsapp-telefono-membership');
+  const enviarEmailBtn = document.getElementById('enviar-email-btn-membership');
+  const enviarWhatsAppBtn = document.getElementById('enviar-whatsapp-btn-membership');
+
   // --- Estado de la UI ---
   // Almacena el período de reporte actualmente seleccionado ('monthly', 'biweekly', 'weekly').
   let currentPeriod = 'monthly';
@@ -54,15 +61,94 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('monto-transferencia').textContent = formatCurrency(data.ingresos.transferencia);
     document.getElementById('monto-total').textContent = formatCurrency(data.total);
 
-    const { period, date } = getReportParams();
-    const downloadBtn = document.getElementById('download-pdf-btn');
-    if (downloadBtn) {
-      downloadBtn.href = `/api/memberships/reports/download?period=${period}&date=${date}`;
-      downloadBtn.closest('div').classList.remove('hidden'); // Asegurarse de que el contenedor del botón sea visible
+    if (envioOpciones) {
+      envioOpciones.classList.remove('hidden');
     }
 
     messageArea.classList.add('hidden');
     resultsTable.classList.remove('hidden');
+  }
+
+  async function enviarReportePorEmail() {
+    const { period, date } = getReportParams();
+    const destinatario = emailDestinatarioInput?.value?.trim();
+    const asunto = emailAsuntoInput?.value?.trim();
+
+    if (!destinatario) {
+      showMessage('Ingresa un correo de destinatario', 'error');
+      return;
+    }
+
+    const btn = enviarEmailBtn;
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+    }
+
+    showMessage('Enviando reporte por correo...', 'info');
+
+    try {
+      const response = await fetch('/api/memberships/reports/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ period, date, destinatario, asunto })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudo enviar el reporte');
+      showMessage(data.message || 'Reporte enviado por correo', 'info');
+      if (typeof window.showNotification === 'function') {
+        window.showNotification(data.message || 'Reporte enviado por correo', 'success');
+      }
+      showResults(await (await fetch(`/api/memberships/reports/preview?period=${period}&date=${date}`)).json());
+    } catch (error) {
+      showMessage(`Error: ${error.message}`, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }
+    }
+  }
+
+  async function enviarReportePorWhatsApp() {
+    const { period, date } = getReportParams();
+    const telefono = whatsappTelefonoInput?.value?.trim();
+
+    if (!telefono) {
+      showMessage('Ingresa un número de teléfono', 'error');
+      return;
+    }
+
+    const btn = enviarWhatsAppBtn;
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+    }
+
+    showMessage('Enviando reporte por WhatsApp...', 'info');
+
+    try {
+      const response = await fetch('/api/memberships/reports/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ period, date, telefono })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'No se pudo enviar el reporte');
+      if (typeof window.showNotification === 'function') {
+        window.showNotification(data.message || 'Reporte enviado por WhatsApp', 'success');
+      }
+      showResults(await (await fetch(`/api/memberships/reports/preview?period=${period}&date=${date}`)).json());
+    } catch (error) {
+      showMessage(`Error: ${error.message}`, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }
+    }
   }
 
   /**
@@ -108,11 +194,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!response.ok) throw new Error(data.error || 'No se pudo obtener la vista previa.');
       if (data.noData) {
+        if (envioOpciones) envioOpciones.classList.add('hidden');
         showMessage(data.message, 'warning');
         return;
       }
       showResults(data);
     } catch (error) {
+      if (envioOpciones) envioOpciones.classList.add('hidden');
       showMessage(`Error: ${error.message}`, 'error');
     }
   }
@@ -143,9 +231,15 @@ document.addEventListener('DOMContentLoaded', () => {
     clearPreviewBtn.addEventListener('click', () => {
       // Muestra el mensaje inicial y oculta la tabla de resultados.
       showMessage('Selecciona un tipo de reporte y una fecha para generar la vista previa', 'info');
-      // Ocultar el botón de descarga si está visible
-      document.getElementById('download-pdf-btn').closest('div').classList.add('hidden');
+      if (envioOpciones) envioOpciones.classList.add('hidden');
     });
+  }
+
+  if (enviarEmailBtn) {
+    enviarEmailBtn.addEventListener('click', enviarReportePorEmail);
+  }
+  if (enviarWhatsAppBtn) {
+    enviarWhatsAppBtn.addEventListener('click', enviarReportePorWhatsApp);
   }
   // --- Inicialización ---
   // Esta sección se ejecuta una sola vez al cargar la página.

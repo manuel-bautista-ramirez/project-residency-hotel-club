@@ -24,6 +24,7 @@ const recordCountEl = $('#record-count');
 const totalRecordsEl = $('#total-records');
 const currentPageEl = $('#current-page');
 const totalPagesEl = $('#total-pages');
+const historySection = $('#access-history-section');
 
 let currentPage = 1;
 
@@ -67,13 +68,18 @@ const showResultModal = (data) => {
     }
 
     const details = data.details || {};
-    const integrantesList = details.integrantes && details.integrantes.length > 0
+    const integrantes = Array.isArray(details.integrantes) ? details.integrantes : [];
+    const integrantesMax = 4;
+    const integrantesVisibles = integrantes.slice(0, integrantesMax);
+    const integrantesRestantes = Math.max(0, integrantes.length - integrantesVisibles.length);
+    const integrantesList = integrantesVisibles.length > 0
         ? `
-            <div class="mt-4 pt-4 border-t border-gray-200">
-                <h4 class="text-md font-semibold text-gray-700 mb-2">Integrantes:</h4>
-                <ul class="space-y-1 text-sm text-gray-600">
-                    ${details.integrantes.map(i => `<li>- ${i.nombre_completo}</li>`).join('')}
+            <div class="mt-3 pt-3 border-t border-gray-200">
+                <h4 class="text-sm font-semibold text-gray-700 mb-1">Integrantes:</h4>
+                <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600">
+                    ${integrantesVisibles.map(i => `<li class="truncate">- ${i.nombre_completo}</li>`).join('')}
                 </ul>
+                ${integrantesRestantes > 0 ? `<p class="mt-1 text-[11px] text-gray-500">y ${integrantesRestantes} más...</p>` : ''}
             </div>
         ` : '';
 
@@ -82,7 +88,7 @@ const showResultModal = (data) => {
     let detailsHtml = `<p class="text-center text-gray-600">${data.message || 'No se pudo obtener información detallada.'}</p>`;
     if (details && details.titular) {
         detailsHtml = `
-            <div class="space-y-2 text-gray-700">
+            <div class="space-y-1 text-sm text-gray-700">
                 <p><strong class="font-semibold">Titular:</strong> ${details.titular}</p>
                 <p><strong class="font-semibold">Tipo:</strong> ${details.tipo_membresia}</p>
                 <p><strong class="font-semibold">Inicio:</strong> ${formatDate(details.fecha_inicio)}</p>
@@ -93,16 +99,17 @@ const showResultModal = (data) => {
     }
 
     modalContent.innerHTML = `
-        <div class="p-6 text-white text-center rounded-t-2xl ${modalHeaderClass}">
-            <i class="${icon} text-5xl mb-3"></i>
-            <h2 class="text-2xl font-bold">${data.message || 'Resultado del Escaneo'}</h2>
+        <div class="p-4 text-white text-center rounded-t-2xl ${modalHeaderClass}">
+            <i class="${icon} text-4xl mb-2"></i>
+            <h2 class="text-xl font-bold">${data.message || 'Resultado del Escaneo'}</h2>
         </div>
-        <div class="p-6">
+        <div class="p-4">
             ${detailsHtml}
-            <button id="close-modal-btn" class="mt-6 w-full bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cerrar</button>
+            <button id="close-modal-btn" class="mt-4 w-full bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cerrar</button>
         </div>
     `;
 
+    modal.classList.add('flex');
     modal.classList.remove('hidden');
     setTimeout(() => {
         modalContent.classList.remove('scale-95', 'opacity-0');
@@ -120,6 +127,7 @@ const hideResultModal = () => {
     modalContent.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {
         modal.classList.add('hidden');
+        modal.classList.remove('flex');
         qrInput.value = '';
         qrInput.focus();
     }, 300);
@@ -231,6 +239,7 @@ qrForm.addEventListener('submit', async (e) => {
         if (response.ok && result.success) {
             showResultModal(result.data);
             if (result.data.status === 'active') {
+                if (historySection) historySection.classList.remove('hidden');
                 // Si el acceso fue exitoso, recargar el historial del día actual
                 updateHistoryTable(datePicker.value);
             }

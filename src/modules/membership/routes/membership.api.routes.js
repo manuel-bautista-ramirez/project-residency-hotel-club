@@ -71,6 +71,14 @@ routerApi.get("/reports/preview", bind(reportsController, "getReportPreview"));
 // Genera y sirve un reporte de ingresos en formato PDF para su descarga.
 routerApi.get("/reports/download", bind(reportsController, "downloadReportPDF"));
 
+// POST /api/memberships/reports/email
+// Envía un reporte de ingresos en formato PDF por correo.
+routerApi.post("/reports/email", bind(reportsController, "sendReportByEmail"));
+
+// POST /api/memberships/reports/whatsapp
+// Envía un reporte de ingresos en formato PDF por WhatsApp.
+routerApi.post("/reports/whatsapp", bind(reportsController, "sendReportByWhatsApp"));
+
 // POST /api/memberships/validate-client
 // Valida si un cliente ya existe basado en su correo o teléfono y retorna el estado de su membresía.
 routerApi.post("/validate-client", bind(MembershipController, "validateClient"));

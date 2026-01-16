@@ -21,7 +21,9 @@
     function adjustPadding() {
       if (footer && main) {
         const footerHeight = footer.offsetHeight;
-        main.style.paddingBottom = `${footerHeight + 16}px`; // +16px de margen extra
+        main.style.boxSizing = "border-box";
+        main.style.minHeight = "100vh";
+        main.style.paddingBottom = `${footerHeight}px`;
       }
     }
 

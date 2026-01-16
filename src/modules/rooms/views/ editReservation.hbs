@@ -1,6 +1,6 @@
-<div class="fixed inset-0 bg-gray-100 flex items-center justify-center p-2">
+<div class="fixed inset-0 z-[60] bg-gray-100 overflow-y-auto flex items-start md:items-center justify-center p-2 sm:p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
   <!-- Contenedor principal compacto -->
-  <div class="w-full max-w-4xl">
+  <div class="w-full max-w-4xl py-4 md:py-0">
     <form id="formEditReservation" action="/api/reservaciones/{{reservacion.id}}/editar" method="POST"
       class="bg-white rounded-2xl shadow-sm border border-slate-300" data-loading
       data-loading-message="Guardando cambios..." data-loading-subtext="Aplicando actualización">
