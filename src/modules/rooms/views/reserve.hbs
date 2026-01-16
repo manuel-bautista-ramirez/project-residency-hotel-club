@@ -1,7 +1,8 @@
 <div class="min-h-screen flex items-center justify-center bg-gray-100 p-3 sm:p-4 overflow-hidden">
   <form id="formReserve" action="/rooms/reservar/{{habitacion.id}}" method="POST"
     class="w-full max-w-xl lg:max-w-3xl bg-white rounded-lg shadow-sm border border-slate-300 mx-auto overflow-hidden"
-    data-loading data-loading-message="Creando reservación..." data-loading-subtext="Estamos procesando tu solicitud">
+    data-loading data-loading-message="Creando reservación..." data-loading-subtext="Estamos procesando tu solicitud"
+    >
 
     <!-- Header con esquinas redondeadas superiores -->
     <div
@@ -503,7 +504,7 @@
     }
 
     // Check room availability
-    async function checkAvailability(checkIn, checkOut, { notify = true } = {}) {
+    async function checkAvailability(checkIn, checkOut, { notify = true, notifySuccess = true } = {}) {
       if (!checkIn || !checkOut) return false;
 
       try {
@@ -527,7 +528,7 @@
           return false;
         }
 
-        if (notify && lastAvailabilityStatus !== true) {
+        if (notify && notifySuccess && lastAvailabilityStatus !== true) {
           showNotification("Habitación disponible para las fechas seleccionadas", 'success');
         }
         lastAvailabilityStatus = true;
@@ -611,7 +612,7 @@
         return false;
       }
 
-      const isAvailable = await checkAvailability(checkIn, checkOut);
+      const isAvailable = await checkAvailability(checkIn, checkOut, { notifySuccess: false });
       if (!isAvailable) {
         return false;
       }

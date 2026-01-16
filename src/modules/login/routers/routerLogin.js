@@ -15,7 +15,10 @@ const router = express.Router();
 
 // Formulario para pedir recuperación por email
 router.get("/password-reset/request", (req, res) =>
-  res.render("requestPasswordEmail")
+  res.render("requestPasswordEmail", {
+    layout: "main",
+    disablePageLoadingOverlay: true
+  })
 );
 
 // Enviar código de recuperación por email
@@ -48,7 +51,8 @@ router.get("/login", (req, res) => {
   res.render("login", {
     layout: "main",
     title: "Inicio",
-    message
+    message,
+    disablePageLoadingOverlay: true
   });
 });
 

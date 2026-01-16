@@ -617,7 +617,8 @@
       <p class="mb-6 text-red-600 text-xs sm:text-sm text-center font-medium">
         <i class="fa-solid fa-circle-exclamation"></i> Esta acción no se puede deshacer.
       </p>
-      <form id="deleteReservationForm" method="POST" class="flex flex-col gap-3 w-full">
+      <form id="deleteReservationForm" method="POST" class="flex flex-col gap-3 w-full" data-loading
+        data-loading-message="Eliminando reservación" data-loading-subtext="Procesando solicitud">
         <div class="flex flex-col sm:flex-row justify-end gap-2">
           <button type="button" onclick="closeDeleteReservationModal()"
             class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
@@ -693,6 +694,28 @@
       if (modal && event.target === modal) {
         closeDeleteReservationModal();
       }
+    });
+
+    // Notificaciones por query params
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const success = urlParams.get('success');
+
+      const showSuccessToast = () => {
+        if (success === 'delete-reservation' && typeof window.showNotification === 'function') {
+          window.showNotification('Reservación eliminada correctamente', 'success');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        if (success === 'edit-reservation' && typeof window.showNotification === 'function') {
+          window.showNotification('Reservación actualizada correctamente', 'success');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      };
+
+      document.addEventListener('globalLoadingOverlay:hidden', () => {
+        setTimeout(showSuccessToast, 200);
+      }, { once: true });
     });
 
     // FUNCIÓN PARA AJUSTAR LA ALTURA DE LA TABLA DE RESERVACIONES DINÁMICAMENTE

@@ -8,19 +8,6 @@
     {{>buttons}}
   </header>
 
-  <!-- Loading Overlay (como en Habitaciones) -->
-  <div id="pricesLoadingOverlay"
-    class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
-    <div class="flex flex-col items-center gap-3">
-      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24" aria-hidden="true" role="img">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <p class="text-sm text-blue-900 font-medium">Cargando precios...</p>
-    </div>
-  </div>
-
   <!-- Desktop Table View (hidden to use cards layout on desktop) -->
   <div class="hidden">
     <div class="overflow-x-auto">
@@ -272,7 +259,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       const title = document.getElementById('pricesHeaderTitle');
       const back = document.getElementById('pricesBackLink');
-      const overlay = document.getElementById('pricesLoadingOverlay');
       // next frame to allow transitions
       requestAnimationFrame(() => {
         if (title) {
@@ -286,11 +272,6 @@
           }
         }, 80);
       });
-
-      // Ocultar overlay después de un breve tiempo para evitar parpadeo
-      setTimeout(() => {
-        if (overlay) overlay.classList.add('hidden');
-      }, 300);
 
       // Reveal rows/cards on scroll like in Habitaciones
       const items = Array.from(document.querySelectorAll('.price-reveal'));

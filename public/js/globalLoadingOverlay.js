@@ -8,6 +8,7 @@
   const progressLabelEl = overlayEl?.querySelector('[data-progress-label]');
 
   let autoProgressTimer = null;
+  let autoProgressStart = null;
 
   const clampProgress = (value) => {
     const num = Number(value);
@@ -28,9 +29,38 @@
 
   const clearAutoProgress = () => {
     if (autoProgressTimer) {
-      clearTimeout(autoProgressTimer);
+      clearInterval(autoProgressTimer);
       autoProgressTimer = null;
     }
+    autoProgressStart = null;
+  };
+
+  const startAutoProgress = ({ startValue = 0 } = {}) => {
+    if (!progressEl) return;
+
+    clearAutoProgress();
+    autoProgressStart = Date.now();
+
+    const start = clampProgress(startValue);
+    setProgress(start);
+
+    autoProgressTimer = setInterval(() => {
+      const elapsed = Date.now() - autoProgressStart;
+
+      let next;
+      if (elapsed < 1200) {
+        next = 10 + (elapsed / 1200) * 60;
+      } else if (elapsed < 4200) {
+        next = 70 + ((elapsed - 1200) / 3000) * 20;
+      } else {
+        const t = elapsed - 4200;
+        next = 90 + (1 - Math.exp(-t / 4000)) * 5;
+      }
+
+      const capped = Math.min(95, next);
+      const currentWidth = clampProgress(progressEl.style.width?.replace('%', '') || 0);
+      if (capped > currentWidth) setProgress(capped);
+    }, 120);
   };
 
   const showLoadingOverlay = ({
@@ -52,10 +82,8 @@
 
     setProgress(progress);
 
-    if (autoProgress && progressEl) {
-      autoProgressTimer = setTimeout(() => {
-        setProgress(100);
-      }, 100);
+    if (autoProgress) {
+      startAutoProgress({ startValue: progress });
     }
 
     if (successCheckEl) {
@@ -82,6 +110,8 @@
 
     clearAutoProgress();
 
+    if (progressEl) setProgress(100);
+
     const finalizeHide = () => {
       overlayEl.classList.add('opacity-0', 'pointer-events-none');
       if (containerEl) {
@@ -91,6 +121,7 @@
       setTimeout(() => {
         overlayEl.classList.add('hidden');
         if (resetProgress) setProgress(0);
+        document.dispatchEvent(new CustomEvent('globalLoadingOverlay:hidden'));
       }, 300);
     };
 
@@ -114,6 +145,10 @@
         const customSubtext = form.dataset.loadingSubtext;
         const disableInputs = form.dataset.loadingDisableInputs !== 'false';
         const autoProgress = form.dataset.loadingAutoProgress !== 'false';
+        const notifyMessage = form.dataset.loadingNotifyMessage;
+        const notifyType = form.dataset.loadingNotifyType || 'info';
+        const delayMs = Number(form.dataset.loadingDelay || 0);
+        const overlayDelay = Number.isNaN(delayMs) ? 0 : delayMs;
 
         if (disableInputs) {
           form.querySelectorAll('button').forEach(button => {
@@ -122,11 +157,23 @@
           });
         }
 
-        showLoadingOverlay({
-          message: customMessage || 'Procesando...',
-          subtext: customSubtext || 'Por favor espera',
-          autoProgress
-        });
+        if (notifyMessage && typeof window.showNotification === 'function') {
+          window.showNotification(notifyMessage, notifyType);
+        }
+
+        const triggerOverlay = () => {
+          showLoadingOverlay({
+            message: customMessage || 'Procesando...',
+            subtext: customSubtext || 'Por favor espera',
+            autoProgress
+          });
+        };
+
+        if (notifyMessage && overlayDelay > 0) {
+          setTimeout(triggerOverlay, overlayDelay);
+        } else {
+          triggerOverlay();
+        }
       });
 
       form.dataset.loadingBound = 'true';
@@ -134,6 +181,35 @@
   };
 
   attachLoadingToForms();
+
+  if (overlayEl) {
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    const bodyDisabled = document.body?.dataset?.disablePageLoadingOverlay === 'true';
+    const isPublicPath = [
+      '/login',
+      '/password-reset/request',
+      '/whatsapp-qr'
+    ].includes(pathname);
+    const shouldShowPageOverlay = !bodyDisabled && !isPublicPath;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!shouldShowPageOverlay) return;
+      showLoadingOverlay({
+        message: 'Cargando vista...',
+        subtext: 'Preparando información',
+        progress: 25,
+        autoProgress: false
+      });
+    });
+
+    window.addEventListener('load', () => {
+      if (!shouldShowPageOverlay) return;
+      setProgress(100);
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasSuccess = Boolean(urlParams.get('success'));
+      hideLoadingOverlay({ success: true, delay: hasSuccess ? 1350 : 350 });
+    });
+  }
 
   if (typeof window !== 'undefined') {
     window.showLoadingOverlay = showLoadingOverlay;

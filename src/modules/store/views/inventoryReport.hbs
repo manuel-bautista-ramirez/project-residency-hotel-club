@@ -300,7 +300,9 @@
       </h2>
     </div>
 
-    <form id="addStockForm" method="POST" class="p-6">
+    <form id="addStockForm" method="POST" class="p-6" data-loading
+      data-loading-message="Actualizando stock" data-loading-subtext="Espere un momento"
+      data-loading-notify-message="Actualizando stock..." data-loading-notify-type="info" data-loading-delay="450">
       <input type="hidden" id="stock-product-id" name="productId">
 
       <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
@@ -356,7 +358,9 @@
       </p>
     </div>
 
-    <form id="deleteForm" method="POST" class="px-6 pb-6">
+    <form id="deleteForm" method="POST" class="px-6 pb-6" data-loading
+      data-loading-message="Eliminando producto" data-loading-subtext="Esto puede tardar unos segundos"
+      data-loading-notify-message="Eliminando producto..." data-loading-notify-type="info" data-loading-delay="450">
       <div class="flex gap-3">
         <button type="button" onclick="closeDeleteModal()"
           class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg transition-colors">Cancelar</button>

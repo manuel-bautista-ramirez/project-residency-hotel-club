@@ -368,12 +368,6 @@
       return;
     }
 
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-      overlay.classList.remove('hidden');
-      overlay.classList.add('flex');
-    }
-
     // Deshabilitar y mostrar carga en el botón
     const submitBtn = e.target.querySelector('button[type="submit"]');
     if (submitBtn) {

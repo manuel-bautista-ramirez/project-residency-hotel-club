@@ -93,6 +93,7 @@ routerGlobal.use((req, res) => {
     messengger: "La ruta que estás intentando acceder no existe.",
     url: req.originalUrl,
     showFooter: true,
+    disablePageLoadingOverlay: true,
   });
 });
 
@@ -111,6 +112,7 @@ routerGlobal.use((err, req, res, next) => {
     errorMessage: err.message, // Siempre mostrar el mensaje
     stack: err.stack, // Siempre mostrar el stack
     showFooter: true,
+    disablePageLoadingOverlay: true,
   });
 });
 

@@ -1,15 +1,4 @@
 <div class="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-14 sm:pt-5 pb-20">
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="fixed inset-0 z-[60] bg-white/80 backdrop-blur-sm flex items-center justify-center">
-    <div class="flex flex-col items-center gap-3">
-      <svg class="w-10 h-10 text-blue-700 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24" aria-hidden="true" role="img">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <p class="text-sm text-blue-900 font-medium">Cargando habitaciones...</p>
-    </div>
-  </div>
   <!-- Header -->
   <header class="text-center py-5 sm:py-8 px-2">
     <h1 class=" pt-3 text-2xl sm:text-4xl font-extrabold text-blue-900 tracking-tight mb-5 leading-tight">
@@ -194,14 +183,11 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    const loadingOverlay = document.getElementById('loadingOverlay');
     const roomsGrid = document.getElementById('roomsGrid');
     const roomsSkeletons = document.getElementById('roomsSkeletons');
     const roomCards = document.querySelectorAll('.room-card');
 
     function showRooms() {
-      // Ocultar overlay y mostrar grid
-      loadingOverlay.classList.add('hidden');
       roomsSkeletons.classList.add('hidden');
       roomsGrid.classList.remove('hidden');
       roomsGrid.classList.add('grid');
@@ -217,25 +203,30 @@
     // Carga inicial
     setTimeout(showRooms, 500);
 
-    // Manejar notificaciones de éxito por redirección
+    // Notificaciones de éxito por redirección
     const urlParams = new URLSearchParams(window.location.search);
     const success = urlParams.get('success');
-    if (success && typeof window.showNotification === 'function') {
+    const showSuccessToast = () => {
+      if (!success || typeof window.showNotification !== 'function') return;
       if (success === 'renta') {
         window.showNotification('Renta creada exitosamente', 'success');
+      } else if (success === 'renta-convertida') {
+        window.showNotification('Reservación convertida a renta exitosamente', 'success');
       } else if (success === 'reservacion') {
         window.showNotification('Reservación creada exitosamente', 'success');
+      } else if (success === 'status-disponible') {
+        window.showNotification('Estado actualizado a disponible exitosamente', 'success');
       }
-      // Limpiar el parámetro de la URL sin recargar
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-    }
+      window.history.replaceState({}, document.title, window.location.pathname);
+    };
+    document.addEventListener('globalLoadingOverlay:hidden', () => {
+      setTimeout(showSuccessToast, 200);
+    }, { once: true });
 
     // Manejar el back/forward cache del navegador
     window.addEventListener('pageshow', function (event) {
       if (event.persisted) {
         // La página se restauró desde la caché, forzar un estado limpio
-        loadingOverlay.classList.add('hidden'); // Asegurarse de que el overlay esté oculto
         showRooms();
       }
     });

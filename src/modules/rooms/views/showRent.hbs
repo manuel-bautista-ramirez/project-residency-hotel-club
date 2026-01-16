@@ -535,7 +535,8 @@
       <p class="mb-6 text-red-600 text-xs sm:text-sm text-center font-medium">
         <i class="fa-solid fa-circle-exclamation"></i> Esta acción no se puede deshacer.
       </p>
-      <form id="deleteForm" method="POST" class="flex flex-col gap-3 w-full">
+      <form id="deleteForm" method="POST" class="flex flex-col gap-3 w-full" data-loading
+        data-loading-message="Eliminando renta" data-loading-subtext="Procesando solicitud">
         <div class="flex flex-col sm:flex-row justify-end gap-2">
           <button type="button" onclick="closeDeleteModal()"
             class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
@@ -573,7 +574,8 @@
         a
         estado <strong>"LIMPIEZA"</strong>. El registro se mantendrá para reportes.
       </p>
-      <form id="desocuparForm" method="POST" class="flex flex-col gap-3 w-full">
+      <form id="desocuparForm" method="POST" class="flex flex-col gap-3 w-full" data-loading
+        data-loading-message="Desocupando habitación" data-loading-subtext="Actualizando estado">
         <div class="flex flex-col sm:flex-row justify-end gap-2">
           <button type="button" onclick="closeDesocuparModal()"
             class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold w-full sm:w-28 transition-colors">
@@ -789,6 +791,30 @@
       if (desocuparModal && event.target === desocuparModal) {
         closeDesocuparModal();
       }
+    });
+
+    // Notificaciones por query params
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const success = urlParams.get('success');
+
+      const showSuccessToast = () => {
+        if (typeof window.showNotification !== 'function') return;
+
+        if (success === 'delete-rent') {
+          window.showNotification('Renta eliminada correctamente', 'success');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        if (success === 'desocupar') {
+          window.showNotification('Habitación desocupada correctamente', 'success');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      };
+
+      document.addEventListener('globalLoadingOverlay:hidden', () => {
+        setTimeout(showSuccessToast, 200);
+      }, { once: true });
     });
 
     // FUNCIÓN PARA AJUSTAR LA ALTURA DE LA TABLA DE RENTAS DINÁMICAMENTE

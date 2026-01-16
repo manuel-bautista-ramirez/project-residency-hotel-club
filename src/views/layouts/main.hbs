@@ -10,7 +10,7 @@
 
 </head>
 
-<body class="bg-gray-100 h-full {{#if centerContent}}min-h-screen flex justify-center items-center{{/if}}">
+<body class="bg-gray-100 h-full {{#if centerContent}}min-h-screen flex justify-center items-center{{/if}}" {{#if disablePageLoadingOverlay}}data-disable-page-loading-overlay="true"{{/if}}>
   {{#if showNavbar}}
   {{>navbar}}
   {{/if}}

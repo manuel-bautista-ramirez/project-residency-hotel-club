@@ -199,7 +199,6 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const overlay = document.getElementById('loadingOverlay');
     const form = document.getElementById('formEditReservation');
     const originalRoomId = Number(document.getElementById('room_id').value);
     const reservationId = Number(document.getElementById('reservation_id').value);
@@ -321,7 +320,7 @@
 
 
     // Check room availability
-    async function checkAvailability(checkIn, checkOut, roomIdToCheck = null) {
+    async function checkAvailability(checkIn, checkOut, roomIdToCheck = null, { notify = true, notifySuccess = true } = {}) {
       if (!checkIn || !checkOut) return false;
 
       const roomToValidate = roomIdToCheck || currentRoomId;
@@ -340,13 +339,17 @@
         const json = await res.json();
 
         if (!json.available) {
-          showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta de otro cliente.", 'error');
+          if (notify) {
+            showNotification("La habitación no está disponible en esas fechas. Ya existe una reservación o renta de otro cliente.", 'error');
+          }
 
           // Si cambió de habitación, revertir al original
           if (roomIdToCheck && roomIdToCheck !== originalRoomId) {
             habitacionSelect.value = originalRoomId;
             currentRoomId = originalRoomId;
-            showNotification("Se revirtió a la habitación original", 'warning');
+            if (notify) {
+              showNotification("Se revirtió a la habitación original", 'warning');
+            }
           } else {
             fechaIngresoInput.value = "";
             fechaSalidaInput.value = "";
@@ -357,10 +360,14 @@
           return false;
         }
 
-        showNotification("Habitación disponible para las fechas seleccionadas", 'success');
+        if (notify && notifySuccess) {
+          showNotification("Habitación disponible para las fechas seleccionadas", 'success');
+        }
         return true;
       } catch (err) {
-        showNotification('Error al verificar disponibilidad', 'error');
+        if (notify) {
+          showNotification('Error al verificar disponibilidad', 'error');
+        }
         console.error("Error verificando disponibilidad:", err);
         return false;
       }
@@ -697,8 +704,8 @@
         return;
       }
 
-      // Verificar disponibilidad una última vez antes de enviar
-      const isAvailable = await checkAvailability(checkIn, checkOut);
+      // Verificar disponibilidad una última vez antes de enviar (sin notificación de éxito)
+      const isAvailable = await checkAvailability(checkIn, checkOut, null, { notifySuccess: false });
       if (!isAvailable) {
         return;
       }
@@ -718,8 +725,13 @@
       if (hiddenCheckIn) hiddenCheckIn.value = checkInWithTime;
       if (hiddenCheckOut) hiddenCheckOut.value = checkOutWithTime;
 
-      // Show loading overlay
-      if (overlay) overlay.classList.remove('hidden');
+      if (typeof window.showLoadingOverlay === 'function') {
+        window.showLoadingOverlay({
+          message: form.dataset.loadingMessage || 'Procesando...',
+          subtext: form.dataset.loadingSubtext || 'Por favor espera',
+          autoProgress: form.dataset.loadingAutoProgress !== 'false'
+        });
+      }
 
       // Deshabilitar botón y mostrar estado de carga
       submitButton.disabled = true;

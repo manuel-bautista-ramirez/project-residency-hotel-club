@@ -155,7 +155,7 @@ export const changesStatus = async (req, res) => {
     const success = await updateRoomStatus(id, status);
 
     if (success) {
-      return res.redirect("/rooms");
+      return res.redirect("/rooms?success=status-disponible");
     } else {
       return res.status(500).send("No se pudo actualizar el estado.");
     }
@@ -568,7 +568,7 @@ export const deleteByIdResevation = async (req, res) => {
 
     if (success) {
       console.log(`Reservación ${reservationId} eliminada exitosamente`);
-      res.redirect("/rooms/list/reservations");
+      res.redirect("/rooms/list/reservations?success=delete-reservation");
     } else {
       res.status(500).send("No se pudo eliminar la reservación");
     }
@@ -652,7 +652,7 @@ export const deleteIdRenta = async (req, res) => {
 
     if (success) {
       console.log(`🎉 Renta ${rentaId} eliminada exitosamente y habitación liberada`);
-      res.redirect("/rooms/list/rentas");
+      res.redirect("/rooms/list/rentas?success=delete-rent");
     } else {
       res.status(500).send("No se pudo eliminar la renta");
     }
@@ -803,7 +803,7 @@ export const marcarComoDesocupada = async (req, res) => {
 
     if (success) {
       console.log(`✅ Renta ${rentaId} marcada como finalizada y habitación liberada`);
-      res.redirect("/rooms/list/rentas");
+      res.redirect("/rooms/list/rentas?success=desocupar");
     } else {
       console.error(`❌ No se pudo finalizar la renta ${rentaId}`);
       res.status(500).json({ error: "No se pudo marcar como desocupada" });
@@ -1009,7 +1009,7 @@ export const handleEditReservation = async (req, res) => {
       console.error("Error generando/enviando PDF:", pdfError);
     }
 
-    res.redirect("/rooms/list/reservations");
+    res.redirect("/rooms/list/reservations?success=edit-reservation");
 
   } catch (error) {
     console.error("Error al editar reservación:", error);
@@ -2431,11 +2431,11 @@ export const handleConvertReservationToRent = async (req, res) => {
       console.log("Resultados de envío:", resultadosEnvio);
 
       // Redirigir a la página principal de rooms
-      res.redirect("/rooms?success=renta");
+      res.redirect("/rooms?success=renta-convertida");
     } catch (pdfError) {
       console.error("Error al generar/enviar PDF:", pdfError);
       // Aunque falle el PDF, la renta ya se creó
-      res.redirect("/rooms?success=renta");
+      res.redirect("/rooms?success=renta-convertida");
     }
   } catch (error) {
     console.error("Error al convertir reservación a renta:", error);

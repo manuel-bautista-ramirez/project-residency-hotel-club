@@ -57,10 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (typeof window.setLoadingState === 'function') {
         window.setLoadingState(submitBtn, 'Procesando...');
       }
-
-      if (typeof window.showNotification === 'function') {
-        window.showNotification('Procesando solicitud...', 'info');
-      }
     }, true);
   };
 
