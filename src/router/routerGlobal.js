@@ -61,6 +61,7 @@ routerGlobal.get('/whatsapp-qr', (req, res) => {
   res.render('whatsapp-qr', {
     layout: 'main',
     title: 'Vincular WhatsApp',
+    disablePageLoadingOverlay: true,
     centerContent: true
   });
 });

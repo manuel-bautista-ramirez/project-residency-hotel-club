@@ -40,8 +40,6 @@ app.use(routerGlobal);
 import pdfRoutes from './src/modules/rooms/routes/pdfRoutes.js';
 app.use('/api/pdfs', pdfRoutes);
 
-
-
 // Importar e iniciar el servicio de cola de trabajos
 import jobQueueService from './src/services/jobQueueService.js';
 import './script/dbBackupScheduler.js';

@@ -18,6 +18,7 @@ export const authMiddleware = async (req, res, next) => {
     console.log("Usuario no autenticado. Redirigiendo al login.");
     res.status(401).render("authMiddleware", {
       title: "Acceso Restringido",
+      disablePageLoadingOverlay: true,
       redirectUrl: "/", // Ruta a la que se redirigirá después de 5 segundos
     });
   }
